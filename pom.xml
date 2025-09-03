@@ -12,7 +12,7 @@
     <artifactId>paws360</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>paws360</name>
-    <description>paws360</description>
+    <description>Student Portal</description>
     <url/>
     <licenses>
         <license/>
@@ -34,6 +34,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
