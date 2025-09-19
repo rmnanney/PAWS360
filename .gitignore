@@ -32,8 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
-# React Router
+# React Router/NextJS
 .DS_Store
 /node_modules/
 /.react-router/
 /build/
+.next/
