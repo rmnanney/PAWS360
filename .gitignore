@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# React Router
+.DS_Store
+/node_modules/
+/.react-router/
+/build/
