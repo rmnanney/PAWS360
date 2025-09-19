@@ -2,7 +2,8 @@ package com.uwm.paws360.Domain;
 
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 public class Users {
@@ -10,42 +11,56 @@ public class Users {
     @Column(name = "user_id", unique = true, updatable = false)
     @GeneratedValue
     private int id;
-    private String name;
-    private String last;
-    @Column(length = 40, unique = true)
+    @Column(nullable = false, length = 20)
+    private String firstname;
+    @Column(nullable = false, length = 30)
+    private String lastname;
+    @Column(nullable = false, length = 50, unique = true)
     private String email;
-    @Column(updatable = false, nullable = false)
-    private final Date created_date = new Date();
+    @Column(nullable = false, updatable = false)
+    private LocalDate dob;
+    @Column(nullable = false, updatable = false)
+    private final LocalDate date_created = LocalDate.parse(LocalDate.now().format(DateTimeFormatter.ISO_DATE));
 
-    public Users(String name, String last, String email) {
-        this.name = name;
-        this.last = last;
-        this.email = email;
+    public Users(String firstname, String lastname, String email, LocalDate dob) throws Exception {
+        setF_name(firstname);
+        setL_name(lastname);
+        setEmail(email);
+        setDob(dob);
     }
 
     public Users() {}
 
-    public String getName() {
-        return name;
+    public String getF_name() {
+        return firstname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setF_name(String firstname) {
+        this.firstname = firstname;
     }
 
-    public String getLast() {
-        return last;
+    public String getL_name() {
+        return lastname;
     }
 
-    public void setLast(String last) {
-        this.last = last;
+    public void setL_name(String lastname) {
+        this.lastname = lastname;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(String email) throws Exception {
+        if(!email.contains("@uwm.edu")) throw new Exception("Must be a UWM@EDU Email");
         this.email = email;
+    }
+
+    public LocalDate getDob() {
+        return dob;
+    }
+
+    public void setDob(LocalDate dob) {
+        this.dob = dob;
     }
 }
