@@ -22,28 +22,28 @@ public class Users {
     @Column(nullable = false, updatable = false)
     private final LocalDate date_created = LocalDate.parse(LocalDate.now().format(DateTimeFormatter.ISO_DATE));
 
-    public Users(String firstname, String lastname, String email, LocalDate dob) throws Exception {
-        setF_name(firstname);
-        setL_name(lastname);
-        setEmail(email);
-        setDob(dob);
+    public Users(String firstname, String lastname, String email, LocalDate dob) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.dob = dob;
     }
 
     public Users() {}
 
-    public String getF_name() {
+    public String getFirstname() {
         return firstname;
     }
 
-    public void setF_name(String firstname) {
+    public void setFirstname(String firstname) {
         this.firstname = firstname;
     }
 
-    public String getL_name() {
+    public String getLastname() {
         return lastname;
     }
 
-    public void setL_name(String lastname) {
+    public void setLastname(String lastname) {
         this.lastname = lastname;
     }
 
@@ -51,8 +51,7 @@ public class Users {
         return email;
     }
 
-    public void setEmail(String email) throws Exception {
-        if(!email.contains("@uwm.edu")) throw new Exception("Must be a UWM@EDU Email");
+    public void setEmail(String email) {
         this.email = email;
     }
 
