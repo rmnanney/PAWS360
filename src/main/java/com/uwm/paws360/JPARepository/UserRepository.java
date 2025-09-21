@@ -1,6 +1,6 @@
 package com.uwm.paws360.JPARepository;
 
-import com.uwm.paws360.Domain.Users;
+import com.uwm.paws360.Entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
