@@ -1,4 +1,4 @@
-package com.uwm.paws360.Entity.Domains;
+package com.uwm.paws360.Entity.Domains.User;
 
 public enum Country_Code {
     // North America
