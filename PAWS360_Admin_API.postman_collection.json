@@ -1,0 +1,1926 @@
+{
+  "info": {
+    "name": "PAWS360 Admin API",
+    "description": "Complete API collection for PAWS360 unified student success platform. Includes authentication, student management, analytics, course administration, alert management, and system administration endpoints.\n\n## Features\n- SAML2 Authentication with Azure AD\n- Role-based access control (RBAC)\n- FERPA compliance for student data\n- Comprehensive analytics and reporting\n- Real-time alert management\n- Bulk operations support\n- Audit logging\n\n## Authentication\nMost endpoints require JWT Bearer token authentication. Start with the SAML2 login flow in the Authentication folder.\n\n## Environment Setup\nSet these variables in your Postman environment:\n- `base_url`: API base URL (e.g., http://localhost:8080)\n- `jwt_token`: JWT token from authentication\n- `student_id`: Test student ID\n- `course_id`: Test course ID\n- `alert_id`: Test alert ID\n\n## Quick Start\n1. Run 'Login via SAML2' request\n2. Set jwt_token variable from response\n3. Test other endpoints with proper permissions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "paw360-dev-team",
+    "_collection_link": "https://university.share.postman.com/workspace/paws360/collection/123456789"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "student_id",
+      "value": "123456",
+      "type": "string"
+    },
+    {
+      "key": "course_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "alert_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "session_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "SAML2 authentication and session management",
+      "item": [
+        {
+          "name": "Initiate SAML2 Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"return_url\": \"{{base_url}}/dashboard\",\n  \"user_type\": \"staff\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Initiate SAML2 authentication flow with Azure AD. This redirects to Microsoft login page."
+          },
+          "response": []
+        },
+        {
+          "name": "SAML2 Callback Handler",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "SAMLResponse",
+                  "value": "{{saml_response}}",
+                  "description": "Base64 encoded SAML assertion from Azure AD"
+                },
+                {
+                  "key": "RelayState",
+                  "value": "admin_dashboard",
+                  "description": "Return state for redirect"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/saml/callback",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "saml", "callback"]
+            },
+            "description": "Handle SAML2 callback from Azure AD and establish session"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.token);",
+                  "    pm.collectionVariables.set('session_id', response.session_id);",
+                  "    console.log('✅ Authentication successful - JWT token set');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get Current Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/session",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "session"]
+            },
+            "description": "Retrieve current user session information and permissions"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Refresh JWT token before expiration"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.token);",
+                  "    console.log('🔄 Token refreshed successfully');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"saml_logout\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Logout and optionally perform SAML logout with Azure AD"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 Student Data",
+      "description": "Student profile, dashboard, and academic information",
+      "item": [
+        {
+          "name": "Get Student Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "profile"]
+            },
+            "description": "Get authenticated student's profile information"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/dashboard?include_alerts=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "dashboard"],
+              "query": [
+                {
+                  "key": "include_alerts",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get comprehensive student dashboard with enrollments, grades, and alerts"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Grades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/grades?include_details=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "grades"],
+              "query": [
+                {
+                  "key": "include_details",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get student grades with detailed assignment breakdown"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Enrollments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/enrollments?status=ENROLLED",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "enrollments"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ENROLLED"
+                }
+              ]
+            },
+            "description": "Get current and historical course enrollments"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Class Schedule",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/students/schedule",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "students", "schedule"]
+            },
+            "description": "Get current term class schedule with meeting times"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📢 Communication & Alerts",
+      "description": "Messaging, notifications, and alert management",
+      "item": [
+        {
+          "name": "Get My Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/alerts?status=OPEN",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "alerts"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "OPEN"
+                }
+              ]
+            },
+            "description": "Get alerts relevant to current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{student_id}}\",\n  \"alertType\": \"ACADEMIC\",\n  \"severity\": \"MEDIUM\",\n  \"title\": \"Missing Assignment Pattern\",\n  \"description\": \"Student has missed 3 consecutive assignments in MATH101\",\n  \"recommendedActions\": \"Schedule tutoring session, contact student\",\n  \"category\": \"ENGAGEMENT\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/alerts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "alerts"]
+            },
+            "description": "Create a new alert for early intervention"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages"]
+            },
+            "description": "Get messages for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientId\": 2,\n  \"subject\": \"Academic Support Available\",\n  \"body\": \"Hi, I noticed you might benefit from some tutoring support. Please let me know if you'd like to schedule a session.\",\n  \"priority\": \"NORMAL\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages"]
+            },
+            "description": "Send a message to another user"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏫 Student Administration",
+      "description": "Administrative student management operations",
+      "item": [
+        {
+          "name": "List All Students",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/students?page=0&size=20&status=ACTIVE",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                }
+              ]
+            },
+            "description": "Get paginated list of all students with filtering"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/students/{{student_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students", "{{student_id}}"]
+            },
+            "description": "Get detailed student information by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Advanced Student Search",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"searchTerm\": \"John\",\n  \"status\": \"ACTIVE\",\n  \"program\": \"Computer Science\",\n  \"gpaRange\": {\n    \"min\": 3.0,\n    \"max\": 4.0\n  },\n  \"alertCount\": {\n    \"min\": 1\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/students/search?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students", "search"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Advanced search with complex criteria"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Student",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"preferredName\": \"Johnny\",\n  \"phone\": \"555-123-4567\",\n  \"advisorId\": 5,\n  \"status\": \"ACTIVE\",\n  \"ferpaHold\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/students/{{student_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students", "{{student_id}}"]
+            },
+            "description": "Update student information"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Enrollments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/students/{{student_id}}/enrollments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students", "{{student_id}}", "enrollments"]
+            },
+            "description": "Get all enrollments for a specific student"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Academic Records",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/students/{{student_id}}/academic-records",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students", "{{student_id}}", "academic-records"]
+            },
+            "description": "Get student's academic records and transcript"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Student Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alertType\": \"FINANCIAL\",\n  \"severity\": \"HIGH\",\n  \"title\": \"Financial Aid Discrepancy\",\n  \"description\": \"Student's financial aid package doesn't match expected amount\",\n  \"recommendedActions\": \"Review FAFSA, contact financial aid office\",\n  \"followUpRequired\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/students/{{student_id}}/alerts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students", "{{student_id}}", "alerts"]
+            },
+            "description": "Create an alert specifically for a student"
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Student Operations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"UPDATE_STATUS\",\n  \"studentIds\": [\"123456\", \"234567\", \"345678\"],\n  \"newStatus\": \"HOLD\",\n  \"reason\": \"Academic probation hold\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/students/bulk-operations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students", "bulk-operations"]
+            },
+            "description": "Perform bulk operations on multiple students"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/students/statistics?program=Computer Science",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students", "statistics"],
+              "query": [
+                {
+                  "key": "program",
+                  "value": "Computer Science"
+                }
+              ]
+            },
+            "description": "Get comprehensive student statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Export Student Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"format\": \"excel\",\n  \"fields\": [\"studentId\", \"fullName\", \"email\", \"gpa\", \"status\"],\n  \"filters\": {\n    \"status\": \"ACTIVE\",\n    \"program\": \"Computer Science\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/students/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "students", "export"]
+            },
+            "description": "Export student data in various formats"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🚨 Alert Management",
+      "description": "Comprehensive alert and notification management",
+      "item": [
+        {
+          "name": "List All Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts?page=0&size=20&status=OPEN&severity=HIGH",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "OPEN"
+                },
+                {
+                  "key": "severity",
+                  "value": "HIGH"
+                }
+              ]
+            },
+            "description": "Get paginated list of all alerts with filtering"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alert Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts/{{alert_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts", "{{alert_id}}"]
+            },
+            "description": "Get detailed information about a specific alert"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Admin Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{student_id}}\",\n  \"alertType\": \"SYSTEM\",\n  \"severity\": \"CRITICAL\",\n  \"category\": \"REGISTRATION\",\n  \"title\": \"Registration System Issue\",\n  \"description\": \"Student unable to register for classes due to system error\",\n  \"recommendedActions\": \"Check registration system, verify student permissions, manual enrollment if needed\",\n  \"assignedToId\": 3,\n  \"followUpRequired\": true,\n  \"followUpDate\": \"2025-09-25\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts"]
+            },
+            "description": "Create a new alert through admin interface"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Alert",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\",\n  \"assignedToId\": 4,\n  \"notes\": \"Investigating registration system issue\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts/{{alert_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts", "{{alert_id}}"]
+            },
+            "description": "Update alert status and assignment"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Alert",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedTo\": \"advisor@university.edu\",\n  \"notes\": \"Please follow up with student regarding academic performance\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts/{{alert_id}}/assign",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts", "{{alert_id}}", "assign"]
+            },
+            "description": "Assign alert to a specific staff member"
+          },
+          "response": []
+        },
+        {
+          "name": "Close Alert",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resolution\": \"RESOLVED\",\n  \"notes\": \"Student met with advisor, academic plan developed, grades improving\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts/{{alert_id}}/close",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts", "{{alert_id}}", "close"]
+            },
+            "description": "Close alert with resolution details"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alert History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts/{{alert_id}}/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts", "{{alert_id}}", "history"]
+            },
+            "description": "Get complete history of alert changes and actions"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Alert Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Spoke with student - they are aware of the issue and working on solutions. Will follow up in 2 weeks.\",\n  \"isPublic\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts/{{alert_id}}/comments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts", "{{alert_id}}", "comments"]
+            },
+            "description": "Add a comment to an alert"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alert Rules",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts/rules?status=ACTIVE",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts", "rules"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                }
+              ]
+            },
+            "description": "Get alert rules and configurations"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alert Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts/statistics?timeRange=30d&groupBy=severity",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts", "statistics"],
+              "query": [
+                {
+                  "key": "timeRange",
+                  "value": "30d"
+                },
+                {
+                  "key": "groupBy",
+                  "value": "severity"
+                }
+              ]
+            },
+            "description": "Get comprehensive alert statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Assigned Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/alerts/my-alerts?page=0&size=20&status=OPEN",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "alerts", "my-alerts"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "OPEN"
+                }
+              ]
+            },
+            "description": "Get alerts assigned to current user"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📊 Analytics & Reporting",
+      "description": "Comprehensive analytics, reporting, and business intelligence",
+      "item": [
+        {
+          "name": "Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/dashboard?period=30d",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "dashboard"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "30d"
+                }
+              ]
+            },
+            "description": "Get dashboard overview with key metrics and KPIs"
+          },
+          "response": []
+        },
+        {
+          "name": "Enrollment Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/enrollment?term=FALL2024&department=CS",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "enrollment"],
+              "query": [
+                {
+                  "key": "term",
+                  "value": "FALL2024"
+                },
+                {
+                  "key": "department",
+                  "value": "CS"
+                }
+              ]
+            },
+            "description": "Get detailed enrollment analytics and trends"
+          },
+          "response": []
+        },
+        {
+          "name": "Academic Performance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/academic-performance?term=FALL2024&level=UNDERGRADUATE",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "academic-performance"],
+              "query": [
+                {
+                  "key": "term",
+                  "value": "FALL2024"
+                },
+                {
+                  "key": "level",
+                  "value": "UNDERGRADUATE"
+                }
+              ]
+            },
+            "description": "Get academic performance metrics and grade distributions"
+          },
+          "response": []
+        },
+        {
+          "name": "Financial Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/financial?fiscalYear=2024&aidType=GRANTS",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "financial"],
+              "query": [
+                {
+                  "key": "fiscalYear",
+                  "value": "2024"
+                },
+                {
+                  "key": "aidType",
+                  "value": "GRANTS"
+                }
+              ]
+            },
+            "description": "Get financial aid and payment analytics"
+          },
+          "response": []
+        },
+        {
+          "name": "Demographics Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/demographics?term=FALL2024&dimensions=ethnicity,gender,income",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "demographics"],
+              "query": [
+                {
+                  "key": "term",
+                  "value": "FALL2024"
+                },
+                {
+                  "key": "dimensions",
+                  "value": "ethnicity,gender,income"
+                }
+              ]
+            },
+            "description": "Get student demographic analytics and diversity metrics"
+          },
+          "response": []
+        },
+        {
+          "name": "Retention Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/retention?cohort=2021&program=Computer Science",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "retention"],
+              "query": [
+                {
+                  "key": "cohort",
+                  "value": "2021"
+                },
+                {
+                  "key": "program",
+                  "value": "Computer Science"
+                }
+              ]
+            },
+            "description": "Get retention and graduation rate analytics"
+          },
+          "response": []
+        },
+        {
+          "name": "Course Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/courses?term=FALL2024&department=CS",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "courses"],
+              "query": [
+                {
+                  "key": "term",
+                  "value": "FALL2024"
+                },
+                {
+                  "key": "department",
+                  "value": "CS"
+                }
+              ]
+            },
+            "description": "Get course performance and utilization analytics"
+          },
+          "response": []
+        },
+        {
+          "name": "Faculty Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/faculty?term=FALL2024&department=CS",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "faculty"],
+              "query": [
+                {
+                  "key": "term",
+                  "value": "FALL2024"
+                },
+                {
+                  "key": "department",
+                  "value": "CS"
+                }
+              ]
+            },
+            "description": "Get faculty workload and performance analytics"
+          },
+          "response": []
+        },
+        {
+          "name": "System Usage Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/system-usage?timeRange=7d&metrics=login,api_calls,page_views",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "system-usage"],
+              "query": [
+                {
+                  "key": "timeRange",
+                  "value": "7d"
+                },
+                {
+                  "key": "metrics",
+                  "value": "login,api_calls,page_views"
+                }
+              ]
+            },
+            "description": "Get system usage and performance analytics"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Custom Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reportName\": \"At-Risk Students Report\",\n  \"description\": \"Students with GPA below 2.0 and recent absences\",\n  \"dataSource\": \"students\",\n  \"filters\": {\n    \"gpa\": {\"lt\": 2.0},\n    \"status\": \"ACTIVE\",\n    \"lastActivity\": {\"days\": 7}\n  },\n  \"groupBy\": [\"program\", \"advisor\"],\n  \"aggregations\": {\n    \"count\": \"studentId\",\n    \"avg_gpa\": \"gpa\"\n  },\n  \"sortBy\": \"gpa\",\n  \"sortOrder\": \"ASC\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/custom-report",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "custom-report"]
+            },
+            "description": "Generate a custom analytics report with flexible criteria"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Saved Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/saved-reports?category=ACADEMIC",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "saved-reports"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "ACADEMIC"
+                }
+              ]
+            },
+            "description": "Get list of saved reports for reuse"
+          },
+          "response": []
+        },
+        {
+          "name": "Predictive Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/predictive?modelType=RETENTION_FORECAST&timeHorizon=6months",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "predictive"],
+              "query": [
+                {
+                  "key": "modelType",
+                  "value": "RETENTION_FORECAST"
+                },
+                {
+                  "key": "timeHorizon",
+                  "value": "6months"
+                }
+              ]
+            },
+            "description": "Get predictive analytics and forecasting"
+          },
+          "response": []
+        },
+        {
+          "name": "Comparative Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/comparative?dimensions=enrollment,gpa&periods=FALL2023,FALL2024&groupBy=program",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "comparative"],
+              "query": [
+                {
+                  "key": "dimensions",
+                  "value": "enrollment,gpa"
+                },
+                {
+                  "key": "periods",
+                  "value": "FALL2023,FALL2024"
+                },
+                {
+                  "key": "groupBy",
+                  "value": "program"
+                }
+              ]
+            },
+            "description": "Get comparative analytics across periods or cohorts"
+          },
+          "response": []
+        },
+        {
+          "name": "Real-Time Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/real-time?metrics=active_users,api_response_time,alerts_created",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "real-time"],
+              "query": [
+                {
+                  "key": "metrics",
+                  "value": "active_users,api_response_time,alerts_created"
+                }
+              ]
+            },
+            "description": "Get real-time system metrics and KPIs"
+          },
+          "response": []
+        },
+        {
+          "name": "Export Analytics Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"format\": \"excel\",\n  \"reportType\": \"enrollment_trends\",\n  \"timeRange\": \"1year\",\n  \"filters\": {\n    \"department\": \"Computer Science\"\n  },\n  \"includeCharts\": true,\n  \"includeRawData\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/analytics/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "analytics", "export"]
+            },
+            "description": "Export analytics data in various formats"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📚 Course Management",
+      "description": "Course administration, enrollment management, and grading",
+      "item": [
+        {
+          "name": "List All Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses?page=0&size=20&term=FALL2024&status=ACTIVE",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "term",
+                  "value": "FALL2024"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                }
+              ]
+            },
+            "description": "Get paginated list of all courses with filtering"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}"]
+            },
+            "description": "Get detailed information about a specific course"
+          },
+          "response": []
+        },
+        {
+          "name": "Create New Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"CS405\",\n  \"courseTitle\": \"Advanced Software Engineering\",\n  \"courseDescription\": \"Design and development of complex software systems\",\n  \"creditHours\": 3,\n  \"term\": \"FALL2024\",\n  \"sectionNumber\": \"001\",\n  \"instructorId\": 10,\n  \"meetingDays\": \"MWF\",\n  \"meetingTimeStart\": \"10:00:00\",\n  \"meetingTimeEnd\": \"11:15:00\",\n  \"location\": \"TECH 205\",\n  \"capacity\": 35,\n  \"department\": \"Computer Science\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses"]
+            },
+            "description": "Create a new course section"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseTitle\": \"Advanced Software Engineering & Design\",\n  \"capacity\": 40,\n  \"meetingTimeEnd\": \"11:30:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}"]
+            },
+            "description": "Update course information"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Enrollments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}/enrollments?page=0&size=50&status=ENROLLED",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}", "enrollments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "50"
+                },
+                {
+                  "key": "status",
+                  "value": "ENROLLED"
+                }
+              ]
+            },
+            "description": "Get roster of students enrolled in the course"
+          },
+          "response": []
+        },
+        {
+          "name": "Enroll Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{student_id}}\",\n  \"enrollmentDate\": \"2024-08-15\",\n  \"status\": \"ENROLLED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}/enrollments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}", "enrollments"]
+            },
+            "description": "Enroll a student in the course"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Gradebook",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}/gradebook",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}", "gradebook"]
+            },
+            "description": "Get course gradebook with all student grades"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Grades",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"studentId\": \"123456\",\n    \"assignmentName\": \"Midterm Exam\",\n    \"grade\": \"B+\",\n    \"pointsEarned\": 85,\n    \"pointsPossible\": 100,\n    \"feedback\": \"Good understanding of core concepts\"\n  },\n  {\n    \"studentId\": \"234567\",\n    \"assignmentName\": \"Final Project\",\n    \"grade\": \"A-\",\n    \"pointsEarned\": 92,\n    \"pointsPossible\": 100,\n    \"feedback\": \"Excellent work on the project implementation\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}/grades",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}", "grades"]
+            },
+            "description": "Update grades for multiple students in the course"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}/analytics",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}", "analytics"]
+            },
+            "description": "Get analytics and statistics for the course"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Sections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}/sections?term=FALL2024",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}", "sections"],
+              "query": [
+                {
+                  "key": "term",
+                  "value": "FALL2024"
+                }
+              ]
+            },
+            "description": "Get all sections for a course"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Prerequisites",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}/prerequisites",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}", "prerequisites"]
+            },
+            "description": "Get prerequisite courses for this course"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Waitlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}/waitlist",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}", "waitlist"]
+            },
+            "description": "Get waitlist for the course"
+          },
+          "response": []
+        },
+        {
+          "name": "Process Waitlist",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/courses/{{course_id}}/waitlist/process?slots=3",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "courses", "{{course_id}}", "waitlist", "process"],
+              "query": [
+                {
+                  "key": "slots",
+                  "value": "3"
+                }
+              ]
+            },
+            "description": "Process waitlist and enroll eligible students"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "⚙️ System Administration",
+      "description": "System configuration, monitoring, and maintenance",
+      "item": [
+        {
+          "name": "Get System Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "health"]
+            },
+            "description": "Get comprehensive system health status"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/config?category=SESSION_MANAGEMENT",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "config"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "SESSION_MANAGEMENT"
+                }
+              ]
+            },
+            "description": "Get system configuration settings"
+          },
+          "response": []
+        },
+        {
+          "name": "Update System Configuration",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"max_concurrent_sessions\",\n  \"value\": \"1500\",\n  \"category\": \"SESSION_MANAGEMENT\",\n  \"description\": \"Maximum concurrent user sessions\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/config",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "config"]
+            },
+            "description": "Update system configuration settings"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/metrics?timeRange=1h&metrics=cpu,memory,disk,network",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "metrics"],
+              "query": [
+                {
+                  "key": "timeRange",
+                  "value": "1h"
+                },
+                {
+                  "key": "metrics",
+                  "value": "cpu,memory,disk,network"
+                }
+              ]
+            },
+            "description": "Get system performance metrics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/audit-logs?page=0&size=50&action=LOGIN&startDate=2024-09-01",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "audit-logs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "50"
+                },
+                {
+                  "key": "action",
+                  "value": "LOGIN"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-09-01"
+                }
+              ]
+            },
+            "description": "Get system audit logs with filtering"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "sessions"]
+            },
+            "description": "Get list of active user sessions"
+          },
+          "response": []
+        },
+        {
+          "name": "Terminate Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/sessions/{{session_id}}?reason=Security concern",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "sessions", "{{session_id}}"],
+              "query": [
+                {
+                  "key": "reason",
+                  "value": "Security concern"
+                }
+              ]
+            },
+            "description": "Terminate a user session"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Maintenance Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/maintenance",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "maintenance"]
+            },
+            "description": "Get system maintenance status"
+          },
+          "response": []
+        },
+        {
+          "name": "Schedule Maintenance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Database Maintenance\",\n  \"description\": \"Scheduled database optimization and cleanup\",\n  \"scheduledStart\": \"2024-09-25T02:00:00Z\",\n  \"scheduledEnd\": \"2024-09-25T04:00:00Z\",\n  \"maintenanceType\": \"DATABASE\",\n  \"impactLevel\": \"HIGH\",\n  \"notificationSent\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/maintenance",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "maintenance"]
+            },
+            "description": "Schedule system maintenance window"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Database Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/database/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "database", "stats"]
+            },
+            "description": "Get database performance statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Run Database Maintenance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operations\": [\"ANALYZE\", \"VACUUM\", \"REINDEX\"],\n  \"tables\": [\"students\", \"enrollments\", \"alerts\"],\n  \"maintenanceWindow\": \"02:00-04:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/database/maintenance",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "database", "maintenance"]
+            },
+            "description": "Execute database maintenance operations"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Cache Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/cache/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "cache", "stats"]
+            },
+            "description": "Get cache performance statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Clear Cache",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/cache/student_data",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "cache", "student_data"]
+            },
+            "description": "Clear specified cache or all caches"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/alerts?page=0&size=20&severity=HIGH",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "alerts"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "severity",
+                  "value": "HIGH"
+                }
+              ]
+            },
+            "description": "Get system alerts and notifications"
+          },
+          "response": []
+        },
+        {
+          "name": "Acknowledge System Alert",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Issue acknowledged, investigating root cause\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/alerts/1/acknowledge",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "alerts", "1", "acknowledge"]
+            },
+            "description": "Acknowledge a system alert"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Integration Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/integrations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "integrations"]
+            },
+            "description": "Get external system integration status"
+          },
+          "response": []
+        },
+        {
+          "name": "Test Integration",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/integrations/peoplesoft/test",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "integrations", "peoplesoft", "test"]
+            },
+            "description": "Test connection to external system"
+          },
+          "response": []
+        },
+        {
+          "name": "Export System Logs",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"format\": \"json\",\n  \"timeRange\": \"24h\",\n  \"logLevel\": \"ERROR\",\n  \"includeStackTraces\": true,\n  \"compress\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/system/logs/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "system", "logs", "export"]
+            },
+            "description": "Export system logs for analysis"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script for PAWS360 Admin API",
+          "// Automatically refresh token if close to expiration",
+          "",
+          "const jwtToken = pm.collectionVariables.get('jwt_token');",
+          "if (jwtToken) {",
+          "    try {",
+          "        const payload = JSON.parse(atob(jwtToken.split('.')[1]));",
+          "        const expirationTime = payload.exp * 1000; // Convert to milliseconds",
+          "        const currentTime = Date.now();",
+          "        const timeUntilExpiry = expirationTime - currentTime;",
+          "        ",
+          "        // Refresh if token expires within 5 minutes",
+          "        if (timeUntilExpiry < 300000) {",
+          "            console.log('🔄 Token expiring soon, refreshing...');",
+          "            // Note: This would trigger a token refresh request",
+          "            // For now, just log the need to refresh",
+          "        }",
+          "    } catch (e) {",
+          "        console.log('⚠️ Could not parse JWT token');",
+          "    }",
+          "}",
+          "",
+          "// Set common headers",
+          "pm.request.headers.add({",
+          "    key: 'X-API-Version',",
+          "    value: 'v1'",
+          "});",
+          "",
+          "pm.request.headers.add({",
+          "    key: 'X-Client-Type',",
+          "    value: 'postman-collection'",
+          "});"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script for PAWS360 Admin API",
+          "// Validate responses and set environment variables",
+          "",
+          "// Check for successful response",
+          "pm.test('Status code is not 5xx', function () {",
+          "    pm.response.to.not.be.serverError;",
+          "});",
+          "",
+          "// Check response time",
+          "pm.test('Response time is less than 5000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "// Validate JSON response structure",
+          "if (pm.response.headers.get('Content-Type') && pm.response.headers.get('Content-Type').includes('application/json')) {",
+          "    pm.test('Response is valid JSON', function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData).to.be.an('object');",
+          "    });",
+          "}",
+          "",
+          "// Check for authentication errors",
+          "pm.test('Not unauthorized', function () {",
+          "    pm.response.to.not.have.status(401);",
+          "});",
+          "",
+          "pm.test('Not forbidden', function () {",
+          "    pm.response.to.not.have.status(403);",
+          "});",
+          "",
+          "// Log response for debugging",
+          "console.log('📊 Response Status:', pm.response.code);",
+          "console.log('⏱️ Response Time:', pm.response.responseTime + 'ms');",
+          "",
+          "// Extract and store useful data for subsequent requests",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "    const response = pm.response.json();",
+          "    ",
+          "    // Store IDs if present",
+          "    if (response.id) {",
+          "        pm.collectionVariables.set('last_created_id', response.id);",
+          "        console.log('💾 Stored ID:', response.id);",
+          "    }",
+          "    ",
+          "    // Store pagination info",
+          "    if (response.pageable) {",
+          "        pm.collectionVariables.set('current_page', response.pageable.pageNumber || 0);",
+          "        pm.collectionVariables.set('total_pages', response.pageable.totalPages || 1);",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ]
+}
