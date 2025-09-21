@@ -1,4 +1,35 @@
 # PAWS360 🐾
+
+## 🚀 **GROUP 7 QUICKSTART** (Get Started in 2 Minutes!)
+
+**Welcome Group 7!** Here's the fastest way to get PAWS360 running locally:
+
+### **Step 1: Setup Everything**
+```bash
+cd infrastructure/ansible
+./dev-helper.sh deploy-local-dev
+```
+**⏱️ Takes: 30 seconds** ✨
+
+### **Step 2: Start Services**
+```bash
+./scripts/setup/paws360-services.sh start
+```
+
+### **Step 3: Open in Browser**
+- 🌐 **Main App**: http://localhost:8080
+- 📊 **Admin Dashboard**: http://localhost:3000
+- 🤖 **JIRA Tools**: http://localhost:3001
+
+### **Step 4: Run Tests** (Verify Everything Works)
+```bash
+./scripts/testing/exhaustive-test-suite.sh
+```
+
+**🎯 That's it!** You're ready to develop. See below for detailed docs.
+
+---
+
 ## 🎯 **WHAT IS PAWS360?**
 
 **PAWS360** = Student Success Platform for Universities
