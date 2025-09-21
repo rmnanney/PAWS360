@@ -1,7 +1,8 @@
 package com.uwm.paws360.Entity;
 
-import com.uwm.paws360.Entity.Domains.Country_Code;
-import com.uwm.paws360.Entity.Domains.Status;
+import com.uwm.paws360.Entity.Domains.User.Country_Code;
+import com.uwm.paws360.Entity.Domains.User.Role;
+import com.uwm.paws360.Entity.Domains.User.Status;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -9,30 +10,44 @@ import java.time.format.DateTimeFormatter;
 
 @Entity
 public class Users {
+
     @Id
     @Column(name = "user_id", unique = true, updatable = false)
     @GeneratedValue
     private int id;
+
     @Column(nullable = false, length = 20)
     private String firstname;
+
     @Column(nullable = false, length = 30)
     private String lastname;
+
     @Column(nullable = false, updatable = false)
     private LocalDate dob;
+
     @Column(nullable = false, length = 50, unique = true)
     private String email;
+
     @Column
     @Enumerated(EnumType.STRING)
     private Country_Code countryCode;
+
     @Column(length = 10)
     private String phone;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Role roles;
+
     @Column(nullable = false, updatable = false)
     private final LocalDate date_created = LocalDate.parse(LocalDate.now().format(DateTimeFormatter.ISO_DATE));
 
-    public Users(String firstname, String lastname, LocalDate dob, String email, Country_Code countryCode, String phone, Status status) {
+    public Users(String firstname, String lastname, LocalDate dob, String email, Country_Code countryCode,
+                 String phone, Status status, Role roles) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.dob = dob;
@@ -40,6 +55,7 @@ public class Users {
         this.countryCode = countryCode;
         this.phone = phone;
         this.status = status;
+        this.roles = roles;
     }
 
     public Users() {}
@@ -82,7 +98,11 @@ public class Users {
         return date_created;
     }
 
-/*------------------------------------------------------- Setters -------------------------------------------------------*/
+    public Role getRoles() {
+        return roles;
+    }
+
+    /*------------------------------------------------------- Setters -------------------------------------------------------*/
 
     public void setLastname(String lastname) {
         this.lastname = lastname;
@@ -110,5 +130,9 @@ public class Users {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public void setRoles(Role roles) {
+        this.roles = roles;
     }
 }

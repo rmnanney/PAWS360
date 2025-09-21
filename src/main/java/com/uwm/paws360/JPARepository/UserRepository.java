@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<Users, Integer> {
     List<Users> findAllByFirstnameLike(String firstname);
+    Users findUsersByEmailLikeIgnoreCase(String email);
 }
