@@ -1,0 +1,78 @@
+---
+# SSL Certificate Setup Tasks for AdminLTE UI
+# Configures SSL certificates for secure HTTPS access
+
+- name: Create SSL certificate directory
+  file:
+    path: /etc/ssl/adminlte
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Generate self-signed SSL certificate (development only)
+  openssl_certificate:
+    path: /etc/ssl/adminlte/adminlte.crt
+    privatekey_path: /etc/ssl/adminlte/adminlte.key
+    csr_path: /etc/ssl/adminlte/adminlte.csr
+    provider: selfsigned
+    force: false
+    return_content: false
+  when: ssl_provider | default('selfsigned') == 'selfsigned'
+
+- name: Generate SSL private key
+  openssl_privatekey:
+    path: /etc/ssl/adminlte/adminlte.key
+    size: 2048
+    type: RSA
+    force: false
+  when: ssl_provider | default('selfsigned') == 'selfsigned'
+
+- name: Generate SSL certificate signing request
+  openssl_csr:
+    path: /etc/ssl/adminlte/adminlte.csr
+    privatekey_path: /etc/ssl/adminlte/adminlte.key
+    common_name: "{{ ansible_fqdn | default('adminlte.local') }}"
+    organization_name: "{{ ssl_org | default('University of Wisconsin') }}"
+    organizational_unit_name: "{{ ssl_ou | default('IT Services') }}"
+    country_name: "{{ ssl_country | default('US') }}"
+    state_or_province_name: "{{ ssl_state | default('WI') }}"
+    locality_name: "{{ ssl_locality | default('Milwaukee') }}"
+    force: false
+  when: ssl_provider | default('selfsigned') == 'selfsigned'
+
+- name: Update nginx configuration for SSL
+  template:
+    src: adminlte-nginx-ssl.conf.j2
+    dest: /etc/nginx/sites-available/adminlte-ui
+    backup: true
+  notify: restart nginx
+  when: ssl_provider | default('selfsigned') == 'selfsigned'
+
+- name: Enable SSL site configuration
+  file:
+    src: /etc/nginx/sites-available/adminlte-ui
+    dest: /etc/nginx/sites-enabled/adminlte-ui
+    state: link
+  notify: restart nginx
+
+- name: Redirect HTTP to HTTPS
+  template:
+    src: adminlte-nginx-redirect.conf.j2
+    dest: /etc/nginx/sites-available/adminlte-redirect
+    backup: true
+  notify: restart nginx
+
+- name: Enable HTTP to HTTPS redirect
+  file:
+    src: /etc/nginx/sites-available/adminlte-redirect
+    dest: /etc/nginx/sites-enabled/adminlte-redirect
+    state: link
+  notify: restart nginx
+
+- name: Disable non-SSL site
+  file:
+    path: /etc/nginx/sites-enabled/adminlte-ui-nossl
+    state: absent
+  notify: restart nginx
+  when: "'adminlte-ui-nossl' in file('/etc/nginx/sites-enabled/')"

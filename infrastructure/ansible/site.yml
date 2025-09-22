@@ -1,0 +1,181 @@
+---
+# Main Ansible Playbook for AdminLTE Deployment
+# Deploys complete AdminLTE v4.0.0-rc4 admin dashboard with microservices
+# Supports dev/staging/production environments with proper RBAC and monitoring
+
+- name: Deploy AdminLTE Infrastructure
+  hosts: all
+  become: true
+  gather_facts: true
+  
+  pre_tasks:
+    - name: Update system packages
+      package:
+        name: '*'
+        state: latest
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+    
+    - name: Create adminlte system user
+      user:
+        name: "{{ adminlte_user | default('adminlte') }}"
+        system: true
+        shell: /bin/bash
+        home: "/opt/adminlte"
+        create_home: true
+    
+    - name: Create application directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ adminlte_user | default('adminlte') }}"
+        group: "{{ adminlte_user | default('adminlte') }}"
+        mode: '0755'
+      loop:
+        - /opt/adminlte
+        - /opt/adminlte/config
+        - /opt/adminlte/logs
+        - /opt/adminlte/data
+        - /var/log/adminlte
+
+  roles:
+    - geerlingguy.docker
+    - geerlingguy.nginx
+
+- name: Deploy Database Layer  
+  hosts: databases
+  become: true
+  serial: 1
+  
+  roles:
+    - geerlingguy.postgresql
+    - geerlingguy.redis
+  
+  post_tasks:
+    - name: Wait for database to be ready
+      wait_for:
+        port: 5432
+        host: "{{ ansible_default_ipv4.address }}"
+        delay: 10
+        timeout: 60
+
+- name: Deploy AdminLTE Services
+  hosts: webservers
+  become: true
+  strategy: linear
+  serial: "{{ rolling_update_batch | default('25%') }}"
+  
+  roles:
+    - auth-service
+    - data-service  
+    - analytics-service
+    - adminlte-ui
+  
+  post_tasks:
+    - name: Verify service health
+      uri:
+        url: "http://{{ ansible_default_ipv4.address }}:{{ item }}/actuator/health"
+        method: GET
+        status_code: 200
+      loop:
+        - 8081  # auth-service
+        - 8082  # data-service
+        - 8083  # analytics-service
+      retries: 5
+      delay: 10
+      when: inventory_hostname in groups['webservers']
+
+- name: Configure Load Balancing
+  hosts: loadbalancers
+  become: true
+  
+  roles:
+    - geerlingguy.nginx
+  
+  tasks:
+    - name: Configure nginx upstream
+      template:
+        src: nginx-upstream.conf.j2
+        dest: /etc/nginx/conf.d/adminlte-upstream.conf
+        backup: true
+      notify: restart nginx
+    
+    - name: Configure SSL certificates
+      import_role:
+        name: geerlingguy.certbot
+      when: use_ssl | default(false)
+
+- name: Deploy Monitoring Stack
+  hosts: monitoring
+  become: true
+  
+  # TODO: Replace with compatible monitoring role
+  # roles:
+  #   - cloudalchemy.prometheus
+  
+  tasks:
+    - name: Configure Grafana dashboards
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /opt/grafana/dashboards/
+      loop:
+        - files/grafana-adminlte-dashboard.json
+        - files/grafana-system-dashboard.json
+      notify: restart grafana
+
+- name: Final Configuration and Validation
+  hosts: all
+  become: true
+  
+  tasks:
+    - name: Configure firewall rules
+      firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+      loop:
+        - "80"    # HTTP
+        - "443"   # HTTPS
+        - "8080"  # API Gateway
+      when: ansible_os_family == "RedHat"
+    
+    - name: Configure UFW rules
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - "80"
+        - "443" 
+        - "8080"
+      when: ansible_os_family == "Debian"
+    
+    - name: Start and enable services
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - docker
+        - nginx
+        - postgresql
+        - redis
+    
+    - name: Verify deployment
+      uri:
+        url: "http://{{ hostvars[groups['webservers'][0]]['ansible_default_ipv4']['address'] }}/admin"
+        method: GET
+        status_code: 200
+      delegate_to: localhost
+      run_once: true
+  
+  handlers:
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
+    
+    - name: restart grafana
+      systemd:
+        name: grafana-server
+        state: restarted

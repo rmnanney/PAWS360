@@ -1,0 +1,106 @@
+---
+# Auth Service Role - Main tasks  
+# Deploys SAML2 authentication service with RBAC
+
+- name: Create auth service directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0755'
+  loop:
+    - /opt/adminlte/auth-service
+    - /opt/adminlte/auth-service/config
+    - /opt/adminlte/auth-service/keystore
+    - /var/log/adminlte/auth-service
+
+- name: Install Java 21 JDK
+  package:
+    name: "{{ java_package }}"
+    state: present
+  vars:
+    java_package: "{% if ansible_os_family == 'RedHat' %}java-21-openjdk-devel{% else %}openjdk-21-jdk{% endif %}"
+
+- name: Download auth service JAR
+  get_url:
+    url: "{{ auth_service_jar_url }}"
+    dest: "/opt/adminlte/auth-service/auth-service.jar"
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0755'
+  notify: restart auth-service
+
+- name: Configure auth service application.yml
+  template:
+    src: auth-application.yml.j2
+    dest: /opt/adminlte/auth-service/config/application.yml
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0600'
+  notify: restart auth-service
+
+- name: Configure SAML keystore
+  copy:
+    src: "{{ saml_keystore_file }}"
+    dest: /opt/adminlte/auth-service/keystore/saml-keystore.jks
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0600'
+  when: saml_keystore_file is defined
+  notify: restart auth-service
+
+- name: Create auth service systemd unit
+  template:
+    src: auth-service.service.j2
+    dest: /etc/systemd/system/adminlte-auth-service.service
+    mode: '0644'
+  notify:
+    - reload systemd
+    - restart auth-service
+
+- name: Configure auth service environment
+  template:
+    src: auth-service.env.j2
+    dest: /opt/adminlte/auth-service/.env
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0600'
+  notify: restart auth-service
+
+- name: Start and enable auth service
+  systemd:
+    name: adminlte-auth-service
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Configure auth service firewall
+  firewalld:
+    port: "{{ auth_service_port | default('8081') }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+  when: ansible_os_family == "RedHat"
+
+- name: Configure UFW for auth service
+  ufw:
+    rule: allow
+    port: "{{ auth_service_port | default('8081') }}"
+    proto: tcp
+  when: ansible_os_family == "Debian"
+
+- name: Verify auth service health
+  uri:
+    url: "http://localhost:{{ auth_service_port | default('8081') }}/actuator/health"
+    method: GET
+    status_code: 200
+  retries: 5
+  delay: 10
+  register: auth_health_check
+
+- name: Configure auth service log rotation
+  template:
+    src: auth-service-logrotate.j2
+    dest: /etc/logrotate.d/adminlte-auth-service
+    mode: '0644'

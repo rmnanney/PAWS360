@@ -1,0 +1,61 @@
+# Staging Environment Inventory  
+# Multi-node deployment for testing and QA
+
+[all:vars]
+# Environment settings
+env=staging
+deploy_env=staging
+adminlte_user=adminlte
+adminlte_version=1.0.0
+
+# Network configuration
+domain_name=adminlte-staging.university.edu
+use_ssl=true
+api_port=8080
+ui_port=80
+
+# Load balancer configuration
+nginx_worker_processes=auto
+nginx_worker_connections=1024
+client_max_body_size=10M
+
+# Database settings (HA setup)
+postgres_host=db-staging-01.university.edu
+postgres_port=5432
+postgres_db=adminlte_staging
+postgres_user=adminlte
+postgres_max_connections=100
+postgres_shared_buffers=256MB
+postgres_effective_cache_size=1GB
+
+# Redis cluster settings
+redis_cluster_enabled=true
+redis_maxmemory=1gb
+redis_maxmemory_policy=allkeys-lru
+
+# Service configuration
+java_opts="-Xmx1g -Xms512m -XX:+UseZGC"
+spring_profiles=staging
+log_level=INFO
+rolling_update_batch=50%
+
+# Monitoring
+prometheus_enabled=true
+grafana_enabled=true
+metrics_retention=30d
+
+[webservers]
+web-staging-01.university.edu ansible_host=10.0.1.10
+web-staging-02.university.edu ansible_host=10.0.1.11
+
+[databases]
+db-staging-01.university.edu ansible_host=10.0.2.10
+
+[loadbalancers] 
+lb-staging-01.university.edu ansible_host=10.0.0.10
+
+[monitoring]
+mon-staging-01.university.edu ansible_host=10.0.3.10
+
+[redis]
+redis-staging-01.university.edu ansible_host=10.0.2.20

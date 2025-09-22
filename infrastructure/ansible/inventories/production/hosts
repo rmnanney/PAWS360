@@ -1,0 +1,110 @@
+# Production Environment Inventory
+# High-availability multi-node deployment
+
+[all:vars]
+# Environment settings
+env=production
+deploy_env=prod
+adminlte_user=adminlte
+adminlte_version=1.0.0
+
+# Network configuration
+domain_name=admin.paws360.university.edu
+use_ssl=true
+api_port=8080
+ui_port=80
+
+# High availability configuration
+ha_enabled=true
+keepalived_enabled=true
+backup_enabled=true
+
+# Load balancer configuration (optimized for production)
+nginx_worker_processes=auto
+nginx_worker_connections=4096
+client_max_body_size=50M
+nginx_rate_limit=100r/s
+
+# Database settings (HA with read replicas)
+postgres_host=db-prod-cluster.university.edu
+postgres_port=5432
+postgres_db=adminlte_production
+postgres_user=adminlte
+postgres_max_connections=200
+postgres_shared_buffers=2GB
+postgres_effective_cache_size=6GB
+postgres_maintenance_work_mem=256MB
+postgres_wal_buffers=16MB
+postgres_checkpoint_completion_target=0.9
+
+# Read replica configuration
+postgres_read_replicas=true
+postgres_replica_hosts=db-prod-read-01.university.edu,db-prod-read-02.university.edu
+
+# Redis cluster (production HA)
+redis_cluster_enabled=true
+redis_cluster_nodes=6
+redis_maxmemory=4gb
+redis_maxmemory_policy=allkeys-lru
+redis_save_enabled=true
+redis_appendonly=yes
+
+# Service configuration (production tuned)
+java_opts="-Xmx2g -Xms1g -XX:+UseZGC -XX:+UnlockExperimentalVMOptions --enable-preview"
+spring_profiles=production
+log_level=WARN
+rolling_update_batch=25%
+
+# Security configuration
+security_hardening=true
+fail2ban_enabled=true
+audit_logging=true
+
+# Monitoring (full observability stack)
+prometheus_enabled=true
+grafana_enabled=true  
+alertmanager_enabled=true
+jaeger_enabled=true
+metrics_retention=1y
+logs_retention=6m
+
+# Backup configuration
+backup_enabled=true
+backup_schedule="0 2 * * *"  # Daily at 2 AM
+backup_retention=30
+
+# Performance tuning
+connection_pool_size=50
+cache_ttl=3600
+session_timeout=7200
+
+[webservers]
+web-prod-01.university.edu ansible_host=10.1.1.10
+web-prod-02.university.edu ansible_host=10.1.1.11
+web-prod-03.university.edu ansible_host=10.1.1.12
+web-prod-04.university.edu ansible_host=10.1.1.13
+web-prod-05.university.edu ansible_host=10.1.1.14
+
+[databases]
+db-prod-01.university.edu ansible_host=10.1.2.10 role=master
+db-prod-02.university.edu ansible_host=10.1.2.11 role=replica
+db-prod-read-01.university.edu ansible_host=10.1.2.20 role=read_replica
+db-prod-read-02.university.edu ansible_host=10.1.2.21 role=read_replica
+
+[loadbalancers]
+lb-prod-01.university.edu ansible_host=10.1.0.10 priority=100
+lb-prod-02.university.edu ansible_host=10.1.0.11 priority=90
+
+[monitoring]
+mon-prod-01.university.edu ansible_host=10.1.3.10
+
+[redis]
+redis-prod-01.university.edu ansible_host=10.1.2.30 redis_role=master
+redis-prod-02.university.edu ansible_host=10.1.2.31 redis_role=slave
+redis-prod-03.university.edu ansible_host=10.1.2.32 redis_role=master
+redis-prod-04.university.edu ansible_host=10.1.2.33 redis_role=slave
+redis-prod-05.university.edu ansible_host=10.1.2.34 redis_role=master
+redis-prod-06.university.edu ansible_host=10.1.2.35 redis_role=slave
+
+[backup]
+backup-prod-01.university.edu ansible_host=10.1.4.10

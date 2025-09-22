@@ -1,0 +1,12 @@
+---
+# Data Service Handlers
+# Systemd service management handlers
+
+- name: reload systemd
+  systemd:
+    daemon_reload: true
+
+- name: restart data-service
+  systemd:
+    name: adminlte-data-service
+    state: restarted

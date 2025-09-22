@@ -1,0 +1,110 @@
+---
+# Data Service Role - Main tasks
+# Deploys student/course data management service
+
+- name: Create data service directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0755'
+  loop:
+    - /opt/adminlte/data-service
+    - /opt/adminlte/data-service/config
+    - /var/log/adminlte/data-service
+
+- name: Download data service JAR
+  get_url:
+    url: "{{ data_service_jar_url }}"
+    dest: "/opt/adminlte/data-service/data-service.jar"
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0755'
+  notify: restart data-service
+
+- name: Configure data service application.yml
+  template:
+    src: data-application.yml.j2
+    dest: /opt/adminlte/data-service/config/application.yml
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0600'
+  notify: restart data-service
+
+- name: Create data service systemd unit
+  template:
+    src: data-service.service.j2
+    dest: /etc/systemd/system/adminlte-data-service.service
+    mode: '0644'
+  notify:
+    - reload systemd
+    - restart data-service
+
+- name: Configure data service environment
+  template:
+    src: data-service.env.j2
+    dest: /opt/adminlte/data-service/.env
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0600'
+  notify: restart data-service
+
+- name: Run database migrations
+  shell: |
+    cd /opt/adminlte/data-service
+    java -jar data-service.jar --flyway.migrate=true
+  become_user: "{{ adminlte_user }}"
+  when: run_migrations | default(true)
+  register: migration_result
+
+- name: Display migration result
+  debug:
+    var: migration_result.stdout_lines
+  when: migration_result.changed
+
+- name: Start and enable data service
+  systemd:
+    name: adminlte-data-service
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Configure data service firewall
+  firewalld:
+    port: "{{ data_service_port | default('8082') }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+  when: ansible_os_family == "RedHat"
+
+- name: Configure UFW for data service
+  ufw:
+    rule: allow
+    port: "{{ data_service_port | default('8082') }}"
+    proto: tcp
+  when: ansible_os_family == "Debian"
+
+- name: Verify data service health
+  uri:
+    url: "http://localhost:{{ data_service_port | default('8082') }}/actuator/health"
+    method: GET
+    status_code: 200
+  retries: 5
+  delay: 10
+  register: data_health_check
+
+- name: Configure connection pooling
+  template:
+    src: hikari.properties.j2
+    dest: /opt/adminlte/data-service/config/hikari.properties
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0600'
+  notify: restart data-service
+
+- name: Configure data service log rotation
+  template:
+    src: data-service-logrotate.j2
+    dest: /etc/logrotate.d/adminlte-data-service
+    mode: '0644'

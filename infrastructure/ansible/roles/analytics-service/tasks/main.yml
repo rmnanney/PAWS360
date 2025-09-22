@@ -1,0 +1,138 @@
+---
+# Analytics Service Role - Main tasks
+# Deploys Chart.js analytics and reporting service
+
+- name: Create analytics service directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0755'
+  loop:
+    - /opt/adminlte/analytics-service
+    - /opt/adminlte/analytics-service/config
+    - /opt/adminlte/analytics-service/reports
+    - /var/log/adminlte/analytics-service
+
+- name: Download analytics service JAR
+  get_url:
+    url: "{{ analytics_service_jar_url }}"
+    dest: "/opt/adminlte/analytics-service/analytics-service.jar"
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0755'
+  notify: restart analytics-service
+
+- name: Configure analytics service application.yml
+  template:
+    src: analytics-application.yml.j2
+    dest: /opt/adminlte/analytics-service/config/application.yml
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0600'
+  notify: restart analytics-service
+
+- name: Create analytics service systemd unit
+  template:
+    src: analytics-service.service.j2
+    dest: /etc/systemd/system/adminlte-analytics-service.service
+    mode: '0644'
+  notify:
+    - reload systemd
+    - restart analytics-service
+
+- name: Configure analytics service environment
+  template:
+    src: analytics-service.env.j2
+    dest: /opt/adminlte/analytics-service/.env
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0600'
+  notify: restart analytics-service
+
+- name: Install report generation dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - wkhtmltopdf  # For PDF report generation
+    - imagemagick  # For chart image processing
+
+- name: Configure analytics caching
+  template:
+    src: analytics-cache.conf.j2
+    dest: /opt/adminlte/analytics-service/config/cache.conf
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0644'
+  notify: restart analytics-service
+
+- name: Create analytics reports directory structure
+  file:
+    path: "/opt/adminlte/analytics-service/reports/{{ item }}"
+    state: directory
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0755'
+  loop:
+    - enrollment
+    - performance
+    - financial-aid
+    - usage
+    - scheduled
+    - exports
+
+- name: Start and enable analytics service
+  systemd:
+    name: adminlte-analytics-service
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Configure analytics service firewall
+  firewalld:
+    port: "{{ analytics_service_port | default('8083') }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+  when: ansible_os_family == "RedHat"
+
+- name: Configure UFW for analytics service
+  ufw:
+    rule: allow
+    port: "{{ analytics_service_port | default('8083') }}"
+    proto: tcp
+  when: ansible_os_family == "Debian"
+
+- name: Verify analytics service health
+  uri:
+    url: "http://localhost:{{ analytics_service_port | default('8083') }}/actuator/health"
+    method: GET
+    status_code: 200
+  retries: 5
+  delay: 10
+  register: analytics_health_check
+
+- name: Configure analytics service cron jobs
+  cron:
+    name: "{{ item.name }}"
+    job: "{{ item.job }}"
+    minute: "{{ item.minute }}"
+    hour: "{{ item.hour }}"
+    user: "{{ adminlte_user }}"
+  loop:
+    - name: "Daily analytics cache refresh"
+      job: "curl -X POST http://localhost:{{ analytics_service_port | default('8083') }}/api/analytics/cache/refresh"
+      minute: "0"
+      hour: "2"
+    - name: "Weekly report generation"
+      job: "curl -X POST http://localhost:{{ analytics_service_port | default('8083') }}/api/analytics/reports/weekly"
+      minute: "0" 
+      hour: "6"
+
+- name: Configure analytics service log rotation
+  template:
+    src: analytics-service-logrotate.j2
+    dest: /etc/logrotate.d/adminlte-analytics-service
+    mode: '0644'
