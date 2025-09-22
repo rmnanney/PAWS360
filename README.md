@@ -1,172 +1,60 @@
-# PAWS360 🐾
+# PAWS360 — quickstart (Group 7)
 
-## 🚀 **GROUP 7### **Step 3: Open in Browser**
-- 📊 **[AdminLTE Dashboard](http://localhost:8080)** - Main admin interface
-- 🔐 **[UWM Auth Service](http://localhost:3000)** - Authentication service (Docker)
-- 🔧 **[Mock Auth API](http://localhost:8081)** - Development auth API
-- 📊 **[Mock Data API](http://localhost:8082)** - Student data API
-- 📈 **[Mock Analytics API](http://localhost:8083)** - Performance metrics API
+This README section contains the minimal, copy/paste steps to get PAWS360 running locally with the Student Frontend included.
 
-### **Step 3b: Optional - Run Student Frontend**
+## Quick start — 3 commands
+
+1) Prepare the environment (Ansible helper)
+
 ```bash
-# Switch to student frontend branch and run
+cd infrastructure/ansible
+./dev-helper.sh deploy-local-dev
+```
+
+2) Start services via Docker Compose (includes the Student Frontend)
+
+```bash
+cd infrastructure/docker
+docker compose up -d
+```
+
+3) Open these URLs in your browser
+
+- AdminLTE Dashboard: http://localhost:8080
+- Student Frontend (Next.js): http://localhost:9002
+- Auth service (mock/uwm): http://localhost:8084 or http://localhost:3000 (if configured)
+- Mock Auth API: http://localhost:8081
+- Mock Data API: http://localhost:8082
+- Mock Analytics API: http://localhost:8083
+
+If you prefer running the Student Frontend locally instead of via Docker Compose, checkout the feature branch and run it from `./frontend`:
+
+```bash
+# from repo root
 git checkout feat/SCRUM-7-create-login-page
+cd frontend
 npm install
-npm run dev
+npm run dev -p 9002
+# then visit: http://localhost:9002
+```
 
-# Then visit: http://localhost:9002 (Student login interface)
-```STAR### **🌐 Live Services** (Click to Access)
-- **[📊 AdminLTE Dashboard](http://localhost:8080)** - Main admin interface (Bootstrap/jQuery)
-- **[🔐 UWM Auth Service](http://localhost:3000)** - Production authentication service (Docker)
-- **[🔧 Mock Auth API](http://localhost:8081)** - Development authentication API  
-- **[📈 Mock Data API](http://localhost:8082)** - Student data management API
-- **[📊 Mock Analytics API](http://localhost:8083)** - Performance metrics & reporting API
+## Health checks (quick)
 
-### **🚧 In Development** (On Feature Branches)
-- **🎓 Student Frontend** - Next.js application with login pages (see `feat/SCRUM-7-create-login-page` branch)
-  - Port: 9002 when running
-  - Tech: Next.js 15, React 18, Tailwind CSS, TypeScriptet Started in 2 Minutes!)
-
-**Welcome Group 7!** Here's the fastest way to get PAWS360 running locally:
-
-### **Step 1: Setup Everything**
 ```bash
-cd infrastructure/ansible
-./dev-helper.sh deploy-local-dev
-```
-**⏱️ Takes: 30 seconds** ✨
-
-### **Step 2: Start Services**
-```bash
-cd ../../
-./scripts/setup/paws360-services.sh start
+curl http://localhost:8080/
+curl http://localhost:9002/_next/static/ || true
+curl http://localhost:8081/health
+curl http://localhost:8082/actuator/health
+curl http://localhost:8083/actuator/health
 ```
 
-### **Step 3: Open in Browser**
-- 📊 **[AdminLTE Dashboard](http://localhost:8080)** - Main admin interface
-- � **[UWM Auth Service](http://localhost:3000)** - Authentication service (Docker)
-- 🔐 **[Mock Auth API](http://localhost:8081)** - Development auth API
-- 📊 **[Mock Data API](http://localhost:8082)** - Student data API
-- 📈 **[Mock Analytics API](http://localhost:8083)** - Performance metrics API
+## Notes and recommendations
+- The compose service `student-frontend` mounts `./frontend` from the repo root and exposes port 9002. Ensure the `frontend/` folder is present (this repo already contains it).
+- The current compose dev flow runs the Next dev server inside the container. For faster, more reproducible startup we can add a Dockerfile in `frontend/` that builds a production image and serves static output.
+- If you see a Docker permission/daemon error, run `docker info` and ensure your user can access the Docker daemon or use `sudo`.
 
-### **Step 4: Run Tests** (Verify Everything Works)
-```bash
-./scripts/testing/exhaustive-test-suite.sh
-```
-
-**🎯 That's it!** You're ready to develop. See below for detailed docs.
-
----
-
-## 🚀 **GROUP 7 PLATFORM STATUS** (All Systems Online!)
-
-**✅ Platform Successfully Running:** All core services operational
-
-### **🌐 Live Services** (Click to Access)
-- **[📊 Student Portal](http://localhost:8080)** - Main application interface
-- **[⚙️ AdminLTE Dashboard](http://localhost:3000)** - Administrative controls
-- **[� Auth Service](http://localhost:8081)** - User authentication API  
-- **[📈 Data Service](http://localhost:8082)** - Student data management
-- **[📊 Analytics Service](http://localhost:8083)** - Performance metrics & reporting
-
-### **🗄️ Database & Backend**
-- **PostgreSQL Database** - Student records and course data
-- **Redis Cache** - Session management and performance
-- **Docker Infrastructure** - Containerized deployment
-- **[📋 Postman API Collection](./PAWS360_Admin_API.postman_collection.json)** - Complete API testing
-
-### **💡 Quick Health Check**
-```bash
-# Verify all services respond
-curl http://localhost:8080/                       # AdminLTE Dashboard
-curl http://localhost:3000/health                 # UWM Auth Service  
-curl http://localhost:8081/health                 # Mock Auth API
-curl http://localhost:8082/health                 # Mock Data API
-curl http://localhost:8083/health                 # Mock Analytics API
-```
-
----
-
-## 🏗️ **HOW IT WORKS** (Simple View)
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   STUDENT       │    │   ADVISOR       │    │   ADMIN         │
-│   • Check grades │    │   • View alerts │    │   • Manage      │
-│   • See schedule │    │   • Help students│    │     system     │
-│   • Get help     │    │   • Track progress│    │   • Run reports│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │   PAWS360       │
-                    │   PLATFORM      │
-                    └─────────────────┘
-```
-
----
-
-## 🛠️ **GROUP 7 TECH STACK** (What We Built)
-
-### **🌐 Frontend Applications** (What Students & Staff See)
-```
-✅ CURRENTLY RUNNING
-├── 📊 AdminLTE Dashboard     → Main admin interface (port 8080)
-└── 🔐 UWM Auth Interface     → Login system (port 3000, Docker)
-
-🚧 IN DEVELOPMENT 
-└── 🎓 Student Frontend       → Next.js app (port 9002, feat/SCRUM-7-create-login-page branch)
-```
-
-### **⚙️ Backend Services** (The Engine)
-```
-✅ MICROSERVICES ARCHITECTURE  
-├── 🔐 UWM Auth Service (3000)  → Production auth (Docker container)
-├── 🔧 Mock Auth API (8081)     → Development authentication
-├── 📊 Mock Data API (8082)     → Student records & courses  
-├── 📈 Mock Analytics (8083)    → Performance tracking
-├── 🗄️ PostgreSQL Database     → Persistent data storage
-└── ⚡ Redis Cache             → Fast session management
-```
-
-### **🚀 Infrastructure** (How We Deploy)
-```
-✅ PRODUCTION-READY DEPLOYMENT
-├── 🐳 Docker Containers      → Consistent environments
-├── 📋 Ansible Automation     → Infrastructure as code
-├── 🔧 Shell Scripts          → Easy setup & management
-└── 🧪 Automated Testing      → Quality assurance
-```
-
----
-
-## 🚀 **GET STARTED** (3 Steps)
-
-### **STEP 1: Setup Your Computer**
-```bash
-# Go to the setup folder
-cd infrastructure/ansible
-
-# Run the magic setup command
-./dev-helper.sh deploy-local-dev
-```
-**⏱️ Time: 30 seconds** ✨
-
-### **STEP 2: Start Everything**
-```bash
-# Start all services
-./scripts/setup/paws360-services.sh start
-```
-
-### **STEP 3: Open in Browser**
-```
-📊 http://localhost:8080  → AdminLTE Dashboard (Main Interface)
-� http://localhost:3000  → UWM Auth Service (Docker)
-� http://localhost:8081  → Mock Auth API
-📊 http://localhost:8082  → Mock Data API
-📈 http://localhost:8083  → Mock Analytics API
-```
+## Postman collection
+- Import `PAWS360_Admin_API.postman_collection.json` from the repo root to exercise APIs. Set `base_url` to `http://localhost:8080` (or the service port you want to target).
 
 ---
 
