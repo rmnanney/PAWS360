@@ -1,0 +1,104 @@
+---
+# AdminLTE UI Role - Main tasks
+# Deploys AdminLTE v4.0.0-rc4 with dark theme and RBAC navigation
+
+- name: Create AdminLTE UI directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0755'
+  loop:
+    - /opt/adminlte/ui
+    - /opt/adminlte/ui/dist
+    - /opt/adminlte/ui/config
+    - /var/log/adminlte/ui
+
+- name: Download AdminLTE v4.0.0-rc4
+  get_url:
+    url: "https://github.com/ColorlibHQ/AdminLTE/archive/v4.0.0-rc4.tar.gz"
+    dest: "/tmp/adminlte-4.0.0-rc4.tar.gz"
+    mode: '0644'
+  register: adminlte_download
+
+- name: Extract AdminLTE
+  unarchive:
+    src: "/tmp/adminlte-4.0.0-rc4.tar.gz"
+    dest: "/opt/adminlte/ui"
+    remote_src: true
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    strip_components: 1
+  when: adminlte_download.changed
+
+- name: Install Node.js and npm
+  package:
+    name: "{{ nodejs_packages }}"
+    state: present
+  vars:
+    nodejs_packages:
+      - nodejs
+      - npm
+
+- name: Install AdminLTE dependencies
+  npm:
+    path: /opt/adminlte/ui
+    state: present
+  become_user: "{{ adminlte_user }}"
+
+- name: Copy custom AdminLTE files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: "{{ item.mode | default('0644') }}"
+  loop:
+    - { src: "index.html.j2", dest: "/opt/adminlte/ui/index.html" }
+    - { src: "app.js.j2", dest: "/opt/adminlte/ui/dist/js/app.js" }
+    - { src: "students.html.j2", dest: "/opt/adminlte/ui/pages/students.html" }
+    - { src: "analytics.html.j2", dest: "/opt/adminlte/ui/pages/analytics.html" }
+    - { src: "paws360-admin.scss.j2", dest: "/opt/adminlte/ui/src/scss/paws360-admin.scss" }
+  notify: 
+    - build adminlte assets
+    - restart nginx
+
+- name: Build AdminLTE assets
+  npm:
+    path: /opt/adminlte/ui
+    script: build
+  become_user: "{{ adminlte_user }}"
+  notify: restart nginx
+
+- name: Configure AdminLTE nginx virtual host
+  template:
+    src: adminlte-nginx.conf.j2
+    dest: /etc/nginx/sites-available/adminlte-ui
+    backup: true
+  notify: restart nginx
+
+- name: Enable AdminLTE nginx site
+  file:
+    src: /etc/nginx/sites-available/adminlte-ui
+    dest: /etc/nginx/sites-enabled/adminlte-ui
+    state: link
+  notify: restart nginx
+
+- name: Configure AdminLTE environment
+  template:
+    src: adminlte.env.j2
+    dest: /opt/adminlte/ui/.env
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    mode: '0600'
+
+- name: Set up AdminLTE SSL certificates
+  import_tasks: ssl.yml
+  when: use_ssl | default(false)
+
+- name: Configure AdminLTE log rotation
+  template:
+    src: adminlte-logrotate.j2
+    dest: /etc/logrotate.d/adminlte-ui
+    mode: '0644'
