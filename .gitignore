@@ -225,11 +225,8 @@ temp/
 # IDEs AND EDITORS
 # =============================================================================
 # VS Code
+# Ignore the .vscode folder completely; provide example settings instead of tracking user's editor config
 .vscode/
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
 
 # JetBrains IDEs
 .idea/
