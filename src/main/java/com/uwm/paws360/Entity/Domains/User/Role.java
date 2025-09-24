@@ -8,7 +8,10 @@ public enum Role {
     COUNSELOR("Counselor"),
     MENTOR("Mentor"),
     ADVISOR("Advisor"),
-    FACULTY("Faculty");
+    FACULTY("Faculty"),
+    STAFF("Staff"),
+    Administrator("Admin"),
+    Super_Administrator("Super Admin");
 
     private final String label;
 
