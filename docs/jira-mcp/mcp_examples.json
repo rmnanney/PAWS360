@@ -1,0 +1,69 @@
+# MCP Protocol Examples for Creating JIRA Stories
+
+# 1. Initialize MCP connection
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {},
+    "clientInfo": {
+      "name": "PAWS360-Client",
+      "version": "1.0.0"
+    }
+  }
+}
+
+# 2. List available tools
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/list",
+  "params": {}
+}
+
+# 3. Create a user story
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "create_workitem",
+    "arguments": {
+      "summary": "As a student, I want to log in to PAWS360 so I can access my courses",
+      "description": "Students need a secure login system to access their personalized dashboard, course materials, and academic information. The login should support university credentials and provide a smooth user experience.",
+      "issue_type": "Story"
+    }
+  }
+}
+
+# 4. Search for existing stories
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "search_workitems",
+    "arguments": {
+      "jql": "project = PGB AND issuetype = Story AND status = 'To Do'",
+      "max_results": 10
+    }
+  }
+}
+
+# 5. Update story with acceptance criteria
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "tools/call",
+  "params": {
+    "name": "update_workitem",
+    "arguments": {
+      "issue_key": "PGB-123",
+      "updates": {
+        "description": "Students need a secure login system to access their personalized dashboard, course materials, and academic information. The login should support university credentials and provide a smooth user experience.\n\n**Acceptance Criteria:**\n- User can log in with university email/password\n- Login form validates input\n- Error messages are user-friendly\n- Session persists across browser refreshes\n- Logout functionality works correctly"
+      }
+    }
+  }
+}

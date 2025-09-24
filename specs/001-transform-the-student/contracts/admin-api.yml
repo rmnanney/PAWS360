@@ -1,0 +1,1176 @@
+openapi: 3.0.3
+info:
+  title: PAWS360 Admin API
+  description: Administrative endpoints for staff operations with role-based access control
+  version: 1.0.0
+  contact:
+    name: PAWS360 Development Team
+
+servers:
+  - url: https://paws360.university.edu/api/admin
+    description: Production Admin API
+  - url: http://localhost:8080/api/admin
+    description: Local Development
+
+security:
+  - BearerAuth: []
+  - AdminSession: []
+
+tags:
+  - name: Student Management
+    description: Administrative student operations
+  - name: Course Management
+    description: Course and section administration
+  - name: Academic Records
+    description: Transcript and grade management
+  - name: Communication
+    description: Admin messaging and alerts
+  - name: System Configuration
+    description: Platform settings and user management
+  - name: Analytics
+    description: Reporting and dashboard metrics
+
+paths:
+  # Student Management Endpoints
+  /students:
+    get:
+      tags: [Student Management]
+      summary: List students with admin view
+      description: Retrieve paginated list of students with administrative data
+      security:
+        - BearerAuth: [STUDENT_READ]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          description: Search by name, ID, or email
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE, GRADUATED, WITHDRAWN]
+        - name: advisor
+          in: query
+          description: Filter by advisor ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Students retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentListResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /students/{studentId}:
+    get:
+      tags: [Student Management]
+      summary: Get student details
+      security:
+        - BearerAuth: [STUDENT_READ]
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Student details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStudentDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Student Management]
+      summary: Update student information
+      security:
+        - BearerAuth: [STUDENT_WRITE]
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentUpdateRequest'
+      responses:
+        '200':
+          description: Student updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStudentDetail'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Update conflict (concurrent modification)
+
+  /students/{studentId}/enrollments:
+    get:
+      tags: [Student Management]
+      summary: Get student enrollment history
+      security:
+        - BearerAuth: [STUDENT_READ, COURSE_READ]
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: term
+          in: query
+          description: Filter by academic term
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Enrollment history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminEnrollmentDetail'
+
+  # Course Management Endpoints
+  /courses:
+    get:
+      tags: [Course Management]
+      summary: List courses with enrollment data
+      security:
+        - BearerAuth: [COURSE_READ]
+      parameters:
+        - name: term
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: department
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Courses with admin data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminCourseDetail'
+
+    post:
+      tags: [Course Management]
+      summary: Create new course section
+      security:
+        - BearerAuth: [COURSE_WRITE]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+      responses:
+        '201':
+          description: Course created successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /courses/{courseId}/enrollments:
+    get:
+      tags: [Course Management]
+      summary: Get course roster
+      security:
+        - BearerAuth: [COURSE_READ, STUDENT_READ]
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Course enrollment roster
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnrollmentRosterItem'
+
+    post:
+      tags: [Course Management]
+      summary: Enroll student in course
+      security:
+        - BearerAuth: [COURSE_WRITE]
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentRequest'
+      responses:
+        '201':
+          description: Student enrolled successfully
+        '409':
+          description: Enrollment conflict (capacity, prerequisites)
+
+  # Academic Records Endpoints
+  /transcripts/{studentId}:
+    get:
+      tags: [Academic Records]
+      summary: Get student transcript
+      security:
+        - BearerAuth: [TRANSCRIPT_READ]
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: unofficial
+          in: query
+          description: Return unofficial transcript
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Student transcript
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranscriptResponse'
+        '403':
+          description: FERPA restriction or insufficient permissions
+
+  /grades/{enrollmentId}:
+    put:
+      tags: [Academic Records]
+      summary: Update final grade
+      security:
+        - BearerAuth: [TRANSCRIPT_WRITE]
+      parameters:
+        - name: enrollmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradeUpdateRequest'
+      responses:
+        '200':
+          description: Grade updated successfully
+        '403':
+          description: Grade change not permitted (grade deadline passed)
+
+  # Communication Endpoints
+  /alerts:
+    get:
+      tags: [Communication]
+      summary: List alerts for admin view
+      security:
+        - BearerAuth: [ALERT_MANAGE]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [OPEN, IN_PROGRESS, RESOLVED, DISMISSED]
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        - name: assignedTo
+          in: query
+          description: Filter by assigned staff ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Alert list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminAlertDetail'
+
+    post:
+      tags: [Communication]
+      summary: Create new alert
+      security:
+        - BearerAuth: [ALERT_MANAGE]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertCreateRequest'
+      responses:
+        '201':
+          description: Alert created successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /alerts/{alertId}/assign:
+    put:
+      tags: [Communication]
+      summary: Assign alert to staff member
+      security:
+        - BearerAuth: [ALERT_MANAGE]
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assignedToId:
+                  type: integer
+                  format: int64
+                notes:
+                  type: string
+              required: [assignedToId]
+      responses:
+        '200':
+          description: Alert assigned successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /communications:
+    post:
+      tags: [Communication]
+      summary: Send message to student
+      security:
+        - BearerAuth: [COMMUNICATION_WRITE]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreateRequest'
+      responses:
+        '201':
+          description: Message sent successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # System Configuration Endpoints
+  /users/staff:
+    get:
+      tags: [System Configuration]
+      summary: List staff members
+      security:
+        - BearerAuth: [USER_MANAGE]
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [SUPER_ADMIN, DEAN, ADVISOR, REGISTRAR, FINANCIAL_AID]
+        - name: active
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Staff list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StaffSummary'
+
+    post:
+      tags: [System Configuration]
+      summary: Create staff account
+      security:
+        - BearerAuth: [USER_MANAGE]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffCreateRequest'
+      responses:
+        '201':
+          description: Staff account created
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/staff/{staffId}/permissions:
+    get:
+      tags: [System Configuration]
+      summary: Get staff permissions
+      security:
+        - BearerAuth: [USER_MANAGE]
+      parameters:
+        - name: staffId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Staff permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffPermissionsResponse'
+
+    put:
+      tags: [System Configuration]
+      summary: Update staff permissions
+      security:
+        - BearerAuth: [USER_MANAGE]
+      parameters:
+        - name: staffId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermissionUpdateRequest'
+      responses:
+        '200':
+          description: Permissions updated successfully
+        '403':
+          description: Insufficient privileges for permission changes
+
+  # Analytics Endpoints
+  /analytics/dashboard:
+    get:
+      tags: [Analytics]
+      summary: Get dashboard metrics
+      security:
+        - BearerAuth: [ANALYTICS_VIEW]
+      parameters:
+        - name: timeframe
+          in: query
+          schema:
+            type: string
+            enum: [current_term, academic_year, last_30_days]
+            default: current_term
+      responses:
+        '200':
+          description: Dashboard analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardMetrics'
+
+  /analytics/enrollment-trends:
+    get:
+      tags: [Analytics]
+      summary: Get enrollment trend data
+      security:
+        - BearerAuth: [ANALYTICS_VIEW]
+      parameters:
+        - name: department
+          in: query
+          schema:
+            type: string
+        - name: terms
+          in: query
+          description: Number of terms to include
+          schema:
+            type: integer
+            default: 4
+      responses:
+        '200':
+          description: Enrollment trend data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentTrends'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token with role-based permissions
+    AdminSession:
+      type: apiKey
+      in: cookie
+      name: ADMIN_SESSION_ID
+      description: Admin dashboard session
+
+  schemas:
+    # Student Management Schemas
+    StudentListResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentSummary'
+        pageable:
+          $ref: '#/components/schemas/PageInfo'
+        totalElements:
+          type: integer
+          format: int64
+
+    StudentSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        studentId:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, GRADUATED, WITHDRAWN]
+        classification:
+          type: string
+        major:
+          type: string
+        advisorName:
+          type: string
+        gpa:
+          type: number
+          format: double
+        alertCount:
+          type: integer
+        lastActivity:
+          type: string
+          format: date-time
+
+    AdminStudentDetail:
+      allOf:
+        - $ref: '#/components/schemas/StudentSummary'
+        - type: object
+          properties:
+            middleName:
+              type: string
+            preferredName:
+              type: string
+            phone:
+              type: string
+            minor:
+              type: string
+            advisorId:
+              type: integer
+              format: int64
+            ferpaHold:
+              type: boolean
+            directoryHold:
+              type: boolean
+            dataConsent:
+              type: string
+              format: date-time
+            academicStanding:
+              type: string
+            totalCredits:
+              type: integer
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+            lastSyncAt:
+              type: string
+              format: date-time
+
+    StudentUpdateRequest:
+      type: object
+      properties:
+        preferredName:
+          type: string
+        phone:
+          type: string
+        major:
+          type: string
+        minor:
+          type: string
+        advisorId:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+        classification:
+          type: string
+        ferpaHold:
+          type: boolean
+        directoryHold:
+          type: boolean
+
+    # Course Management Schemas
+    AdminCourseDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        courseCode:
+          type: string
+        courseTitle:
+          type: string
+        sectionNumber:
+          type: string
+        term:
+          type: string
+        instructor:
+          type: string
+        instructorId:
+          type: integer
+          format: int64
+        meetingDays:
+          type: string
+        meetingTime:
+          type: string
+        location:
+          type: string
+        capacity:
+          type: integer
+        enrolledCount:
+          type: integer
+        waitlistCount:
+          type: integer
+        enrollmentStatus:
+          type: string
+          enum: [OPEN, CLOSED, WAITLIST, CANCELLED]
+
+    CourseCreateRequest:
+      type: object
+      required: [courseCode, courseTitle, term, sectionNumber, instructorId]
+      properties:
+        courseCode:
+          type: string
+        courseTitle:
+          type: string
+        courseDescription:
+          type: string
+        creditHours:
+          type: integer
+        term:
+          type: string
+        sectionNumber:
+          type: string
+        instructorId:
+          type: integer
+          format: int64
+        meetingDays:
+          type: string
+        meetingTimeStart:
+          type: string
+          format: time
+        meetingTimeEnd:
+          type: string
+          format: time
+        location:
+          type: string
+        capacity:
+          type: integer
+
+    AdminEnrollmentDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        courseCode:
+          type: string
+        courseTitle:
+          type: string
+        term:
+          type: string
+        instructor:
+          type: string
+        status:
+          type: string
+          enum: [ENROLLED, DROPPED, WITHDRAWN]
+        registrationDate:
+          type: string
+          format: date
+        dropDate:
+          type: string
+          format: date
+        midtermGrade:
+          type: string
+        finalGrade:
+          type: string
+        gradePoints:
+          type: number
+          format: double
+        attendanceRate:
+          type: number
+          format: double
+        engagementScore:
+          type: number
+          format: double
+
+    # Communication Schemas
+    AdminAlertDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        studentName:
+          type: string
+        studentId:
+          type: string
+        alertType:
+          type: string
+        severity:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [OPEN, IN_PROGRESS, RESOLVED, DISMISSED]
+        createdBy:
+          type: string
+        assignedTo:
+          type: string
+        assignedToId:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          format: date
+
+    AlertCreateRequest:
+      type: object
+      required: [studentId, alertType, severity, title, description]
+      properties:
+        studentId:
+          type: integer
+          format: int64
+        alertType:
+          type: string
+        severity:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        category:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        recommendedActions:
+          type: string
+        assignedToId:
+          type: integer
+          format: int64
+        followUpRequired:
+          type: boolean
+        followUpDate:
+          type: string
+          format: date
+
+    MessageCreateRequest:
+      type: object
+      required: [recipientId, subject, body]
+      properties:
+        recipientId:
+          type: integer
+          format: int64
+        subject:
+          type: string
+        body:
+          type: string
+        priority:
+          type: string
+          enum: [LOW, NORMAL, HIGH, URGENT]
+          default: NORMAL
+        deliveryMethod:
+          type: string
+          enum: [IN_APP, EMAIL, SMS]
+          default: IN_APP
+
+    # System Configuration Schemas
+    StaffSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        employeeId:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        jobTitle:
+          type: string
+        department:
+          type: string
+        staffRole:
+          type: string
+          enum: [SUPER_ADMIN, DEAN, ADVISOR, REGISTRAR, FINANCIAL_AID]
+        isActive:
+          type: boolean
+        adminDashboardAccess:
+          type: boolean
+        lastLogin:
+          type: string
+          format: date-time
+
+    StaffCreateRequest:
+      type: object
+      required: [employeeId, firstName, lastName, email, department, staffRole]
+      properties:
+        employeeId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        officeLocation:
+          type: string
+        jobTitle:
+          type: string
+        department:
+          type: string
+        staffRole:
+          type: string
+          enum: [SUPER_ADMIN, DEAN, ADVISOR, REGISTRAR, FINANCIAL_AID]
+        canAccessFerpa:
+          type: boolean
+          default: false
+        adminDashboardAccess:
+          type: boolean
+          default: true
+
+    StaffPermissionsResponse:
+      type: object
+      properties:
+        staffId:
+          type: integer
+          format: int64
+        staffRole:
+          type: string
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionDetail'
+        rolePermissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionDetail'
+        additionalPermissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionDetail'
+
+    PermissionDetail:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        grantedAt:
+          type: string
+          format: date-time
+
+    PermissionUpdateRequest:
+      type: object
+      properties:
+        permissionCodes:
+          type: array
+          items:
+            type: string
+        action:
+          type: string
+          enum: [GRANT, REVOKE]
+
+    # Analytics Schemas
+    DashboardMetrics:
+      type: object
+      properties:
+        totalStudents:
+          type: integer
+        activeStudents:
+          type: integer
+        newEnrollments:
+          type: integer
+        openAlerts:
+          type: integer
+        criticalAlerts:
+          type: integer
+        averageGpa:
+          type: number
+          format: double
+        retentionRate:
+          type: number
+          format: double
+        systemHealth:
+          $ref: '#/components/schemas/SystemHealth'
+
+    SystemHealth:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [HEALTHY, DEGRADED, DOWN]
+        lastSync:
+          type: string
+          format: date-time
+        peoplesoftConnection:
+          type: boolean
+        navigate360Connection:
+          type: boolean
+
+    EnrollmentTrends:
+      type: object
+      properties:
+        terms:
+          type: array
+          items:
+            type: string
+        enrollmentData:
+          type: array
+          items:
+            $ref: '#/components/schemas/TermEnrollmentData'
+
+    TermEnrollmentData:
+      type: object
+      properties:
+        term:
+          type: string
+        totalEnrollments:
+          type: integer
+        newStudents:
+          type: integer
+        returningStudents:
+          type: integer
+        graduatingStudents:
+          type: integer
+        withdrawnStudents:
+          type: integer
+
+    # Common Schemas
+    PageInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+
+    EnrollmentRosterItem:
+      type: object
+      properties:
+        studentId:
+          type: integer
+          format: int64
+        studentIdNumber:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+        registrationDate:
+          type: string
+          format: date
+        midtermGrade:
+          type: string
+        finalGrade:
+          type: string
+        attendanceRate:
+          type: number
+          format: double
+
+    EnrollmentRequest:
+      type: object
+      required: [studentId]
+      properties:
+        studentId:
+          type: integer
+          format: int64
+        waitlistPosition:
+          type: integer
+        overrideCapacity:
+          type: boolean
+          default: false
+        overridePrerequisites:
+          type: boolean
+          default: false
+        notes:
+          type: string
+
+    TranscriptResponse:
+      type: object
+      properties:
+        studentId:
+          type: string
+        fullName:
+          type: string
+        degreeProgram:
+          type: string
+        overallGpa:
+          type: number
+          format: double
+        totalCredits:
+          type: integer
+        academicHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/TranscriptTerm'
+
+    TranscriptTerm:
+      type: object
+      properties:
+        term:
+          type: string
+        termGpa:
+          type: number
+          format: double
+        termCredits:
+          type: integer
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/TranscriptCourse'
+
+    TranscriptCourse:
+      type: object
+      properties:
+        courseCode:
+          type: string
+        courseTitle:
+          type: string
+        creditHours:
+          type: integer
+        finalGrade:
+          type: string
+        gradePoints:
+          type: number
+          format: double
+
+    GradeUpdateRequest:
+      type: object
+      required: [finalGrade]
+      properties:
+        finalGrade:
+          type: string
+        gradeChangeReason:
+          type: string
+        effectiveDate:
+          type: string
+          format: date
+
+  responses:
+    Forbidden:
+      description: Access denied - insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Access denied"
+              message:
+                type: string
+                example: "Insufficient permissions for this operation"
+              requiredPermissions:
+                type: array
+                items:
+                  type: string
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Not found"
+              message:
+                type: string
+                example: "The requested resource was not found"

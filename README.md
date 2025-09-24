@@ -168,7 +168,7 @@ PAWS360/
 - **[📊 Mock Data API](http://localhost:8082/data)** - Student records & course management  
 - **[� Mock Analytics API](http://localhost:8083/analytics)** - Performance metrics & reporting
 
-**[📖 Complete API Documentation](docs/api/API_TESTING_README.md)**
+**[📖 Complete API Documentation](docs/API_TESTING_README.md)**
 
 ### **👥 Team Help:**
 - **Slack/Teams** → Ask questions
@@ -306,7 +306,7 @@ PAWS360/
 - **[🏗️ Infrastructure Setup Guide](infrastructure/ansible/README-NEW.md)** - Local development
 - **[📊 Services Overview](docs/services-overview.md)** - All platform components  
 - **[🧪 Testing Guide](docs/testing/README.md)** - How to test everything
-- **[� API Testing with Postman](docs/api/API_TESTING_README.md)** - API documentation
+- **[� API Testing with Postman](docs/API_TESTING_README.md)** - API documentation
 
 ### 📋 **Project Management**  
 - **[✅ TODO Tracking](TODO.md)** - Current tasks and progress
