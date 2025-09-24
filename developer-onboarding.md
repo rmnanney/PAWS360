@@ -488,6 +488,9 @@ code --install-extension mtxr.sqltools
 code --install-extension mtxr.sqltools-driver-pg
 code --install-extension esbenp.prettier-vscode
 code --install-extension dbaeumer.vscode-eslint
+code --install-extension bradlc.vscode-tailwindcss
+code --install-extension formulahendry.auto-rename-tag
+code --install-extension ms-vscode.vscode-json
 ```
 
 **3. VS Code Workspace Configuration:**
@@ -760,6 +763,295 @@ const apiClient = {
 }
 ```
 
+**5. DataGrid Configuration (React/Next.js):**
+
+**Shadcn/ui Table Component Setup:**
+```typescript
+// Install additional dependencies for advanced data grids
+npm install @tanstack/react-table @tanstack/table-core
+npm install lucide-react  // For icons
+
+// Advanced DataGrid component: components/data-grid.tsx
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  SortingState,
+  ColumnFiltersState,
+  VisibilityState,
+} from "@tanstack/react-table"
+import { Button } from "@/components/button"
+import { Input } from "@/components/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table"
+import { Badge } from "@/components/badge"
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+
+interface DataGridProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
+  searchPlaceholder?: string
+  onRowClick?: (row: TData) => void
+}
+
+export function DataGrid<TData, TValue>({
+  columns,
+  data,
+  searchPlaceholder = "Filter records...",
+  onRowClick
+}: DataGridProps<TData, TValue>) {
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = React.useState({})
+
+  const table = useReactTable({
+    data,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
+  })
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center py-4">
+        <Input
+          placeholder={searchPlaceholder}
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("name")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+      </div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  onClick={() => onRowClick?.(row.original)}
+                  className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+**Student DataGrid Implementation:**
+```typescript
+// pages/students/page.tsx - Student management with DataGrid
+import { DataGrid } from "@/components/data-grid"
+import { Badge } from "@/components/badge"
+import { Button } from "@/components/button"
+import { ColumnDef } from "@tanstack/react-table"
+
+interface Student {
+  id: string
+  studentNumber: string
+  firstName: string
+  lastName: string
+  email: string
+  gpa: number
+  enrollmentStatus: "active" | "inactive" | "graduated"
+  ferpaRestricted: boolean
+}
+
+const studentColumns: ColumnDef<Student>[] = [
+  {
+    accessorKey: "studentNumber",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Student ID
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "firstName",
+    header: "First Name",
+    cell: ({ row }) => {
+      const student = row.original
+      return student.ferpaRestricted ? "[PROTECTED]" : student.firstName
+    },
+  },
+  {
+    accessorKey: "lastName",
+    header: "Last Name", 
+    cell: ({ row }) => {
+      const student = row.original
+      return student.ferpaRestricted ? "[PROTECTED]" : student.lastName
+    },
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ row }) => {
+      const student = row.original
+      return student.ferpaRestricted ? "[PROTECTED]" : student.email
+    },
+  },
+  {
+    accessorKey: "gpa",
+    header: "GPA",
+    cell: ({ row }) => {
+      const gpa = parseFloat(row.getValue("gpa"))
+      return (
+        <Badge variant={gpa >= 3.0 ? "default" : "destructive"}>
+          {gpa.toFixed(2)}
+        </Badge>
+      )
+    },
+  },
+  {
+    accessorKey: "enrollmentStatus",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.getValue("enrollmentStatus") as string
+      return (
+        <Badge 
+          variant={
+            status === "active" ? "default" : 
+            status === "graduated" ? "secondary" : "outline"
+          }
+        >
+          {status}
+        </Badge>
+      )
+    },
+  },
+]
+
+const StudentsPage = () => {
+  const [students, setStudents] = useState<Student[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchStudents()
+  }, [])
+
+  const fetchStudents = async () => {
+    try {
+      const response = await apiClient.fetchWithAuth('/api/students')
+      const data = await response.json()
+      setStudents(data.content)
+    } catch (error) {
+      console.error('Failed to fetch students:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRowClick = (student: Student) => {
+    // Navigate to student detail page
+    router.push(`/students/${student.id}`)
+  }
+
+  if (loading) {
+    return <div>Loading students...</div>
+  }
+
+  return (
+    <div className="container mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-6">Student Management</h1>
+      <DataGrid 
+        columns={studentColumns} 
+        data={students}
+        searchPlaceholder="Search students..."
+        onRowClick={handleRowClick}
+      />
+    </div>
+  )
+}
+```
+
 ### **🖥️ AdminLTE Dashboard Development Workflow**
 
 **1. AdminLTE Structure:**
@@ -837,6 +1129,344 @@ function updateDashboardMetrics(data) {
 
 .content-wrapper {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+```
+
+**5. DataTables Configuration (AdminLTE):**
+
+**DataTables Setup for AdminLTE:**
+```html
+<!-- Include DataTables CSS and JS in AdminLTE pages -->
+<link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+
+<script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+```
+
+**Student Management DataTable:**
+```html
+<!-- Student Management Page HTML -->
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <h1 class="m-0">Student Management</h1>
+    </div>
+  </div>
+  
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Students</h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-primary" id="addStudentBtn">
+              <i class="fas fa-plus"></i> Add Student
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <table id="studentsTable" class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>GPA</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Data loaded via AJAX -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+```
+
+**Advanced DataTables JavaScript Configuration:**
+```javascript
+// Student Management DataTable Configuration
+$(document).ready(function() {
+  const studentsTable = $('#studentsTable').DataTable({
+    // Server-side processing for large datasets
+    processing: true,
+    serverSide: true,
+    ajax: {
+      url: '/api/students/datatable',
+      type: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('jwt_token'),
+        'Content-Type': 'application/json'
+      },
+      data: function(d) {
+        return JSON.stringify(d);
+      },
+      dataSrc: function(json) {
+        return json.data;
+      },
+      error: function(xhr, error, code) {
+        console.error('DataTable Ajax error:', error);
+        showAlert('Error loading student data', 'danger');
+      }
+    },
+    
+    // Column definitions with FERPA protection
+    columns: [
+      { 
+        data: 'studentNumber',
+        name: 'studentNumber',
+        title: 'Student ID'
+      },
+      { 
+        data: 'firstName',
+        name: 'firstName',
+        render: function(data, type, row) {
+          return row.ferpaRestricted ? '[PROTECTED]' : data;
+        }
+      },
+      { 
+        data: 'lastName',
+        name: 'lastName',
+        render: function(data, type, row) {
+          return row.ferpaRestricted ? '[PROTECTED]' : data;
+        }
+      },
+      { 
+        data: 'email',
+        name: 'email',
+        render: function(data, type, row) {
+          return row.ferpaRestricted ? '[PROTECTED]' : data;
+        }
+      },
+      { 
+        data: 'gpa',
+        name: 'gpa',
+        render: function(data, type, row) {
+          const gpa = parseFloat(data);
+          const badgeClass = gpa >= 3.0 ? 'badge-success' : 'badge-danger';
+          return `<span class="badge ${badgeClass}">${gpa.toFixed(2)}</span>`;
+        }
+      },
+      { 
+        data: 'enrollmentStatus',
+        name: 'enrollmentStatus',
+        render: function(data, type, row) {
+          const statusMap = {
+            'active': 'badge-primary',
+            'inactive': 'badge-warning', 
+            'graduated': 'badge-success'
+          };
+          const badgeClass = statusMap[data] || 'badge-secondary';
+          return `<span class="badge ${badgeClass}">${data}</span>`;
+        }
+      },
+      {
+        data: 'id',
+        name: 'actions',
+        orderable: false,
+        searchable: false,
+        render: function(data, type, row) {
+          return `
+            <div class="btn-group" role="group">
+              <button class="btn btn-sm btn-info view-student" data-id="${data}">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-primary edit-student" data-id="${data}">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-danger delete-student" data-id="${data}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          `;
+        }
+      }
+    ],
+    
+    // DataTable options
+    responsive: true,
+    lengthChange: true,
+    autoWidth: false,
+    pageLength: 25,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+    order: [[0, 'asc']],
+    
+    // Export buttons
+    buttons: [
+      {
+        extend: 'copy',
+        text: '<i class="fas fa-copy"></i> Copy',
+        className: 'btn btn-secondary btn-sm'
+      },
+      {
+        extend: 'csv',
+        text: '<i class="fas fa-file-csv"></i> CSV',
+        className: 'btn btn-secondary btn-sm',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5] // Exclude actions column
+        }
+      },
+      {
+        extend: 'excel',
+        text: '<i class="fas fa-file-excel"></i> Excel',
+        className: 'btn btn-secondary btn-sm',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5]
+        }
+      },
+      {
+        extend: 'pdf',
+        text: '<i class="fas fa-file-pdf"></i> PDF',
+        className: 'btn btn-secondary btn-sm',
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5]
+        }
+      }
+    ],
+    
+    // Language customization
+    language: {
+      processing: "<div class='spinner-border text-primary' role='status'><span class='sr-only'>Loading...</span></div>",
+      emptyTable: "No students found",
+      info: "Showing _START_ to _END_ of _TOTAL_ students",
+      infoEmpty: "Showing 0 to 0 of 0 students",
+      infoFiltered: "(filtered from _MAX_ total students)",
+      search: "Search students:",
+      paginate: {
+        first: "First",
+        last: "Last",
+        next: "Next",
+        previous: "Previous"
+      }
+    },
+    
+    // Custom styling
+    drawCallback: function() {
+      // Apply custom styling after table redraw
+      $('.dataTables_paginate .pagination').addClass('pagination-sm');
+    }
+  });
+  
+  // Add export buttons to card header
+  studentsTable.buttons().container().appendTo('.card-header .card-tools');
+  
+  // Event handlers for action buttons
+  $('#studentsTable').on('click', '.view-student', function() {
+    const studentId = $(this).data('id');
+    viewStudent(studentId);
+  });
+  
+  $('#studentsTable').on('click', '.edit-student', function() {
+    const studentId = $(this).data('id');
+    editStudent(studentId);
+  });
+  
+  $('#studentsTable').on('click', '.delete-student', function() {
+    const studentId = $(this).data('id');
+    deleteStudent(studentId);
+  });
+});
+
+// Student management functions
+function viewStudent(studentId) {
+  // Navigate to student detail page or open modal
+  window.location.href = `/students/${studentId}`;
+}
+
+function editStudent(studentId) {
+  // Open edit modal or navigate to edit page
+  $('#editStudentModal').modal('show');
+  loadStudentData(studentId);
+}
+
+function deleteStudent(studentId) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'This action cannot be undone!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Perform delete API call
+      deleteStudentAPI(studentId);
+    }
+  });
+}
+```
+
+**Backend DataTable Support (Spring Boot):**
+```java
+// DataTable request/response DTOs
+@Data
+public class DataTableRequest {
+    private int draw;
+    private int start;
+    private int length;
+    private List<Column> columns;
+    private List<Order> order;
+    private Search search;
+    
+    @Data
+    public static class Column {
+        private String data;
+        private String name;
+        private boolean searchable;
+        private boolean orderable;
+        private Search search;
+    }
+    
+    @Data
+    public static class Order {
+        private int column;
+        private String dir;
+    }
+    
+    @Data
+    public static class Search {
+        private String value;
+        private boolean regex;
+    }
+}
+
+// DataTable controller endpoint
+@PostMapping("/datatable")
+public ResponseEntity<DataTableResponse<StudentDTO>> getStudentsDataTable(
+        @RequestBody DataTableRequest request,
+        Authentication authentication) {
+    
+    // Build pagination and sorting
+    Pageable pageable = buildPageable(request);
+    Specification<Student> spec = buildSearchSpecification(request);
+    
+    // Get paginated results
+    Page<Student> students = studentRepository.findAll(spec, pageable);
+    
+    // Convert to DTOs with FERPA filtering
+    List<StudentDTO> studentDTOs = students.getContent().stream()
+        .map(student -> studentMapper.toDTO(student, hasViewAccess(authentication)))
+        .collect(Collectors.toList());
+    
+    // Build DataTable response
+    DataTableResponse<StudentDTO> response = DataTableResponse.<StudentDTO>builder()
+        .draw(request.getDraw())
+        .recordsTotal(studentRepository.count())
+        .recordsFiltered(students.getTotalElements())
+        .data(studentDTOs)
+        .build();
+    
+    return ResponseEntity.ok(response);
 }
 ```
 
