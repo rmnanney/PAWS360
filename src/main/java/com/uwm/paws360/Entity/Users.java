@@ -16,8 +16,11 @@ public class Users {
     @GeneratedValue
     private int id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 100)
     private String firstname;
+
+    @Column(length = 100)
+    private String middlename;
 
     @Column(nullable = false, length = 30)
     private String lastname;
@@ -46,19 +49,6 @@ public class Users {
     @Column(nullable = false, updatable = false)
     private final LocalDate date_created = LocalDate.parse(LocalDate.now().format(DateTimeFormatter.ISO_DATE));
 
-    public Users(String firstname, String lastname, LocalDate dob, String email, Country_Code countryCode,
-                 String phone, Status status, Role role) {
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.dob = dob;
-        this.email = email;
-        this.countryCode = countryCode;
-        this.phone = phone;
-        this.status = status;
-        this.role = role;
-    }
-
-    public Users() {}
 
 /*------------------------------------------------------- Getters -------------------------------------------------------*/
 
