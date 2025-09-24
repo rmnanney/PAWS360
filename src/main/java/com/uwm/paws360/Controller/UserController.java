@@ -18,22 +18,22 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("users/search/{user-id}")
+    @GetMapping("/search/{user-id}")
     public Users findUserById(@PathVariable("user-id") Integer id){
         return repository.findById(id).orElse(null);
     }
 
-    @GetMapping("users/search/all")
+    @GetMapping("/search/all")
     public List<Users> findAllUsers(){
         return repository.findAll();
     }
 
-    @GetMapping("users/search/{user-name}")
+    @GetMapping("/search/{user-name}")
     public List<Users> findUsersByName(@PathVariable("user-name") String name){
         return repository.findAllByFirstnameLike(name);
     }
 
-    @GetMapping("users/search/{user-email}")
+    @GetMapping("/search/{user-email}")
     public Users findUsersByEmail(@PathVariable("user-email") String email){
         return repository.findUsersByEmailLikeIgnoreCase(email);
     }
@@ -43,7 +43,7 @@ public class UserController {
        return userService.createUser(user);
     }
 
-    @DeleteMapping("users/{user-id}")
+    @DeleteMapping("/{user-id}")
     public void deleteUser(@PathVariable("user-id") Users user){
         repository.delete(user);
     }
