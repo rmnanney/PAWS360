@@ -1,0 +1,21 @@
+[Unit]
+Description=AdminLTE Auth Service
+After=network.target postgresql.service redis.service
+Requires=postgresql.service redis.service
+
+[Service]
+Type=simple
+User={{ adminlte_user | default('adminlte') }}
+Group={{ adminlte_user | default('adminlte') }}
+EnvironmentFile=/opt/adminlte/auth-service/.env
+WorkingDirectory=/opt/adminlte/auth-service
+ExecStart=/usr/bin/java -jar auth-service.jar
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=adminlte-auth-service
+
+[Install]
+WantedBy=multi-user.target
