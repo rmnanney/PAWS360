@@ -1,4 +1,4 @@
-package com.uwm.paws360.Entity.Profiles;
+package com.uwm.paws360.Entity.Role;
 
 import com.uwm.paws360.Entity.Users;
 import jakarta.persistence.*;
