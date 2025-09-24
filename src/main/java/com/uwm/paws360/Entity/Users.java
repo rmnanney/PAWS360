@@ -41,13 +41,13 @@ public class Users {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Role roles;
+    private Role role;
 
     @Column(nullable = false, updatable = false)
     private final LocalDate date_created = LocalDate.parse(LocalDate.now().format(DateTimeFormatter.ISO_DATE));
 
     public Users(String firstname, String lastname, LocalDate dob, String email, Country_Code countryCode,
-                 String phone, Status status, Role roles) {
+                 String phone, Status status, Role role) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.dob = dob;
@@ -55,7 +55,7 @@ public class Users {
         this.countryCode = countryCode;
         this.phone = phone;
         this.status = status;
-        this.roles = roles;
+        this.role = role;
     }
 
     public Users() {}
@@ -99,7 +99,7 @@ public class Users {
     }
 
     public Role getRoles() {
-        return roles;
+        return role;
     }
 
     /*------------------------------------------------------- Setters -------------------------------------------------------*/
@@ -132,7 +132,7 @@ public class Users {
         this.status = status;
     }
 
-    public void setRoles(Role roles) {
-        this.roles = roles;
+    public void setRole(Role role) {
+        this.role = role;
     }
 }
