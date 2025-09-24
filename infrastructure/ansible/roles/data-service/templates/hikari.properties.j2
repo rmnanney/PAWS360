@@ -1,0 +1,26 @@
+# HikariCP Connection Pool Configuration
+# Advanced connection pool settings for high-performance database access
+
+# Pool sizing
+maximumPoolSize={{ connection_pool_size | default('20') }}
+minimumIdle=5
+
+# Timeouts
+idleTimeout=300000
+maxLifetime=600000
+connectionTimeout=20000
+
+# Connection testing
+connectionTestQuery=SELECT 1
+validationTimeout=5000
+
+# Performance tuning
+leakDetectionThreshold=60000
+initializationFailTimeout=1
+
+# Metrics and monitoring
+metricRegistry=
+healthCheckRegistry=
+
+# Connection initialization
+connectionInitSql=SET TIME ZONE 'UTC'

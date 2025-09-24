@@ -1,0 +1,774 @@
+openapi: 3.0.3
+info:
+  title: PAWS360 Next.js Frontend API Contracts
+  description: API contracts for Next.js frontend integration with existing PAWS360 backend services
+  version: 1.0.0
+  contact:
+    name: PAWS360 Development Team
+    email: paws360-dev@university.edu
+  license:
+    name: University Internal Use Only
+
+servers:
+  - url: http://localhost:8082
+    description: Development server
+  - url: https://api.paws360.university.edu
+    description: Production server
+
+security:
+  - bearerAuth: []
+  - sessionAuth: []
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Users
+    description: User account management
+  - name: Students
+    description: Student information and enrollment
+  - name: Courses
+    description: Course catalog and management
+  - name: Analytics
+    description: Dashboard analytics and reporting
+
+paths:
+  # Authentication Endpoints
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user with SAML2 token
+      description: Exchange SAML2 token for application session
+      operationId: authenticateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - samlToken
+              properties:
+                samlToken:
+                  type: string
+                  description: SAML2 authentication token from Azure AD
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                rememberMe:
+                  type: boolean
+                  description: Extend session duration
+                  default: false
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/SessionUser'
+                  session:
+                    $ref: '#/components/schemas/Session'
+                  permissions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Permission'
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Account disabled or insufficient privileges
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many authentication attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: End user session
+      description: Invalidate current session and clear authentication
+      operationId: logoutUser
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successful"
+        '401':
+          description: No active session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/session:
+    get:
+      tags:
+        - Authentication
+      summary: Get current session information
+      description: Retrieve active session data and user permissions
+      operationId: getCurrentSession
+      responses:
+        '200':
+          description: Session information retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/SessionUser'
+                  session:
+                    $ref: '#/components/schemas/Session'
+                  permissions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Permission'
+        '401':
+          description: No active session or session expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # User Management Endpoints
+  /api/users:
+    get:
+      tags:
+        - Users
+      summary: List users with pagination
+      description: Retrieve paginated list of users based on role permissions
+      operationId: getUsers
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 20
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [admin, faculty, staff, student]
+        - name: department
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+            description: Search by name or email
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          description: Insufficient permissions to view users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      description: Retrieve detailed user information
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions to view user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Student Management Endpoints
+  /api/students:
+    get:
+      tags:
+        - Students
+      summary: List students with pagination and filtering
+      description: Retrieve paginated list of students with FERPA compliance logging
+      operationId: getStudents
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 20
+        - name: program
+          in: query
+          schema:
+            type: string
+        - name: year
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 8
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [enrolled, withdrawn, graduated, suspended]
+        - name: search
+          in: query
+          schema:
+            type: string
+            description: Search by name or student ID
+      responses:
+        '200':
+          description: Students retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  students:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Student'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          description: Insufficient permissions to view students
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/students/{studentId}:
+    get:
+      tags:
+        - Students
+      summary: Get student by ID
+      description: Retrieve detailed student information with FERPA logging
+      operationId: getStudentById
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Student retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Insufficient permissions to view student
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Course Management Endpoints
+  /api/courses:
+    get:
+      tags:
+        - Courses
+      summary: List courses with filtering
+      description: Retrieve list of courses with pagination and filters
+      operationId: getCourses
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 20
+        - name: department
+          in: query
+          schema:
+            type: string
+        - name: semester
+          in: query
+          schema:
+            type: string
+        - name: year
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Courses retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /api/courses/{courseId}:
+    get:
+      tags:
+        - Courses
+      summary: Get course by ID
+      description: Retrieve detailed course information
+      operationId: getCourseById
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Course retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Analytics Endpoints
+  /api/analytics/dashboard:
+    get:
+      tags:
+        - Analytics
+      summary: Get dashboard analytics data
+      description: Retrieve aggregated data for dashboard widgets
+      operationId: getDashboardAnalytics
+      responses:
+        '200':
+          description: Analytics data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enrollment:
+                    $ref: '#/components/schemas/EnrollmentStats'
+                  courses:
+                    $ref: '#/components/schemas/CourseStats'
+                  users:
+                    $ref: '#/components/schemas/UserStats'
+                  performance:
+                    $ref: '#/components/schemas/PerformanceStats'
+        '403':
+          description: Insufficient permissions to view analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+
+  schemas:
+    # Authentication Schemas
+    SessionUser:
+      type: object
+      required:
+        - id
+        - email
+        - name
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique user identifier
+        email:
+          type: string
+          format: email
+          description: University email address
+        name:
+          type: string
+          description: Full display name
+        role:
+          type: string
+          enum: [admin, faculty, staff, student]
+        image:
+          type: string
+          format: uri
+          description: Profile picture URL
+        department:
+          type: string
+          description: User's department
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Session identifier
+        userId:
+          type: string
+          format: uuid
+        expiresAt:
+          type: string
+          format: date-time
+        lastActivity:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+          description: Client IP address
+
+    Permission:
+      type: object
+      properties:
+        resource:
+          type: string
+          description: Resource name (e.g., 'students', 'courses')
+        actions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, delete, admin]
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionCondition'
+
+    PermissionCondition:
+      type: object
+      properties:
+        field:
+          type: string
+        operator:
+          type: string
+          enum: [equals, contains, gt, lt]
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+
+    # User Management Schemas
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - role
+        - isActive
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [admin, faculty, staff, student]
+        department:
+          type: string
+        isActive:
+          type: boolean
+        lastLogin:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Student Management Schemas
+    Student:
+      type: object
+      required:
+        - id
+        - userId
+        - program
+        - major
+        - year
+        - status
+      properties:
+        id:
+          type: string
+          description: Student ID
+        userId:
+          type: string
+          format: uuid
+        program:
+          type: string
+        major:
+          type: string
+        year:
+          type: integer
+          minimum: 1
+          maximum: 8
+        status:
+          type: string
+          enum: [enrolled, withdrawn, graduated, suspended]
+        gpa:
+          type: number
+          minimum: 0.0
+          maximum: 4.0
+        creditHours:
+          type: integer
+          minimum: 0
+        enrollmentDate:
+          type: string
+          format: date
+        graduationDate:
+          type: string
+          format: date
+
+    # Course Management Schemas
+    Course:
+      type: object
+      required:
+        - id
+        - title
+        - creditHours
+        - department
+        - semester
+        - year
+      properties:
+        id:
+          type: string
+          description: Course code
+        title:
+          type: string
+        description:
+          type: string
+        creditHours:
+          type: integer
+          minimum: 1
+          maximum: 12
+        department:
+          type: string
+        prerequisites:
+          type: array
+          items:
+            type: string
+        capacity:
+          type: integer
+          minimum: 1
+        instructor:
+          type: string
+        semester:
+          type: string
+          enum: [fall, spring, summer]
+        year:
+          type: integer
+        isActive:
+          type: boolean
+
+    # Analytics Schemas
+    EnrollmentStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        byStatus:
+          type: object
+          properties:
+            enrolled:
+              type: integer
+            withdrawn:
+              type: integer
+            graduated:
+              type: integer
+        trend:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              count:
+                type: integer
+
+    CourseStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        active:
+          type: integer
+        averageEnrollment:
+          type: number
+        byDepartment:
+          type: object
+          additionalProperties:
+            type: integer
+
+    UserStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        byRole:
+          type: object
+          properties:
+            admin:
+              type: integer
+            faculty:
+              type: integer
+            staff:
+              type: integer
+            student:
+              type: integer
+        activeToday:
+          type: integer
+
+    PerformanceStats:
+      type: object
+      properties:
+        averageResponseTime:
+          type: number
+          description: Average API response time in milliseconds
+        uptime:
+          type: number
+          description: System uptime percentage
+        errorRate:
+          type: number
+          description: Error rate percentage
+
+    # Common Schemas
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 1
+        hasNext:
+          type: boolean
+        hasPrevious:
+          type: boolean
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          description: Request correlation ID

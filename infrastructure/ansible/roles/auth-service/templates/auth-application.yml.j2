@@ -1,0 +1,81 @@
+# Auth Service Application Configuration
+# Spring Boot configuration for SAML2 authentication service
+
+server:
+  port: {{ auth_service_port | default('8081') }}
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: adminlte-auth-service
+  profiles:
+    active: {{ spring_profiles | default('production') }}
+
+  datasource:
+    url: jdbc:postgresql://{{ postgres_host | default('localhost') }}:{{ postgres_port | default('5432') }}/{{ postgres_db | default('adminlte') }}
+    username: {{ postgres_user | default('adminlte') }}
+    password: {{ postgres_password }}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  redis:
+    host: {{ redis_host | default('localhost') }}
+    port: {{ redis_port | default('6379') }}
+    password: {{ redis_password | default('') }}
+
+  security:
+    saml2:
+      relying-party:
+        registration:
+          university-ad:
+            asserting-party-metadata-uri: {{ saml_metadata_url | default('https://login.university.edu/adfs/metadata.xml') }}
+            entity-id: {{ saml_entity_id | default('adminlte-sp') }}
+            acs:
+              location: {{ saml_acs_url | default('https://admin.paws360.university.edu/saml/acs') }}
+            signing:
+              credentials:
+                - certificate-location: classpath:keystore/saml-keystore.jks
+                  private-key-location: classpath:keystore/saml-keystore.jks
+                  private-key-password: {{ saml_key_password }}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.saml2: DEBUG
+    com.adminlte: INFO
+  file:
+    name: /var/log/adminlte/auth-service/auth-service.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+adminlte:
+  security:
+    jwt:
+      secret: {{ jwt_secret | default('change-this-in-production') }}
+      expiration: 86400
+    rbac:
+      enabled: true
+      cache-ttl: 300
+  audit:
+    enabled: true
+    log-file: /var/log/adminlte/auth-service/audit.log

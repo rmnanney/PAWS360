@@ -1,0 +1,644 @@
+openapi: 3.0.3
+info:
+  title: PAWS360 Student Data API
+  description: Student information, academic records, and dashboard data
+  version: 1.0.0
+  contact:
+    name: PAWS360 Development Team
+    email: dev@university.edu
+
+servers:
+  - url: https://paws360.university.edu/api/v1
+    description: Production server
+  - url: https://paws360-staging.university.edu/api/v1
+    description: Staging server
+
+security:
+  - BearerAuth: []
+  - CookieAuth: []
+
+paths:
+  /students/profile:
+    get:
+      summary: Get current student profile
+      description: Retrieve authenticated student's profile and academic information
+      operationId: getStudentProfile
+      tags:
+        - Student Data
+      responses:
+        '200':
+          description: Student profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentProfile'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Access denied - student access only
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /students/{studentId}/profile:
+    get:
+      summary: Get student profile by ID
+      description: Retrieve specific student's profile (staff access required)
+      operationId: getStudentProfileById
+      tags:
+        - Student Data
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Student ID
+      responses:
+        '200':
+          description: Student profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentProfile'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Access denied - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /students/dashboard:
+    get:
+      summary: Get student dashboard data
+      description: Retrieve comprehensive dashboard information for current student
+      operationId: getStudentDashboard
+      tags:
+        - Student Data
+      parameters:
+        - name: term
+          in: query
+          schema:
+            type: string
+          description: Academic term (defaults to current term)
+        - name: include_alerts
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Include active alerts in response
+      responses:
+        '200':
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDashboard'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /students/grades:
+    get:
+      summary: Get student grades
+      description: Retrieve grade information for authenticated student
+      operationId: getStudentGrades
+      tags:
+        - Academic Records
+      parameters:
+        - name: term
+          in: query
+          schema:
+            type: string
+          description: Academic term filter
+        - name: course_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+          description: Specific course filter
+        - name: include_details
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include individual assignment grades
+      responses:
+        '200':
+          description: Grades retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradesSummary'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /students/enrollments:
+    get:
+      summary: Get student enrollments
+      description: Retrieve current and historical course enrollments
+      operationId: getStudentEnrollments
+      tags:
+        - Academic Records
+      parameters:
+        - name: term
+          in: query
+          schema:
+            type: string
+          description: Academic term filter
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ENROLLED, DROPPED, WITHDRAWN]
+          description: Enrollment status filter
+      responses:
+        '200':
+          description: Enrollments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enrollments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Enrollment'
+                  total_credits:
+                    type: integer
+                    description: Total enrolled credit hours
+                  gpa:
+                    type: number
+                    format: float
+                    description: Current GPA
+
+  /students/schedule:
+    get:
+      summary: Get student class schedule
+      description: Retrieve current term class schedule with meeting times
+      operationId: getStudentSchedule
+      tags:
+        - Academic Records
+      parameters:
+        - name: term
+          in: query
+          schema:
+            type: string
+          description: Academic term (defaults to current)
+      responses:
+        '200':
+          description: Schedule retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  term:
+                    type: string
+                  classes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ScheduleItem'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: PAWS360_SESSION
+
+  schemas:
+    StudentProfile:
+      type: object
+      required:
+        - id
+        - student_id
+        - first_name
+        - last_name
+        - email
+        - status
+      properties:
+        id:
+          type: integer
+          format: int64
+        student_id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        preferred_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, GRADUATED, WITHDRAWN]
+        academic_level:
+          type: string
+          enum: [UNDERGRADUATE, GRADUATE, DOCTORAL]
+        classification:
+          type: string
+          enum: [FRESHMAN, SOPHOMORE, JUNIOR, SENIOR]
+        major:
+          type: string
+        minor:
+          type: string
+        advisor:
+          $ref: '#/components/schemas/StaffSummary'
+        gpa:
+          type: number
+          format: float
+        total_credits:
+          type: integer
+        privacy_settings:
+          $ref: '#/components/schemas/PrivacySettings'
+
+    StudentDashboard:
+      type: object
+      required:
+        - student
+        - current_term
+        - enrollments
+        - gpa_summary
+      properties:
+        student:
+          $ref: '#/components/schemas/StudentProfile'
+        current_term:
+          type: string
+        enrollments:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnrollmentSummary'
+        gpa_summary:
+          $ref: '#/components/schemas/GPASummary'
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlertSummary'
+        upcoming_assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignmentSummary'
+        recent_grades:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeSummary'
+        engagement_metrics:
+          $ref: '#/components/schemas/EngagementMetrics'
+
+    GradesSummary:
+      type: object
+      properties:
+        term:
+          type: string
+        overall_gpa:
+          type: number
+          format: float
+        term_gpa:
+          type: number
+          format: float
+        total_credits:
+          type: integer
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseGrade'
+
+    CourseGrade:
+      type: object
+      required:
+        - course_id
+        - course_code
+        - course_title
+        - credit_hours
+      properties:
+        course_id:
+          type: integer
+          format: int64
+        course_code:
+          type: string
+        course_title:
+          type: string
+        credit_hours:
+          type: integer
+        instructor:
+          type: string
+        midterm_grade:
+          type: string
+        final_grade:
+          type: string
+        current_percentage:
+          type: number
+          format: float
+        assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssignmentGrade'
+
+    AssignmentGrade:
+      type: object
+      required:
+        - assignment_name
+        - assignment_type
+        - points_possible
+      properties:
+        assignment_name:
+          type: string
+        assignment_type:
+          type: string
+          enum: [HOMEWORK, QUIZ, EXAM, PROJECT, PARTICIPATION]
+        points_earned:
+          type: number
+          format: float
+        points_possible:
+          type: number
+          format: float
+        percentage:
+          type: number
+          format: float
+        due_date:
+          type: string
+          format: date-time
+        submitted_date:
+          type: string
+          format: date-time
+        feedback:
+          type: string
+
+    Enrollment:
+      type: object
+      required:
+        - id
+        - course
+        - status
+        - registration_date
+      properties:
+        id:
+          type: integer
+          format: int64
+        course:
+          $ref: '#/components/schemas/CourseSummary'
+        status:
+          type: string
+          enum: [ENROLLED, DROPPED, WITHDRAWN]
+        registration_date:
+          type: string
+          format: date
+        drop_date:
+          type: string
+          format: date
+        attempted_credits:
+          type: integer
+        earned_credits:
+          type: integer
+
+    CourseSummary:
+      type: object
+      required:
+        - id
+        - course_code
+        - course_title
+        - credit_hours
+      properties:
+        id:
+          type: integer
+          format: int64
+        course_code:
+          type: string
+        course_title:
+          type: string
+        credit_hours:
+          type: integer
+        section_number:
+          type: string
+        instructor:
+          type: string
+        term:
+          type: string
+
+    ScheduleItem:
+      type: object
+      required:
+        - course_id
+        - course_code
+        - course_title
+        - meeting_days
+      properties:
+        course_id:
+          type: integer
+          format: int64
+        course_code:
+          type: string
+        course_title:
+          type: string
+        section_number:
+          type: string
+        meeting_days:
+          type: string
+        meeting_time_start:
+          type: string
+          format: time
+        meeting_time_end:
+          type: string
+          format: time
+        location:
+          type: string
+        instructor:
+          type: string
+
+    EnrollmentSummary:
+      type: object
+      properties:
+        course_code:
+          type: string
+        course_title:
+          type: string
+        instructor:
+          type: string
+        current_grade:
+          type: string
+        credit_hours:
+          type: integer
+
+    GPASummary:
+      type: object
+      properties:
+        current_gpa:
+          type: number
+          format: float
+        term_gpa:
+          type: number
+          format: float
+        total_credits:
+          type: integer
+        gpa_trend:
+          type: array
+          items:
+            type: object
+            properties:
+              term:
+                type: string
+              gpa:
+                type: number
+                format: float
+
+    AlertSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        alert_type:
+          type: string
+        severity:
+          type: string
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+
+    AssignmentSummary:
+      type: object
+      properties:
+        course_code:
+          type: string
+        assignment_name:
+          type: string
+        due_date:
+          type: string
+          format: date-time
+        points_possible:
+          type: number
+          format: float
+
+    GradeSummary:
+      type: object
+      properties:
+        course_code:
+          type: string
+        assignment_name:
+          type: string
+        grade:
+          type: string
+        points_earned:
+          type: number
+          format: float
+        points_possible:
+          type: number
+          format: float
+        graded_date:
+          type: string
+          format: date-time
+
+    EngagementMetrics:
+      type: object
+      properties:
+        overall_score:
+          type: number
+          format: float
+          description: 0.00 - 4.00 scale
+        attendance_rate:
+          type: number
+          format: float
+          description: Percentage (0-100)
+        assignment_completion_rate:
+          type: number
+          format: float
+          description: Percentage (0-100)
+        course_metrics:
+          type: array
+          items:
+            type: object
+            properties:
+              course_code:
+                type: string
+              engagement_score:
+                type: number
+                format: float
+              last_activity:
+                type: string
+                format: date-time
+
+    StaffSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        job_title:
+          type: string
+        department:
+          type: string
+        office_location:
+          type: string
+
+    PrivacySettings:
+      type: object
+      properties:
+        ferpa_hold:
+          type: boolean
+        directory_hold:
+          type: boolean
+        data_consent:
+          type: string
+          format: date-time
+          description: Consent timestamp for Navigate360 features
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string

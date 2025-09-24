@@ -38,3 +38,8 @@ build/
 /.react-router/
 /build/
 .next/
+tsconfig.tsbuildinfo
+
+# Ansible
+infrastructure/ansible/.ansible/
+infrastructure/ansible/ansible.log

@@ -1,0 +1,72 @@
+# Data Service Application Configuration
+# Spring Boot configuration for student/course data management
+
+server:
+  port: {{ data_service_port | default('8082') }}
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: adminlte-data-service
+  profiles:
+    active: {{ spring_profiles | default('production') }}
+
+  datasource:
+    url: jdbc:postgresql://{{ postgres_host | default('localhost') }}:{{ postgres_port | default('5432') }}/{{ postgres_db | default('adminlte') }}
+    username: {{ postgres_user | default('adminlte') }}
+    password: {{ postgres_password }}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: {{ connection_pool_size | default('20') }}
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 600000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  redis:
+    host: {{ redis_host | default('localhost') }}
+    port: {{ redis_port | default('6379') }}
+    password: {{ redis_password | default('') }}
+
+logging:
+  level:
+    com.adminlte: INFO
+    org.hibernate: WARN
+    org.springframework: INFO
+  file:
+    name: /var/log/adminlte/data-service/data-service.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+adminlte:
+  data:
+    cache-ttl: {{ cache_ttl | default('3600') }}
+    page-size: {{ page_size | default('50') }}
+  audit:
+    enabled: true
+    log-file: /var/log/adminlte/data-service/audit.log

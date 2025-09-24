@@ -1,0 +1,18 @@
+# Claude Desktop Configuration
+# Add this to your claude_desktop_config.json
+
+{
+  "mcpServers": {
+    "jira-paws360": {
+      "command": "python",
+      "args": ["-m", "cli", "serve"],
+      "env": {
+        "PYTHONPATH": "/home/ryan/repos/PAWS360ProjectPlan/src",
+        "JIRA_URL": "https://paw360.atlassian.net",
+        "JIRA_API_KEY": "your_api_token_here",
+        "JIRA_EMAIL": "your-email@university.edu",
+        "JIRA_PROJECT_KEY": "PGB"
+      }
+    }
+  }
+}
