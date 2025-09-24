@@ -93,10 +93,10 @@
 - **GitHub Actions** - CI/CD pipelines
 
 ### **Development Tools:**
-- **VS Code** - Primary IDE with extensions
-- **IntelliJ IDEA** - Java development
+- **VS Code** - Primary IDE with extensions (see IDE Setup section below)
+- **IntelliJ IDEA** - Java development (see IDE Setup section below)
 - **Postman** - API testing and documentation
-- **pgAdmin** - Database administration
+- **pgAdmin/DBeaver** - Database administration (see Database Setup section)
 - **Docker Desktop** - Local container management
 
 ---
@@ -339,11 +339,49 @@ GET /api/analytics/retention-rates          # Student retention metrics
 
 ### **🗄️ Database Development Workflow**
 
-**1. Local Database Setup:**
+**1. PostgreSQL Installation & Setup:**
+
+**Option A: Docker (Recommended for Development)**
 ```bash
-# Initialize database (first time only)
+# Start PostgreSQL via Docker Compose (easiest)
+cd infrastructure/docker
+docker compose up -d postgres
+
+# Verify PostgreSQL is running
+docker compose ps
+docker compose logs postgres
+```
+
+**Option B: Local PostgreSQL Installation**
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# macOS (with Homebrew)
+brew install postgresql
+brew services start postgresql
+
+# Windows
+# Download from: https://www.postgresql.org/download/windows/
+# Run installer and follow setup wizard
+```
+
+**2. Database Initialization:**
+```bash
+# Initialize PAWS360 database (first time only)
 cd database/
 ./setup_database.sh
+
+# OR manual setup if script fails:
+# Create database and user
+psql -U postgres
+CREATE DATABASE paws360_dev;
+CREATE USER paws360 WITH PASSWORD 'paws360_dev_password';
+GRANT ALL PRIVILEGES ON DATABASE paws360_dev TO paws360;
+\q
 
 # Connect to database
 psql -h localhost -U paws360 -d paws360_dev
@@ -351,6 +389,20 @@ psql -h localhost -U paws360 -d paws360_dev
 # Run migrations
 \i paws360_database_ddl.sql
 \i paws360_seed_data.sql
+```
+
+**3. Database Connection Details:**
+```bash
+# Connection parameters
+Host: localhost
+Port: 5432
+Database: paws360_dev
+Username: paws360
+Password: paws360_dev_password
+
+# Connection URL for applications
+jdbc:postgresql://localhost:5432/paws360_dev
+postgresql://paws360:paws360_dev_password@localhost:5432/paws360_dev
 ```
 
 **2. Schema Management:**
@@ -397,6 +449,224 @@ SELECT * FROM audit_log
 WHERE table_name = 'students' 
 AND operation = 'SELECT' 
 ORDER BY created_at DESC;
+```
+
+---
+
+## **🛠️ IDE SETUP & CONFIGURATION**
+
+### **📝 Visual Studio Code Setup**
+
+**1. Installation:**
+```bash
+# Ubuntu/Debian
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+sudo apt update && sudo apt install code
+
+# macOS
+brew install --cask visual-studio-code
+
+# Windows: Download from https://code.visualstudio.com/
+```
+
+**2. Essential Extensions for PAWS360:**
+```bash
+# Install via VS Code Extensions marketplace or command line:
+code --install-extension ms-vscode.vscode-typescript-next
+code --install-extension bradlc.vscode-tailwindcss
+code --install-extension ms-vscode.vscode-json
+code --install-extension ms-python.python
+code --install-extension ms-vscode.vscode-java-pack
+code --install-extension redhat.java
+code --install-extension vscjava.vscode-spring-boot
+code --install-extension ms-azuretools.vscode-docker
+code --install-extension ms-vscode-remote.remote-containers
+code --install-extension ckolkman.vscode-postgres
+code --install-extension mtxr.sqltools
+code --install-extension mtxr.sqltools-driver-pg
+code --install-extension esbenp.prettier-vscode
+code --install-extension dbaeumer.vscode-eslint
+```
+
+**3. VS Code Workspace Configuration:**
+Create `.vscode/settings.json` in project root:
+```json
+{
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "spring-boot.ls.checkjvm": false,
+  "sqltools.connections": [
+    {
+      "name": "PAWS360 Database",
+      "driver": "PostgreSQL",
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "database": "paws360_dev",
+      "username": "paws360",
+      "password": "paws360_dev_password"
+    }
+  ]
+}
+```
+
+**4. VS Code Tasks Configuration:**
+Create `.vscode/tasks.json`:
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start PAWS360 Services",
+      "type": "shell",
+      "command": "./scripts/setup/paws360-services.sh",
+      "args": ["start"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Frontend Dev Server",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "isBackground": true
+    }
+  ]
+}
+```
+
+### **🧠 IntelliJ IDEA Setup**
+
+**1. Installation:**
+```bash
+# Download IntelliJ IDEA Ultimate or Community Edition
+# https://www.jetbrains.com/idea/download/
+
+# Ubuntu (Snap)
+sudo snap install intellij-idea-ultimate --classic
+# or
+sudo snap install intellij-idea-community --classic
+
+# macOS
+brew install --cask intellij-idea
+# or
+brew install --cask intellij-idea-ce
+
+# Windows: Download and run installer
+```
+
+**2. Essential Plugins for PAWS360:**
+- **Required Plugins (install via Settings → Plugins):**
+  - Spring Boot
+  - Spring Framework
+  - Docker
+  - Database Tools and SQL (built-in Ultimate)
+  - Git (built-in)
+  - Maven (built-in)
+  - Gradle (built-in)
+  - JavaScript and TypeScript (built-in Ultimate)
+  - Node.js (built-in Ultimate)
+
+**3. Project Setup in IntelliJ:**
+```bash
+# Open project
+1. File → Open → Select /path/to/capstone directory
+2. IntelliJ will auto-detect Maven/Gradle projects
+3. Wait for indexing to complete
+4. Configure Project SDK (Java 21)
+```
+
+**4. Database Connection in IntelliJ:**
+```bash
+# Database Tool Window (Ultimate Edition)
+1. View → Tool Windows → Database
+2. Click "+" → Data Source → PostgreSQL
+3. Configure connection:
+   - Host: localhost
+   - Port: 5432  
+   - Database: paws360_dev
+   - User: paws360
+   - Password: paws360_dev_password
+4. Test Connection → Apply → OK
+```
+
+**5. IntelliJ Run Configurations:**
+
+**Spring Boot Application:**
+```bash
+1. Run → Edit Configurations → "+" → Spring Boot
+2. Name: PAWS360 Backend
+3. Main class: com.uwm.paws360.Paws360Application
+4. Active profiles: dev
+5. Environment variables:
+   - DATABASE_URL=jdbc:postgresql://localhost:5432/paws360_dev
+   - DATABASE_USERNAME=paws360
+   - DATABASE_PASSWORD=paws360_dev_password
+```
+
+**Frontend Development:**
+```bash
+1. Run → Edit Configurations → "+" → npm
+2. Name: PAWS360 Frontend
+3. Package.json: /path/to/capstone/frontend/package.json
+4. Command: run
+5. Scripts: dev
+```
+
+**6. IntelliJ Code Style Setup:**
+```bash
+# Import Google Java Style
+1. Settings → Editor → Code Style → Java
+2. Gear icon → Import Scheme → IntelliJ IDEA code style XML
+3. Download: https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml
+4. Apply → OK
+
+# TypeScript/JavaScript formatting
+1. Settings → Editor → Code Style → TypeScript
+2. Set tab size: 2
+3. Set indent: 2
+4. Enable "Use single quotes"
+```
+
+### **🔗 Database GUI Tools (Alternative to IDE)**
+
+**pgAdmin (Web-based):**
+```bash
+# Installation
+# Ubuntu
+sudo apt install pgadmin4
+
+# macOS
+brew install --cask pgadmin4
+
+# Windows: Download from https://www.pgadmin.org/
+
+# Access: http://localhost/pgadmin4 or desktop app
+```
+
+**DBeaver (Cross-platform):**
+```bash
+# Download from https://dbeaver.io/download/
+# Free community edition available
+# Connection settings same as above
 ```
 
 ### **🎨 Student Portal Development Workflow (Next.js)**
