@@ -22,19 +22,18 @@ docker compose up -d
 
 - AdminLTE Dashboard: http://localhost:8080
 - Student Frontend (Next.js): http://localhost:9002
-- Auth service (mock/uwm): http://localhost:8084 or http://localhost:3000 (if configured)
-- Mock Auth API: http://localhost:8081
-- Mock Data API: http://localhost:8082
-- Mock Analytics API: http://localhost:8083
+- Auth Service + Mock Auth API: http://localhost:8081
+- Data Service + Mock Data API: http://localhost:8082
+- Analytics Service + Mock Analytics API: http://localhost:8083
+- UWM Auth Service: http://localhost:3000 (if configured)
 
-If you prefer running the Student Frontend locally instead of via Docker Compose, checkout the feature branch and run it from `./frontend`:
+If you prefer running the Student Frontend locally instead of via Docker Compose, run it from the `./frontend` directory:
 
 ```bash
 # from repo root
-git checkout feat/SCRUM-7-create-login-page
 cd frontend
 npm install
-npm run dev -p 9002
+npm run dev  # Runs on port 9002
 # then visit: http://localhost:9002
 ```
 
@@ -61,15 +60,17 @@ curl http://localhost:8083/actuator/health
 ## 📁 **PROJECT FOLDERS** (What's Where)
 
 ```
-PAWS360ProjectPlan/
-├── 📚 docs/           → Instructions & guides
-├── 🔧 scripts/        → Helper commands
-├── 🐳 infrastructure/ → Docker & server setup
-├── 📋 specs/          → What to build (plans)
-├── 🎨 frontend/       → Websites (React, Astro)
-├── ⚙️ backend/        → Server code (Java)
-├── 🧪 tests/          → Test files
-└── 📦 assets/         → Images & data files
+PAWS360/
+├── 📚 docs/           → Documentation & guides
+├── 🔧 scripts/        → Automation scripts
+├── 🐳 infrastructure/ → Docker & Ansible deployment
+├── 📋 specs/          → Feature specifications (if present)
+├── 🎨 frontend/       → Next.js Student Portal
+├── 🎨 app/            → Shared React components
+├── ⚙️ config/         → Environment configurations
+├── �️ database/       → SQL scripts & DB documentation
+├── ⚙️ src/            → Backend code (Java/Spring Boot)
+└── 📊 PAWS360_Admin_API.postman_collection.json → Complete API collection
 ```
 
 ---
@@ -85,14 +86,14 @@ PAWS360ProjectPlan/
 | **🔧 Setup Local Dev** | `cd infrastructure/ansible && ./dev-helper.sh deploy-local-dev` | Complete environment setup |
 | **📊 Test APIs** | Import `PAWS360_Admin_API.postman_collection.json` | Test all endpoints |
 | **🗄️ Database Access** | Check `database/` folder | SQL scripts & docs |
-| **🎓 Run Student Frontend** | `git checkout feat/SCRUM-7-create-login-page && npm run dev` | Next.js student app (port 9002) |
+| **🎓 Run Student Frontend** | `cd frontend && npm run dev` | Next.js student app (port 9002) |
 
 ### **🔧 Development Workflow:**
 
 1. **📥 Pull Latest Code** → `git pull origin main`
 2. **🚀 Start Services** → `./scripts/setup/paws360-services.sh start`  
 3. **✅ Run Tests** → `./scripts/testing/exhaustive-test-suite.sh`
-4. **🎓 Start Student Frontend** → `git checkout feat/SCRUM-7-create-login-page && npm run dev`
+4. **🎓 Start Student Frontend** → `cd frontend && npm run dev`
 5. **💻 Code Changes** → Edit files, test locally
 6. **🔄 Commit & Push** → `git add . && git commit -m "..." && git push`
 
@@ -280,10 +281,13 @@ PAWS360/
 ├── 📚 docs/                    → Complete documentation
 ├── 🔧 scripts/                 → Automation and setup scripts  
 ├── 🐳 infrastructure/          → Docker & Ansible deployment
-├── � specs/                   → Feature specifications
+├── 📋 specs/                   → Feature specifications
 ├── ⚙️ config/                  → Environment configurations
 ├── 🗄️ database/                → SQL scripts and DB docs
-└── 📦 assets/                  → Static files and resources
+├── 🎨 frontend/                → Next.js Student Portal
+├── 🎨 app/                     → Shared React components
+├── ⚙️ src/                     → Backend code (Spring Boot)
+└── 📊 PAWS360_Admin_API.postman_collection.json → API collection
 ```
 
 ### 🚀 **Quick Access Links**
