@@ -59,9 +59,6 @@ export default function SearchBar({ items, onResultClick }: SearchBarProps) {
 					/>
 					<Search className={s.searchIcon} />
 				</div>
-				{/* <Button variant="outline">
-					<Search className="h-4 w-4" />
-				</Button> */}
 			</div>
 			{showResults && results.length > 0 && (
 				<div className={s.searchResults}>
