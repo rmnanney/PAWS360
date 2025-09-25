@@ -1,7 +1,7 @@
 package com.uwm.paws360.Service;
 
-import com.uwm.paws360.Entity.Role.Professor;
-import com.uwm.paws360.Entity.Role.Student;
+import com.uwm.paws360.Entity.UserRole.Professor;
+import com.uwm.paws360.Entity.UserRole.Student;
 import com.uwm.paws360.Entity.Users;
 import com.uwm.paws360.JPARepository.ProfessorRepository;
 import com.uwm.paws360.JPARepository.StudentRepository;
