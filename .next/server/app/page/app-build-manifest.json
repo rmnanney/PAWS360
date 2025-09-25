@@ -1,9 +1,9 @@
 {
   "pages": {
     "/page": [
-      "static/chunks/app_global_d684f999.css",
+      "static/chunks/app_795582b4._.css",
       "static/chunks/node_modules_f80c733c._.js",
-      "static/chunks/app_557ecfee._.js",
+      "static/chunks/app_d6f60d55._.js",
       "static/chunks/app_layout_tsx_c0237562._.js",
       "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_fd44f5a4._.js",
       "static/chunks/node_modules_next_dist_compiled_2ce9398a._.js",

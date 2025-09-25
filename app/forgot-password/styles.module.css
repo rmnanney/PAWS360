@@ -1,0 +1,60 @@
+.bgImage {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(255, 255, 255, 0.85);
+}
+
+.container {
+	width: 100%;
+	max-width: 28rem; /* 448px, similar to max-w-md */
+	margin: 0 auto;
+}
+
+.cardCustom {
+	background: rgba(255, 255, 255, 0.9); /* fallback for bg-card/90 */
+	backdrop-filter: blur(4px);
+	animation: fade-in-up 0.5s;
+}
+
+.headerSpace {
+	margin-bottom: 1rem;
+}
+
+.card {
+	display: flex;
+	position: relative;
+	z-index: 10;
+	min-height: 100vh;
+	width: 100vw;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+}
+
+.title {
+	font-size: 1.875rem;
+	font-weight: bold;
+	font-family: var(--font-headline, inherit);
+}
+
+.form {
+	display: grid;
+	gap: 1rem;
+}
+
+.formGroup {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.fullWidth {
+	width: 100%;
+}
