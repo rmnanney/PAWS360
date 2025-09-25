@@ -1,58 +1,73 @@
 import Link from "next/link";
-import { Button } from "../components/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/card";
-import { Input } from "../components/input";
-import { Label } from "../components/label";
-import Logo from "../components/logo";
-import { PlaceHolderImages } from '../lib/placeholder-img';
+import { Button } from "../components/Others/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "../components/Card/card";
+import { Input } from "../components/Others/input";
+import { Label } from "../components/Others/label";
+import Logo from "../components/Others/logo";
+import { PlaceHolderImages } from "../lib/placeholder-img";
+import s from "./styles.module.css";
 
 export default function ForgotPasswordPage() {
-  const bgImage = PlaceHolderImages.find(
-    (img) => img.id === 'uwm-building',
-  );
-  
-  return (
-    <main className="relative min-h-screen">
-      {bgImage && (
-        <img
-          src={bgImage.imageUrl}
-          alt={bgImage.description}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      )}
-        
-      <div className="absolute inset-0 bg-white/50" />
+	const bgImage = PlaceHolderImages.find((img) => img.id === "uwm-building");
 
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4">
-        <Card className="mx-auto max-w-sm">
-          <CardHeader>
-            <Logo className="justify-center" />
-            <CardTitle className="text-2xl text-center font-headline pt-4">Forgot Password</CardTitle>
-            <CardDescription className="text-center">
-              Enter your email below to reset your password. We'll send you a link.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="epantherID@uwm.edu"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Send Reset Link
-              </Button>
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/">Cancel</Link>
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
-  );
+	return (
+		<main style={{ position: "relative", minHeight: "100vh" }}>
+			{bgImage && (
+				<img
+					src={bgImage.imageUrl}
+					alt={bgImage.description}
+					className={s.bgImage}
+				/>
+			)}
+
+			<div className={s.overlay} />
+
+			<div className={s.card}>
+				<div className={s.container}>
+					<Card className={s.cardCustom}>
+						<CardHeader className={s.headerSpace}>
+							<Logo className="justify-center" />
+
+							<div style={{ textAlign: "center" }}>
+								<CardTitle className={s.title}>Forgot Password</CardTitle>
+
+								<CardDescription style={{ paddingTop: "0.5rem" }}>
+									Enter your email below to reset your password. We'll send you
+									a link.
+								</CardDescription>
+							</div>
+						</CardHeader>
+
+						<CardContent>
+							<form className={s.form}>
+								<div className={s.formGroup}>
+									<Label htmlFor="email">Email</Label>
+									<Input
+										id="email"
+										type="email"
+										placeholder="epantherID@uwm.edu"
+										required
+									/>
+								</div>
+
+								<Button type="submit" className={s.fullWidth}>
+									Send Reset Link
+								</Button>
+
+								<Button variant="outline" className={s.fullWidth} asChild>
+									<Link href="/">Cancel</Link>
+								</Button>
+							</form>
+						</CardContent>
+					</Card>
+				</div>
+			</div>
+		</main>
+	);
 }
