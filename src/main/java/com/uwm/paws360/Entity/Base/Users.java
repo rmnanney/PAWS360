@@ -107,10 +107,11 @@ public class Users {
 /*------------------------- Set Before Entering Into DB -------------------------*/
 
     @PrePersist
-    private void setTimes(){
+    private void setData(){
         account_updated = LocalDate.now();
         last_login = LocalDateTime.now();
         changed_password = LocalDate.now();
+        ferpa_compliance = Ferpa_Compliance.RESTRICTED;
     }
 
 /*------------------------- Getters -------------------------*/
