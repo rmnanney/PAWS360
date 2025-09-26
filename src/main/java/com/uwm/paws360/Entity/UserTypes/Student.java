@@ -11,33 +11,11 @@ public class Student {
     @GeneratedValue
     private int id;
 
-    @OneToOne
+    @OneToOne(
+            cascade = CascadeType.ALL
+    )
     @JoinColumn(name = "user_id")
     private Users user;
 
-    @Column
-    private double gpa;
 
-    public Student(Users user) {
-        this.user = user;
-    }
-
-    public Student() {
-    }
-
-    public Users getUser() {
-        return user;
-    }
-
-    public void setUser(Users user) {
-        this.user = user;
-    }
-
-    public double getGpa() {
-        return gpa;
-    }
-
-    public void setGpa(double gpa) {
-        this.gpa = gpa;
-    }
 }
