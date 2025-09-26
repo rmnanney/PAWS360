@@ -1,11 +1,13 @@
 package com.uwm.paws360.Service;
 
+import com.uwm.paws360.DTO.User.EditUserRequestDTO;
+import com.uwm.paws360.DTO.Login.UserLoginResponseDTO;
 import com.uwm.paws360.Entity.UserTypes.*;
 import com.uwm.paws360.Entity.Base.Users;
 import com.uwm.paws360.JPARepository.User.*;
 import org.springframework.stereotype.Service;
-import com.uwm.paws360.DTO.Basic.CreateUserDTO;
-import com.uwm.paws360.DTO.Basic.UserResponseDTO;
+import com.uwm.paws360.DTO.User.CreateUserDTO;
+import com.uwm.paws360.DTO.User.UserResponseDTO;
 
 @Service
 public class UserService {
@@ -93,5 +95,28 @@ public class UserService {
         );
     }
 
-
+    public UserResponseDTO editUser(EditUserRequestDTO userDTO){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(userDTO.email());
+        if(user == null) new UserResponseDTO(-1, null, null, null,
+                null, null, null, null, null);
+        user.setFirstname(userDTO.firstname());
+        user.setMiddlename(userDTO.middlename());
+        user.setLastname(userDTO.lastname());
+        user.setDob(userDTO.dob());
+        user.setPassword(userDTO.password());
+        user.setCountryCode(userDTO.countryCode());
+        user.setPhone(userDTO.phone());
+        userRepository.save(user);
+        return new UserResponseDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getRole(),
+                user.getStatus(),
+                user.getDob(),
+                user.getCountryCode(),
+                user.getPhone()
+        );
+    }
 }
