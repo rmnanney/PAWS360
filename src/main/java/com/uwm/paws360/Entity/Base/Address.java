@@ -16,9 +16,18 @@ public class Address {
     @GeneratedValue
     private int id;
 
+    @Column(nullable = false, name = "user_id")
+    private int user_id;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Address_Type address_type;
+
+    @Column(nullable = false)
+    private String firstname;
+
+    @Column(nullable = false)
+    private String lastname;
 
     @Column(nullable = false)
     private String street_address_1;
@@ -97,7 +106,19 @@ public class Address {
         return users;
     }
 
-/*------------------------- Fields -------------------------*/
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public int getUser_id() {
+        return user_id;
+    }
+
+    /*------------------------- Setters -------------------------*/
 
     public void setAddress_type(Address_Type address_type) {
         this.address_type = address_type;
@@ -129,5 +150,17 @@ public class Address {
 
     public void setUsers(List<Users> users) {
         this.users = users;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public void setUser_id(int user_id) {
+        this.user_id = user_id;
     }
 }
