@@ -15,9 +15,6 @@ public class Professor {
     @JoinColumn(name = "user_id")
     private Users user;
 
-    @Column
-    private double pay;
-
     public Professor(Users user) {
         this.user = user;
     }
@@ -33,11 +30,4 @@ public class Professor {
         this.user = user;
     }
 
-    public double getPay() {
-        return pay;
-    }
-
-    public void setPay(double pay) {
-        this.pay = pay;
-    }
 }

@@ -1,6 +1,7 @@
 package com.uwm.paws360.Controller;
 
-import com.uwm.paws360.Entity.Base.Users;
+import com.uwm.paws360.DTO.Basic.CreateUserDTO;
+import com.uwm.paws360.DTO.Basic.UserResponseDTO;
 import com.uwm.paws360.Service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,36 +15,9 @@ public class UserController {
         this.userService = userService;
     }
 
-//    @GetMapping("/search/{user-id}")
-//    public Users findUserById(@PathVariable("user-id") Integer id){
-//        return repository.findById(id).orElse(null);
-//    }
-//
-//    @GetMapping("/search/all")
-//    public List<Users> findAllUsers(){
-//        return repository.findAll();
-//    }
-//
-//    @GetMapping("/search/{user-name}")
-//    public List<Users> findUsersByName(@PathVariable("user-name") String name){
-//        return repository.findAllByFirstnameLike(name);
-//    }
-//
-//    @GetMapping("/search/{user-email}")
-//    public Users findUsersByEmail(@PathVariable("user-email") String email){
-//        return repository.findUsersByEmailLikeIgnoreCase(email);
-//    }
-
     @PostMapping("/create")
-    public Users createUser(@RequestBody Users user){
-       return userService.createUser(user);
+    public UserResponseDTO createUser(@RequestBody CreateUserDTO userDTO){
+       return userService.createUser(userDTO);
     }
-
-//    @DeleteMapping("/{user-id}")
-//    public void deleteUser(@PathVariable("user-id") Users user){
-//        repository.delete(user);
-//    }
-
-
 
 }
