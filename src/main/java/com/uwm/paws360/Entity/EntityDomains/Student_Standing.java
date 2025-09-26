@@ -1,4 +1,4 @@
-package com.uwm.paws360.Entity.Domains;
+package com.uwm.paws360.Entity.EntityDomains;
 
 public enum Student_Standing {
     FRESHMAN("Freshman"),

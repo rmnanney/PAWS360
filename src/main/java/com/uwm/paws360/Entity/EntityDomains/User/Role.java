@@ -1,4 +1,4 @@
-package com.uwm.paws360.Entity.Domains.User;
+package com.uwm.paws360.Entity.EntityDomains.User;
 
 public enum Role {
     STUDENT("Student"),
@@ -8,7 +8,10 @@ public enum Role {
     COUNSELOR("Counselor"),
     MENTOR("Mentor"),
     ADVISOR("Advisor"),
-    FACULTY("Faculty");
+    FACULTY("Faculty"),
+    STAFF("Staff"),
+    Administrator("Admin"),
+    Super_Administrator("Super Admin");
 
     private final String label;
 
