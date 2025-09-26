@@ -73,8 +73,11 @@ public class Users {
     @Column(nullable = false)
     private int failed_attempts;
 
+    @Column(nullable = false)
+    private boolean account_locked;
+
     @Column
-    private LocalDateTime account_locked;
+    private LocalDateTime account_locked_duration;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -117,6 +120,7 @@ public class Users {
         address.setFirstname(this.firstname);
         address.setLastname(this.lastname);
         address.setUser_id(this.id);
+        account_locked = false;
     }
 
 /*------------------------- Getters -------------------------*/
@@ -189,8 +193,12 @@ public class Users {
         return failed_attempts;
     }
 
-    public LocalDateTime getAccount_locked() {
+    public boolean isAccount_locked() {
         return account_locked;
+    }
+
+    public LocalDateTime getAccount_locked_duration() {
+        return account_locked_duration;
     }
 
     public Ferpa_Compliance getFerpa_compliance() {
@@ -205,7 +213,7 @@ public class Users {
         return session_expiration;
     }
 
-/*------------------------- Setters -------------------------*/
+    /*------------------------- Setters -------------------------*/
 
     public void setFirstname(String firstname) {
         this.firstname = firstname;
@@ -267,8 +275,12 @@ public class Users {
         this.failed_attempts = failed_attempts;
     }
 
-    public void setAccount_locked(LocalDateTime account_locked) {
+    public void setAccount_locked(boolean account_locked) {
         this.account_locked = account_locked;
+    }
+
+    public void setAccount_locked_duration(LocalDateTime account_locked_duration) {
+        this.account_locked_duration = account_locked_duration;
     }
 
     public void setFerpa_compliance(Ferpa_Compliance ferpa_compliance) {
