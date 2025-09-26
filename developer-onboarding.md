@@ -2,18 +2,6 @@
 
 ## **PROJECT OVERVIEW**
 
-<<<<<<< HEAD
-**PAWS360** = Unified student platform integrating multiple university systems
-
-**Architecture:** Modern full-stack application with microservices
-- **Frontend:** React 18 + TypeScript SPA
-- **Backend:** Spring Boot 3.x + Java 21
-- **Database:** PostgreSQL with JPA/Hibernate
-- **Auth:** SAML2 (Azure AD) + JWT tokens
-- **Infrastructure:** Docker + Kubernetes
-- **CI/CD:** GitHub Actions + automated testing
-- **CI/CD:** GitHub Actions + automated testing
-=======
 **PAWS360** = Unified student success platform integrating multiple university systems
 
 **Architecture:** Modern full-stack application with microservices & containerized deployment
@@ -25,7 +13,6 @@
 - **Infrastructure:** Docker Compose + Kubernetes + Ansible automation
 - **Testing:** Comprehensive test suite + Postman collections + health checks
 - **Development Tools:** Complete mock services + local development environment
->>>>>>> master
 
 ---
 
@@ -34,27 +21,7 @@
 ### **Core Components:**
 
 ```
-<<<<<<< HEAD
-┌─────────────────────────────────────────────────────────────┐
-│                    PAWS360 PLATFORM                         │
-├─────────────────────────────────────────────────────────────┤
-│  🌐 REACT FRONTEND (SPA)     🖥️  SPRING BACKEND (API)       │
-│  • TypeScript/ES6+          • Java 21 LTS                  │
-│  • Component Architecture   • REST APIs                    │
-│  • State Management         • JPA Entities                 │
-│  • Responsive UI            • Service Layer                │
-├─────────────────────────────────────────────────────────────┤
-│  🗄️  POSTGRESQL DATABASE     🔐 AUTHENTICATION (SAML2)      │
-│  • Student Records          • Azure AD Integration         │
-│  • Course Data              • JWT Tokens                   │
-│  • FERPA Compliance         • Role-Based Access            │
-├─────────────────────────────────────────────────────────────┤
-│  🔄 INTEGRATIONS               📊 ANALYTICS & REPORTING     │
-│  • PeopleSoft WEBLIB        • Student Performance          │
-│  • Legacy System APIs       • Usage Metrics                │
-│  • Data Synchronization     • Audit Logs                   │
-└─────────────────────────────────────────────────────────────┘
-=======
+```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │                         PAWS360 UNIFIED PLATFORM                               │
 ├─────────────────────────────────────────────────────────────────────────────────┤
@@ -82,20 +49,11 @@
 │  • Automated Testing Scripts                                                  │
 │  • Local Development Environment                                              │
 └─────────────────────────────────────────────────────────────────────────────────┘
->>>>>>> master
+```
 ```
 
 ### **Data Flow:**
 ```
-<<<<<<< HEAD
-User Request → React Component → API Call → Spring Controller
-                                      ↓
-                                Service Layer → Repository
-                                      ↓
-                                PostgreSQL Database
-                                      ↓
-                                Response → Frontend → UI Update
-=======
 👨‍🎓 Student Portal (Next.js:9002) ──┐
                                     ├──→ 🔐 Auth Service (8081) ──→ JWT Token
 🖥️  Admin Dashboard (AdminLTE:8080) ──┘                          ↓
@@ -108,7 +66,6 @@ User Request → React Component → API Call → Spring Controller
                                                          ⚡ Redis Cache (Sessions)
                                                                    ↓
                                                          📊 Real-time Response
->>>>>>> master
 ```
 
 ---
@@ -138,17 +95,10 @@ User Request → React Component → API Call → Spring Controller
 - **GitHub Actions** - CI/CD pipelines
 
 ### **Development Tools:**
-<<<<<<< HEAD
-- **VS Code** - Primary IDE with extensions
-- **IntelliJ IDEA** - Java development
-- **Postman** - API testing and documentation
-- **pgAdmin** - Database administration
-=======
 - **VS Code** - Primary IDE with extensions (see IDE Setup section below)
 - **IntelliJ IDEA** - Java development (see IDE Setup section below)
 - **Postman** - API testing and documentation
 - **pgAdmin/DBeaver** - Database administration (see Database Setup section)
->>>>>>> master
 - **Docker Desktop** - Local container management
 
 ---
@@ -159,18 +109,6 @@ User Request → React Component → API Call → Spring Controller
 ```bash
 # Clone repository
 git clone <repo-url>
-<<<<<<< HEAD
-cd PAWS360ProjectPlan
-
-# Install dependencies
-npm install  # Frontend
-./gradlew build  # Backend
-
-# Start development environment
-docker-compose up -d  # Database, Redis
-npm start  # Frontend (port 3000)
-./gradlew bootRun  # Backend (port 8080)
-=======
 cd capstone
 
 # Quick start - 3 commands to get basic environment running
@@ -192,18 +130,6 @@ npm run dev  # Runs on port 9002
 
 ### **2. Development Process:**
 ```
-<<<<<<< HEAD
-1. Create feature branch: git checkout -b feature/user-auth
-2. Write code with tests
-3. Run local tests: npm test, ./gradlew test
-4. Commit changes: git commit -m "Add user authentication"
-5. Push branch: git push origin feature/user-auth
-6. Create PR with description
-7. Code review and merge
-8. Deploy to staging
-9. Automated testing in CI/CD
-10. Deploy to production
-=======
 1. Create feature branch: git checkout -b feature/user-dashboard
 2. Start development environment: ./scripts/setup/paws360-services.sh start
 3. Write code with tests (use Postman collection for API testing)
@@ -226,8 +152,6 @@ npm run dev  # Runs on port 9002
 
 ---
 
-<<<<<<< HEAD
-=======
 ## **AVAILABLE DEVELOPMENT TOOLS & ASSETS** 🧰
 
 ### **🚀 Service Management Scripts**
@@ -1761,37 +1685,6 @@ jobs:
 
 ---
 
-<<<<<<< HEAD
-## **COMMON DEVELOPMENT TASKS**
-
-### **Adding a New Feature:**
-1. **Design:** Create API specification and database schema
-2. **Backend:** Implement JPA entities, services, controllers
-3. **Frontend:** Create React components and API integration
-4. **Testing:** Write unit and integration tests
-5. **Documentation:** Update API docs and component docs
-
-### **Database Migration:**
-```java
-// Flyway migration
-@Bean
-public FlywayMigrationStrategy flywayMigrationStrategy() {
-    return flyway -> {
-        // Custom migration logic
-        flyway.migrate();
-    };
-}
-```
-
-### **API Documentation:**
-```java
-// OpenAPI/Swagger annotations
-@Operation(summary = "Get student by ID")
-@ApiResponse(responseCode = "200", description = "Student found")
-@GetMapping("/{id}")
-public ResponseEntity<StudentDTO> getStudent(@PathVariable Long id) {
-    // Implementation
-=======
 ## **🗺️ EXPLORATION GUIDE - DISCOVER ALL ASSETS** 
 
 ### **📂 Must-Know File Locations**
@@ -2003,16 +1896,6 @@ export const StudentPerformanceCard = ({ studentId, performance }: StudentPerfor
 
 ### **Common Issues:**
 
-<<<<<<< HEAD
-**Database Connection Issues:**
-```bash
-# Check PostgreSQL container
-docker ps | grep postgres
-docker logs <container-id>
-
-# Test connection
-psql -h localhost -U paws360 -d paws360_dev
-=======
 **Docker Compose Issues:**
 ```bash
 # Wrong command syntax (common error)
