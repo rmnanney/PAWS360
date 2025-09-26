@@ -17,5 +17,17 @@ public class Student {
     @JoinColumn(name = "user_id")
     private Users user;
 
+    public Student(Users user) {
+        this.user = user;
+    }
 
+    public Student(){}
+
+    public Users getUser() {
+        return user;
+    }
+
+    public void setUser(Users user) {
+        this.user = user;
+    }
 }
