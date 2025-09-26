@@ -1,4 +1,4 @@
-package com.uwm.paws360.DTO.Basic;
+package com.uwm.paws360.DTO.User;
 
 import com.uwm.paws360.Entity.Base.Address;
 import com.uwm.paws360.Entity.EntityDomains.User.Country_Code;

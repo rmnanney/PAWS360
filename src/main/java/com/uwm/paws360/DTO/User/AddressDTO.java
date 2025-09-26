@@ -1,4 +1,4 @@
-package com.uwm.paws360.DTO.Basic;
+package com.uwm.paws360.DTO.User;
 
 import com.uwm.paws360.Entity.EntityDomains.User.Address_Type;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
