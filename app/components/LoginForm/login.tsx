@@ -25,7 +25,7 @@ const formSchema = z.object({
 	email: z
 		.string()
 		.email({ message: "Please enter a valid email." })
-		.endsWith("@UWM.edu", {
+		.endsWith("@uwm.edu", {
 			message: "Must be a valid University Email Address.",
 		}),
 	password: z.string().min(1, { message: "Password is required." }),
@@ -49,24 +49,46 @@ export default function LoginForm() {
 		// Simulate API call
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 
-		if (values.email === "test@UWM.edu" && values.password === "password") {
-			toast({
-				title: "Success",
-				description: "Login successful! Redirecting...",
-				duration: 1500, // milliseconds
-			});
-			setTimeout(() => {
-				router.push("/homepage");
-			}, 1500);
-		} else {
-			toast({
-				variant: "destructive",
-				title: "Login Failed",
-				description: "Incorrect email or password. Please try again.",
-			});
-			form.reset({ ...values, password: "" });
-		}
-		setIsLoading(false);
+        try{
+            const res = await fetch("http://localhost:8080/login",{
+                method: "POST",
+                headers:{
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(values),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.message === "Login Successful"){
+                localStorage.setItem("authToken", data.session_token);
+
+                toast({
+                    title: "Login Successful",
+                    description: `Welcome ${data.fistname}! Redirecting...`,
+                    duration: 1500,
+                });
+
+                setTimeout(() =>{
+                    router.push("/homepage")
+                }, 1500);
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Login Failed",
+                    description: data.message || "Sorry, something went wrong. Please try again.",
+                });
+                form.reset({...values, password: ""});
+            }
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Unable to connect to the server. Try again later.",
+            });
+        } finally {
+            setIsLoading(false);
+        }
 	}
 
 	return (
