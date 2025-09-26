@@ -2,6 +2,18 @@
 
 ## **PROJECT OVERVIEW**
 
+<<<<<<< HEAD
+**PAWS360** = Unified student platform integrating multiple university systems
+
+**Architecture:** Modern full-stack application with microservices
+- **Frontend:** React 18 + TypeScript SPA
+- **Backend:** Spring Boot 3.x + Java 21
+- **Database:** PostgreSQL with JPA/Hibernate
+- **Auth:** SAML2 (Azure AD) + JWT tokens
+- **Infrastructure:** Docker + Kubernetes
+- **CI/CD:** GitHub Actions + automated testing
+- **CI/CD:** GitHub Actions + automated testing
+=======
 **PAWS360** = Unified student success platform integrating multiple university systems
 
 **Architecture:** Modern full-stack application with microservices & containerized deployment
@@ -13,6 +25,7 @@
 - **Infrastructure:** Docker Compose + Kubernetes + Ansible automation
 - **Testing:** Comprehensive test suite + Postman collections + health checks
 - **Development Tools:** Complete mock services + local development environment
+>>>>>>> master
 
 ---
 
@@ -21,6 +34,27 @@
 ### **Core Components:**
 
 ```
+<<<<<<< HEAD
+┌─────────────────────────────────────────────────────────────┐
+│                    PAWS360 PLATFORM                         │
+├─────────────────────────────────────────────────────────────┤
+│  🌐 REACT FRONTEND (SPA)     🖥️  SPRING BACKEND (API)       │
+│  • TypeScript/ES6+          • Java 21 LTS                  │
+│  • Component Architecture   • REST APIs                    │
+│  • State Management         • JPA Entities                 │
+│  • Responsive UI            • Service Layer                │
+├─────────────────────────────────────────────────────────────┤
+│  🗄️  POSTGRESQL DATABASE     🔐 AUTHENTICATION (SAML2)      │
+│  • Student Records          • Azure AD Integration         │
+│  • Course Data              • JWT Tokens                   │
+│  • FERPA Compliance         • Role-Based Access            │
+├─────────────────────────────────────────────────────────────┤
+│  🔄 INTEGRATIONS               📊 ANALYTICS & REPORTING     │
+│  • PeopleSoft WEBLIB        • Student Performance          │
+│  • Legacy System APIs       • Usage Metrics                │
+│  • Data Synchronization     • Audit Logs                   │
+└─────────────────────────────────────────────────────────────┘
+=======
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │                         PAWS360 UNIFIED PLATFORM                               │
 ├─────────────────────────────────────────────────────────────────────────────────┤
@@ -48,10 +82,20 @@
 │  • Automated Testing Scripts                                                  │
 │  • Local Development Environment                                              │
 └─────────────────────────────────────────────────────────────────────────────────┘
+>>>>>>> master
 ```
 
 ### **Data Flow:**
 ```
+<<<<<<< HEAD
+User Request → React Component → API Call → Spring Controller
+                                      ↓
+                                Service Layer → Repository
+                                      ↓
+                                PostgreSQL Database
+                                      ↓
+                                Response → Frontend → UI Update
+=======
 👨‍🎓 Student Portal (Next.js:9002) ──┐
                                     ├──→ 🔐 Auth Service (8081) ──→ JWT Token
 🖥️  Admin Dashboard (AdminLTE:8080) ──┘                          ↓
@@ -64,6 +108,7 @@
                                                          ⚡ Redis Cache (Sessions)
                                                                    ↓
                                                          📊 Real-time Response
+>>>>>>> master
 ```
 
 ---
@@ -93,10 +138,17 @@
 - **GitHub Actions** - CI/CD pipelines
 
 ### **Development Tools:**
+<<<<<<< HEAD
+- **VS Code** - Primary IDE with extensions
+- **IntelliJ IDEA** - Java development
+- **Postman** - API testing and documentation
+- **pgAdmin** - Database administration
+=======
 - **VS Code** - Primary IDE with extensions (see IDE Setup section below)
 - **IntelliJ IDEA** - Java development (see IDE Setup section below)
 - **Postman** - API testing and documentation
 - **pgAdmin/DBeaver** - Database administration (see Database Setup section)
+>>>>>>> master
 - **Docker Desktop** - Local container management
 
 ---
@@ -107,25 +159,51 @@
 ```bash
 # Clone repository
 git clone <repo-url>
+<<<<<<< HEAD
+cd PAWS360ProjectPlan
+
+# Install dependencies
+npm install  # Frontend
+./gradlew build  # Backend
+
+# Start development environment
+docker-compose up -d  # Database, Redis
+npm start  # Frontend (port 3000)
+./gradlew bootRun  # Backend (port 8080)
+=======
 cd capstone
 
-# Quick start - 3 commands to get everything running
+# Quick start - 3 commands to get basic environment running
 # 1. Prepare the environment (Ansible helper)
 cd infrastructure/ansible
 ./dev-helper.sh deploy-local-dev
 
-# 2. Start all services via Docker Compose
+# 2. Start database services via Docker Compose (full services need JAR files)
 cd ../docker
-docker compose up -d
+docker compose up -d postgres redis  # Start core infrastructure
+# Note: Full services require: docker compose up -d (needs compiled JAR files)
 
-# 3. Start Student Frontend locally (optional)
+# 3. Start Student Frontend locally (recommended approach)
 cd ../../frontend
 npm install
 npm run dev  # Runs on port 9002
+>>>>>>> master
 ```
 
 ### **2. Development Process:**
 ```
+<<<<<<< HEAD
+1. Create feature branch: git checkout -b feature/user-auth
+2. Write code with tests
+3. Run local tests: npm test, ./gradlew test
+4. Commit changes: git commit -m "Add user authentication"
+5. Push branch: git push origin feature/user-auth
+6. Create PR with description
+7. Code review and merge
+8. Deploy to staging
+9. Automated testing in CI/CD
+10. Deploy to production
+=======
 1. Create feature branch: git checkout -b feature/user-dashboard
 2. Start development environment: ./scripts/setup/paws360-services.sh start
 3. Write code with tests (use Postman collection for API testing)
@@ -136,6 +214,7 @@ npm run dev  # Runs on port 9002
 8. Code review and merge
 9. Deploy to staging via Ansible
 10. Automated testing and validation
+>>>>>>> master
 ```
 
 ### **3. Code Quality Gates:**
@@ -147,6 +226,8 @@ npm run dev  # Runs on port 9002
 
 ---
 
+<<<<<<< HEAD
+=======
 ## **AVAILABLE DEVELOPMENT TOOLS & ASSETS** 🧰
 
 ### **🚀 Service Management Scripts**
@@ -216,15 +297,20 @@ paws360_database_testing.md          # Database testing strategies
 ```bash
 cd infrastructure/docker/
 
-# Start complete environment
-docker compose up -d                 # All services
-docker compose up -d postgres redis  # Just database services
+# Start complete environment (requires JAR files and configuration)
+docker compose up -d                 # All services (may fail without JAR files)
+docker compose up -d postgres redis  # Just database services (recommended for development)
 docker compose logs -f auth-service  # Follow auth service logs
 docker compose ps                    # Show running services
+
+# Troubleshooting
+docker compose down                  # Stop all services
+docker compose pull                  # Update images
 
 # Environment files
 docker-compose.yml                   # Main development environment
 docker-compose.test.yml              # Testing environment
+.env                                 # Docker environment variables (auto-created)
 ```
 
 ### **⚙️ Configuration Management**
@@ -261,14 +347,20 @@ http://localhost:6379               # Redis Cache
 
 ### **🧪 Health Checks & Testing**
 ```bash
-# Quick health checks
-curl http://localhost:8080/                    # AdminLTE UI
-curl http://localhost:8081/health              # Auth Service
-curl http://localhost:8082/actuator/health     # Data Service
-curl http://localhost:8083/actuator/health     # Analytics Service
-curl http://localhost:9002/_next/static/       # Student Frontend
+# Check Docker services status first
+docker compose ps                              # Shows actual container status
 
-# Service status
+# Quick health checks (Note: May fail until JAR files are provided)
+curl http://localhost:8080/ || echo "AdminLTE UI not accessible"                    # AdminLTE UI
+curl http://localhost:8081/health || echo "Auth Service not accessible"              # Auth Service
+curl http://localhost:8082/actuator/health || echo "Data Service not accessible"     # Data Service
+curl http://localhost:8083/actuator/health || echo "Analytics Service not accessible" # Analytics Service
+curl http://localhost:9002/_next/static/ || echo "Student Frontend not running"       # Student Frontend
+
+# Database should be accessible if Docker Compose ran successfully
+psql -h localhost -p 5432 -U paws360 -d paws360_dev -c "SELECT 1;"
+
+# Service status (requires scripts to be functional)
 ./scripts/setup/paws360-services.sh status     # All service status
 ./scripts/setup/paws360-services.sh test       # Test all endpoints
 ```
@@ -342,7 +434,12 @@ GET /api/analytics/retention-rates          # Student retention metrics
 **1. PostgreSQL Installation & Setup:**
 
 **Option A: Docker (Recommended for Development)**
+
+**Important**: Make sure you have the modern Docker Compose plugin installed:
 ```bash
+# Install Docker Compose plugin if needed (Ubuntu/Debian)
+sudo apt update && sudo apt install docker-compose-plugin
+
 # Start PostgreSQL via Docker Compose (easiest)
 cd infrastructure/docker
 docker compose up -d postgres
@@ -617,7 +714,7 @@ brew install --cask intellij-idea-ce
 ```bash
 1. Run → Edit Configurations → "+" → Spring Boot
 2. Name: PAWS360 Backend
-3. Main class: com.uwm.paws360.Paws360Application
+3. Main class: com.uwm.paws360.Application
 4. Active profiles: dev
 5. Environment variables:
    - DATABASE_URL=jdbc:postgresql://localhost:5432/paws360_dev
@@ -694,14 +791,14 @@ npm run typecheck    # TypeScript validation
 
 **2. Component Development:**
 ```typescript
-// Available Shadcn/ui components in app/components/
-import { Button } from "@/components/button"
-import { Card, CardContent, CardHeader } from "@/components/card"
-import { Input } from "@/components/input"
-import { Badge } from "@/components/badge"
-import { Dialog } from "@/components/dialog"
-import { Table } from "@/components/table"
-import { Chart } from "@/components/chart"
+// Available Shadcn/ui components in app/components/ (organized in folders after GitHub merge)
+import { Button } from "@/components/Others/button"
+import { Card, CardContent, CardHeader } from "@/components/Card/card"
+import { Input } from "@/components/Others/input"
+import { Badge } from "@/components/Others/badge"
+import { Dialog } from "@/components/Others/dialog"
+import { Table } from "@/components/Others/table"
+import { Chart } from "@/components/Others/chart"
 
 // Student Dashboard Example
 const StudentDashboard = () => {
@@ -785,8 +882,8 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { Button } from "@/components/button"
-import { Input } from "@/components/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table"
+import { Input } from "@/components/Others/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/Others/table"
 import { Badge } from "@/components/badge"
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
 
@@ -1472,6 +1569,7 @@ public ResponseEntity<DataTableResponse<StudentDTO>> getStudentsDataTable(
 
 ---
 
+>>>>>>> master
 ## **KEY CONCEPTS & PATTERNS**
 
 ### **Frontend Patterns:**
@@ -1663,6 +1761,37 @@ jobs:
 
 ---
 
+<<<<<<< HEAD
+## **COMMON DEVELOPMENT TASKS**
+
+### **Adding a New Feature:**
+1. **Design:** Create API specification and database schema
+2. **Backend:** Implement JPA entities, services, controllers
+3. **Frontend:** Create React components and API integration
+4. **Testing:** Write unit and integration tests
+5. **Documentation:** Update API docs and component docs
+
+### **Database Migration:**
+```java
+// Flyway migration
+@Bean
+public FlywayMigrationStrategy flywayMigrationStrategy() {
+    return flyway -> {
+        // Custom migration logic
+        flyway.migrate();
+    };
+}
+```
+
+### **API Documentation:**
+```java
+// OpenAPI/Swagger annotations
+@Operation(summary = "Get student by ID")
+@ApiResponse(responseCode = "200", description = "Student found")
+@GetMapping("/{id}")
+public ResponseEntity<StudentDTO> getStudent(@PathVariable Long id) {
+    // Implementation
+=======
 ## **🗺️ EXPLORATION GUIDE - DISCOVER ALL ASSETS** 
 
 ### **📂 Must-Know File Locations**
@@ -1864,6 +1993,7 @@ export const StudentPerformanceCard = ({ studentId, performance }: StudentPerfor
       </CardContent>
     </Card>
   )
+>>>>>>> master
 }
 ```
 
@@ -1873,6 +2003,7 @@ export const StudentPerformanceCard = ({ studentId, performance }: StudentPerfor
 
 ### **Common Issues:**
 
+<<<<<<< HEAD
 **Database Connection Issues:**
 ```bash
 # Check PostgreSQL container
@@ -1881,6 +2012,44 @@ docker logs <container-id>
 
 # Test connection
 psql -h localhost -U paws360 -d paws360_dev
+=======
+**Docker Compose Issues:**
+```bash
+# Wrong command syntax (common error)
+# ❌ Wrong: docker composer up -d
+# ❌ Wrong: docker-compose up -d (may fail on newer Docker)
+# ✅ Correct: docker compose up -d
+
+# Install modern Docker Compose plugin if needed
+sudo apt update && sudo apt install docker-compose-plugin
+
+# Services restarting due to missing JAR files
+docker compose logs auth-service  # Check for "file not found" errors
+ls -la services/                  # Verify JAR files exist (may be directories incorrectly)
+```
+
+**Database Connection Issues:**
+```bash
+# Check PostgreSQL container (should work)
+docker ps | grep postgres
+docker logs adminlte-postgres
+
+# Test connection (database should be accessible)
+psql -h localhost -p 5432 -U paws360 -d paws360_dev -c "SELECT version();"
+```
+
+**Service Startup Issues:**
+```bash
+# Check why services are restarting
+docker compose ps                    # Shows restart status
+docker compose logs auth-service     # Check specific service logs
+docker compose logs adminlte-ui      # Check UI logs for nginx config issues
+
+# Missing JAR files (common issue)
+# Services expect JAR files in ./services/ but may find directories instead
+rm -rf services/auth-service.jar services/data-service.jar services/analytics-service.jar
+# Rebuild or provide actual JAR files for full service functionality
+>>>>>>> master
 ```
 
 **Build Failures:**
