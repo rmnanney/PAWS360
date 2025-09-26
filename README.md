@@ -13,11 +13,8 @@ cd infrastructure/ansible
 
 2) Start services via Docker Compose (includes the Student Frontend)
 
-<<<<<<< HEAD
-=======
 **Note**: Use `docker compose` (not `docker-compose` or `docker composer`)
 
->>>>>>> master
 ```bash
 cd infrastructure/docker
 docker compose up -d
@@ -27,21 +24,6 @@ docker compose up -d
 
 - AdminLTE Dashboard: http://localhost:8080
 - Student Frontend (Next.js): http://localhost:9002
-<<<<<<< HEAD
-- Auth service (mock/uwm): http://localhost:8084 or http://localhost:3000 (if configured)
-- Mock Auth API: http://localhost:8081
-- Mock Data API: http://localhost:8082
-- Mock Analytics API: http://localhost:8083
-
-If you prefer running the Student Frontend locally instead of via Docker Compose, checkout the feature branch and run it from `./frontend`:
-
-```bash
-# from repo root
-git checkout feat/SCRUM-7-create-login-page
-cd frontend
-npm install
-npm run dev -p 9002
-=======
 - Auth Service + Mock Auth API: http://localhost:8081
 - Data Service + Mock Data API: http://localhost:8082
 - Analytics Service + Mock Analytics API: http://localhost:8083
@@ -60,19 +42,6 @@ npm run dev  # Runs on port 9002
 
 ## Health checks (quick)
 
-<<<<<<< HEAD
-```bash
-curl http://localhost:8080/
-curl http://localhost:9002/_next/static/ || true
-curl http://localhost:8081/health
-curl http://localhost:8082/actuator/health
-curl http://localhost:8083/actuator/health
-```
-
-## Notes and recommendations
-- The compose service `student-frontend` mounts `./frontend` from the repo root and exposes port 9002. Ensure the `frontend/` folder is present (this repo already contains it).
-- The current compose dev flow runs the Next dev server inside the container. For faster, more reproducible startup we can add a Dockerfile in `frontend/` that builds a production image and serves static output.
-=======
 **Note**: These health checks will only work after services are fully configured and running.
 
 ```bash
@@ -95,7 +64,6 @@ psql -h localhost -p 5432 -U paws360 -d paws360_dev -c "SELECT 1;" || echo "Data
 - The compose service `student-frontend` mounts `./frontend` from the repo root and exposes port 9002. Ensure the `frontend/` folder is present (this repo already contains it).
 - **Spring Boot Services**: Auth, Data, and Analytics services require compiled JAR files in `infrastructure/docker/services/` to start properly.
 - **First-time Setup**: You may need to install `docker-compose-plugin` for modern Docker Compose support: `sudo apt install docker-compose-plugin`
->>>>>>> master
 - If you see a Docker permission/daemon error, run `docker info` and ensure your user can access the Docker daemon or use `sudo`.
 
 ## Postman collection
@@ -106,17 +74,6 @@ psql -h localhost -p 5432 -U paws360 -d paws360_dev -c "SELECT 1;" || echo "Data
 ## 📁 **PROJECT FOLDERS** (What's Where)
 
 ```
-<<<<<<< HEAD
-PAWS360ProjectPlan/
-├── 📚 docs/           → Instructions & guides
-├── 🔧 scripts/        → Helper commands
-├── 🐳 infrastructure/ → Docker & server setup
-├── 📋 specs/          → What to build (plans)
-├── 🎨 frontend/       → Websites (React, Astro)
-├── ⚙️ backend/        → Server code (Java)
-├── 🧪 tests/          → Test files
-└── 📦 assets/         → Images & data files
-=======
 PAWS360/
 ├── 📚 docs/           → Documentation & guides
 ├── 🔧 scripts/        → Automation scripts
@@ -125,10 +82,9 @@ PAWS360/
 ├── 🎨 frontend/       → Next.js Student Portal
 ├── 🎨 app/            → Shared React components
 ├── ⚙️ config/         → Environment configurations
-├── �️ database/       → SQL scripts & DB documentation
+├── 🗄️ database/       → SQL scripts & DB documentation
 ├── ⚙️ src/            → Backend code (Java/Spring Boot)
 └── 📊 PAWS360_Admin_API.postman_collection.json → Complete API collection
->>>>>>> master
 ```
 
 ---
@@ -144,16 +100,6 @@ PAWS360/
 | **🔧 Setup Local Dev** | `cd infrastructure/ansible && ./dev-helper.sh deploy-local-dev` | Complete environment setup |
 | **📊 Test APIs** | Import `PAWS360_Admin_API.postman_collection.json` | Test all endpoints |
 | **🗄️ Database Access** | Check `database/` folder | SQL scripts & docs |
-<<<<<<< HEAD
-| **🎓 Run Student Frontend** | `git checkout feat/SCRUM-7-create-login-page && npm run dev` | Next.js student app (port 9002) |
-
-### **🔧 Development Workflow:**
-
-1. **📥 Pull Latest Code** → `git pull origin main`
-2. **🚀 Start Services** → `./scripts/setup/paws360-services.sh start`  
-3. **✅ Run Tests** → `./scripts/testing/exhaustive-test-suite.sh`
-4. **🎓 Start Student Frontend** → `git checkout feat/SCRUM-7-create-login-page && npm run dev`
-=======
 | **🎓 Run Student Frontend** | `cd frontend && npm run dev` | Next.js student app (port 9002) |
 
 ### **🔧 Development Workflow:**
@@ -162,7 +108,6 @@ PAWS360/
 2. **🚀 Start Services** → `./scripts/setup/paws360-services.sh start`  
 3. **✅ Run Tests** → `./scripts/testing/exhaustive-test-suite.sh`
 4. **🎓 Start Student Frontend** → `cd frontend && npm run dev`
->>>>>>> master
 5. **💻 Code Changes** → Edit files, test locally
 6. **🔄 Commit & Push** → `git add . && git commit -m "..." && git push`
 
@@ -174,13 +119,8 @@ PAWS360/
 - `docs/onboarding.md` → New team member guide
 - `infrastructure/ansible/README-NEW.md` → Setup help
 - `docs/services-overview.md` → What each part does
-<<<<<<< HEAD
-- `NEW_ENGINEER_CHECKLIST.md` → Track your progress
-- `PROGRAMMING_BASICS.md` → What coding is
-=======
 - `developer-onboarding.md` → Complete development guide
 - `TODO.md` → Current tasks and progress
->>>>>>> master
 
 ### 🧪 **Testing:**
 ```bash
@@ -242,11 +182,7 @@ PAWS360/
 - **[📊 Mock Data API](http://localhost:8082/data)** - Student records & course management  
 - **[� Mock Analytics API](http://localhost:8083/analytics)** - Performance metrics & reporting
 
-<<<<<<< HEAD
-**[📖 Complete API Documentation](docs/api/API_TESTING_README.md)**
-=======
 **[📖 Complete API Documentation](docs/API_TESTING_README.md)**
->>>>>>> master
 
 ### **👥 Team Help:**
 - **Slack/Teams** → Ask questions
@@ -359,20 +295,13 @@ PAWS360/
 ├── 📚 docs/                    → Complete documentation
 ├── 🔧 scripts/                 → Automation and setup scripts  
 ├── 🐳 infrastructure/          → Docker & Ansible deployment
-<<<<<<< HEAD
-├── � specs/                   → Feature specifications
-├── ⚙️ config/                  → Environment configurations
-├── 🗄️ database/                → SQL scripts and DB docs
-└── 📦 assets/                  → Static files and resources
-=======
-├── 📋 specs/                   → Feature specifications
+├──  specs/                   → Feature specifications
 ├── ⚙️ config/                  → Environment configurations
 ├── 🗄️ database/                → SQL scripts and DB docs
 ├── 🎨 frontend/                → Next.js Student Portal
 ├── 🎨 app/                     → Shared React components
 ├── ⚙️ src/                     → Backend code (Spring Boot)
 └── 📊 PAWS360_Admin_API.postman_collection.json → API collection
->>>>>>> master
 ```
 
 ### 🚀 **Quick Access Links**
@@ -391,11 +320,7 @@ PAWS360/
 - **[🏗️ Infrastructure Setup Guide](infrastructure/ansible/README-NEW.md)** - Local development
 - **[📊 Services Overview](docs/services-overview.md)** - All platform components  
 - **[🧪 Testing Guide](docs/testing/README.md)** - How to test everything
-<<<<<<< HEAD
-- **[� API Testing with Postman](docs/api/API_TESTING_README.md)** - API documentation
-=======
-- **[� API Testing with Postman](docs/API_TESTING_README.md)** - API documentation
->>>>>>> master
+- **[📊 API Testing with Postman](docs/API_TESTING_README.md)** - API documentation
 
 ### 📋 **Project Management**  
 - **[✅ TODO Tracking](TODO.md)** - Current tasks and progress
