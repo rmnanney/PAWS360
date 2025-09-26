@@ -1,6 +1,6 @@
-package com.uwm.paws360.Entity.Role;
+package com.uwm.paws360.Entity.UserTypes;
 
-import com.uwm.paws360.Entity.Users;
+import com.uwm.paws360.Entity.Base.Users;
 import jakarta.persistence.*;
 
 @Entity
@@ -18,9 +18,8 @@ public class Professor {
     @Column
     private double pay;
 
-    public Professor(Users user, double pay) {
+    public Professor(Users user) {
         this.user = user;
-        this.pay = pay;
     }
 
     public Professor() {

@@ -1,6 +1,6 @@
-package com.uwm.paws360.Entity.Role;
+package com.uwm.paws360.Entity.UserTypes;
 
-import com.uwm.paws360.Entity.Users;
+import com.uwm.paws360.Entity.Base.Users;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,20 +11,17 @@ public class Student {
     @GeneratedValue
     private int id;
 
-    @OneToOne
+    @OneToOne(
+            cascade = CascadeType.ALL
+    )
     @JoinColumn(name = "user_id")
     private Users user;
 
-    @Column
-    private double gpa;
-
-    public Student(Users user, double gpa) {
+    public Student(Users user) {
         this.user = user;
-        this.gpa = gpa;
     }
 
-    public Student() {
-    }
+    public Student(){}
 
     public Users getUser() {
         return user;
@@ -32,13 +29,5 @@ public class Student {
 
     public void setUser(Users user) {
         this.user = user;
-    }
-
-    public double getGpa() {
-        return gpa;
-    }
-
-    public void setGpa(double gpa) {
-        this.gpa = gpa;
     }
 }
