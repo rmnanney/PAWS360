@@ -37,7 +37,9 @@ public class Users {
     @Column(nullable = false, length = 60)
     private String password;
 
-    @ManyToOne
+    @ManyToOne(
+            cascade = CascadeType.ALL
+    )
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
@@ -112,6 +114,9 @@ public class Users {
         last_login = LocalDateTime.now();
         changed_password = LocalDate.now();
         ferpa_compliance = Ferpa_Compliance.RESTRICTED;
+        address.setFirstname(this.firstname);
+        address.setLastname(this.lastname);
+        address.setUser_id(this.id);
     }
 
 /*------------------------- Getters -------------------------*/
