@@ -1,20 +1,6 @@
 {
     "_ansible_facts_gathered": true,
     "ansible_all_ipv4_addresses": [
-<<<<<<< HEAD
-        "10.255.255.254",
-        "172.18.0.1",
-        "172.17.0.1",
-        "172.22.13.176"
-    ],
-    "ansible_all_ipv6_addresses": [
-        "fe80::9459:acff:fe35:2da6",
-        "fe80::42:d4ff:feae:4900",
-        "fe80::42:10ff:fe2e:3766",
-        "fe80::4076:14ff:fec7:d837",
-        "fe80::215:5dff:fe59:84e2",
-        "fe80::a07f:dbff:fe81:ac4"
-=======
         "172.17.0.1",
         "172.18.0.1",
         "172.22.13.176",
@@ -22,7 +8,6 @@
     ],
     "ansible_all_ipv6_addresses": [
         "fe80::215:5dff:fe97:b4a8"
->>>>>>> master
     ],
     "ansible_apparmor": {
         "status": "disabled"
@@ -37,21 +22,10 @@
     "ansible_board_vendor": "NA",
     "ansible_board_version": "NA",
     "ansible_br_e805c9cc411e": {
-<<<<<<< HEAD
-        "active": true,
-        "device": "br-e805c9cc411e",
-        "id": "8000.0242d4ae4900",
-        "interfaces": [
-            "vethda21759",
-            "vethc428fc1",
-            "veth2cfe819"
-        ],
-=======
         "active": false,
         "device": "br-e805c9cc411e",
         "id": "8000.024223f2de19",
         "interfaces": [],
->>>>>>> master
         "ipv4": {
             "address": "172.18.0.1",
             "broadcast": "172.18.255.255",
@@ -59,24 +33,10 @@
             "network": "172.18.0.0",
             "prefix": "16"
         },
-<<<<<<< HEAD
-        "ipv6": [
-            {
-                "address": "fe80::42:d4ff:feae:4900",
-                "prefix": "64",
-                "scope": "link"
-            }
-        ],
-        "macaddress": "02:42:d4:ae:49:00",
-        "mtu": 1500,
-        "promisc": false,
-        "speed": 10000,
-=======
         "macaddress": "02:42:23:f2:de:19",
         "mtu": 1500,
         "promisc": false,
         "speed": -1,
->>>>>>> master
         "stp": false,
         "type": "bridge"
     },
@@ -96,27 +56,6 @@
         "pty.legacy_count": "0"
     },
     "ansible_date_time": {
-<<<<<<< HEAD
-        "date": "2025-09-21",
-        "day": "21",
-        "epoch": "1758437321",
-        "epoch_int": "1758437321",
-        "hour": "01",
-        "iso8601": "2025-09-21T06:48:41Z",
-        "iso8601_basic": "20250921T014841011672",
-        "iso8601_basic_short": "20250921T014841",
-        "iso8601_micro": "2025-09-21T06:48:41.011672Z",
-        "minute": "48",
-        "month": "09",
-        "second": "41",
-        "time": "01:48:41",
-        "tz": "CDT",
-        "tz_dst": "CDT",
-        "tz_offset": "-0500",
-        "weekday": "Sunday",
-        "weekday_number": "0",
-        "weeknumber": "37",
-=======
         "date": "2025-09-25",
         "day": "25",
         "epoch": "1758850980",
@@ -136,7 +75,6 @@
         "weekday": "Thursday",
         "weekday_number": "4",
         "weeknumber": "38",
->>>>>>> master
         "year": "2025"
     },
     "ansible_default_ipv4": {
@@ -145,11 +83,7 @@
         "broadcast": "172.22.15.255",
         "gateway": "172.22.0.1",
         "interface": "eth0",
-<<<<<<< HEAD
-        "macaddress": "00:15:5d:59:84:e2",
-=======
         "macaddress": "00:15:5d:97:b4:a8",
->>>>>>> master
         "mtu": 1500,
         "netmask": "255.255.240.0",
         "network": "172.22.0.0",
@@ -168,13 +102,8 @@
                 "wwn-0x600224805b5ac507b80a045bc3303ae1"
             ],
             "sdc": [
-<<<<<<< HEAD
-                "scsi-360022480c441128fd900cfe2ea240898",
-                "wwn-0x60022480c441128fd900cfe2ea240898"
-=======
                 "scsi-3600224802ee6ba61fa5b6c91188b102a",
                 "wwn-0x600224802ee6ba61fa5b6c91188b102a"
->>>>>>> master
             ],
             "sdd": [
                 "scsi-360022480009517aca24731563d571990",
@@ -185,11 +114,7 @@
         "masters": {},
         "uuids": {
             "sdc": [
-<<<<<<< HEAD
-                "ac413dc8-3cd0-4ad6-95eb-8cfcc3c76e58"
-=======
                 "04745e74-f2e2-40de-a4ff-32266cd174ab"
->>>>>>> master
             ],
             "sdd": [
                 "4d9545ce-88a2-40d1-b7b2-659bb7c6e3ec"
@@ -808,22 +733,13 @@
             "host": "",
             "links": {
                 "ids": [
-<<<<<<< HEAD
-                    "scsi-360022480c441128fd900cfe2ea240898",
-                    "wwn-0x60022480c441128fd900cfe2ea240898"
-=======
                     "scsi-3600224802ee6ba61fa5b6c91188b102a",
                     "wwn-0x600224802ee6ba61fa5b6c91188b102a"
->>>>>>> master
                 ],
                 "labels": [],
                 "masters": [],
                 "uuids": [
-<<<<<<< HEAD
-                    "ac413dc8-3cd0-4ad6-95eb-8cfcc3c76e58"
-=======
                     "04745e74-f2e2-40de-a4ff-32266cd174ab"
->>>>>>> master
                 ]
             },
             "model": "Virtual Disk",
@@ -839,11 +755,7 @@
             "support_discard": "1048576",
             "vendor": "Msft",
             "virtual": 1,
-<<<<<<< HEAD
-            "wwn": "0x60022480c441128fd900cfe2ea240898"
-=======
             "wwn": "0x600224802ee6ba61fa5b6c91188b102a"
->>>>>>> master
         },
         "sdd": {
             "holders": [],
@@ -893,11 +805,7 @@
     "ansible_docker0": {
         "active": false,
         "device": "docker0",
-<<<<<<< HEAD
-        "id": "8000.0242102e3766",
-=======
         "id": "8000.0242439854c5",
->>>>>>> master
         "interfaces": [],
         "ipv4": {
             "address": "172.17.0.1",
@@ -906,18 +814,7 @@
             "network": "172.17.0.0",
             "prefix": "16"
         },
-<<<<<<< HEAD
-        "ipv6": [
-            {
-                "address": "fe80::42:10ff:fe2e:3766",
-                "prefix": "64",
-                "scope": "link"
-            }
-        ],
-        "macaddress": "02:42:10:2e:37:66",
-=======
         "macaddress": "02:42:43:98:54:c5",
->>>>>>> master
         "mtu": 1500,
         "promisc": false,
         "speed": -1,
@@ -931,12 +828,7 @@
         "COLORTERM": "truecolor",
         "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
         "DISPLAY": ":0",
-<<<<<<< HEAD
-        "GIT_ASKPASS": "/home/ryan/.vscode-server-insiders/bin/824678f51e533e03ed9edc59e5cf858c47718f42/extensions/git/dist/askpass.sh",
-        "GIT_PAGER": "cat",
-=======
         "GIT_ASKPASS": "/home/ryan/.vscode-server-insiders/bin/1217722c34017d9bd87e804e80efabba5a1e3226/extensions/git/dist/askpass.sh",
->>>>>>> master
         "HOME": "/home/ryan",
         "HOSTTYPE": "x86_64",
         "LANG": "C.UTF-8",
@@ -944,20 +836,11 @@
         "LESSOPEN": "| /usr/bin/lesspipe %s",
         "LOGNAME": "ryan",
         "LS_COLORS": "rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:",
-<<<<<<< HEAD
-        "MOTD_SHOWN": "update-motd",
-        "NAME": "Code - Insiders",
-        "OLDPWD": "/home/ryan/repos/PAWS360ProjectPlan/infrastructure/ansible",
-        "PATH": "/home/ryan/.vscode-server-insiders/bin/824678f51e533e03ed9edc59e5cf858c47718f42/bin/remote-cli:/home/ryan/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/Oculus/Support/oculus-runtime:/mnt/c/windows/system32:/mnt/c/windows:/mnt/c/windows/system32/wbem:/mnt/c/windows/system32/windowspowershell/v1.0/:/mnt/c/windows/system32/openssh/:/mnt/c/program files/nvidia corporation/nvidia nvdlisr:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/dotnet/:/mnt/c/Users/ryan/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/ryan/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/ryan/AppData/Local/Programs/Microsoft VS Code Insiders/bin:/snap/bin:/home/ryan/.vscode-server-insiders/data/User/globalStorage/github.copilot-chat/debugCommand",
-        "PULSE_SERVER": "unix:/mnt/wslg/PulseServer",
-        "PWD": "/home/ryan/repos/PAWS360ProjectPlan/infrastructure/ansible",
-=======
         "NAME": "Serotonin",
         "OLDPWD": "/home/ryan/repos/capstone/infrastructure/ansible",
         "PATH": "/home/ryan/.vscode-server-insiders/bin/1217722c34017d9bd87e804e80efabba5a1e3226/bin/remote-cli:/home/ryan/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/Oculus/Support/oculus-runtime:/mnt/c/windows/system32:/mnt/c/windows:/mnt/c/windows/system32/wbem:/mnt/c/windows/system32/windowspowershell/v1.0/:/mnt/c/windows/system32/openssh/:/mnt/c/program files/nvidia corporation/nvidia nvdlisr:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/dotnet/:/mnt/c/Users/ryan/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/ryan/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/ryan/AppData/Local/Programs/Microsoft VS Code Insiders/bin:/snap/bin:/home/ryan/.vscode-server-insiders/data/User/globalStorage/github.copilot-chat/debugCommand",
         "PULSE_SERVER": "unix:/mnt/wslg/PulseServer",
         "PWD": "/home/ryan/repos/capstone/infrastructure/ansible",
->>>>>>> master
         "SHELL": "/bin/bash",
         "SHLVL": "2",
         "TERM": "xterm-256color",
@@ -965,18 +848,6 @@
         "TERM_PROGRAM_VERSION": "1.105.0-insider",
         "USER": "ryan",
         "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "",
-<<<<<<< HEAD
-        "VSCODE_GIT_ASKPASS_MAIN": "/home/ryan/.vscode-server-insiders/bin/824678f51e533e03ed9edc59e5cf858c47718f42/extensions/git/dist/askpass-main.js",
-        "VSCODE_GIT_ASKPASS_NODE": "/home/ryan/.vscode-server-insiders/bin/824678f51e533e03ed9edc59e5cf858c47718f42/node",
-        "VSCODE_GIT_IPC_HANDLE": "/run/user/1000/vscode-git-412abe2403.sock",
-        "VSCODE_IPC_HOOK_CLI": "/run/user/1000/vscode-ipc-c9bc5979-7136-48b1-bbec-9d3ab67fa6b4.sock",
-        "VSCODE_PYTHON_AUTOACTIVATE_GUARD": "1",
-        "WAYLAND_DISPLAY": "wayland-0",
-        "WSL2_GUI_APPS_ENABLED": "1",
-        "WSLENV": "ELECTRON_RUN_AS_NODE/w:",
-        "WSL_DISTRO_NAME": "Ubuntu",
-        "WSL_INTEROP": "/run/WSL/256132_interop",
-=======
         "VSCODE_GIT_ASKPASS_MAIN": "/home/ryan/.vscode-server-insiders/bin/1217722c34017d9bd87e804e80efabba5a1e3226/extensions/git/dist/askpass-main.js",
         "VSCODE_GIT_ASKPASS_NODE": "/home/ryan/.vscode-server-insiders/bin/1217722c34017d9bd87e804e80efabba5a1e3226/node",
         "VSCODE_GIT_IPC_HANDLE": "/run/user/1000/vscode-git-75b0d6acee.sock",
@@ -987,7 +858,6 @@
         "WSLENV": "VSCODE_WSL_EXT_LOCATION/up",
         "WSL_DISTRO_NAME": "Ubuntu",
         "WSL_INTEROP": "/run/WSL/1313_interop",
->>>>>>> master
         "XDG_DATA_DIRS": "/usr/local/share:/usr/share:/var/lib/snapd/desktop",
         "XDG_RUNTIME_DIR": "/run/user/1000/",
         "_": "/home/ryan/.local/bin/ansible-playbook"
@@ -1004,24 +874,14 @@
         },
         "ipv6": [
             {
-<<<<<<< HEAD
-                "address": "fe80::215:5dff:fe59:84e2",
-=======
                 "address": "fe80::215:5dff:fe97:b4a8",
->>>>>>> master
                 "prefix": "64",
                 "scope": "link"
             }
         ],
-<<<<<<< HEAD
-        "macaddress": "00:15:5d:59:84:e2",
-        "mtu": 1500,
-        "pciid": "0e3ada3c-f1a6-48c4-9b27-86b4e5cd291f",
-=======
         "macaddress": "00:15:5d:97:b4:a8",
         "mtu": 1500,
         "pciid": "f057fe15-1e81-4035-952a-69cea038efcd",
->>>>>>> master
         "promisc": false,
         "speed": 10000,
         "type": "ether"
@@ -1033,20 +893,10 @@
     "ansible_hostname": "Serotonin",
     "ansible_hostnqn": "",
     "ansible_interfaces": [
-<<<<<<< HEAD
-        "docker0",
-        "eth0",
-        "vethc428fc1",
-        "br-e805c9cc411e",
-        "vethda21759",
-        "lo",
-        "veth2cfe819"
-=======
         "br-e805c9cc411e",
         "lo",
         "eth0",
         "docker0"
->>>>>>> master
     ],
     "ansible_is_chroot": false,
     "ansible_iscsi_iqn": "",
@@ -1083,15 +933,9 @@
         "type": "loopback"
     },
     "ansible_loadavg": {
-<<<<<<< HEAD
-        "15m": 0.4150390625,
-        "1m": 1.4482421875,
-        "5m": 0.91552734375
-=======
         "15m": 0.07080078125,
         "1m": 0.943359375,
         "5m": 0.23779296875
->>>>>>> master
     },
     "ansible_local": {},
     "ansible_locally_reachable_ips": {
@@ -1105,16 +949,7 @@
         ],
         "ipv6": [
             "::1",
-<<<<<<< HEAD
-            "fe80::42:10ff:fe2e:3766",
-            "fe80::42:d4ff:feae:4900",
-            "fe80::215:5dff:fe59:84e2",
-            "fe80::4076:14ff:fec7:d837",
-            "fe80::9459:acff:fe35:2da6",
-            "fe80::a07f:dbff:fe81:ac4"
-=======
             "fe80::215:5dff:fe97:b4a8"
->>>>>>> master
         ]
     },
     "ansible_lsb": {
@@ -1127,18 +962,6 @@
     "ansible_lvm": "N/A",
     "ansible_machine": "x86_64",
     "ansible_machine_id": "30d86bfcc51b4ce78b6d7194f3e6bbfc",
-<<<<<<< HEAD
-    "ansible_memfree_mb": 7613,
-    "ansible_memory_mb": {
-        "nocache": {
-            "free": 8455,
-            "used": 7395
-        },
-        "real": {
-            "free": 7613,
-            "total": 15850,
-            "used": 8237
-=======
     "ansible_memfree_mb": 12659,
     "ansible_memory_mb": {
         "nocache": {
@@ -1149,7 +972,6 @@
             "free": 12659,
             "total": 15850,
             "used": 3191
->>>>>>> master
         },
         "swap": {
             "cached": 0,
@@ -1161,22 +983,6 @@
     "ansible_memtotal_mb": 15850,
     "ansible_mounts": [
         {
-<<<<<<< HEAD
-            "block_available": 239087520,
-            "block_size": 4096,
-            "block_total": 263940717,
-            "block_used": 24853197,
-            "device": "/dev/sdd",
-            "dump": 0,
-            "fstype": "ext4",
-            "inode_available": 66321304,
-            "inode_total": 67108864,
-            "inode_used": 787560,
-            "mount": "/",
-            "options": "rw,relatime,discard,errors=remount-ro,data=ordered",
-            "passno": 0,
-            "size_available": 979302481920,
-=======
             "block_available": 237950617,
             "block_size": 4096,
             "block_total": 263940717,
@@ -1191,27 +997,10 @@
             "options": "rw,relatime,discard,errors=remount-ro,data=ordered",
             "passno": 0,
             "size_available": 974645727232,
->>>>>>> master
             "size_total": 1081101176832,
             "uuid": "4d9545ce-88a2-40d1-b7b2-659bb7c6e3ec"
         },
         {
-<<<<<<< HEAD
-            "block_available": 239087520,
-            "block_size": 4096,
-            "block_total": 263940717,
-            "block_used": 24853197,
-            "device": "/dev/sdd",
-            "dump": 0,
-            "fstype": "ext4",
-            "inode_available": 66321304,
-            "inode_total": 67108864,
-            "inode_used": 787560,
-            "mount": "/mnt/wslg/distro",
-            "options": "ro,relatime,discard,errors=remount-ro,data=ordered",
-            "passno": 0,
-            "size_available": 979302481920,
-=======
             "block_available": 237950617,
             "block_size": 4096,
             "block_total": 263940717,
@@ -1226,27 +1015,10 @@
             "options": "ro,relatime,discard,errors=remount-ro,data=ordered",
             "passno": 0,
             "size_available": 974645727232,
->>>>>>> master
             "size_total": 1081101176832,
             "uuid": "4d9545ce-88a2-40d1-b7b2-659bb7c6e3ec"
         },
         {
-<<<<<<< HEAD
-            "block_available": 239087520,
-            "block_size": 4096,
-            "block_total": 263940717,
-            "block_used": 24853197,
-            "device": "/dev/sdd",
-            "dump": 0,
-            "fstype": "ext4",
-            "inode_available": 66321304,
-            "inode_total": 67108864,
-            "inode_used": 787560,
-            "mount": "/snap",
-            "options": "rw,relatime,discard,errors=remount-ro,data=ordered,bind",
-            "passno": 0,
-            "size_available": 979302481920,
-=======
             "block_available": 237950617,
             "block_size": 4096,
             "block_total": 263940717,
@@ -1261,27 +1033,10 @@
             "options": "rw,relatime,discard,errors=remount-ro,data=ordered,bind",
             "passno": 0,
             "size_available": 974645727232,
->>>>>>> master
             "size_total": 1081101176832,
             "uuid": "4d9545ce-88a2-40d1-b7b2-659bb7c6e3ec"
         },
         {
-<<<<<<< HEAD
-            "block_available": 239087520,
-            "block_size": 4096,
-            "block_total": 263940717,
-            "block_used": 24853197,
-            "device": "/dev/sdd",
-            "dump": 0,
-            "fstype": "ext4",
-            "inode_available": 66321304,
-            "inode_total": 67108864,
-            "inode_used": 787560,
-            "mount": "/var/lib/docker",
-            "options": "rw,relatime,discard,errors=remount-ro,data=ordered,bind",
-            "passno": 0,
-            "size_available": 979302481920,
-=======
             "block_available": 237950617,
             "block_size": 4096,
             "block_total": 263940717,
@@ -1296,7 +1051,6 @@
             "options": "rw,relatime,discard,errors=remount-ro,data=ordered,bind",
             "passno": 0,
             "size_available": 974645727232,
->>>>>>> master
             "size_total": 1081101176832,
             "uuid": "4d9545ce-88a2-40d1-b7b2-659bb7c6e3ec"
         }
@@ -1433,11 +1187,7 @@
     ],
     "ansible_system_capabilities_enforced": "True",
     "ansible_system_vendor": "NA",
-<<<<<<< HEAD
-    "ansible_uptime_seconds": 146189,
-=======
     "ansible_uptime_seconds": 198,
->>>>>>> master
     "ansible_user_dir": "/home/ryan",
     "ansible_user_gecos": ",,,",
     "ansible_user_gid": 1000,
@@ -1446,57 +1196,6 @@
     "ansible_user_uid": 1000,
     "ansible_userspace_architecture": "x86_64",
     "ansible_userspace_bits": "64",
-<<<<<<< HEAD
-    "ansible_veth2cfe819": {
-        "active": true,
-        "device": "veth2cfe819",
-        "ipv6": [
-            {
-                "address": "fe80::9459:acff:fe35:2da6",
-                "prefix": "64",
-                "scope": "link"
-            }
-        ],
-        "macaddress": "96:59:ac:35:2d:a6",
-        "mtu": 1500,
-        "promisc": true,
-        "speed": 10000,
-        "type": "ether"
-    },
-    "ansible_vethc428fc1": {
-        "active": true,
-        "device": "vethc428fc1",
-        "ipv6": [
-            {
-                "address": "fe80::a07f:dbff:fe81:ac4",
-                "prefix": "64",
-                "scope": "link"
-            }
-        ],
-        "macaddress": "a2:7f:db:81:0a:c4",
-        "mtu": 1500,
-        "promisc": true,
-        "speed": 10000,
-        "type": "ether"
-    },
-    "ansible_vethda21759": {
-        "active": true,
-        "device": "vethda21759",
-        "ipv6": [
-            {
-                "address": "fe80::4076:14ff:fec7:d837",
-                "prefix": "64",
-                "scope": "link"
-            }
-        ],
-        "macaddress": "42:76:14:c7:d8:37",
-        "mtu": 1500,
-        "promisc": true,
-        "speed": 10000,
-        "type": "ether"
-    },
-=======
->>>>>>> master
     "ansible_virtualization_role": "guest",
     "ansible_virtualization_tech_guest": [
         "wsl",
@@ -1506,10 +1205,6 @@
         "kvm"
     ],
     "ansible_virtualization_type": "wsl",
-<<<<<<< HEAD
-    "discovered_interpreter_python": "/usr/bin/python3.10",
-=======
->>>>>>> master
     "gather_subset": [
         "all"
     ],
