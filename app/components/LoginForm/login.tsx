@@ -25,7 +25,7 @@ const formSchema = z.object({
 	email: z
 		.string()
 		.email({ message: "Please enter a valid email." })
-		.endsWith("@UWM.edu", {
+		.refine((val) => val.toLowerCase().endsWith("@uwm.edu"), {
 			message: "Must be a valid University Email Address.",
 		}),
 	password: z.string().min(1, { message: "Password is required." }),
@@ -49,7 +49,8 @@ export default function LoginForm() {
 		// Simulate API call
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 
-		if (values.email === "test@UWM.edu" && values.password === "password") {
+		const email = values.email.toLowerCase();
+		if (email === "test@uwm.edu" && values.password === "paws360") {
 			// Set localStorage flag for authentication
 			if (typeof window !== "undefined") {
 				localStorage.setItem("loggedIn", "true");
@@ -57,11 +58,11 @@ export default function LoginForm() {
 			toast({
 				title: "Success",
 				description: "Login successful! Redirecting...",
-				duration: 1500, // milliseconds
+				duration: 1000, // milliseconds
 			});
 			setTimeout(() => {
 				router.push("/homepage");
-			}, 1500);
+			}, 1000);
 		} else {
 			// Remove localStorage flag on failed login
 			if (typeof window !== "undefined") {
