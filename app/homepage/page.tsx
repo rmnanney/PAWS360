@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import SearchBar from "../components/SearchBar/searchbar";
 import { Header } from "../components/Header/header";
 
@@ -28,9 +29,23 @@ import {
 } from "../components/SideBar/Base/sidebarbase";
 import { AppSidebar } from "../components/SideBar/sidebar";
 import { PlaceHolderImages } from "@/lib/placeholder-img";
+import { useToast } from "@/hooks/useToast";
 
 export default function Homepage() {
 	const bgImage = PlaceHolderImages.find((img) => img.id === "uwm-building");
+
+	// Use toast from context
+	const { toast } = useToast();
+	const router = require("next/navigation").useRouter?.() || null;
+	React.useEffect(() => {
+		if (typeof window !== "undefined") {
+			const loggedIn = localStorage.getItem("loggedIn");
+			if (!loggedIn) {
+				localStorage.setItem("showAuthToast", "true");
+				router?.push?.("/login");
+			}
+		}
+	}, [router]);
 
 	const handleNavigation = (section: string) => {
 		console.log(`Navigating to ${section}`);

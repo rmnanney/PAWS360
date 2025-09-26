@@ -50,6 +50,10 @@ export default function LoginForm() {
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 
 		if (values.email === "test@UWM.edu" && values.password === "password") {
+			// Set localStorage flag for authentication
+			if (typeof window !== "undefined") {
+				localStorage.setItem("loggedIn", "true");
+			}
 			toast({
 				title: "Success",
 				description: "Login successful! Redirecting...",
@@ -59,6 +63,10 @@ export default function LoginForm() {
 				router.push("/homepage");
 			}, 1500);
 		} else {
+			// Remove localStorage flag on failed login
+			if (typeof window !== "undefined") {
+				localStorage.removeItem("loggedIn");
+			}
 			toast({
 				variant: "destructive",
 				title: "Login Failed",
