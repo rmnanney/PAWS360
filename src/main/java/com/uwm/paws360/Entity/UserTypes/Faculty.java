@@ -1,9 +1,7 @@
 package com.uwm.paws360.Entity.UserTypes;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.uwm.paws360.Entity.Base.Users;
+import jakarta.persistence.*;
 
 @Entity
 public class Faculty {
@@ -12,9 +10,25 @@ public class Faculty {
     @GeneratedValue
     private int id;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private Users user;
+
+    public Faculty(Users user){
+        this.user = user;
+    }
+
     public Faculty(){}
 
     public int getId() {
         return id;
+    }
+
+    public Users getUser(){
+        return this.user;
+    }
+
+    public void setUser(Users user) {
+        this.user = user;
     }
 }
