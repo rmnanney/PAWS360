@@ -3,6 +3,7 @@ package com.uwm.paws360.Controller;
 import com.uwm.paws360.DTO.Login.UserLoginRequestDTO;
 import com.uwm.paws360.DTO.Login.UserLoginResponseDTO;
 import com.uwm.paws360.Service.LoginService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class UserLogin {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserLoginResponseDTO> login(@RequestBody UserLoginRequestDTO loginDTO){
+    public ResponseEntity<UserLoginResponseDTO> login(@Valid @RequestBody UserLoginRequestDTO loginDTO){
         UserLoginResponseDTO response = loginService.login(loginDTO);
         if(response.message().equals("Login Successful")){
             return ResponseEntity.status(HttpStatus.OK).body(response);
