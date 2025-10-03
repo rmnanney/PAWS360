@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import SearchBar from "../components/SearchBar/searchbar";
 import { Header } from "../components/Header/header";
 
@@ -24,13 +25,36 @@ import s from "./styles.module.css";
 import {
 	SidebarInset,
 	SidebarProvider,
-	SidebarTrigger,
 } from "../components/SideBar/Base/sidebarbase";
 import { AppSidebar } from "../components/SideBar/sidebar";
 import { PlaceHolderImages } from "@/lib/placeholder-img";
 
 export default function Homepage() {
 	const bgImage = PlaceHolderImages.find((img) => img.id === "uwm-building");
+
+	const router = require("next/navigation").useRouter?.() || null;
+	const [authChecked, setAuthChecked] = React.useState(false);
+	const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
+	React.useEffect(() => {
+		if (typeof window !== "undefined") {
+			const loggedIn = localStorage.getItem("loggedIn");
+			if (!loggedIn) {
+				localStorage.setItem("showAuthToast", "true");
+				router?.push?.("/login");
+				setAuthChecked(false);
+				setIsAuthenticated(false);
+			} else {
+				setAuthChecked(true);
+				setIsAuthenticated(true);
+			}
+		}
+	}, [router]);
+
+	if (!authChecked) {
+		// Optionally show a spinner here
+		return null;
+	}
 
 	const handleNavigation = (section: string) => {
 		console.log(`Navigating to ${section}`);
@@ -55,13 +79,6 @@ export default function Homepage() {
 				>
 					{/* Search Bar */}
 					<div className={s.mainGrid}>
-						{/* <div className={s.searchBarGridFull}>
-							<SearchBar
-								items={dashboardItems}
-								onResultClick={(item) => handleNavigation(item.title)}
-							/>
-						</div> */}
-
 						{/* Main Grid Cards */}
 						<div className={s.leftCards}>
 							<DashboardCard
