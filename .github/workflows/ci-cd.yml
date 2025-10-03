@@ -6,7 +6,6 @@ on:
     branches: [master, main, develop]
   pull_request:
     branches: [master, main, develop]
-  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -113,9 +112,91 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # UI Testing
+  ui-tests:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: paws360_test
+          POSTGRES_USER: paws360
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: paws360-jars
+          path: services/
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: tests/ui/package-lock.json
+
+      - name: Install UI testing dependencies
+        working-directory: tests/ui
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: tests/ui
+        run: npx playwright install chromium
+
+      - name: Start application
+        run: |
+          # Copy environment file for testing
+          cp .env.example .env 2>/dev/null || true
+          # Start the application stack
+          cd infrastructure/docker
+          docker-compose -f docker-compose.ci.yml up -d
+          # Wait for application to be ready
+          timeout 300 bash -c \
+            'until curl -f http://localhost:8080/actuator/health; do sleep 5; done'
+
+      - name: Run UI tests
+        working-directory: tests/ui
+        run: npm test
+        env:
+          BASE_URL: http://localhost:8085
+          CI: true
+
+      - name: Upload UI test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-test-results
+          path: |
+            tests/ui/test-results/
+            tests/ui/playwright-report/
+
+      - name: Upload screenshots on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ui-test-screenshots
+          path: tests/ui/test-results/screenshots/
+
   # Security scanning
   security-scan:
-    needs: docker-build
+    needs: [docker-build, ui-tests]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -141,7 +222,11 @@ jobs:
 
   # Deploy to staging
   deploy-staging:
-    needs: [test-and-build, docker-build, security-scan]
+    needs:
+      - test-and-build
+      - docker-build
+      - security-scan
+      - ui-tests
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     environment: staging
@@ -157,7 +242,11 @@ jobs:
 
   # Deploy to production
   deploy-production:
-    needs: [test-and-build, docker-build, security-scan]
+    needs:
+      - test-and-build
+      - docker-build
+      - security-scan
+      - ui-tests
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     environment: production
