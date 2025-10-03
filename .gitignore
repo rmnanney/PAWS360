@@ -44,3 +44,6 @@ tsconfig.tsbuildinfo
 # Ansible
 infrastructure/ansible/.ansible/
 infrastructure/ansible/ansible.log
+
+# Docker services JAR files (built during CI/CD)
+infrastructure/docker/services/*.jar
