@@ -1,5 +1,6 @@
 package com.uwm.paws360.Service;
 
+import com.uwm.paws360.DTO.User.DeleteUserRequestDTO;
 import com.uwm.paws360.DTO.User.EditUserRequestDTO;
 import com.uwm.paws360.DTO.Login.UserLoginResponseDTO;
 import com.uwm.paws360.Entity.UserTypes.*;
@@ -118,5 +119,12 @@ public class UserService {
                 user.getCountryCode(),
                 user.getPhone()
         );
+    }
+
+    public boolean deleteUser(DeleteUserRequestDTO deleteUserRequestDTO){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(deleteUserRequestDTO.email());
+        if(user == null) return false;
+        userRepository.delete(user);
+        return true;
     }
 }
