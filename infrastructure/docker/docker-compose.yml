@@ -28,9 +28,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${APP_ENV:-docker}
       - SERVER_PORT=${AUTH_SERVICE_PORT:-8081}
-      - DATABASE_URL=jdbc:postgresql://${DB_HOST:-postgres}:${DB_PORT:-5432}/${DB_NAME:-adminlte}
-      - DATABASE_USERNAME=${DB_USERNAME:-adminlte}
-      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST:-postgres}:${DB_PORT:-5432}/${DB_NAME:-adminlte}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-adminlte}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - REDIS_URL=redis://redis:${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
@@ -62,9 +62,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${APP_ENV:-docker}
       - SERVER_PORT=${DATA_SERVICE_PORT:-8082}
-      - DATABASE_URL=jdbc:postgresql://${DB_HOST:-postgres}:${DB_PORT:-5432}/${DB_NAME:-adminlte}
-      - DATABASE_USERNAME=${DB_USERNAME:-adminlte}
-      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST:-postgres}:${DB_PORT:-5432}/${DB_NAME:-adminlte}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-adminlte}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - AUTH_SERVICE_URL=http://auth-service:${AUTH_SERVICE_PORT:-8081}
       - REDIS_URL=redis://redis:${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
@@ -94,9 +94,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${APP_ENV:-docker}
       - SERVER_PORT=${ANALYTICS_SERVICE_PORT:-8083}
-      - DATABASE_URL=jdbc:postgresql://${DB_HOST:-postgres}:${DB_PORT:-5432}/${DB_NAME:-adminlte}
-      - DATABASE_USERNAME=${DB_USERNAME:-adminlte}
-      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST:-postgres}:${DB_PORT:-5432}/${DB_NAME:-adminlte}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-adminlte}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - REDIS_URL=redis://redis:${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - JAVA_OPTS=-Xmx${JAVA_MAX_HEAP:-768m} -Xms${JAVA_MIN_HEAP:-384m} --enable-preview
