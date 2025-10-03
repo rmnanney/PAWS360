@@ -48,34 +48,46 @@ export default function LoginForm() {
 		setIsLoading(true);
 		// Simulate API call
 		await new Promise((resolve) => setTimeout(resolve, 1000));
+        try{
+            const res = await fetch("http://localhost:8080/login",{
+                method: "POST",
+                headers:{
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(values),
+            });
 
-		const email = values.email.toLowerCase();
-		if (email === "test@uwm.edu" && values.password === "paws360") {
-			// Set localStorage flag for authentication
-			if (typeof window !== "undefined") {
-				localStorage.setItem("loggedIn", "true");
-			}
-			toast({
-				title: "Success",
-				description: "Login successful! Redirecting...",
-				duration: 1000, // milliseconds
-			});
-			setTimeout(() => {
-				router.push("/homepage");
-			}, 1000);
-		} else {
-			// Remove localStorage flag on failed login
-			if (typeof window !== "undefined") {
-				localStorage.removeItem("loggedIn");
-			}
-			toast({
-				variant: "destructive",
-				title: "Login Failed",
-				description: "Incorrect email or password. Please try again.",
-			});
-			form.reset({ ...values, password: "" });
-		}
-		setIsLoading(false);
+            const data = await res.json();
+
+            if (res.ok && data.message === "Login Successful"){
+                localStorage.setItem("authToken", data.session_token);
+
+                toast({
+                    title: "Login Successful",
+                    description: `Welcome ${data.fistname}! Redirecting...`,
+                    duration: 1500,
+                });
+
+                setTimeout(() =>{
+                    router.push("/homepage")
+                }, 1500);
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Login Failed",
+                    description: data.message || "Sorry, something went wrong. Please try again.",
+                });
+                form.reset({...values, password: ""});
+            }
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Unable to connect to the server. Try again later.",
+            });
+        } finally {
+            setIsLoading(false);
+        }
 	}
 
 	return (
