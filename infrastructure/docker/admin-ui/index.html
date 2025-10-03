@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PAWS360 Admin Dashboard - Role-Based Features</title>
+
+  <!-- AdminLTE CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+
+  <!-- Custom CSS -->
+  <style>
+    .role-nav .nav-link {
+      border-radius: 0.375rem;
+      margin: 0.125rem 0;
+    }
+    .role-nav .nav-link.active {
+      background-color: #007bff;
+      color: white;
+    }
+    .api-log {
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+    }
+    .service-card {
+      transition: transform 0.2s;
+    }
+    .service-card:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="#" class="nav-link">PAWS360 Admin Dashboard</a>
+      </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="refreshAllData()">
+          <i class="fas fa-sync-alt"></i> Refresh Data
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <a href="#" class="brand-link">
+      <img src="https://adminlte.io/themes/v3/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+      <span class="brand-text font-weight-light">PAWS360</span>
+    </a>
+
+    <div class="sidebar">
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+        </div>
+        <div class="info">
+          <a href="#" class="d-block">Current User</a>
+          <small id="current-role">Select Role Below</small>
+        </div>
+      </div>
+
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column role-nav" data-widget="treeview" role="menu">
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="setRole('student')">
+              <i class="nav-icon fas fa-user-graduate"></i>
+              <p>Student Portal</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="setRole('instructor')">
+              <i class="nav-icon fas fa-chalkboard-teacher"></i>
+              <p>Instructor Dashboard</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="setRole('ta')">
+              <i class="nav-icon fas fa-user-tie"></i>
+              <p>TA Assistant</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="setRole('admin')">
+              <i class="nav-icon fas fa-cog"></i>
+              <p>Administrator</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="setRole('registrar')">
+              <i class="nav-icon fas fa-clipboard-list"></i>
+              <p>Registrar</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="setRole('advisor')">
+              <i class="nav-icon fas fa-hands-helping"></i>
+              <p>Academic Advisor</p>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0" id="page-title">Role-Based Features Dashboard</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active" id="breadcrumb-role">Select Role</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="content">
+      <div class="container-fluid">
+        <!-- Role-specific content will be loaded here -->
+        <div id="role-content">
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Welcome to PAWS360 Role-Based Dashboard</h3>
+                </div>
+                <div class="card-body">
+                  <p>Select a role from the sidebar to view role-specific features and API interactions.</p>
+                  <div class="alert alert-info">
+                    <h5><i class="icon fas fa-info"></i> Available Roles:</h5>
+                    <ul>
+                      <li><strong>Student:</strong> Course registration, grades, academic planning</li>
+                      <li><strong>Instructor:</strong> Course management, student performance, assignments</li>
+                      <li><strong>TA:</strong> Grading assistance, student support, lab management</li>
+                      <li><strong>Admin:</strong> System administration, user management, configuration</li>
+                      <li><strong>Registrar:</strong> Enrollment management, academic records, reporting</li>
+                      <li><strong>Advisor:</strong> Student advising, degree planning, academic support</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API Logs Section -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">API Service Logs & Monitoring</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <ul class="nav nav-tabs" id="api-tabs" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="auth-tab" data-toggle="tab" href="#auth" role="tab">Auth Service (8081)</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="data-tab" data-toggle="tab" href="#data" role="tab">Data Service (8082)</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="analytics-tab" data-toggle="tab" href="#analytics" role="tab">Analytics (8083)</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="system-tab" data-toggle="tab" href="#system" role="tab">System Status</a>
+                  </li>
+                </ul>
+                <div class="tab-content mt-3" id="api-tab-content">
+                  <div class="tab-pane fade show active" id="auth" role="tabpanel">
+                    <div class="api-log" id="auth-log">
+                      <div class="text-muted">Loading authentication service logs...</div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="data" role="tabpanel">
+                    <div class="api-log" id="data-log">
+                      <div class="text-muted">Loading data service logs...</div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="analytics" role="tabpanel">
+                    <div class="api-log" id="analytics-log">
+                      <div class="text-muted">Loading analytics service logs...</div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="system" role="tabpanel">
+                    <div class="api-log" id="system-log">
+                      <div class="text-muted">Loading system status...</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <strong>PAWS360 &copy; 2025 <a href="#">Group 7</a>.</strong>
+    Student Success Platform
+    <div class="float-right d-none d-sm-inline-block">
+      <b>Version</b> 1.0.0
+    </div>
+  </footer>
+</div>
+
+<!-- AdminLTE JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+let currentRole = null;
+
+function setRole(role) {
+  currentRole = role;
+
+  // Update UI
+  document.getElementById('current-role').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+  document.getElementById('breadcrumb-role').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+  document.getElementById('page-title').textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Dashboard`;
+
+  // Update navigation active state
+  document.querySelectorAll('.role-nav .nav-link').forEach(link => {
+    link.classList.remove('active');
+  });
+  event.target.closest('.nav-link').classList.add('active');
+
+  // Load role-specific content
+  loadRoleContent(role);
+
+  // Refresh API data
+  refreshAllData();
+}
+
+function loadRoleContent(role) {
+  const contentArea = document.getElementById('role-content');
+
+  const roleConfigs = {
+    student: {
+      title: 'Student Portal',
+      features: ['Course Registration', 'Grade Viewing', 'Academic Planning', 'Financial Aid Status'],
+      apis: ['Student Profile', 'Course Enrollment', 'Grade History']
+    },
+    instructor: {
+      title: 'Instructor Dashboard',
+      features: ['Course Management', 'Student Performance', 'Assignment Creation', 'Grade Submission'],
+      apis: ['Course Roster', 'Assignment Management', 'Grade Analytics']
+    },
+    ta: {
+      title: 'Teaching Assistant Portal',
+      features: ['Grading Queue', 'Student Support', 'Lab Management', 'Office Hours'],
+      apis: ['Grading Interface', 'Student Communications', 'Lab Scheduling']
+    },
+    admin: {
+      title: 'System Administration',
+      features: ['User Management', 'System Configuration', 'Security Settings', 'Audit Logs'],
+      apis: ['User Administration', 'System Settings', 'Security Policies']
+    },
+    registrar: {
+      title: 'Registrar Office',
+      features: ['Enrollment Management', 'Academic Records', 'Degree Audit', 'Reporting'],
+      apis: ['Enrollment Processing', 'Transcript Generation', 'Degree Verification']
+    },
+    advisor: {
+      title: 'Academic Advising',
+      features: ['Student Advising', 'Degree Planning', 'Academic Support', 'Progress Tracking'],
+      apis: ['Student Advising', 'Degree Planning', 'Academic Alerts']
+    }
+  };
+
+  const config = roleConfigs[role];
+  if (!config) return;
+
+  contentArea.innerHTML = `
+    <div class="row">
+      <div class="col-md-8">
+        <div class="card service-card">
+          <div class="card-header">
+            <h3 class="card-title">${config.title} Features</h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              ${config.features.map(feature => `
+                <div class="col-md-6 mb-3">
+                  <div class="card bg-light">
+                    <div class="card-body">
+                      <h5 class="card-title">${feature}</h5>
+                      <p class="card-text">Access and manage ${feature.toLowerCase()} functionality.</p>
+                      <button class="btn btn-primary btn-sm" onclick="accessFeature('${feature.replace(/\s+/g, '_').toLowerCase()}')">
+                        Access ${feature}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card service-card">
+          <div class="card-header">
+            <h3 class="card-title">API Endpoints</h3>
+          </div>
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              ${config.apis.map(api => `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  ${api}
+                  <button class="btn btn-outline-primary btn-sm" onclick="testAPI('${api.replace(/\s+/g, '_').toLowerCase()}')">
+                    Test
+                  </button>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function accessFeature(feature) {
+  logToAPI('system', `Accessing feature: ${feature}`);
+  alert(`Feature "${feature.replace(/_/g, ' ')}" accessed for ${currentRole} role`);
+}
+
+function testAPI(api) {
+  logToAPI('system', `Testing API: ${api}`);
+  alert(`API "${api.replace(/_/g, ' ')}" tested for ${currentRole} role`);
+}
+
+async function refreshAllData() {
+  await Promise.all([
+    fetchServiceData('auth', 'http://localhost:8081/health'),
+    fetchServiceData('data', 'http://localhost:8082/actuator/health'),
+    fetchServiceData('analytics', 'http://localhost:8083/actuator/health'),
+    fetchSystemStatus()
+  ]);
+}
+
+async function fetchServiceData(service, url) {
+  const logElement = document.getElementById(`${service}-log`);
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    logElement.innerHTML = `
+      <div class="text-success">✓ Service responding</div>
+      <pre>${JSON.stringify(data, null, 2)}</pre>
+    `;
+  } catch (error) {
+    logElement.innerHTML = `
+      <div class="text-danger">✗ Service not responding</div>
+      <div class="text-muted">Error: ${error.message}</div>
+      <div class="text-muted">URL: ${url}</div>
+    `;
+  }
+}
+
+async function fetchSystemStatus() {
+  const logElement = document.getElementById('system-log');
+  const status = {
+    timestamp: new Date().toISOString(),
+    role: currentRole || 'none',
+    services: {
+      auth: 'checking...',
+      data: 'checking...',
+      analytics: 'checking...'
+    }
+  };
+
+  logElement.innerHTML = `
+    <div class="text-info">System Status Check</div>
+    <pre>${JSON.stringify(status, null, 2)}</pre>
+  `;
+}
+
+function logToAPI(service, message) {
+  const logElement = document.getElementById(`${service}-log`);
+  const timestamp = new Date().toLocaleTimeString();
+  const logEntry = `<div>[${timestamp}] ${message}</div>`;
+  logElement.innerHTML += logEntry;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  refreshAllData();
+  // Auto-refresh every 30 seconds
+  setInterval(refreshAllData, 30000);
+});
+</script>
+</body>
+</html>
