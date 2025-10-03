@@ -108,8 +108,10 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 	const { toast } = require("../../hooks/useToast");
 
 	function handleLogout() {
-		// Simulate logout logic (replace with real logic as needed)
 		const success = true; // Set to false to simulate failure
+		if (typeof window !== "undefined") {
+			localStorage.removeItem("authToken");
+		}
 		if (success) {
 			toast({
 				title: "Logging Out",
