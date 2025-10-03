@@ -25,7 +25,7 @@ const formSchema = z.object({
 	email: z
 		.string()
 		.email({ message: "Please enter a valid email." })
-		.endsWith("@uwm.edu", {
+		.refine((val) => val.toLowerCase().endsWith("@uwm.edu"), {
 			message: "Must be a valid University Email Address.",
 		}),
 	password: z.string().min(1, { message: "Password is required." }),
@@ -48,7 +48,6 @@ export default function LoginForm() {
 		setIsLoading(true);
 		// Simulate API call
 		await new Promise((resolve) => setTimeout(resolve, 1000));
-
         try{
             const res = await fetch("http://localhost:8080/login",{
                 method: "POST",
