@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import SearchBar from "../components/SearchBar/searchbar";
 import { Header } from "../components/Header/header";
 
@@ -32,9 +33,8 @@ import { PlaceHolderImages } from "@/lib/placeholder-img";
 export default function Homepage() {
 	const bgImage = PlaceHolderImages.find((img) => img.id === "uwm-building");
 
-	const router = require("next/navigation").useRouter?.() || null;
+	const router = useRouter();
 	const [authChecked, setAuthChecked] = React.useState(false);
-	const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
 	React.useEffect(() => {
 		if (typeof window !== "undefined") {
@@ -43,10 +43,8 @@ export default function Homepage() {
 				localStorage.setItem("showAuthToast", "true");
 				router?.push?.("/login");
 				setAuthChecked(false);
-				setIsAuthenticated(false);
 			} else {
 				setAuthChecked(true);
-				setIsAuthenticated(true);
 			}
 		}
 	}, [router]);
@@ -62,7 +60,19 @@ export default function Homepage() {
 	};
 
 	const handleCardClick = (section: string) => {
-		handleNavigation(section);
+		if (section === "Academic") {
+			router.push("/academic");
+		} else if (section === "Advising") {
+			router.push("/advising");
+		} else if (section === "Finances") {
+			router.push("/finances");
+		} else if (section === "Personal Information") {
+			router.push("/personal");
+		} else if (section === "Resources") {
+			router.push("/resources");
+		} else {
+			handleNavigation(section);
+		}
 	};
 
 	return (
