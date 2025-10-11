@@ -25,7 +25,15 @@ public class UserController {
 
     @PostMapping("/edit")
     public ResponseEntity<UserResponseDTO> editUser(@RequestBody EditUserRequestDTO userDTO){
+        if(userDTO == null || userDTO.email() == null) {
+            UserResponseDTO errorResponse = new UserResponseDTO(-1, null, null, null, null, null, null, null, null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
         UserResponseDTO response = userService.editUser(userDTO);
+        if(response == null) {
+            UserResponseDTO errorResponse = new UserResponseDTO(-1, null, null, null, null, null, null, null, null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
         if(response.user_id() == -1){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
