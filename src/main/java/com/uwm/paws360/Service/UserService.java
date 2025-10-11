@@ -97,7 +97,7 @@ public class UserService {
 
     public UserResponseDTO editUser(EditUserRequestDTO userDTO){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(userDTO.email());
-        if(user == null) new UserResponseDTO(-1, null, null, null,
+        if(user == null) return new UserResponseDTO(-1, null, null, null,
                 null, null, null, null, null);
         user.setFirstname(userDTO.firstname());
         user.setMiddlename(userDTO.middlename());
