@@ -294,4 +294,8 @@ public class Users {
     public void setSession_expiration(LocalDateTime session_expiration) {
         this.session_expiration = session_expiration;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

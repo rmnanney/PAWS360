@@ -11,7 +11,7 @@ public class Professor {
     @GeneratedValue
     private int id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private Users user;
 
@@ -20,6 +20,10 @@ public class Professor {
     }
 
     public Professor() {
+    }
+
+    public int getId() {
+        return id;
     }
 
     public Users getUser() {
