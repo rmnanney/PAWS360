@@ -55,6 +55,46 @@ jobs:
       - name: Run tests
         run: mvn test -Dspring.profiles.active=test
 
+      - name: Generate coverage report
+        run: mvn jacoco:report -Dspring.profiles.active=test
+
+      - name: Display coverage summary
+        run: |
+          echo "## 📊 Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          # Extract coverage from JaCoCo CSV
+          if [ -f target/site/jacoco/jacoco.csv ]; then
+            # Get overall coverage percentages
+            INSTRUCTION_COV=$(grep "^GROUP," target/site/jacoco/jacoco.csv | tail -1 | cut -d',' -f4)
+            BRANCH_COV=$(grep "^GROUP," target/site/jacoco/jacoco.csv | tail -1 | cut -d',' -f5)
+            LINE_COV=$(grep "^GROUP," target/site/jacoco/jacoco.csv | tail -1 | cut -d',' -f8)
+            METHOD_COV=$(grep "^GROUP," target/site/jacoco/jacoco.csv | tail -1 | cut -d',' -f10)
+            CLASS_COV=$(grep "^GROUP," target/site/jacoco/jacoco.csv | tail -1 | cut -d',' -f12)
+            
+            echo "| Instruction Coverage | ${INSTRUCTION_COV}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Branch Coverage | ${BRANCH_COV}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Line Coverage | ${LINE_COV}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Method Coverage | ${METHOD_COV}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Class Coverage | ${CLASS_COV}% |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Status | Coverage report not found |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: target/site/jacoco/
+
+      - name: Publish coverage to GitHub Pages
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: target/site/jacoco/
+          destination_dir: coverage
+
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
