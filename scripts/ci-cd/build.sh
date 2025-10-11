@@ -35,7 +35,7 @@ fi
 print_status "Setting up build environment..."
 
 # Set Maven options for CI
-export MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=256m"
+export MAVEN_OPTS="-Xmx1024m"
 
 # Clean previous builds
 print_status "Cleaning previous builds..."
@@ -64,7 +64,7 @@ else
 fi
 
 # Check if JAR files were created
-if [ -f "target/*.jar" ]; then
+if ls target/*.jar 1> /dev/null 2>&1; then
     print_status "✅ JAR files created successfully"
     ls -la target/*.jar
 else
