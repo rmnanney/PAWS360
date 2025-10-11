@@ -23,6 +23,10 @@ public class Student {
 
     public Student(){}
 
+    public int getId() {
+        return id;
+    }
+
     public Users getUser() {
         return user;
     }

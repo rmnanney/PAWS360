@@ -19,7 +19,15 @@ public class UserLogin {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDTO> login(@RequestBody UserLoginRequestDTO loginDTO){
+        if(loginDTO == null || loginDTO.email() == null || loginDTO.password() == null) {
+            UserLoginResponseDTO errorResponse = new UserLoginResponseDTO(-1, null, null, null, null, null, null, "Invalid request body");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
         UserLoginResponseDTO response = loginService.login(loginDTO);
+        if(response == null) {
+            UserLoginResponseDTO errorResponse = new UserLoginResponseDTO(-1, null, null, null, null, null, null, "Login failed");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
         if(response.message().equals("Login Successful")){
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }

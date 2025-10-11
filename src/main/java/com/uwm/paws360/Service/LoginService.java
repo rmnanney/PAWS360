@@ -32,8 +32,11 @@ public class LoginService {
             user.setFailed_attempts(user.getFailed_attempts() + 1);
             if(user.getFailed_attempts() >= 5) user.setAccount_locked(true);
             userRepository.save(user);
+            return new UserLoginResponseDTO(-1, user.getEmail(),
+                    user.getFirstname(), user.getLastname(), user.getRole(), user.getStatus(), null, "Invalid Email or Password");
         }
         user.setFailed_attempts(0);
+        userRepository.save(user);
         user.setSession_token(generateAuthenticationToken());
         userRepository.save(user);
         return new UserLoginResponseDTO(
