@@ -4,6 +4,7 @@ import com.uwm.paws360.DTO.User.DeleteUserRequestDTO;
 import com.uwm.paws360.DTO.User.EditUserRequestDTO;
 import com.uwm.paws360.DTO.Login.UserLoginResponseDTO;
 import com.uwm.paws360.Entity.UserTypes.*;
+import com.uwm.paws360.Entity.Base.Address;
 import com.uwm.paws360.Entity.Base.Users;
 import com.uwm.paws360.JPARepository.User.*;
 import org.springframework.stereotype.Service;
@@ -48,12 +49,29 @@ public class UserService {
                 user.dob(),
                 user.email(),
                 user.password(),
-                user.address(),
                 user.countryCode(),
                 user.phone(),
                 user.status(),
                 user.role()
         );
+
+        if (user.addresses() != null) {
+            for (var addrDto : user.addresses()) {
+                Address addr = new Address();
+                addr.setUser(newUser);
+                addr.setAddress_type(addrDto.address_type());
+                // Default first/last name to user names if not provided
+                addr.setFirstname(newUser.getFirstname());
+                addr.setLastname(newUser.getLastname());
+                addr.setStreet_address_1(addrDto.street_address_1());
+                addr.setStreet_address_2(addrDto.street_address_2());
+                addr.setPo_box(addrDto.po_box());
+                addr.setCity(addrDto.city());
+                addr.setUs_state(addrDto.us_states());
+                addr.setZipcode(addrDto.zipcode());
+                newUser.getAddresses().add(addr);
+            }
+        }
 
         userRepository.save(newUser);
         switch(newUser.getRole()){

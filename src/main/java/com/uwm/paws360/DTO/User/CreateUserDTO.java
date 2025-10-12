@@ -1,11 +1,11 @@
 package com.uwm.paws360.DTO.User;
 
-import com.uwm.paws360.Entity.Base.Address;
 import com.uwm.paws360.Entity.EntityDomains.User.Country_Code;
 import com.uwm.paws360.Entity.EntityDomains.User.Role;
 import com.uwm.paws360.Entity.EntityDomains.User.Status;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record CreateUserDTO(
         String firstname,
@@ -14,7 +14,7 @@ public record CreateUserDTO(
         LocalDate dob,
         String email,
         String password,
-        Address address,
+        List<AddressDTO> addresses,
         Country_Code countryCode,
         String phone,
         Status status,
