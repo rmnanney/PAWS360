@@ -212,6 +212,13 @@ public class UserService {
         return toAddressDTOs(user.getAddresses());
     }
 
+    public UserResponseDTO getUser(GetUserRequestDTO dto){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        if (user == null) return new UserResponseDTO(-1, null, null, null,
+                null, null, null, null, null, List.of());
+        return toUserResponseDTO(user);
+    }
+
     public List<Role> listRoles(ListRolesRequestDTO dto){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
         if (user == null) return List.of();
