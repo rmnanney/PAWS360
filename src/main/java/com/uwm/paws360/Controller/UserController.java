@@ -87,4 +87,18 @@ public class UserController {
     public List<Role> listRoles(@Valid @RequestBody ListRolesRequestDTO dto){
         return userService.listRoles(dto);
     }
+
+    @PostMapping("/get")
+    public ResponseEntity<UserResponseDTO> getUser(@Valid @RequestBody GetUserRequestDTO dto) {
+        UserResponseDTO res = userService.getUser(dto);
+        if (res.user_id() == -1) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/get")
+    public ResponseEntity<UserResponseDTO> getUserByQuery(@RequestParam("email") String email) {
+        UserResponseDTO res = userService.getUser(new GetUserRequestDTO(email));
+        if (res.user_id() == -1) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        return ResponseEntity.ok(res);
+    }
 }
