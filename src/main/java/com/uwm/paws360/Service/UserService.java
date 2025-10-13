@@ -141,6 +141,15 @@ public class UserService {
         user.setPassword(hashIfNeeded(userDTO.password()));
         user.setCountryCode(userDTO.countryCode());
         user.setPhone(userDTO.phone());
+        // Keep address contact names in sync with user name changes
+        if (user.getAddresses() != null) {
+            for (Address addr : user.getAddresses()) {
+                if (addr != null) {
+                    addr.setFirstname(user.getFirstname());
+                    addr.setLastname(user.getLastname());
+                }
+            }
+        }
         userRepository.save(user);
         return toUserResponseDTO(user);
     }
