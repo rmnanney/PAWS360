@@ -45,6 +45,33 @@
           ]
         },
         {
+          "name": "Read - Alice (by email)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/get", "host": ["{{base_url}}"], "path": ["users","get"] },
+            "body": {"mode": "raw", "raw": "{ \n  \"email\": \"{{alice_email}}\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "pm.test('Email matches', () => pm.expect(json.email).to.eql(pm.collectionVariables.get('alice_email')));",
+            "if (json.addresses && json.addresses.length > 0) { pm.collectionVariables.set('address_id', json.addresses[0].id); }"
+          ], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Read - Unknown (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/get", "host": ["{{base_url}}"], "path": ["users","get"] },
+            "body": {"mode": "raw", "raw": "{ \n  \"email\": \"unknown@uwm.edu\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));"
+          ], "type": "text/javascript"}} ]
+        },
+        {
           "name": "Login - Alice (Invalid Password)",
           "request": {
             "method": "POST",
