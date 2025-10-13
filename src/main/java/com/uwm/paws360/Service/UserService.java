@@ -6,6 +6,7 @@ import com.uwm.paws360.Entity.Base.Address;
 import com.uwm.paws360.Entity.Base.Users;
 import com.uwm.paws360.JPARepository.User.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import com.uwm.paws360.Entity.EntityDomains.User.Role;
 
 @Service
+@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
@@ -146,6 +148,16 @@ public class UserService {
     public boolean deleteUser(DeleteUserRequestDTO deleteUserRequestDTO){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(deleteUserRequestDTO.email());
         if(user == null) return false;
+        // Remove role records first to satisfy FK constraints
+        advisorRepository.deleteByUser(user);
+        counselorRepository.deleteByUser(user);
+        facultyRepository.deleteByUser(user);
+        instructorRepository.deleteByUser(user);
+        mentorRepository.deleteByUser(user);
+        professorRepository.deleteByUser(user);
+        studentRepository.deleteByUser(user);
+        taRepository.deleteByUser(user);
+        // Addresses are cascaded from Users (orphanRemoval = true)
         userRepository.delete(user);
         return true;
     }
