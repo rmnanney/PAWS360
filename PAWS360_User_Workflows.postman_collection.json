@@ -1,0 +1,346 @@
+{
+  "info": {
+    "_postman_id": "2a47b5a6-9d5c-4a3e-a9d3-5f2e8c5f2f0a",
+    "name": "PAWS360 User Workflows",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "alice_email", "value": "alice.student@uwm.edu" },
+    { "key": "bob_email", "value": "bob.ta@uwm.edu" },
+    { "key": "carol_email", "value": "carol.advisor@uwm.edu" },
+    { "key": "dave_email", "value": "dave.prof@uwm.edu" },
+    { "key": "eve_email", "value": "eve.faculty@uwm.edu" },
+    { "key": "address_id", "value": "101" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login - Alice (Success)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{alice_email}}\",\n  \"password\": \"NewP@ssw0rd!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Login success message', () => pm.expect(json.message).to.eql('Login Successful'));",
+                  "pm.test('Has session token', () => pm.expect(json.session_token).to.be.a('string').and.not.empty);",
+                  "pm.test('Has session expiration', () => pm.expect(json.session_expiration).to.exist);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Alice (Invalid Password)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{alice_email}}\",\n  \"password\": \"wrong\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "const json = pm.response.json();",
+                  "pm.test('Invalid message', () => pm.expect(json.message).to.include('Invalid'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Bob (Lockout attempt)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] },
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"{{bob_email}}\",\n  \"password\": \"totallyWrong1!\"\n}"}
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 or 423', () => pm.expect([401,423]).to.include(pm.response.code));",
+                  "const json = pm.response.json();",
+                  "if (pm.response.code === 423) { pm.test('Locked message', () => pm.expect(json.message).to.include('Locked')); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Carol (Not Active)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] },
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"{{carol_email}}\",\n  \"password\": \"Advis0r$Pass\"\n}"}
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Message indicates not active', () => pm.expect(pm.response.json().message).to.include('Not Active'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create - Alice (Student)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/create", "host": ["{{base_url}}"], "path": ["users","create"] },
+            "body": {"mode": "raw", "raw": "{\n  \"firstname\": \"Alice\",\n  \"middlename\": \"M\",\n  \"lastname\": \"Nguyen\",\n  \"dob\": \"2004-09-12\",\n  \"email\": \"{{alice_email}}\",\n  \"password\": \"Password!234\",\n  \"addresses\": [ {\n    \"address_type\": \"HOME\",\n    \"street_address_1\": \"1234 E Kenwood Blvd\",\n    \"street_address_2\": null,\n    \"po_box\": null,\n    \"city\": \"Milwaukee\",\n    \"us_states\": \"WI\",\n    \"zipcode\": \"53211\"\n  } ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145550123\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"STUDENT\"\n}"}
+          },
+          "event": [
+            {"listen": "test", "script": {"exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('User id present', () => pm.expect(json.user_id).to.be.a('number').and.greaterThan(0));",
+              "pm.test('Email matches', () => pm.expect(json.email).to.eql(pm.collectionVariables.get('alice_email')));"
+            ], "type": "text/javascript"}}
+          ]
+        },
+        {
+          "name": "Create - Bob (TA)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/create", "host": ["{{base_url}}"], "path": ["users","create"] },
+            "body": {"mode": "raw", "raw": "{\n  \"firstname\": \"Bob\",\n  \"middlename\": \"\",\n  \"lastname\": \"Martinez\",\n  \"dob\": \"1999-02-28\",\n  \"email\": \"{{bob_email}}\",\n  \"password\": \"StrongPass#777\",\n  \"addresses\": [ {\n    \"address_type\": \"CAMPUS\",\n    \"street_address_1\": \"2200 E Kenwood Blvd\",\n    \"street_address_2\": \"Room 201\",\n    \"po_box\": null,\n    \"city\": \"Milwaukee\",\n    \"us_states\": \"WI\",\n    \"zipcode\": \"532110\"\n  } ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145550199\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"TA\"\n}"}
+          },
+          "event": [
+            {"listen": "test", "script": {"exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Has TA or STUDENT role in response', () => pm.expect(['TA','STUDENT','INSTRUCTOR','PROFESSOR','ADVISOR','MENTOR','COUNSELOR','FACULTY']).to.include(pm.response.json().role));"
+            ], "type": "text/javascript"}}
+          ]
+        },
+        {
+          "name": "Create - Carol (Advisor, PENDING)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/create", "host": ["{{base_url}}"], "path": ["users","create"] },
+            "body": {"mode": "raw", "raw": "{\n  \"firstname\": \"Carol\",\n  \"middlename\": null,\n  \"lastname\": \"Dawson\",\n  \"dob\": \"1985-07-01\",\n  \"email\": \"{{carol_email}}\",\n  \"password\": \"Advis0r$Pass\",\n  \"addresses\": [ {\n    \"address_type\": \"HOME\",\n    \"street_address_1\": \"55 Lake Dr\",\n    \"street_address_2\": null,\n    \"po_box\": null,\n    \"city\": \"Shorewood\",\n    \"us_states\": \"WI\",\n    \"zipcode\": \"53211\"\n  }, {\n    \"address_type\": \"CAMPUS\",\n    \"street_address_1\": \"3200 N Cramer St\",\n    \"street_address_2\": \"Office 402\",\n    \"po_box\": null,\n    \"city\": \"Milwaukee\",\n    \"us_states\": \"WI\",\n    \"zipcode\": \"53211\"\n  } ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145550188\",\n  \"status\": \"PENDING\",\n  \"role\": \"ADVISOR\"\n}"}
+          },
+          "event": [
+            {"listen": "test", "script": {"exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Status is PENDING', () => pm.expect(pm.response.json().status).to.eql('PENDING'));"
+            ], "type": "text/javascript"}}
+          ]
+        },
+        {
+          "name": "Create - Dave (Professor)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/create", "host": ["{{base_url}}"], "path": ["users","create"] },
+            "body": {"mode": "raw", "raw": "{\n  \"firstname\": \"Dave\",\n  \"middlename\": \"L\",\n  \"lastname\": \"O’Connor\",\n  \"dob\": \"1978-03-10\",\n  \"email\": \"{{dave_email}}\",\n  \"password\": \"ProfessoR!2025\",\n  \"addresses\": [ {\n    \"address_type\": \"HOME\",\n    \"street_address_1\": \"100 Main St\",\n    \"street_address_2\": null,\n    \"po_box\": null,\n    \"city\": \"Chicago\",\n    \"us_states\": \"IL\",\n    \"zipcode\": \"60601\"\n  } ],\n  \"countryCode\": \"US\",\n  \"phone\": \"3125550001\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"PROFESSOR\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Create - Eve (Faculty)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/create", "host": ["{{base_url}}"], "path": ["users","create"] },
+            "body": {"mode": "raw", "raw": "{\n  \"firstname\": \"Eve-Lynn\",\n  \"middlename\": \"\",\n  \"lastname\": \"Smith-Johnson\",\n  \"dob\": \"1982-12-12\",\n  \"email\": \"{{eve_email}}\",\n  \"password\": \"Facu1ty*Pass\",\n  \"addresses\": [ {\n    \"address_type\": \"HOME\",\n    \"street_address_1\": \"500 University Ave\",\n    \"street_address_2\": null,\n    \"po_box\": \"PO123\",\n    \"city\": \"Madison\",\n    \"us_states\": \"WI\",\n    \"zipcode\": \"53703\"\n  } ],\n  \"countryCode\": \"US\",\n  \"phone\": \"6085554321\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"FACULTY\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Edit - Alice (Phone & Password)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/edit", "host": ["{{base_url}}"], "path": ["users","edit"] },
+            "body": {"mode": "raw", "raw": "{\n  \"firstname\": \"Alice\",\n  \"middlename\": \"Marie\",\n  \"lastname\": \"Nguyen\",\n  \"dob\": \"2004-09-12\",\n  \"email\": \"{{alice_email}}\",\n  \"password\": \"NewP@ssw0rd!\",\n  \"countryCode\": \"US\",\n  \"phone\": \"4145559999\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Email matches', () => pm.expect(pm.response.json().email).to.eql(pm.collectionVariables.get('alice_email')));"
+          ], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Edit - Bob",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/edit", "host": ["{{base_url}}"], "path": ["users","edit"] },
+            "body": {"mode": "raw", "raw": "{\n  \"firstname\": \"Robert\",\n  \"middlename\": \"\",\n  \"lastname\": \"Martinez\",\n  \"dob\": \"1999-02-28\",\n  \"email\": \"{{bob_email}}\",\n  \"password\": \"EvenStronger#888\",\n  \"countryCode\": \"US\",\n  \"phone\": \"4145550198\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Edit - Non-existent (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/edit", "host": ["{{base_url}}"], "path": ["users","edit"] },
+            "body": {"mode": "raw", "raw": "{\n  \"firstname\": \"Ghost\",\n  \"middlename\": null,\n  \"lastname\": \"User\",\n  \"dob\": \"2000-01-01\",\n  \"email\": \"noone@uwm.edu\",\n  \"password\": \"Irrelevant1!\",\n  \"countryCode\": \"US\",\n  \"phone\": \"0000000000\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": ["pm.test('Status 400', () => pm.response.to.have.status(400));"], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Addresses - List (Alice)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/addresses/list", "host": ["{{base_url}}"], "path": ["users","addresses","list"] },
+            "body": {"mode": "raw", "raw": "{ \n  \"email\": \"{{alice_email}}\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "pm.test('Is array', () => pm.expect(Array.isArray(json)).to.be.true);",
+            "if (json.length > 0 && json[0].id) { pm.collectionVariables.set('address_id', json[0].id); }"
+          ], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Addresses - Add (Alice)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/addresses/add", "host": ["{{base_url}}"], "path": ["users","addresses","add"] },
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"{{alice_email}}\",\n  \"address\": {\n    \"address_type\": \"MAILING\",\n    \"street_address_1\": \"PO BOX 456\",\n    \"street_address_2\": null,\n    \"po_box\": \"456\",\n    \"city\": \"Milwaukee\",\n    \"us_states\": \"WI\",\n    \"zipcode\": \"53211\"\n  }\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const res = pm.response.json();",
+            "pm.test('Has addresses array', () => pm.expect(res.addresses).to.be.an('array'));",
+            "if (res.addresses && res.addresses.length > 0) { pm.collectionVariables.set('address_id', res.addresses[res.addresses.length-1].id); }"
+          ], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Addresses - Edit (by id)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/addresses/edit", "host": ["{{base_url}}"], "path": ["users","addresses","edit"] },
+            "body": {"mode": "raw", "raw": "{\n  \"address_id\": {{address_id}},\n  \"address\": {\n    \"address_type\": \"MAILING\",\n    \"street_address_1\": \"PO BOX 789\",\n    \"street_address_2\": null,\n    \"po_box\": \"789\",\n    \"city\": \"Milwaukee\",\n    \"us_states\": \"WI\",\n    \"zipcode\": \"53212\"\n  }\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Addresses - Delete (by id)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/addresses/delete", "host": ["{{base_url}}"], "path": ["users","addresses","delete"] },
+            "body": {"mode": "raw", "raw": "{\n  \"address_id\": {{address_id}}\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 200 or 400', () => pm.expect([200,400]).to.include(pm.response.code));"
+          ], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Roles - Assign TA to Alice",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/roles/assign", "host": ["{{base_url}}"], "path": ["users","roles","assign"] },
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"{{alice_email}}\",\n  \"role\": \"TA\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Roles - Remove TA from Alice",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/roles/remove", "host": ["{{base_url}}"], "path": ["users","roles","remove"] },
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"{{alice_email}}\",\n  \"role\": \"TA\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": ["pm.test('Status 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Roles - List (Alice)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/roles/list", "host": ["{{base_url}}"], "path": ["users","roles","list"] },
+            "body": {"mode": "raw", "raw": "{ \n  \"email\": \"{{alice_email}}\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const arr = pm.response.json();",
+            "pm.test('Array of roles', () => pm.expect(Array.isArray(arr)).to.be.true);"
+          ], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Roles - List (Carol)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/roles/list", "host": ["{{base_url}}"], "path": ["users","roles","list"] },
+            "body": {"mode": "raw", "raw": "{ \n  \"email\": \"{{carol_email}}\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Delete - Eve (existing)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/delete", "host": ["{{base_url}}"], "path": ["users","delete"] },
+            "body": {"mode": "raw", "raw": "{ \n  \"email\": \"{{eve_email}}\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Success message', () => pm.expect(pm.response.text()).to.include('deleted successfully'));"
+          ], "type": "text/javascript"}} ]
+        },
+        {
+          "name": "Delete - Unknown (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{base_url}}/users/delete", "host": ["{{base_url}}"], "path": ["users","delete"] },
+            "body": {"mode": "raw", "raw": "{ \n  \"email\": \"unknown@uwm.edu\"\n}"}
+          },
+          "event": [ {"listen": "test", "script": {"exec": ["pm.test('Status 400', () => pm.response.to.have.status(400));"], "type": "text/javascript"}} ]
+        }
+      ]
+    }
+  ]
+}

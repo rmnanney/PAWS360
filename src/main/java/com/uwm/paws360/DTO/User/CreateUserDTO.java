@@ -6,18 +6,22 @@ import com.uwm.paws360.Entity.EntityDomains.User.Status;
 
 import java.time.LocalDate;
 import java.util.List;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 public record CreateUserDTO(
-        String firstname,
+        @NotEmpty String firstname,
         String middlename,
-        String lastname,
-        LocalDate dob,
-        String email,
-        String password,
-        List<AddressDTO> addresses,
-        Country_Code countryCode,
+        @NotEmpty String lastname,
+        @NotNull LocalDate dob,
+        @Email @NotEmpty String email,
+        @NotEmpty String password,
+        @Valid List<AddressDTO> addresses,
+        @NotNull Country_Code countryCode,
         String phone,
-        Status status,
-        Role role
+        @NotNull Status status,
+        @NotNull Role role
 ) {
 }
