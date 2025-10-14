@@ -1,8 +1,11 @@
 package com.uwm.paws360.Entity.UserTypes;
 
 import com.uwm.paws360.Entity.Base.Users;
+import com.uwm.paws360.Entity.EntityDomains.Department;
 import jakarta.persistence.*;
-import org.springframework.data.relational.core.sql.In;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Instructor {
@@ -12,9 +15,24 @@ public class Instructor {
     @GeneratedValue
     private int id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private Users user;
+
+    @Enumerated(EnumType.STRING)
+    private Department department;
+
+    @Column(length = 100)
+    private String title; // Lecturer, Senior Lecturer, etc.
+
+    private LocalDate hireDate;
+    private boolean partTime;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     public Instructor(){}
 
@@ -22,15 +40,28 @@ public class Instructor {
         this.user = user;
     }
 
-    public int getId() {
-        return id;
+    @PrePersist
+    private void onCreate(){
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
     }
 
-    public Users getUser(){
-        return this.user;
+    @PreUpdate
+    private void onUpdate(){
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public void setUser(Users user) {
-        this.user = user;
-    }
+    public int getId() { return id; }
+    public Users getUser(){ return this.user; }
+    public void setUser(Users user) { this.user = user; }
+    public Department getDepartment() { return department; }
+    public void setDepartment(Department department) { this.department = department; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    public LocalDate getHireDate() { return hireDate; }
+    public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate; }
+    public boolean isPartTime() { return partTime; }
+    public void setPartTime(boolean partTime) { this.partTime = partTime; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

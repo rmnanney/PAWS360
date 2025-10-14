@@ -38,8 +38,8 @@ export default function Homepage() {
 
 	React.useEffect(() => {
 		if (typeof window !== "undefined") {
-			const loggedIn = localStorage.getItem("loggedIn");
-			if (!loggedIn) {
+			const authToken = localStorage.getItem("authToken");
+			if (!authToken) {
 				localStorage.setItem("showAuthToast", "true");
 				router?.push?.("/login");
 				setAuthChecked(false);
