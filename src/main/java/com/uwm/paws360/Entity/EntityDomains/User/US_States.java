@@ -1,5 +1,8 @@
 package com.uwm.paws360.Entity.EntityDomains.User;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum US_States {
     ALABAMA("AL", "Alabama"),
     ALASKA("AK", "Alaska"),
@@ -67,5 +70,22 @@ public enum US_States {
 
     public String getLabel() {
         return label;
+    }
+
+    @JsonCreator
+    public static US_States from(Object value) {
+        if (value == null) return null;
+        String v = value.toString().trim();
+        for (US_States s : US_States.values()) {
+            if (s.name().equalsIgnoreCase(v) || s.code.equalsIgnoreCase(v) || s.label.equalsIgnoreCase(v)) {
+                return s;
+            }
+        }
+        throw new IllegalArgumentException("Invalid US_States value: " + v);
+    }
+
+    @JsonValue
+    public String toJson() {
+        return this.name();
     }
 }

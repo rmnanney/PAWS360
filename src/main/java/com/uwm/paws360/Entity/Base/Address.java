@@ -1,10 +1,9 @@
 package com.uwm.paws360.Entity.Base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.uwm.paws360.Entity.EntityDomains.User.Address_Type;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import jakarta.persistence.*;
-
-import java.util.List;
 
 @Entity
 public class Address {
@@ -16,8 +15,10 @@ public class Address {
     @GeneratedValue
     private int id;
 
-    @Column(nullable = false, name = "user_id")
-    private int user_id;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
+    private Users user;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -48,24 +49,24 @@ public class Address {
     @Column(nullable = false, length = 6)
     private String zipcode;
 
-    @OneToMany(mappedBy = "address", cascade = CascadeType.ALL)
-    private List<Users> users;
-
 /*------------------------- Constructors -------------------------*/
 
     public Address() {
     }
 
-    public Address(Address_Type address_type, String street_address_1, String street_address_2,
-                   String po_box, String city, US_States us_state, String zipcode, List<Users> users) {
+    public Address(Users user, Address_Type address_type, String firstname, String lastname,
+                   String street_address_1, String street_address_2, String po_box,
+                   String city, US_States us_state, String zipcode) {
+        this.user = user;
         this.address_type = address_type;
+        this.firstname = firstname;
+        this.lastname = lastname;
         this.street_address_1 = street_address_1;
         this.street_address_2 = street_address_2;
         this.po_box = po_box;
         this.city = city;
         this.us_state = us_state;
         this.zipcode = zipcode;
-        this.users = users;
     }
 
 /*------------------------- Getters -------------------------*/
@@ -74,8 +75,20 @@ public class Address {
         return id;
     }
 
+    public Users getUser() {
+        return user;
+    }
+
     public Address_Type getAddress_type() {
         return address_type;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
     }
 
     public String getStreet_address_1() {
@@ -102,26 +115,22 @@ public class Address {
         return zipcode;
     }
 
-    public List<Users> getUsers() {
-        return users;
-    }
+/*------------------------- Setters -------------------------*/
 
-    public String getFirstname() {
-        return firstname;
+    public void setUser(Users user) {
+        this.user = user;
     }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public int getUser_id() {
-        return user_id;
-    }
-
-    /*------------------------- Setters -------------------------*/
 
     public void setAddress_type(Address_Type address_type) {
         this.address_type = address_type;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 
     public void setStreet_address_1(String street_address_1) {
@@ -146,21 +155,5 @@ public class Address {
 
     public void setZipcode(String zipcode) {
         this.zipcode = zipcode;
-    }
-
-    public void setUsers(List<Users> users) {
-        this.users = users;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
     }
 }

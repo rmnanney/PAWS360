@@ -5,6 +5,7 @@ import com.uwm.paws360.Entity.EntityDomains.User.Role;
 import com.uwm.paws360.Entity.EntityDomains.User.Status;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record UserResponseDTO(
         int user_id,
@@ -15,6 +16,7 @@ public record UserResponseDTO(
         Status status,
         LocalDate dob,
         Country_Code country_code,
-        String phone
+        String phone,
+        List<AddressDTO> addresses
 ) {
 }
