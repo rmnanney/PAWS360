@@ -1,12 +1,14 @@
 package com.uwm.paws360.Service;
 
+import com.uwm.paws360.DTO.User.AddressDTO;
 import com.uwm.paws360.DTO.User.CreateUserDTO;
 import com.uwm.paws360.DTO.User.EditUserRequestDTO;
 import com.uwm.paws360.DTO.User.UserResponseDTO;
-import com.uwm.paws360.Entity.Base.Address;
 import com.uwm.paws360.Entity.Base.Users;
+import com.uwm.paws360.Entity.EntityDomains.User.Address_Type;
 import com.uwm.paws360.Entity.EntityDomains.User.Role;
 import com.uwm.paws360.Entity.EntityDomains.User.Status;
+import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import com.uwm.paws360.Entity.UserTypes.*;
 import com.uwm.paws360.JPARepository.User.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,13 +55,17 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Create a proper Address object
-        Address address = new Address();
-        address.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        address.setStreet_address_1("123 Main St");
-        address.setCity("Milwaukee");
-        address.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        address.setZipcode("53201");
+        // Create a proper AddressDTO list
+        List<AddressDTO> addresses = List.of(new AddressDTO(
+                1,
+                Address_Type.HOME,
+                "123 Main St",
+                null,
+                null,
+                "Milwaukee",
+                US_States.WISCONSIN,
+                "53201"
+        ));
 
         createUserDTO = new CreateUserDTO(
             "John",
@@ -67,7 +74,7 @@ class UserServiceTest {
             LocalDate.of(1990, 1, 1),
             "john.doe@example.com",
             "password123",
-            address,
+            addresses,
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US,
             "555-0123",
             Status.ACTIVE,
@@ -81,7 +88,6 @@ class UserServiceTest {
         savedUser.setDob(LocalDate.of(1990, 1, 1));
         savedUser.setEmail("john.doe@example.com");
         savedUser.setPassword("password123");
-        savedUser.setAddress(address);
         savedUser.setCountryCode(com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US);
         savedUser.setPhone("555-0123");
         savedUser.setStatus(Status.ACTIVE);
@@ -115,16 +121,11 @@ class UserServiceTest {
     @Test
     void createUser_AdvisorRole_CreatesUserAndAdvisor() {
         // Arrange
-        Address advisorAddress = new Address();
-        advisorAddress.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        advisorAddress.setStreet_address_1("456 Oak St");
-        advisorAddress.setCity("Milwaukee");
-        advisorAddress.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        advisorAddress.setZipcode("53201");
+        List<AddressDTO> advisorAddresses = List.of(new AddressDTO(1, Address_Type.HOME, "456 Oak St", null, null, "Milwaukee", US_States.WISCONSIN, "53201"));
 
         CreateUserDTO advisorDTO = new CreateUserDTO(
             "Jane", "M", "Smith", LocalDate.of(1985, 5, 15),
-            "jane.smith@example.com", "password123", advisorAddress,
+            "jane.smith@example.com", "password123", advisorAddresses,
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0456", Status.ACTIVE, Role.ADVISOR
         );
 
@@ -154,16 +155,11 @@ class UserServiceTest {
     @Test
     void createUser_ProfessorRole_CreatesUserAndProfessor() {
         // Arrange
-        Address professorAddress = new Address();
-        professorAddress.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        professorAddress.setStreet_address_1("789 University Ave");
-        professorAddress.setCity("Milwaukee");
-        professorAddress.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        professorAddress.setZipcode("53201");
+        List<AddressDTO> professorAddresses = List.of(new AddressDTO(1, Address_Type.HOME, "789 University Ave", null, null, "Milwaukee", US_States.WISCONSIN, "53201"));
 
         CreateUserDTO professorDTO = new CreateUserDTO(
             "Dr.", "A", "Johnson", LocalDate.of(1975, 3, 20),
-            "dr.johnson@example.com", "password123", professorAddress,
+            "dr.johnson@example.com", "password123", professorAddresses,
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0789", Status.ACTIVE, Role.PROFESSOR
         );
 
@@ -303,16 +299,11 @@ class UserServiceTest {
     @Test
     void createUser_CounselorRole_CreatesUserAndCounselor() {
         // Arrange
-        Address counselorAddress = new Address();
-        counselorAddress.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        counselorAddress.setStreet_address_1("321 Counseling St");
-        counselorAddress.setCity("Milwaukee");
-        counselorAddress.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        counselorAddress.setZipcode("53201");
+        List<AddressDTO> counselorAddresses = List.of(new AddressDTO(1, Address_Type.HOME, "321 Counseling St", null, null, "Milwaukee", US_States.WISCONSIN, "53201"));
 
         CreateUserDTO counselorDTO = new CreateUserDTO(
             "Sarah", "L", "Wilson", LocalDate.of(1980, 8, 10),
-            "sarah.wilson@example.com", "password123", counselorAddress,
+            "sarah.wilson@example.com", "password123", counselorAddresses,
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0321", Status.ACTIVE, Role.COUNSELOR
         );
 
@@ -338,16 +329,11 @@ class UserServiceTest {
     @Test
     void createUser_InstructorRole_CreatesUserAndInstructor() {
         // Arrange
-        Address instructorAddress = new Address();
-        instructorAddress.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        instructorAddress.setStreet_address_1("654 Teaching Ave");
-        instructorAddress.setCity("Milwaukee");
-        instructorAddress.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        instructorAddress.setZipcode("53201");
+        List<AddressDTO> instructorAddresses = List.of(new AddressDTO(1, Address_Type.HOME, "654 Teaching Ave", null, null, "Milwaukee", US_States.WISCONSIN, "53201"));
 
         CreateUserDTO instructorDTO = new CreateUserDTO(
             "Mike", "T", "Brown", LocalDate.of(1982, 11, 25),
-            "mike.brown@example.com", "password123", instructorAddress,
+            "mike.brown@example.com", "password123", instructorAddresses,
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0654", Status.ACTIVE, Role.INSTRUCTOR
         );
 

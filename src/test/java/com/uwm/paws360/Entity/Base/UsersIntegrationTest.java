@@ -37,12 +37,12 @@ class UsersIntegrationTest {
             LocalDate.of(1990, 1, 1),
             "john.doe@test.com",
             "password123",
-            address,
             Country_Code.US,
             "1234567890",
             Status.ACTIVE,
             Role.STUDENT
         );
+        user.getAddresses().add(address);
 
         // When - persisting triggers @PrePersist
         Users savedUser = entityManager.persistAndFlush(user);
@@ -55,8 +55,9 @@ class UsersIntegrationTest {
         assertThat(savedUser.isAccount_locked()).isFalse();
 
         // Verify address fields were set
-        assertThat(savedUser.getAddress().getFirstname()).isEqualTo("John");
-        assertThat(savedUser.getAddress().getLastname()).isEqualTo("Doe");
-        assertThat(savedUser.getAddress().getUser_id()).isEqualTo(savedUser.getId());
+        assertThat(savedUser.getAddresses()).isNotNull();
+        assertThat(savedUser.getAddresses()).isNotEmpty();
+        assertThat(savedUser.getAddresses().get(0).getFirstname()).isEqualTo("John");
+        assertThat(savedUser.getAddresses().get(0).getLastname()).isEqualTo("Doe");
     }
 }

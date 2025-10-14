@@ -4,8 +4,7 @@ import com.uwm.paws360.Entity.EntityDomains.User.Address_Type;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+// no collection fields used here
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +22,7 @@ class AddressTest {
         assertThat(address.getCity()).isNull();
         assertThat(address.getUs_state()).isNull();
         assertThat(address.getZipcode()).isNull();
-        assertThat(address.getUsers()).isNull();
+        assertThat(address.getUser()).isNull();
     }
 
     @Test
@@ -36,11 +35,23 @@ class AddressTest {
         String city = "Madison";
         US_States state = US_States.WISCONSIN;
         String zipcode = "53703";
-        List<Users> users = new ArrayList<>();
+        String firstname = "John";
+        String lastname = "Doe";
+        Users user = new Users();
 
         // When
-        Address address = new Address(addressType, streetAddress1, streetAddress2,
-                                     poBox, city, state, zipcode, users);
+        Address address = new Address(
+                user,
+                addressType,
+                firstname,
+                lastname,
+                streetAddress1,
+                streetAddress2,
+                poBox,
+                city,
+                state,
+                zipcode
+        );
 
         // Then
         assertThat(address.getAddress_type()).isEqualTo(addressType);
@@ -50,7 +61,9 @@ class AddressTest {
         assertThat(address.getCity()).isEqualTo(city);
         assertThat(address.getUs_state()).isEqualTo(state);
         assertThat(address.getZipcode()).isEqualTo(zipcode);
-        assertThat(address.getUsers()).isEqualTo(users);
+        assertThat(address.getUser()).isEqualTo(user);
+        assertThat(address.getFirstname()).isEqualTo(firstname);
+        assertThat(address.getLastname()).isEqualTo(lastname);
     }
 
     @Test
@@ -66,7 +79,6 @@ class AddressTest {
         String zipcode = "53202";
         String firstname = "John";
         String lastname = "Doe";
-        int userId = 123;
 
         // When
         address.setAddress_type(addressType);
@@ -78,7 +90,6 @@ class AddressTest {
         address.setZipcode(zipcode);
         address.setFirstname(firstname);
         address.setLastname(lastname);
-        address.setUser_id(userId);
 
         // Then
         assertThat(address.getAddress_type()).isEqualTo(addressType);
@@ -90,6 +101,5 @@ class AddressTest {
         assertThat(address.getZipcode()).isEqualTo(zipcode);
         assertThat(address.getFirstname()).isEqualTo(firstname);
         assertThat(address.getLastname()).isEqualTo(lastname);
-        assertThat(address.getUser_id()).isEqualTo(userId);
     }
 }

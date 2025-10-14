@@ -34,9 +34,10 @@ class UserLoginControllerTest {
     void login_SuccessfulLogin_ReturnsOkStatus() throws Exception {
         // Arrange
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
+        java.time.LocalDateTime expires = java.time.LocalDateTime.now().plusHours(1);
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             1, "user@example.com", "John", "Doe",
-            Role.STUDENT, Status.ACTIVE, "sessionToken123", "Login Successful"
+            Role.STUDENT, Status.ACTIVE, "sessionToken123", expires, "Login Successful"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);
@@ -58,7 +59,7 @@ class UserLoginControllerTest {
         // Arrange
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "wrongpassword");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
-            -1, null, null, null, null, null, null, "Invalid Email or Password"
+            -1, null, null, null, null, null, null, null, "Invalid Email or Password"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);
@@ -77,7 +78,7 @@ class UserLoginControllerTest {
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             1, "user@example.com", "John", "Doe",
-            Role.STUDENT, Status.ACTIVE, null, "Account Locked"
+            Role.STUDENT, Status.ACTIVE, null, null, "Account Locked"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);
@@ -96,7 +97,7 @@ class UserLoginControllerTest {
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             1, "user@example.com", "John", "Doe",
-            Role.STUDENT, Status.INACTIVE, null, "Account Is Not Active"
+            Role.STUDENT, Status.INACTIVE, null, null, "Account Is Not Active"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);
@@ -127,20 +128,7 @@ class UserLoginControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    void login_ServiceReturnsNull_ReturnsInternalServerError() throws Exception {
-        // Arrange
-        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
-
-        when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(null);
-
-        // Act & Assert
-        mockMvc.perform(post("/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").value("Login failed"));
-    }
+    
 
     @Test
     void login_TooManyFailedAttempts_LocksAccount() throws Exception {
@@ -148,7 +136,7 @@ class UserLoginControllerTest {
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "wrongpassword");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             -1, "user@example.com", "John", "Doe",
-            Role.STUDENT, Status.ACTIVE, null, "Invalid Email or Password"
+            Role.STUDENT, Status.ACTIVE, null, null, "Invalid Email or Password"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);

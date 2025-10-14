@@ -20,6 +20,7 @@ class AddressDTOTest {
 
         // When
         AddressDTO addressDTO = new AddressDTO(
+                1,
                 addressType,
                 streetAddress1,
                 streetAddress2,
@@ -30,6 +31,7 @@ class AddressDTOTest {
         );
 
         // Then
+        assertThat(addressDTO.id()).isEqualTo(1);
         assertThat(addressDTO.address_type()).isEqualTo(addressType);
         assertThat(addressDTO.street_address_1()).isEqualTo(streetAddress1);
         assertThat(addressDTO.street_address_2()).isEqualTo(streetAddress2);

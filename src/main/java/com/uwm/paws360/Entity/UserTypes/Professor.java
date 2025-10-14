@@ -42,26 +42,65 @@ public class Professor {
     }
 
     @PrePersist
-    private void onCreate(){
+    private void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
     }
 
     @PreUpdate
-    private void onUpdate(){
+    private void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Users getUser() { return user; }
-    public void setUser(Users user) { this.user = user; }
-    public Department getDepartment() { return department; }
-    public void setDepartment(Department department) { this.department = department; }
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public LocalDate getHireDate() { return hireDate; }
-    public void setHireDate(LocalDate hireDate) { this.hireDate = hireDate; }
-    public boolean isTenured() { return tenured; }
-    public void setTenured(boolean tenured) { this.tenured = tenured; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public Users getUser() {
+        return user;
+    }
+
+    public void setUser(Users user) {
+        this.user = user;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public LocalDate getHireDate() {
+        return hireDate;
+    }
+
+    public void setHireDate(LocalDate hireDate) {
+        this.hireDate = hireDate;
+    }
+
+    public boolean isTenured() {
+        return tenured;
+    }
+
+    public void setTenured(boolean tenured) {
+        this.tenured = tenured;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public int getId() {
+        return this.id;
+    }
 }

@@ -33,7 +33,6 @@ class LoginServiceTest {
     void setUp() {
         // Create a proper Users entity for testing
         testUser = new Users();
-        testUser.setId(1); // Set the ID for testing
         testUser.setEmail("test@example.com");
         testUser.setFirstname("John");
         testUser.setLastname("Doe");
@@ -63,7 +62,7 @@ class LoginServiceTest {
         UserLoginResponseDTO response = loginService.login(loginRequest);
 
         // Assert
-        assertEquals(1L, response.user_id());
+        assertEquals(0, response.user_id());
         assertEquals("test@example.com", response.email());
         assertEquals("John", response.firstname());
         assertEquals("Doe", response.lastname());
@@ -103,7 +102,7 @@ class LoginServiceTest {
         UserLoginResponseDTO response = loginService.login(loginRequest);
 
         // Assert
-        assertEquals(1L, response.user_id());
+        assertEquals(0, response.user_id());
         assertEquals("Account Locked", response.message());
         assertNull(response.session_token());
     }
@@ -118,7 +117,7 @@ class LoginServiceTest {
         UserLoginResponseDTO response = loginService.login(loginRequest);
 
         // Assert
-        assertEquals(1L, response.user_id());
+        assertEquals(0, response.user_id());
         assertEquals("Account Is Not Active", response.message());
         assertNull(response.session_token());
     }

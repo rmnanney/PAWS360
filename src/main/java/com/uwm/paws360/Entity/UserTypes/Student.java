@@ -49,16 +49,17 @@ public class Student {
         this.user = user;
     }
 
-    public Student(){}
+    public Student() {
+    }
 
     @PrePersist
-    private void onCreate(){
+    private void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
     }
 
     @PreUpdate
-    private void onUpdate(){
+    private void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -70,24 +71,63 @@ public class Student {
         this.user = user;
     }
 
-    public String getCampusId() { return campusId; }
-    public void setCampusId(String campusId) { this.campusId = campusId; }
+    public String getCampusId() {
+        return campusId;
+    }
 
-    public Department getDepartment() { return department; }
-    public void setDepartment(Department department) { this.department = department; }
+    public void setCampusId(String campusId) {
+        this.campusId = campusId;
+    }
 
-    public Student_Standing getStanding() { return standing; }
-    public void setStanding(Student_Standing standing) { this.standing = standing; }
+    public Department getDepartment() {
+        return department;
+    }
 
-    public Enrollement_Status getEnrollementStatus() { return enrollementStatus; }
-    public void setEnrollementStatus(Enrollement_Status enrollementStatus) { this.enrollementStatus = enrollementStatus; }
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
 
-    public BigDecimal getGpa() { return gpa; }
-    public void setGpa(BigDecimal gpa) { this.gpa = gpa; }
+    public Student_Standing getStanding() {
+        return standing;
+    }
 
-    public LocalDate getExpectedGraduation() { return expectedGraduation; }
-    public void setExpectedGraduation(LocalDate expectedGraduation) { this.expectedGraduation = expectedGraduation; }
+    public void setStanding(Student_Standing standing) {
+        this.standing = standing;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public Enrollement_Status getEnrollementStatus() {
+        return enrollementStatus;
+    }
+
+    public void setEnrollementStatus(Enrollement_Status enrollementStatus) {
+        this.enrollementStatus = enrollementStatus;
+    }
+
+    public BigDecimal getGpa() {
+        return gpa;
+    }
+
+    public void setGpa(BigDecimal gpa) {
+        this.gpa = gpa;
+    }
+
+    public LocalDate getExpectedGraduation() {
+        return expectedGraduation;
+    }
+
+    public void setExpectedGraduation(LocalDate expectedGraduation) {
+        this.expectedGraduation = expectedGraduation;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public int getId() {
+        return this.id;
+    }
 }
