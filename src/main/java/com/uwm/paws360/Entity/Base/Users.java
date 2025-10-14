@@ -1,5 +1,6 @@
 package com.uwm.paws360.Entity.Base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.uwm.paws360.Entity.EntityDomains.Ferpa_Compliance;
 import com.uwm.paws360.Entity.EntityDomains.User.Country_Code;
 import com.uwm.paws360.Entity.EntityDomains.User.Role;
@@ -9,6 +10,8 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Users {
@@ -34,14 +37,12 @@ public class Users {
     @Column(nullable = false, length = 50, unique = true)
     private String email;
 
-    @Column(nullable = false, length = 60)
+    @Column(nullable = false, length = 120)
+    @JsonIgnore
     private String password;
 
-    @ManyToOne(
-            cascade = CascadeType.ALL
-    )
-    @JoinColumn(name = "address_id", nullable = false)
-    private Address address;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -84,6 +85,7 @@ public class Users {
     private Ferpa_Compliance ferpa_compliance;
 
     @Column(length = 255)
+    @JsonIgnore
     private String session_token;
 
     @Column
@@ -94,7 +96,7 @@ public class Users {
     public Users() {}
 
     public Users(String firstname, String middlename, String lastname, LocalDate dob,
-                 String email, String password, Address address, Country_Code countryCode,
+                 String email, String password, Country_Code countryCode,
                  String phone, Status status, Role role) {
         this.firstname = firstname;
         this.middlename = middlename;
@@ -102,7 +104,6 @@ public class Users {
         this.dob = dob;
         this.email = email;
         this.password = password;
-        this.address = address;
         this.countryCode = countryCode;
         this.phone = phone;
         this.status = status;
@@ -117,10 +118,16 @@ public class Users {
         last_login = LocalDateTime.now();
         changed_password = LocalDate.now();
         ferpa_compliance = Ferpa_Compliance.RESTRICTED;
-        address.setFirstname(this.firstname);
-        address.setLastname(this.lastname);
-        address.setUser_id(this.id);
         account_locked = false;
+        if (addresses != null) {
+            for (Address addr : addresses) {
+                if (addr != null) {
+                    addr.setUser(this);
+                    if (addr.getFirstname() == null) addr.setFirstname(this.firstname);
+                    if (addr.getLastname() == null) addr.setLastname(this.lastname);
+                }
+            }
+        }
     }
 
 /*------------------------- Getters -------------------------*/
@@ -153,9 +160,7 @@ public class Users {
         return password;
     }
 
-    public Address getAddress() {
-        return address;
-    }
+    // Address list handled via getAddresses()
 
     public Country_Code getCountryCode() {
         return countryCode;
@@ -239,8 +244,12 @@ public class Users {
         this.password = password;
     }
 
-    public void setAddress(Address address) {
-        this.address = address;
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
     }
 
     public void setCountryCode(Country_Code countryCode) {
@@ -293,9 +302,5 @@ public class Users {
 
     public void setSession_expiration(LocalDateTime session_expiration) {
         this.session_expiration = session_expiration;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 }
