@@ -53,7 +53,9 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Run tests
-        run: mvn test -Dspring.profiles.active=test
+        run: mvn test -Dspring.profiles.active=test -Dspring.profiles.include=""
+        env:
+          SPRING_PROFILES_ACTIVE: test
 
       - name: Generate coverage report
         run: mvn jacoco:report -Dspring.profiles.active=test
@@ -86,6 +88,13 @@ jobs:
         with:
           name: coverage-report
           path: target/site/jacoco/
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: target/surefire-reports/
 
       - name: Publish coverage to GitHub Pages
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
