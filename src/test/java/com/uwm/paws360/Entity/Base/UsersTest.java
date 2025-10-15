@@ -29,6 +29,8 @@ class UsersTest {
         assertThat(user.getFailed_attempts()).isEqualTo(0);
         assertThat(user.isAccount_locked()).isFalse();
         assertThat(user.getFerpa_compliance()).isNull();
+        assertThat(user.getAddresses()).isNotNull();
+        assertThat(user.getAddresses()).isEmpty();
     }
 
     @Test
@@ -40,7 +42,6 @@ class UsersTest {
         LocalDate dob = LocalDate.of(1990, 1, 1);
         String email = "john.smith@example.com";
         String password = "password123";
-        Address address = new Address();
         Country_Code countryCode = Country_Code.US;
         String phone = "123-456-7890";
         Status status = Status.ACTIVE;
@@ -48,7 +49,7 @@ class UsersTest {
 
         // When
         Users user = new Users(firstname, middlename, lastname, dob, email, password,
-                              address, countryCode, phone, status, role);
+                countryCode, phone, status, role);
 
         // Then
         assertThat(user.getFirstname()).isEqualTo(firstname);
@@ -57,11 +58,11 @@ class UsersTest {
         assertThat(user.getDob()).isEqualTo(dob);
         assertThat(user.getEmail()).isEqualTo(email);
         assertThat(user.getPassword()).isEqualTo(password);
-        assertThat(user.getAddress()).isEqualTo(address);
         assertThat(user.getCountryCode()).isEqualTo(countryCode);
         assertThat(user.getPhone()).isEqualTo(phone);
         assertThat(user.getStatus()).isEqualTo(status);
         assertThat(user.getRole()).isEqualTo(role);
+        assertThat(user.getAddresses()).isEmpty();
     }
 
     @Test

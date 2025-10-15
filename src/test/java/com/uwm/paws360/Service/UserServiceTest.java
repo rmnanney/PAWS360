@@ -1,6 +1,7 @@
 package com.uwm.paws360.Service;
 
 import com.uwm.paws360.DTO.User.CreateUserDTO;
+import com.uwm.paws360.DTO.User.AddressDTO;
 import com.uwm.paws360.DTO.User.EditUserRequestDTO;
 import com.uwm.paws360.DTO.User.UserResponseDTO;
 import com.uwm.paws360.Entity.Base.Address;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +45,8 @@ class UserServiceTest {
     private StudentRepository studentRepository;
     @Mock
     private TARepository taRepository;
+    @Mock
+    private AddressRepository addressRepository;
 
     @InjectMocks
     private UserService userService;
@@ -52,26 +56,29 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Create a proper Address object
-        Address address = new Address();
-        address.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        address.setStreet_address_1("123 Main St");
-        address.setCity("Milwaukee");
-        address.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        address.setZipcode("53201");
-
+        // Build CreateUserDTO with address DTO list
+        AddressDTO addrDto = new AddressDTO(
+                null,
+                com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME,
+                "123 Main St",
+                null,
+                null,
+                "Milwaukee",
+                com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN,
+                "53201"
+        );
         createUserDTO = new CreateUserDTO(
-            "John",
-            "Middle",
-            "Doe",
-            LocalDate.of(1990, 1, 1),
-            "john.doe@example.com",
-            "password123",
-            address,
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US,
-            "555-0123",
-            Status.ACTIVE,
-            Role.STUDENT
+                "John",
+                "Middle",
+                "Doe",
+                LocalDate.of(1990, 1, 1),
+                "john.doe@example.com",
+                "password123",
+                List.of(addrDto),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US,
+                "555-0123",
+                Status.ACTIVE,
+                Role.STUDENT
         );
 
         savedUser = new Users();
@@ -80,8 +87,8 @@ class UserServiceTest {
         savedUser.setLastname("Doe");
         savedUser.setDob(LocalDate.of(1990, 1, 1));
         savedUser.setEmail("john.doe@example.com");
-        savedUser.setPassword("password123");
-        savedUser.setAddress(address);
+        savedUser.setPassword("$2a$hash");
+        // addresses are added inside service from DTO; here we just ensure repository interaction
         savedUser.setCountryCode(com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US);
         savedUser.setPhone("555-0123");
         savedUser.setStatus(Status.ACTIVE);
@@ -101,31 +108,39 @@ class UserServiceTest {
         UserResponseDTO response = userService.createUser(createUserDTO);
 
         // Assert
-        assertEquals(0, response.user_id()); // Default int value since not set
+        assertEquals(0, response.user_id()); // ID not set on new entity in service
         assertEquals("john.doe@example.com", response.email());
         assertEquals("John", response.firstname());
         assertEquals("Doe", response.lastname());
         assertEquals(Role.STUDENT, response.role());
         assertEquals(Status.ACTIVE, response.status());
+        assertNotNull(response.addresses());
+        assertEquals(1, response.addresses().size());
+        assertEquals("Milwaukee", response.addresses().get(0).city());
 
-        verify(userRepository).save(any(Users.class));
+        // Verify password is hashed before saving
+        verify(userRepository).save(argThat(u -> u.getPassword() != null && u.getPassword().startsWith("$2")));
         verify(studentRepository).save(any(Student.class));
     }
 
     @Test
     void createUser_AdvisorRole_CreatesUserAndAdvisor() {
         // Arrange
-        Address advisorAddress = new Address();
-        advisorAddress.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        advisorAddress.setStreet_address_1("456 Oak St");
-        advisorAddress.setCity("Milwaukee");
-        advisorAddress.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        advisorAddress.setZipcode("53201");
+        AddressDTO advisorAddrDto = new AddressDTO(
+                null,
+                com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME,
+                "456 Oak St",
+                null,
+                null,
+                "Milwaukee",
+                com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN,
+                "53201"
+        );
 
         CreateUserDTO advisorDTO = new CreateUserDTO(
-            "Jane", "M", "Smith", LocalDate.of(1985, 5, 15),
-            "jane.smith@example.com", "password123", advisorAddress,
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0456", Status.ACTIVE, Role.ADVISOR
+                "Jane", "M", "Smith", LocalDate.of(1985, 5, 15),
+                "jane.smith@example.com", "password123", List.of(advisorAddrDto),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0456", Status.ACTIVE, Role.ADVISOR
         );
 
         Users advisorUser = new Users();
@@ -145,7 +160,7 @@ class UserServiceTest {
         UserResponseDTO response = userService.createUser(advisorDTO);
 
         // Assert
-        assertEquals(0, response.user_id()); // Default int value since not set
+        assertEquals(0, response.user_id());
         assertEquals(Role.ADVISOR, response.role());
 
         verify(advisorRepository).save(any(Advisor.class));
@@ -154,17 +169,21 @@ class UserServiceTest {
     @Test
     void createUser_ProfessorRole_CreatesUserAndProfessor() {
         // Arrange
-        Address professorAddress = new Address();
-        professorAddress.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        professorAddress.setStreet_address_1("789 University Ave");
-        professorAddress.setCity("Milwaukee");
-        professorAddress.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        professorAddress.setZipcode("53201");
+        AddressDTO profAddrDto = new AddressDTO(
+                null,
+                com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME,
+                "789 University Ave",
+                null,
+                null,
+                "Milwaukee",
+                com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN,
+                "53201"
+        );
 
         CreateUserDTO professorDTO = new CreateUserDTO(
-            "Dr.", "A", "Johnson", LocalDate.of(1975, 3, 20),
-            "dr.johnson@example.com", "password123", professorAddress,
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0789", Status.ACTIVE, Role.PROFESSOR
+                "Dr.", "A", "Johnson", LocalDate.of(1975, 3, 20),
+                "dr.johnson@example.com", "password123", List.of(profAddrDto),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0789", Status.ACTIVE, Role.PROFESSOR
         );
 
         Users professorUser = new Users();
@@ -184,7 +203,7 @@ class UserServiceTest {
         UserResponseDTO response = userService.createUser(professorDTO);
 
         // Assert
-        assertEquals(0, response.user_id()); // Default int value since not set
+        assertEquals(0, response.user_id());
         assertEquals(Role.PROFESSOR, response.role());
 
         verify(professorRepository).save(any(Professor.class));
@@ -232,7 +251,7 @@ class UserServiceTest {
         UserResponseDTO response = userService.editUser(editDTO);
 
         // Assert
-        assertEquals(0, response.user_id()); // Default int value since not set
+        assertEquals(0, response.user_id());
         assertEquals("john.doe@example.com", response.email());
         assertEquals("Johnny", response.firstname());
         assertEquals("Doe Jr.", response.lastname());
@@ -303,17 +322,21 @@ class UserServiceTest {
     @Test
     void createUser_CounselorRole_CreatesUserAndCounselor() {
         // Arrange
-        Address counselorAddress = new Address();
-        counselorAddress.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        counselorAddress.setStreet_address_1("321 Counseling St");
-        counselorAddress.setCity("Milwaukee");
-        counselorAddress.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        counselorAddress.setZipcode("53201");
+        AddressDTO counselorAddrDto = new AddressDTO(
+                null,
+                com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME,
+                "321 Counseling St",
+                null,
+                null,
+                "Milwaukee",
+                com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN,
+                "53201"
+        );
 
         CreateUserDTO counselorDTO = new CreateUserDTO(
-            "Sarah", "L", "Wilson", LocalDate.of(1980, 8, 10),
-            "sarah.wilson@example.com", "password123", counselorAddress,
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0321", Status.ACTIVE, Role.COUNSELOR
+                "Sarah", "L", "Wilson", LocalDate.of(1980, 8, 10),
+                "sarah.wilson@example.com", "password123", List.of(counselorAddrDto),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0321", Status.ACTIVE, Role.COUNSELOR
         );
 
         Users counselorUser = new Users();
@@ -329,7 +352,7 @@ class UserServiceTest {
         UserResponseDTO response = userService.createUser(counselorDTO);
 
         // Assert
-        assertEquals(0, response.user_id()); // Default int value since not set
+        assertEquals(0, response.user_id());
         assertEquals(Role.COUNSELOR, response.role());
 
         verify(counselorRepository).save(any(Counselor.class));
@@ -338,17 +361,21 @@ class UserServiceTest {
     @Test
     void createUser_InstructorRole_CreatesUserAndInstructor() {
         // Arrange
-        Address instructorAddress = new Address();
-        instructorAddress.setAddress_type(com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME);
-        instructorAddress.setStreet_address_1("654 Teaching Ave");
-        instructorAddress.setCity("Milwaukee");
-        instructorAddress.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        instructorAddress.setZipcode("53201");
+        AddressDTO instructorAddrDto = new AddressDTO(
+                null,
+                com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME,
+                "654 Teaching Ave",
+                null,
+                null,
+                "Milwaukee",
+                com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN,
+                "53201"
+        );
 
         CreateUserDTO instructorDTO = new CreateUserDTO(
-            "Mike", "T", "Brown", LocalDate.of(1982, 11, 25),
-            "mike.brown@example.com", "password123", instructorAddress,
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0654", Status.ACTIVE, Role.INSTRUCTOR
+                "Mike", "T", "Brown", LocalDate.of(1982, 11, 25),
+                "mike.brown@example.com", "password123", List.of(instructorAddrDto),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0654", Status.ACTIVE, Role.INSTRUCTOR
         );
 
         Users instructorUser = new Users();
@@ -364,7 +391,7 @@ class UserServiceTest {
         UserResponseDTO response = userService.createUser(instructorDTO);
 
         // Assert
-        assertEquals(0, response.user_id()); // Default int value since not set
+        assertEquals(0, response.user_id());
         assertEquals(Role.INSTRUCTOR, response.role());
 
         verify(instructorRepository).save(any(Instructor.class));

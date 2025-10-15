@@ -10,7 +10,6 @@ import com.uwm.paws360.Entity.EntityDomains.User.Status;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -22,11 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class AdvisorRepositoryTest {
 
     @Autowired
     private AdvisorRepository advisorRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private Address createTestAddress() {
         Address address = new Address();
@@ -50,11 +50,13 @@ public class AdvisorRepositoryTest {
         user.setEmail("advisor.test@example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(1990, 1, 1));
-        user.setAddress(createTestAddress());
+        user.getAddresses().add(createTestAddress());
         user.setStatus(Status.ACTIVE);
         user.setRole(Role.ADVISOR);
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
-        advisor.setUser(user);
+        // persist user first (no cascade from Advisor)
+        Users persistedUser = userRepository.save(user);
+        advisor.setUser(persistedUser);
 
         // When
         Advisor savedAdvisor = advisorRepository.save(advisor);
@@ -76,11 +78,11 @@ public class AdvisorRepositoryTest {
         user1.setEmail("advisor1@example.com");
         user1.setPassword("password");
         user1.setDob(LocalDate.of(1990, 1, 1));
-        user1.setAddress(createTestAddress());
+        user1.getAddresses().add(createTestAddress());
         user1.setStatus(Status.ACTIVE);
         user1.setRole(Role.ADVISOR);
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
-        advisor1.setUser(user1);
+        advisor1.setUser(userRepository.save(user1));
         advisorRepository.save(advisor1);
 
         Advisor advisor2 = new Advisor();
@@ -90,11 +92,11 @@ public class AdvisorRepositoryTest {
         user2.setEmail("advisor2@example.com");
         user2.setPassword("password");
         user2.setDob(LocalDate.of(1990, 1, 1));
-        user2.setAddress(createTestAddress());
+        user2.getAddresses().add(createTestAddress());
         user2.setStatus(Status.ACTIVE);
         user2.setRole(Role.ADVISOR);
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
-        advisor2.setUser(user2);
+        advisor2.setUser(userRepository.save(user2));
         advisorRepository.save(advisor2);
 
         // When
@@ -114,11 +116,11 @@ public class AdvisorRepositoryTest {
         user.setEmail("delete.advisor@example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(1990, 1, 1));
-        user.setAddress(createTestAddress());
+        user.getAddresses().add(createTestAddress());
         user.setStatus(Status.ACTIVE);
         user.setRole(Role.ADVISOR);
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
-        advisor.setUser(user);
+        advisor.setUser(userRepository.save(user));
         Advisor savedAdvisor = advisorRepository.save(advisor);
 
         // When

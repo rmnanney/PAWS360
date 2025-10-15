@@ -4,9 +4,6 @@ import com.uwm.paws360.Entity.EntityDomains.User.Address_Type;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AddressTest {
@@ -18,17 +15,22 @@ class AddressTest {
 
         // Then
         assertThat(address.getId()).isEqualTo(0);
+        assertThat(address.getUser()).isNull();
         assertThat(address.getAddress_type()).isNull();
         assertThat(address.getStreet_address_1()).isNull();
+        assertThat(address.getStreet_address_2()).isNull();
+        assertThat(address.getPo_box()).isNull();
         assertThat(address.getCity()).isNull();
         assertThat(address.getUs_state()).isNull();
         assertThat(address.getZipcode()).isNull();
-        assertThat(address.getUsers()).isNull();
     }
 
     @Test
     void testParameterizedConstructor() {
         // Given
+        Users user = new Users();
+        user.setFirstname("Jane");
+        user.setLastname("Doe");
         Address_Type addressType = Address_Type.HOME;
         String streetAddress1 = "123 Main St";
         String streetAddress2 = "Apt 4B";
@@ -36,27 +38,39 @@ class AddressTest {
         String city = "Madison";
         US_States state = US_States.WISCONSIN;
         String zipcode = "53703";
-        List<Users> users = new ArrayList<>();
 
         // When
-        Address address = new Address(addressType, streetAddress1, streetAddress2,
-                                     poBox, city, state, zipcode, users);
+        Address address = new Address(
+                user,
+                addressType,
+                "Jane",
+                "Doe",
+                streetAddress1,
+                streetAddress2,
+                poBox,
+                city,
+                state,
+                zipcode
+        );
 
         // Then
+        assertThat(address.getUser()).isEqualTo(user);
         assertThat(address.getAddress_type()).isEqualTo(addressType);
+        assertThat(address.getFirstname()).isEqualTo("Jane");
+        assertThat(address.getLastname()).isEqualTo("Doe");
         assertThat(address.getStreet_address_1()).isEqualTo(streetAddress1);
         assertThat(address.getStreet_address_2()).isEqualTo(streetAddress2);
         assertThat(address.getPo_box()).isEqualTo(poBox);
         assertThat(address.getCity()).isEqualTo(city);
         assertThat(address.getUs_state()).isEqualTo(state);
         assertThat(address.getZipcode()).isEqualTo(zipcode);
-        assertThat(address.getUsers()).isEqualTo(users);
     }
 
     @Test
     void testSettersAndGetters() {
         // Given
         Address address = new Address();
+        Users user = new Users();
         Address_Type addressType = Address_Type.WORK;
         String streetAddress1 = "456 Oak Ave";
         String streetAddress2 = "Suite 200";
@@ -66,9 +80,9 @@ class AddressTest {
         String zipcode = "53202";
         String firstname = "John";
         String lastname = "Doe";
-        int userId = 123;
 
         // When
+        address.setUser(user);
         address.setAddress_type(addressType);
         address.setStreet_address_1(streetAddress1);
         address.setStreet_address_2(streetAddress2);
@@ -78,9 +92,9 @@ class AddressTest {
         address.setZipcode(zipcode);
         address.setFirstname(firstname);
         address.setLastname(lastname);
-        address.setUser_id(userId);
 
         // Then
+        assertThat(address.getUser()).isEqualTo(user);
         assertThat(address.getAddress_type()).isEqualTo(addressType);
         assertThat(address.getStreet_address_1()).isEqualTo(streetAddress1);
         assertThat(address.getStreet_address_2()).isEqualTo(streetAddress2);
@@ -90,6 +104,5 @@ class AddressTest {
         assertThat(address.getZipcode()).isEqualTo(zipcode);
         assertThat(address.getFirstname()).isEqualTo(firstname);
         assertThat(address.getLastname()).isEqualTo(lastname);
-        assertThat(address.getUser_id()).isEqualTo(userId);
     }
 }
