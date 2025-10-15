@@ -23,13 +23,6 @@ class UsersIntegrationTest {
     @Test
     void testPrePersistSetsDefaultValues() {
         // Given
-        Address address = new Address();
-        address.setAddress_type(Address_Type.HOME);
-        address.setStreet_address_1("123 Test St");
-        address.setCity("Test City");
-        address.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
-        address.setZipcode("12345");
-
         Users user = new Users(
             "John",
             "Middle",
@@ -37,12 +30,20 @@ class UsersIntegrationTest {
             LocalDate.of(1990, 1, 1),
             "john.doe@test.com",
             "password123",
-            address,
             Country_Code.US,
             "1234567890",
             Status.ACTIVE,
             Role.STUDENT
         );
+
+        Address address = new Address();
+        address.setAddress_type(Address_Type.HOME);
+        address.setStreet_address_1("123 Test St");
+        address.setCity("Test City");
+        address.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
+        address.setZipcode("12345");
+        address.setUser(user);
+        user.getAddresses().add(address);
 
         // When - persisting triggers @PrePersist
         Users savedUser = entityManager.persistAndFlush(user);
@@ -55,8 +56,10 @@ class UsersIntegrationTest {
         assertThat(savedUser.isAccount_locked()).isFalse();
 
         // Verify address fields were set
-        assertThat(savedUser.getAddress().getFirstname()).isEqualTo("John");
-        assertThat(savedUser.getAddress().getLastname()).isEqualTo("Doe");
-        assertThat(savedUser.getAddress().getUser_id()).isEqualTo(savedUser.getId());
+        assertThat(savedUser.getAddresses()).hasSize(1);
+        Address savedAddress = savedUser.getAddresses().get(0);
+        assertThat(savedAddress.getFirstname()).isEqualTo("John");
+        assertThat(savedAddress.getLastname()).isEqualTo("Doe");
+        assertThat(savedAddress.getUser()).isEqualTo(savedUser);
     }
 }

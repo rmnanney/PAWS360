@@ -44,7 +44,7 @@ public class Courses {
     private String prerequisites;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "delivery_method", columnDefinition = "delivery_method DEFAULT 'in_person'")
+    @Column(name = "delivery_method", columnDefinition = "VARCHAR(20) DEFAULT 'IN_PERSON'")
     private Delivery_Method deliveryMethod = Delivery_Method.IN_PERSON;
 
     @Column(name = "is_active", nullable = false)

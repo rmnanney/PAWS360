@@ -28,6 +28,9 @@ public class TARepositoryTest {
     @Autowired
     private TARepository taRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private Address createTestAddress() {
         Address address = new Address();
         address.setAddress_type(Address_Type.HOME);
@@ -53,8 +56,13 @@ public class TARepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.TA);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        ta.setUser(user);
+        Address address = createTestAddress();
+        address.setUser(user);
+        user.getAddresses().add(address);
+        
+        // Save user first
+        Users savedUser = userRepository.save(user);
+        ta.setUser(savedUser);
 
         // When
         TA savedTA = taRepository.save(ta);
@@ -79,8 +87,13 @@ public class TARepositoryTest {
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user1.setRole(Role.TA);
         user1.setStatus(Status.ACTIVE);
-        user1.setAddress(createTestAddress());
-        ta1.setUser(user1);
+        Address address1 = createTestAddress();
+        address1.setUser(user1);
+        user1.getAddresses().add(address1);
+        
+        // Save user first
+        Users savedUser1 = userRepository.save(user1);
+        ta1.setUser(savedUser1);
         taRepository.save(ta1);
 
         TA ta2 = new TA();
@@ -93,8 +106,13 @@ public class TARepositoryTest {
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user2.setRole(Role.TA);
         user2.setStatus(Status.ACTIVE);
-        user2.setAddress(createTestAddress());
-        ta2.setUser(user2);
+        Address address2 = createTestAddress();
+        address2.setUser(user2);
+        user2.getAddresses().add(address2);
+        
+        // Save user first
+        Users savedUser2 = userRepository.save(user2);
+        ta2.setUser(savedUser2);
         taRepository.save(ta2);
 
         // When
@@ -117,8 +135,13 @@ public class TARepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.TA);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        ta.setUser(user);
+        Address address = createTestAddress();
+        address.setUser(user);
+        user.getAddresses().add(address);
+        
+        // Save user first
+        Users savedUser = userRepository.save(user);
+        ta.setUser(savedUser);
         TA savedTA = taRepository.save(ta);
 
         // When

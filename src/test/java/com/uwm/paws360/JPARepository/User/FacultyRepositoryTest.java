@@ -28,6 +28,9 @@ public class FacultyRepositoryTest {
     @Autowired
     private FacultyRepository facultyRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private Address createTestAddress() {
         Address address = new Address();
         address.setAddress_type(Address_Type.HOME);
@@ -53,8 +56,11 @@ public class FacultyRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.FACULTY);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        faculty.setUser(user);
+        Address address = createTestAddress();
+        address.setUser(user);
+        user.getAddresses().add(address);
+        Users savedUser = userRepository.save(user);
+        faculty.setUser(savedUser);
 
         // When
         Faculty savedFaculty = facultyRepository.save(faculty);
@@ -79,8 +85,11 @@ public class FacultyRepositoryTest {
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user1.setRole(Role.FACULTY);
         user1.setStatus(Status.ACTIVE);
-        user1.setAddress(createTestAddress());
-        faculty1.setUser(user1);
+        Address address1 = createTestAddress();
+        address1.setUser(user1);
+        user1.getAddresses().add(address1);
+        Users savedUser1 = userRepository.save(user1);
+        faculty1.setUser(savedUser1);
         facultyRepository.save(faculty1);
 
         Faculty faculty2 = new Faculty();
@@ -93,8 +102,11 @@ public class FacultyRepositoryTest {
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user2.setRole(Role.FACULTY);
         user2.setStatus(Status.ACTIVE);
-        user2.setAddress(createTestAddress());
-        faculty2.setUser(user2);
+        Address address2 = createTestAddress();
+        address2.setUser(user2);
+        user2.getAddresses().add(address2);
+        Users savedUser2 = userRepository.save(user2);
+        faculty2.setUser(savedUser2);
         facultyRepository.save(faculty2);
 
         // When
@@ -117,8 +129,11 @@ public class FacultyRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.FACULTY);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        faculty.setUser(user);
+        Address address = createTestAddress();
+        address.setUser(user);
+        user.getAddresses().add(address);
+        Users savedUser = userRepository.save(user);
+        faculty.setUser(savedUser);
         Faculty savedFaculty = facultyRepository.save(faculty);
 
         // When

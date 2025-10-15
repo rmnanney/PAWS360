@@ -30,7 +30,8 @@ public class UserRepositoryTest {
         user1.setEmail("john.doe@example.com");
         user1.setPassword("password123");
         user1.setDob(LocalDate.of(1990, 1, 1));
-        user1.setAddress(address1);
+        address1.setUser(user1);
+        user1.getAddresses().add(address1);
         user1.setStatus(Status.ACTIVE);
         user1.setRole(Role.STUDENT);
         userRepository.save(user1);
@@ -42,7 +43,8 @@ public class UserRepositoryTest {
         user2.setEmail("johnny.smith@example.com");
         user2.setPassword("password123");
         user2.setDob(LocalDate.of(1990, 1, 1));
-        user2.setAddress(address2);
+        address2.setUser(user2);
+        user2.getAddresses().add(address2);
         user2.setStatus(Status.ACTIVE);
         user2.setRole(Role.STUDENT);
         userRepository.save(user2);
@@ -54,7 +56,8 @@ public class UserRepositoryTest {
         user3.setEmail("jane.doe@example.com");
         user3.setPassword("password123");
         user3.setDob(LocalDate.of(1990, 1, 1));
-        user3.setAddress(address3);
+        address3.setUser(user3);
+        user3.getAddresses().add(address3);
         user3.setStatus(Status.ACTIVE);
         user3.setRole(Role.STUDENT);
         userRepository.save(user3);
@@ -77,7 +80,8 @@ public class UserRepositoryTest {
         user.setEmail("JOHN.DOE@EXAMPLE.COM");
         user.setPassword("password123");
         user.setDob(LocalDate.of(1990, 1, 1));
-        user.setAddress(address);
+        address.setUser(user);
+        user.getAddresses().add(address);
         user.setStatus(Status.ACTIVE);
         user.setRole(Role.STUDENT);
         userRepository.save(user);
@@ -109,7 +113,8 @@ public class UserRepositoryTest {
         user.setEmail("test.user@example.com");
         user.setPassword("password123");
         user.setDob(LocalDate.of(1990, 1, 1));
-        user.setAddress(address);
+        address.setUser(user);
+        user.getAddresses().add(address);
         user.setStatus(Status.ACTIVE);
         user.setRole(Role.STUDENT);
 
@@ -135,7 +140,8 @@ public class UserRepositoryTest {
         user1.setEmail("user1@example.com");
         user1.setPassword("password123");
         user1.setDob(LocalDate.of(1990, 1, 1));
-        user1.setAddress(address1);
+        address1.setUser(user1);
+        user1.getAddresses().add(address1);
         user1.setStatus(Status.ACTIVE);
         user1.setRole(Role.STUDENT);
         userRepository.save(user1);
@@ -147,7 +153,8 @@ public class UserRepositoryTest {
         user2.setEmail("user2@example.com");
         user2.setPassword("password123");
         user2.setDob(LocalDate.of(1990, 1, 1));
-        user2.setAddress(address2);
+        address2.setUser(user2);
+        user2.getAddresses().add(address2);
         user2.setStatus(Status.ACTIVE);
         user2.setRole(Role.STUDENT);
         userRepository.save(user2);

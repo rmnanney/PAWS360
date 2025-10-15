@@ -20,6 +20,7 @@ class AddressDTOTest {
 
         // When
         AddressDTO addressDTO = new AddressDTO(
+                null,
                 addressType,
                 streetAddress1,
                 streetAddress2,

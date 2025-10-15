@@ -28,6 +28,9 @@ public class AdvisorRepositoryTest {
     @Autowired
     private AdvisorRepository advisorRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private Address createTestAddress() {
         Address address = new Address();
         address.setAddress_type(Address_Type.HOME);
@@ -50,11 +53,16 @@ public class AdvisorRepositoryTest {
         user.setEmail("advisor.test@example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(1990, 1, 1));
-        user.setAddress(createTestAddress());
+        Address address = createTestAddress();
+        address.setUser(user);
+        user.getAddresses().add(address);
         user.setStatus(Status.ACTIVE);
         user.setRole(Role.ADVISOR);
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
-        advisor.setUser(user);
+        
+        // Save user first
+        Users savedUser = userRepository.save(user);
+        advisor.setUser(savedUser);
 
         // When
         Advisor savedAdvisor = advisorRepository.save(advisor);
@@ -76,11 +84,16 @@ public class AdvisorRepositoryTest {
         user1.setEmail("advisor1@example.com");
         user1.setPassword("password");
         user1.setDob(LocalDate.of(1990, 1, 1));
-        user1.setAddress(createTestAddress());
+        Address address1 = createTestAddress();
+        address1.setUser(user1);
+        user1.getAddresses().add(address1);
         user1.setStatus(Status.ACTIVE);
         user1.setRole(Role.ADVISOR);
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
-        advisor1.setUser(user1);
+        
+        // Save user first
+        Users savedUser1 = userRepository.save(user1);
+        advisor1.setUser(savedUser1);
         advisorRepository.save(advisor1);
 
         Advisor advisor2 = new Advisor();
@@ -90,11 +103,16 @@ public class AdvisorRepositoryTest {
         user2.setEmail("advisor2@example.com");
         user2.setPassword("password");
         user2.setDob(LocalDate.of(1990, 1, 1));
-        user2.setAddress(createTestAddress());
+        Address address2 = createTestAddress();
+        address2.setUser(user2);
+        user2.getAddresses().add(address2);
         user2.setStatus(Status.ACTIVE);
         user2.setRole(Role.ADVISOR);
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
-        advisor2.setUser(user2);
+        
+        // Save user first
+        Users savedUser2 = userRepository.save(user2);
+        advisor2.setUser(savedUser2);
         advisorRepository.save(advisor2);
 
         // When
@@ -114,11 +132,16 @@ public class AdvisorRepositoryTest {
         user.setEmail("delete.advisor@example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(1990, 1, 1));
-        user.setAddress(createTestAddress());
+        Address address = createTestAddress();
+        address.setUser(user);
+        user.getAddresses().add(address);
         user.setStatus(Status.ACTIVE);
         user.setRole(Role.ADVISOR);
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
-        advisor.setUser(user);
+        
+        // Save user first
+        Users savedUser = userRepository.save(user);
+        advisor.setUser(savedUser);
         Advisor savedAdvisor = advisorRepository.save(advisor);
 
         // When

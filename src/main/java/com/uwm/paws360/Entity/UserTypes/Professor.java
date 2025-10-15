@@ -54,6 +54,7 @@ public class Professor {
 
     public Users getUser() { return user; }
     public void setUser(Users user) { this.user = user; }
+    public int getId() { return id; }
     public Department getDepartment() { return department; }
     public void setDepartment(Department department) { this.department = department; }
     public String getTitle() { return title; }

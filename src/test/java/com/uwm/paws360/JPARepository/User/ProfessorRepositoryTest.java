@@ -28,6 +28,9 @@ public class ProfessorRepositoryTest {
     @Autowired
     private ProfessorRepository professorRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private Address createTestAddress() {
         Address address = new Address();
         address.setAddress_type(Address_Type.HOME);
@@ -53,8 +56,13 @@ public class ProfessorRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.PROFESSOR);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        professor.setUser(user);
+        Address address = createTestAddress();
+        address.setUser(user);
+        user.getAddresses().add(address);
+        
+        // Save user first
+        Users savedUser = userRepository.save(user);
+        professor.setUser(savedUser);
 
         // When
         Professor savedProfessor = professorRepository.save(professor);
@@ -79,8 +87,13 @@ public class ProfessorRepositoryTest {
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user1.setRole(Role.PROFESSOR);
         user1.setStatus(Status.ACTIVE);
-        user1.setAddress(createTestAddress());
-        professor1.setUser(user1);
+        Address address1 = createTestAddress();
+        address1.setUser(user1);
+        user1.getAddresses().add(address1);
+        
+        // Save user first
+        Users savedUser1 = userRepository.save(user1);
+        professor1.setUser(savedUser1);
         professorRepository.save(professor1);
 
         Professor professor2 = new Professor();
@@ -93,8 +106,13 @@ public class ProfessorRepositoryTest {
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user2.setRole(Role.PROFESSOR);
         user2.setStatus(Status.ACTIVE);
-        user2.setAddress(createTestAddress());
-        professor2.setUser(user2);
+        Address address2 = createTestAddress();
+        address2.setUser(user2);
+        user2.getAddresses().add(address2);
+        
+        // Save user first
+        Users savedUser2 = userRepository.save(user2);
+        professor2.setUser(savedUser2);
         professorRepository.save(professor2);
 
         // When
@@ -117,8 +135,13 @@ public class ProfessorRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.PROFESSOR);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        professor.setUser(user);
+        Address address = createTestAddress();
+        address.setUser(user);
+        user.getAddresses().add(address);
+        
+        // Save user first
+        Users savedUser = userRepository.save(user);
+        professor.setUser(savedUser);
         Professor savedProfessor = professorRepository.save(professor);
 
         // When
