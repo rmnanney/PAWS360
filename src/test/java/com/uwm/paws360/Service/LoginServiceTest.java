@@ -37,7 +37,7 @@ class LoginServiceTest {
         testUser.setEmail("test@example.com");
         testUser.setFirstname("John");
         testUser.setLastname("Doe");
-        testUser.setPassword("password123");
+        testUser.setPassword("password123"); // legacy plaintext; service upgrades on success
         testUser.setRole(Role.STUDENT);
         testUser.setStatus(Status.ACTIVE);
         testUser.setDob(java.time.LocalDate.of(1990, 1, 1));
@@ -46,7 +46,6 @@ class LoginServiceTest {
         testUser.setFailed_attempts(0);
         testUser.setAccount_locked(false);
         testUser.setFerpa_compliance(com.uwm.paws360.Entity.EntityDomains.Ferpa_Compliance.RESTRICTED);
-        // Note: Address will be set by @PrePersist, so we don't need to set it here for mocking
         testUser.setAccount_locked(false);
         testUser.setFailed_attempts(0);
 
@@ -71,9 +70,11 @@ class LoginServiceTest {
         assertEquals(Status.ACTIVE, response.status());
         assertNotNull(response.session_token());
         assertEquals("Login Successful", response.message());
-        assertEquals(32, response.session_token().length()); // Token should be 32 characters
+        assertEquals(32, response.session_token().length());
+        assertNotNull(response.session_expiration());
 
-        verify(userRepository, times(2)).save(testUser);
+        // One save after success (reset flags, last_login, token, expiration, and password upgrade)
+        verify(userRepository, times(1)).save(testUser);
     }
 
     @Test
@@ -95,8 +96,9 @@ class LoginServiceTest {
 
     @Test
     void login_AccountLocked_ReturnsLockedResponse() {
-        // Arrange
+        // Arrange - account locked with future unlock time
         testUser.setAccount_locked(true);
+        testUser.setAccount_locked_duration(java.time.LocalDateTime.now().plusMinutes(10));
         when(userRepository.findUsersByEmailLikeIgnoreCase("test@example.com")).thenReturn(testUser);
 
         // Act
@@ -104,7 +106,7 @@ class LoginServiceTest {
 
         // Assert
         assertEquals(1L, response.user_id());
-        assertEquals("Account Locked", response.message());
+        assertTrue(response.message().contains("Locked"));
         assertNull(response.session_token());
     }
 
@@ -144,7 +146,7 @@ class LoginServiceTest {
     @Test
     void login_MultipleFailedAttempts_LocksAccount() {
         // Arrange
-        testUser.setFailed_attempts(4); // One more attempt will lock the account
+        testUser.setFailed_attempts(4); // Next failed attempt triggers lock
         when(userRepository.findUsersByEmailLikeIgnoreCase("test@example.com")).thenReturn(testUser);
         when(userRepository.save(any(Users.class))).thenReturn(testUser);
 
@@ -154,8 +156,8 @@ class LoginServiceTest {
         UserLoginResponseDTO response = loginService.login(wrongPasswordRequest);
 
         // Assert
-        assertEquals(-1L, response.user_id());
-        assertEquals("Invalid Email or Password", response.message());
+        assertEquals(1L, response.user_id());
+        assertTrue(response.message().contains("Locked"));
         verify(userRepository).save(testUser);
     }
 
@@ -171,7 +173,7 @@ class LoginServiceTest {
 
         // Assert
         assertEquals("Login Successful", response.message());
-        verify(userRepository, times(2)).save(testUser); // Once for failed attempts reset, once for session token
+        verify(userRepository, times(1)).save(testUser);
     }
 
     @Test

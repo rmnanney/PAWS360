@@ -10,7 +10,6 @@ import com.uwm.paws360.Entity.EntityDomains.User.Status;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -22,11 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class StudentRepositoryTest {
 
     @Autowired
     private StudentRepository studentRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private Address createTestAddress() {
         Address address = new Address();
@@ -53,8 +53,8 @@ public class StudentRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.STUDENT);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        student.setUser(user);
+        user.getAddresses().add(createTestAddress());
+        student.setUser(userRepository.save(user));
 
         // When
         Student savedStudent = studentRepository.save(student);
@@ -79,8 +79,8 @@ public class StudentRepositoryTest {
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user1.setRole(Role.STUDENT);
         user1.setStatus(Status.ACTIVE);
-        user1.setAddress(createTestAddress());
-        student1.setUser(user1);
+        user1.getAddresses().add(createTestAddress());
+        student1.setUser(userRepository.save(user1));
         studentRepository.save(student1);
 
         Student student2 = new Student();
@@ -93,8 +93,8 @@ public class StudentRepositoryTest {
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user2.setRole(Role.STUDENT);
         user2.setStatus(Status.ACTIVE);
-        user2.setAddress(createTestAddress());
-        student2.setUser(user2);
+        user2.getAddresses().add(createTestAddress());
+        student2.setUser(userRepository.save(user2));
         studentRepository.save(student2);
 
         // When
@@ -117,8 +117,8 @@ public class StudentRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.STUDENT);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        student.setUser(user);
+        user.getAddresses().add(createTestAddress());
+        student.setUser(userRepository.save(user));
         Student savedStudent = studentRepository.save(student);
 
         // When

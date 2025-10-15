@@ -23,38 +23,35 @@ public class UserRepositoryTest {
     @Test
     public void testFindAllByFirstnameLike() {
         // Given
-        Address address1 = createTestAddress();
         Users user1 = new Users();
         user1.setFirstname("John");
         user1.setLastname("Doe");
         user1.setEmail("john.doe@example.com");
         user1.setPassword("password123");
         user1.setDob(LocalDate.of(1990, 1, 1));
-        user1.setAddress(address1);
+        user1.getAddresses().add(createTestAddress());
         user1.setStatus(Status.ACTIVE);
         user1.setRole(Role.STUDENT);
         userRepository.save(user1);
 
-        Address address2 = createTestAddress();
         Users user2 = new Users();
         user2.setFirstname("Johnny");
         user2.setLastname("Smith");
         user2.setEmail("johnny.smith@example.com");
         user2.setPassword("password123");
         user2.setDob(LocalDate.of(1990, 1, 1));
-        user2.setAddress(address2);
+        user2.getAddresses().add(createTestAddress());
         user2.setStatus(Status.ACTIVE);
         user2.setRole(Role.STUDENT);
         userRepository.save(user2);
 
-        Address address3 = createTestAddress();
         Users user3 = new Users();
         user3.setFirstname("Jane");
         user3.setLastname("Doe");
         user3.setEmail("jane.doe@example.com");
         user3.setPassword("password123");
         user3.setDob(LocalDate.of(1990, 1, 1));
-        user3.setAddress(address3);
+        user3.getAddresses().add(createTestAddress());
         user3.setStatus(Status.ACTIVE);
         user3.setRole(Role.STUDENT);
         userRepository.save(user3);
@@ -70,14 +67,13 @@ public class UserRepositoryTest {
     @Test
     public void testFindUsersByEmailLikeIgnoreCase() {
         // Given
-        Address address = createTestAddress();
         Users user = new Users();
         user.setFirstname("John");
         user.setLastname("Doe");
         user.setEmail("JOHN.DOE@EXAMPLE.COM");
         user.setPassword("password123");
         user.setDob(LocalDate.of(1990, 1, 1));
-        user.setAddress(address);
+        user.getAddresses().add(createTestAddress());
         user.setStatus(Status.ACTIVE);
         user.setRole(Role.STUDENT);
         userRepository.save(user);
@@ -102,14 +98,13 @@ public class UserRepositoryTest {
     @Test
     public void testSaveAndFindById() {
         // Given
-        Address address = createTestAddress();
         Users user = new Users();
         user.setFirstname("Test");
         user.setLastname("User");
         user.setEmail("test.user@example.com");
         user.setPassword("password123");
         user.setDob(LocalDate.of(1990, 1, 1));
-        user.setAddress(address);
+        user.getAddresses().add(createTestAddress());
         user.setStatus(Status.ACTIVE);
         user.setRole(Role.STUDENT);
 
@@ -128,26 +123,24 @@ public class UserRepositoryTest {
     @Test
     public void testFindAll() {
         // Given
-        Address address1 = createTestAddress();
         Users user1 = new Users();
         user1.setFirstname("User1");
         user1.setLastname("Test");
         user1.setEmail("user1@example.com");
         user1.setPassword("password123");
         user1.setDob(LocalDate.of(1990, 1, 1));
-        user1.setAddress(address1);
+        user1.getAddresses().add(createTestAddress());
         user1.setStatus(Status.ACTIVE);
         user1.setRole(Role.STUDENT);
         userRepository.save(user1);
 
-        Address address2 = createTestAddress();
         Users user2 = new Users();
         user2.setFirstname("User2");
         user2.setLastname("Test");
         user2.setEmail("user2@example.com");
         user2.setPassword("password123");
         user2.setDob(LocalDate.of(1990, 1, 1));
-        user2.setAddress(address2);
+        user2.getAddresses().add(createTestAddress());
         user2.setStatus(Status.ACTIVE);
         user2.setRole(Role.STUDENT);
         userRepository.save(user2);
@@ -167,6 +160,8 @@ public class UserRepositoryTest {
         address.setCity("Test City");
         address.setUs_state(US_States.WISCONSIN);
         address.setZipcode("12345");
+        address.setFirstname("Test");
+        address.setLastname("User");
         return address;
     }
 }

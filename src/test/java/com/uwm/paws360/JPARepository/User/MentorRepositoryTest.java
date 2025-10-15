@@ -10,7 +10,6 @@ import com.uwm.paws360.Entity.EntityDomains.User.Status;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -22,11 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class MentorRepositoryTest {
 
     @Autowired
     private MentorRepository mentorRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private Address createTestAddress() {
         Address address = new Address();
@@ -53,8 +53,8 @@ public class MentorRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.MENTOR);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        mentor.setUser(user);
+        user.getAddresses().add(createTestAddress());
+        mentor.setUser(userRepository.save(user));
 
         // When
         Mentor savedMentor = mentorRepository.save(mentor);
@@ -79,8 +79,8 @@ public class MentorRepositoryTest {
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user1.setRole(Role.MENTOR);
         user1.setStatus(Status.ACTIVE);
-        user1.setAddress(createTestAddress());
-        mentor1.setUser(user1);
+        user1.getAddresses().add(createTestAddress());
+        mentor1.setUser(userRepository.save(user1));
         mentorRepository.save(mentor1);
 
         Mentor mentor2 = new Mentor();
@@ -93,8 +93,8 @@ public class MentorRepositoryTest {
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user2.setRole(Role.MENTOR);
         user2.setStatus(Status.ACTIVE);
-        user2.setAddress(createTestAddress());
-        mentor2.setUser(user2);
+        user2.getAddresses().add(createTestAddress());
+        mentor2.setUser(userRepository.save(user2));
         mentorRepository.save(mentor2);
 
         // When
@@ -117,8 +117,8 @@ public class MentorRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.MENTOR);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        mentor.setUser(user);
+        user.getAddresses().add(createTestAddress());
+        mentor.setUser(userRepository.save(user));
         Mentor savedMentor = mentorRepository.save(mentor);
 
         // When

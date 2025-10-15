@@ -3,6 +3,7 @@ package com.uwm.paws360.DTO.User;
 import com.uwm.paws360.Entity.EntityDomains.User.Address_Type;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AddressDTOTest {
@@ -10,6 +11,7 @@ class AddressDTOTest {
     @Test
     void testAddressDTOCreationAndGetters() {
         // Given
+        Integer id = null;
         Address_Type addressType = Address_Type.HOME;
         String streetAddress1 = "123 Main St";
         String streetAddress2 = "Apt 4B";
@@ -20,6 +22,7 @@ class AddressDTOTest {
 
         // When
         AddressDTO addressDTO = new AddressDTO(
+                id,
                 addressType,
                 streetAddress1,
                 streetAddress2,
@@ -30,6 +33,7 @@ class AddressDTOTest {
         );
 
         // Then
+        assertThat(addressDTO.id()).isNull();
         assertThat(addressDTO.address_type()).isEqualTo(addressType);
         assertThat(addressDTO.street_address_1()).isEqualTo(streetAddress1);
         assertThat(addressDTO.street_address_2()).isEqualTo(streetAddress2);

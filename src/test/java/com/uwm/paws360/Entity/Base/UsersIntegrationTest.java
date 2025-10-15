@@ -5,6 +5,7 @@ import com.uwm.paws360.Entity.EntityDomains.User.Address_Type;
 import com.uwm.paws360.Entity.EntityDomains.User.Country_Code;
 import com.uwm.paws360.Entity.EntityDomains.User.Role;
 import com.uwm.paws360.Entity.EntityDomains.User.Status;
+import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -21,28 +22,29 @@ class UsersIntegrationTest {
     private TestEntityManager entityManager;
 
     @Test
-    void testPrePersistSetsDefaultValues() {
+    void testPrePersistSetsDefaultValuesAndAddressLinking() {
         // Given
+        Users user = new Users(
+                "John",
+                "Middle",
+                "Doe",
+                LocalDate.of(1990, 1, 1),
+                "john.doe@test.com",
+                "password123",
+                Country_Code.US,
+                "1234567890",
+                Status.ACTIVE,
+                Role.STUDENT
+        );
+
         Address address = new Address();
         address.setAddress_type(Address_Type.HOME);
         address.setStreet_address_1("123 Test St");
         address.setCity("Test City");
-        address.setUs_state(com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN);
+        address.setUs_state(US_States.WISCONSIN);
         address.setZipcode("12345");
-
-        Users user = new Users(
-            "John",
-            "Middle",
-            "Doe",
-            LocalDate.of(1990, 1, 1),
-            "john.doe@test.com",
-            "password123",
-            address,
-            Country_Code.US,
-            "1234567890",
-            Status.ACTIVE,
-            Role.STUDENT
-        );
+        // Link address via user's addresses list; @PrePersist will back-fill names and user
+        user.getAddresses().add(address);
 
         // When - persisting triggers @PrePersist
         Users savedUser = entityManager.persistAndFlush(user);
@@ -54,9 +56,12 @@ class UsersIntegrationTest {
         assertThat(savedUser.getFerpa_compliance()).isEqualTo(Ferpa_Compliance.RESTRICTED);
         assertThat(savedUser.isAccount_locked()).isFalse();
 
-        // Verify address fields were set
-        assertThat(savedUser.getAddress().getFirstname()).isEqualTo("John");
-        assertThat(savedUser.getAddress().getLastname()).isEqualTo("Doe");
-        assertThat(savedUser.getAddress().getUser_id()).isEqualTo(savedUser.getId());
+        // Verify address fields were set and linked to user
+        assertThat(savedUser.getAddresses()).hasSize(1);
+        Address persistedAddr = savedUser.getAddresses().get(0);
+        assertThat(persistedAddr.getFirstname()).isEqualTo("John");
+        assertThat(persistedAddr.getLastname()).isEqualTo("Doe");
+        assertThat(persistedAddr.getUser()).isNotNull();
+        assertThat(persistedAddr.getUser().getId()).isEqualTo(savedUser.getId());
     }
 }

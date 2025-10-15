@@ -10,7 +10,6 @@ import com.uwm.paws360.Entity.EntityDomains.User.Status;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -22,11 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class CounselorRepositoryTest {
 
     @Autowired
     private CounselorRepository counselorRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private Address createTestAddress() {
         Address address = new Address();
@@ -53,8 +53,8 @@ public class CounselorRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.COUNSELOR);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        counselor.setUser(user);
+        user.getAddresses().add(createTestAddress());
+        counselor.setUser(userRepository.save(user));
 
         // When
         Counselor savedCounselor = counselorRepository.save(counselor);
@@ -79,8 +79,8 @@ public class CounselorRepositoryTest {
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user1.setRole(Role.COUNSELOR);
         user1.setStatus(Status.ACTIVE);
-        user1.setAddress(createTestAddress());
-        counselor1.setUser(user1);
+        user1.getAddresses().add(createTestAddress());
+        counselor1.setUser(userRepository.save(user1));
         counselorRepository.save(counselor1);
 
         Counselor counselor2 = new Counselor();
@@ -93,8 +93,8 @@ public class CounselorRepositoryTest {
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user2.setRole(Role.COUNSELOR);
         user2.setStatus(Status.ACTIVE);
-        user2.setAddress(createTestAddress());
-        counselor2.setUser(user2);
+        user2.getAddresses().add(createTestAddress());
+        counselor2.setUser(userRepository.save(user2));
         counselorRepository.save(counselor2);
 
         // When
@@ -117,8 +117,8 @@ public class CounselorRepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.COUNSELOR);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        counselor.setUser(user);
+        user.getAddresses().add(createTestAddress());
+        counselor.setUser(userRepository.save(user));
         Counselor savedCounselor = counselorRepository.save(counselor);
 
         // When

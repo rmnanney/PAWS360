@@ -10,7 +10,6 @@ import com.uwm.paws360.Entity.EntityDomains.User.Status;
 import com.uwm.paws360.Entity.EntityDomains.User.US_States;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -22,11 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class TARepositoryTest {
 
     @Autowired
     private TARepository taRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private Address createTestAddress() {
         Address address = new Address();
@@ -53,8 +53,8 @@ public class TARepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.TA);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        ta.setUser(user);
+        user.getAddresses().add(createTestAddress());
+        ta.setUser(userRepository.save(user));
 
         // When
         TA savedTA = taRepository.save(ta);
@@ -79,8 +79,8 @@ public class TARepositoryTest {
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user1.setRole(Role.TA);
         user1.setStatus(Status.ACTIVE);
-        user1.setAddress(createTestAddress());
-        ta1.setUser(user1);
+        user1.getAddresses().add(createTestAddress());
+        ta1.setUser(userRepository.save(user1));
         taRepository.save(ta1);
 
         TA ta2 = new TA();
@@ -93,8 +93,8 @@ public class TARepositoryTest {
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user2.setRole(Role.TA);
         user2.setStatus(Status.ACTIVE);
-        user2.setAddress(createTestAddress());
-        ta2.setUser(user2);
+        user2.getAddresses().add(createTestAddress());
+        ta2.setUser(userRepository.save(user2));
         taRepository.save(ta2);
 
         // When
@@ -117,8 +117,8 @@ public class TARepositoryTest {
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.TA);
         user.setStatus(Status.ACTIVE);
-        user.setAddress(createTestAddress());
-        ta.setUser(user);
+        user.getAddresses().add(createTestAddress());
+        ta.setUser(userRepository.save(user));
         TA savedTA = taRepository.save(ta);
 
         // When

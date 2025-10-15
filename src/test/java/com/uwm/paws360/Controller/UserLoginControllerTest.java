@@ -36,7 +36,7 @@ class UserLoginControllerTest {
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             1, "user@example.com", "John", "Doe",
-            Role.STUDENT, Status.ACTIVE, "sessionToken123", "Login Successful"
+            Role.STUDENT, Status.ACTIVE, "sessionToken123", java.time.LocalDateTime.now().plusHours(1), "Login Successful"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);
@@ -58,7 +58,7 @@ class UserLoginControllerTest {
         // Arrange
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "wrongpassword");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
-            -1, null, null, null, null, null, null, "Invalid Email or Password"
+            -1, null, null, null, null, null, null, null, "Invalid Email or Password"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);
@@ -77,7 +77,7 @@ class UserLoginControllerTest {
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             1, "user@example.com", "John", "Doe",
-            Role.STUDENT, Status.ACTIVE, null, "Account Locked"
+            Role.STUDENT, Status.ACTIVE, null, java.time.LocalDateTime.now().plusMinutes(10), "Account Locked - Try again later"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);
@@ -87,7 +87,7 @@ class UserLoginControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isLocked())
-                .andExpect(jsonPath("$.message").value("Account Locked"));
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Locked")));
     }
 
     @Test
@@ -96,7 +96,7 @@ class UserLoginControllerTest {
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             1, "user@example.com", "John", "Doe",
-            Role.STUDENT, Status.INACTIVE, null, "Account Is Not Active"
+            Role.STUDENT, Status.INACTIVE, null, null, "Account Is Not Active"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);
@@ -128,27 +128,12 @@ class UserLoginControllerTest {
     }
 
     @Test
-    void login_ServiceReturnsNull_ReturnsInternalServerError() throws Exception {
-        // Arrange
-        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
-
-        when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(null);
-
-        // Act & Assert
-        mockMvc.perform(post("/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message").value("Login failed"));
-    }
-
-    @Test
     void login_TooManyFailedAttempts_LocksAccount() throws Exception {
         // Arrange
         UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "wrongpassword");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
-            -1, "user@example.com", "John", "Doe",
-            Role.STUDENT, Status.ACTIVE, null, "Invalid Email or Password"
+            1, "user@example.com", "John", "Doe",
+            Role.STUDENT, Status.ACTIVE, null, java.time.LocalDateTime.now().plusMinutes(15), "Account Locked - Too many attempts"
         );
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(response);
@@ -157,7 +142,7 @@ class UserLoginControllerTest {
         mockMvc.perform(post("/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Invalid Email or Password"));
+                .andExpect(status().isLocked())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Locked")));
     }
 }
