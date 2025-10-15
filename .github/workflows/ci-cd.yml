@@ -188,11 +188,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
         with:
-          name: paws360-jars
-          path: services/
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -211,8 +212,9 @@ jobs:
 
       - name: Start application
         run: |
-          # Copy environment file for testing
-          cp .env.example .env 2>/dev/null || true
+          # Set environment variables for docker-compose
+          export REGISTRY=${{ env.REGISTRY }}
+          export IMAGE_NAME=${{ env.IMAGE_NAME }}
           # Start the application stack
           docker-compose -f docker-compose.ci.yml up -d
           # Wait for application to be ready
