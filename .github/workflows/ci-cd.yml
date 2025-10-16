@@ -235,7 +235,8 @@ jobs:
           echo "Waiting for application to be ready..."
           # Wait for application to be ready
           timeout 300 bash -c \
-            'until curl -f http://localhost:8087/actuator/health; do echo "Waiting for health check..."; sleep 5; done'
+            'until curl -f http://localhost:8087/actuator/health; do echo "Waiting for health check..."; sleep 5; done' || \
+            (echo "Health check failed. Showing application logs:" && docker logs paws360-app-ci && exit 1)
 
       - name: Run UI tests
         working-directory: tests/ui
