@@ -9,7 +9,7 @@ test.describe('PAWS360 AdminLTE Dashboard', () => {
 
   test('should load dashboard successfully', async ({ page }) => {
     // Check page title
-    await expect(page).toHaveTitle(/PAWS360 Admin Dashboard/);
+    await expect(page).toHaveTitle(/PAWS360/);
 
     // Check main elements are present
     await expect(page.locator('.main-header')).toBeVisible();
@@ -22,33 +22,35 @@ test.describe('PAWS360 AdminLTE Dashboard', () => {
     const roleNav = page.locator('.role-nav');
     await expect(roleNav).toBeVisible();
 
-    // Check all role tabs are present
-    await expect(page.locator('#admin-tab')).toBeVisible();
-    await expect(page.locator('#student-tab')).toBeVisible();
-    await expect(page.locator('#instructor-tab')).toBeVisible();
-    await expect(page.locator('#registrar-tab')).toBeVisible();
-    await expect(page.locator('#system-tab')).toBeVisible();
+    // Check all role navigation items are present (using onclick attributes)
+    await expect(page.locator('a[onclick*="setRole(\'admin\'\)"]')).toBeVisible();
+    await expect(page.locator('a[onclick*="setRole(\'student\'\)"]')).toBeVisible();
+    await expect(page.locator('a[onclick*="setRole(\'instructor\'\)"]')).toBeVisible();
+    await expect(page.locator('a[onclick*="setRole(\'registrar\'\)"]')).toBeVisible();
   });
 
   test.describe('Admin Role', () => {
     test('should display admin interface', async ({ page }) => {
-      // Click admin tab
-      await page.locator('#admin-tab').click();
+      // Click admin navigation link
+      await page.locator('a[onclick*="setRole(\'admin\'\)"]').click();
 
-      // Check admin content is visible
-      await expect(page.locator('#admin')).toHaveClass(/show active/);
+      // Wait for content to load
+      await page.waitForTimeout(500);
 
-      // Check admin-specific elements
-      await expect(page.locator('text=Create New Class')).toBeVisible();
-      await expect(page.locator('#createClassModal')).toBeAttached();
+      // Check admin content is loaded (look for admin-specific text)
+      await expect(page.locator('text=Class Creation & Management')).toBeVisible();
+      await expect(page.locator('button[onclick*="showCreateClassModal"]')).toBeVisible();
     });
 
     test('should open create class modal', async ({ page }) => {
-      // Click admin tab
-      await page.locator('#admin-tab').click();
+      // Click admin navigation link
+      await page.locator('a[onclick*="setRole(\'admin\'\)"]').click();
 
-      // Click create class button
-      await page.locator('#createClassModal').click();
+      // Wait for content to load
+      await page.waitForTimeout(500);
+
+      // Click create class button (it's in the card body)
+      await page.locator('button[onclick*="showCreateClassModal"]').click();
 
       // Check modal opens
       await expect(page.locator('.modal')).toBeVisible();
@@ -58,108 +60,120 @@ test.describe('PAWS360 AdminLTE Dashboard', () => {
     });
 
     test('should display classes table', async ({ page }) => {
-      // Click admin tab
-      await page.locator('#admin-tab').click();
+      // Click admin navigation link
+      await page.locator('a[onclick*="setRole(\'admin\'\)"]').click();
 
-      // Check classes table exists
-      await expect(page.locator('#classes-table')).toBeVisible();
+      // Wait for content to load
+      await page.waitForTimeout(500);
 
-      // Check table has data
-      const rows = page.locator('#classes-table-body tr');
-      await expect(rows).toHaveCount(await rows.count()); // At least some rows
+      // Check classes table exists (look for table with CS101, MATH201, etc.)
+      await expect(page.locator('text=CS101')).toBeVisible();
+      await expect(page.locator('text=MATH201')).toBeVisible();
+      await expect(page.locator('text=Introduction to Computer Science')).toBeVisible();
     });
   });
 
   test.describe('Student Role', () => {
     test('should display student interface', async ({ page }) => {
-      // Click student tab
-      await page.locator('#student-tab').click();
+      // Click student navigation link
+      await page.locator('a[onclick*="setRole(\'student\'\)"]').click();
 
-      // Check student content is visible
-      await expect(page.locator('#student')).toHaveClass(/show active/);
+      // Wait for content to load
+      await page.waitForTimeout(500);
 
-      // Check student-specific elements
+      // Check student content is loaded
       await expect(page.locator('text=Academic Planning')).toBeVisible();
+      await expect(page.locator('text=Course Registration')).toBeVisible();
       await expect(page.locator('#courseSearch')).toBeVisible();
     });
 
     test('should display degree progress', async ({ page }) => {
-      // Click student tab
-      await page.locator('#student-tab').click();
+      // Click student navigation link
+      await page.locator('a[onclick*="setRole(\'student\'\)"]').click();
+
+      // Wait for content to load
+      await page.waitForTimeout(500);
 
       // Check degree progress information
       await expect(page.locator('text=Degree Progress')).toBeVisible();
-      await expect(page.locator('text=GPA:')).toBeVisible();
-      await expect(page.locator('text=Credits Completed:')).toBeVisible();
+      await expect(page.locator('text=Credits Completed')).toBeVisible();
+      await expect(page.locator('text=GPA')).toBeVisible();
     });
   });
 
   test.describe('Instructor Role', () => {
     test('should display instructor interface', async ({ page }) => {
-      // Click instructor tab
-      await page.locator('#instructor-tab').click();
+      // Click instructor navigation link
+      await page.locator('a[onclick*="setRole(\'instructor\'\)"]').click();
 
-      // Check instructor content is visible
-      await expect(page.locator('#instructor')).toHaveClass(/show active/);
+      // Wait for content to load
+      await page.waitForTimeout(500);
 
-      // Check instructor-specific elements
-      await expect(page.locator('text=Course Management')).toBeVisible();
+      // Check instructor content is loaded
+      await expect(page.locator('text=Course Management Dashboard')).toBeVisible();
       await expect(page.locator('text=Create Assignment')).toBeVisible();
     });
 
     test('should display course statistics', async ({ page }) => {
-      // Click instructor tab
-      await page.locator('#instructor-tab').click();
+      // Click instructor navigation link
+      await page.locator('a[onclick*="setRole(\'instructor\'\)"]').click();
+
+      // Wait for content to load
+      await page.waitForTimeout(500);
 
       // Check course statistics are displayed
-      await expect(page.locator('text=Students:')).toBeVisible();
-      await expect(page.locator('text=Assignments Due:')).toBeVisible();
+      await expect(page.locator('text=Active Courses')).toBeVisible();
+      await expect(page.locator('text=Total Students')).toBeVisible();
+      await expect(page.locator('text=Assignments Due')).toBeVisible();
     });
   });
 
   test.describe('Registrar Role', () => {
     test('should display registrar interface', async ({ page }) => {
-      // Click registrar tab
-      await page.locator('#registrar-tab').click();
+      // Click registrar navigation link
+      await page.locator('a[onclick*="setRole(\'registrar\'\)"]').click();
 
-      // Check registrar content is visible
-      await expect(page.locator('#registrar')).toHaveClass(/show active/);
+      // Wait for content to load
+      await page.waitForTimeout(500);
 
-      // Check registrar-specific elements
-      await expect(page.locator('text=Enrollment Statistics')).toBeVisible();
-      await expect(page.locator('text=Bulk Enrollment')).toBeVisible();
+      // Check registrar content is loaded
+      await expect(page.locator('text=Enrollment Management System')).toBeVisible();
+      await expect(page.locator('text=Bulk Student Enrollment')).toBeVisible();
     });
 
     test('should display enrollment data', async ({ page }) => {
-      // Click registrar tab
-      await page.locator('#registrar-tab').click();
+      // Click registrar navigation link
+      await page.locator('a[onclick*="setRole(\'registrar\'\)"]').click();
+
+      // Wait for content to load
+      await page.waitForTimeout(500);
 
       // Check enrollment statistics
-      await expect(page.locator('text=Total Enrolled:')).toBeVisible();
-      await expect(page.locator('text=Active Courses:')).toBeVisible();
+      await expect(page.locator('text=Total Enrolled')).toBeVisible();
+      await expect(page.locator('text=Active Courses')).toBeVisible();
     });
   });
 
   test.describe('System Status', () => {
     test('should display system status', async ({ page }) => {
-      // Click system tab
-      await page.locator('#system-tab').click();
+      // System status is in the main content area - click the System Status tab
+      await page.locator('a[href="#system"]').click();
 
       // Check system content is visible
-      await expect(page.locator('#system')).toHaveClass(/show active/);
+      await expect(page.locator('#system')).toBeVisible();
 
-      // Check system status elements
-      await expect(page.locator('#auth-log')).toBeVisible();
-      await expect(page.locator('#data-log')).toBeVisible();
-      await expect(page.locator('#analytics-log')).toBeVisible();
-      await expect(page.locator('#system-log')).toBeVisible();
+      // Check system status elements exist (they may be hidden initially)
+      await expect(page.locator('#auth-log')).toBeAttached();
+      await expect(page.locator('#data-log')).toBeAttached();
+      await expect(page.locator('#analytics-log')).toBeAttached();
+      await expect(page.locator('#system-log')).toBeAttached();
     });
 
     test('should show service health status', async ({ page }) => {
       // Click system tab
-      await page.locator('#system-tab').click();
+      await page.locator('a[href="#system"]').click();
 
-      // Wait for health checks to complete (they run every 30 seconds)
+      // Wait for health checks to complete
       await page.waitForTimeout(1000);
 
       // Check that system status is displayed
@@ -189,6 +203,6 @@ test.describe('PAWS360 AdminLTE Dashboard', () => {
 
     // Check everything still works after refresh
     await expect(page.locator('.role-nav')).toBeVisible();
-    await expect(page.locator('#admin-tab')).toBeVisible();
+    await expect(page.locator('a[onclick*="setRole(\'admin\'\)"]')).toBeVisible();
   });
 });

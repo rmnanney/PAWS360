@@ -209,7 +209,6 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: tests/ui/package.json
 
       - name: Install UI testing dependencies
         working-directory: tests/ui
