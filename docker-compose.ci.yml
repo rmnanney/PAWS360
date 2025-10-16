@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Main PAWS360 Application for CI/CD testing
   paws360-app:

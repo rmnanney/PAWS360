@@ -218,11 +218,16 @@ jobs:
         working-directory: tests/ui
         run: npx playwright install chromium
 
+      - name: Set image name to lowercase
+        run: |
+          # Convert repository name to lowercase for Docker registry compatibility
+          echo "IMAGE_NAME_LOWER=$(echo ${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Start application
         run: |
           # Set environment variables for docker compose
           export REGISTRY=${{ env.REGISTRY }}
-          export IMAGE_NAME=${{ env.IMAGE_NAME }}
+          export IMAGE_NAME=${IMAGE_NAME_LOWER:-${{ env.IMAGE_NAME }}}
           # Start the application stack
           docker compose -f docker-compose.ci.yml up -d
           # Wait for application to be ready
