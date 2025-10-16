@@ -37,6 +37,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: false
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -125,6 +127,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: false
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -190,6 +194,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: false
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -203,7 +209,7 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: tests/ui/package-lock.json
+          cache-dependency-path: tests/ui/package.json
 
       - name: Install UI testing dependencies
         working-directory: tests/ui
@@ -258,6 +264,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: false
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -286,6 +294,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: false
 
       - name: Deploy to staging
         run: |
@@ -294,21 +304,13 @@ jobs:
           echo "Staging deployment completed"
 
   # Deploy to production
-  deploy-production:
+  cleanup:
     needs:
-      - test-and-build
-      - docker-build
-      - security-scan
-      - ui-tests
+      - deploy-production
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    environment: production
+    if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Deploy to production
-        run: |
-          echo "Deploying to production environment..."
-          # Add your production deployment commands here
-          echo "Production deployment completed"
+        with:
+          submodules: false
