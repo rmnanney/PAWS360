@@ -228,12 +228,14 @@ jobs:
           # Set environment variables for docker compose
           export REGISTRY=${{ env.REGISTRY }}
           export IMAGE_NAME=${IMAGE_NAME_LOWER:-${{ env.IMAGE_NAME }}}
-          export FULL_IMAGE_NAME="${REGISTRY}/${IMAGE_NAME_LOWER:-${{ env.IMAGE_NAME }}}"
+          export FULL_IMAGE_NAME="${REGISTRY}/${IMAGE_NAME_LOWER:-${{ env.IMAGE_NAME }}}:${{ github.ref_name }}"
+          echo "Using image: $FULL_IMAGE_NAME"
           # Start the application stack
           docker compose -f docker-compose.ci.yml up -d
+          echo "Waiting for application to be ready..."
           # Wait for application to be ready
           timeout 300 bash -c \
-            'until curl -f http://localhost:8080/actuator/health; do sleep 5; done'
+            'until curl -f http://localhost:8080/actuator/health; do echo "Waiting for health check..."; sleep 5; done'
 
       - name: Run UI tests
         working-directory: tests/ui
