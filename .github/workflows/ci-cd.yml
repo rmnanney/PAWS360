@@ -236,7 +236,11 @@ jobs:
           # Wait for application to be ready
           timeout 300 bash -c \
             'until curl -f http://localhost:8087/actuator/health; do echo "Waiting for health check..."; sleep 5; done' || \
-            (echo "Health check failed. Showing application logs:" && docker logs paws360-app-ci && exit 1)
+            (echo "Health check failed. Showing application environment and logs:" && \
+             echo "=== Container Environment ===" && \
+             docker exec paws360-app-ci env | grep -E "(DATABASE|REDIS|SPRING)" || true && \
+             echo "=== Application Logs ===" && \
+             docker logs paws360-app-ci && exit 1)
 
       - name: Run UI tests
         working-directory: tests/ui
