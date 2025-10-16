@@ -220,11 +220,11 @@ jobs:
 
       - name: Start application
         run: |
-          # Set environment variables for docker-compose
+          # Set environment variables for docker compose
           export REGISTRY=${{ env.REGISTRY }}
           export IMAGE_NAME=${{ env.IMAGE_NAME }}
           # Start the application stack
-          docker-compose -f docker-compose.ci.yml up -d
+          docker compose -f docker-compose.ci.yml up -d
           # Wait for application to be ready
           timeout 300 bash -c \
             'until curl -f http://localhost:8080/actuator/health; do sleep 5; done'
