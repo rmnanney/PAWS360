@@ -228,6 +228,7 @@ jobs:
           # Set environment variables for docker compose
           export REGISTRY=${{ env.REGISTRY }}
           export IMAGE_NAME=${IMAGE_NAME_LOWER:-${{ env.IMAGE_NAME }}}
+          export FULL_IMAGE_NAME="${REGISTRY}/${IMAGE_NAME_LOWER:-${{ env.IMAGE_NAME }}}"
           # Start the application stack
           docker compose -f docker-compose.ci.yml up -d
           # Wait for application to be ready
