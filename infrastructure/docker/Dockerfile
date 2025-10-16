@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for PAWS360
-FROM maven:3.9.4-openjdk-21-slim AS build
+FROM maven:3.9.11-eclipse-temurin-21 AS build
 
 # Set working directory
 WORKDIR /app
