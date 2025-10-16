@@ -1,7 +1,7 @@
 services:
   # Main PAWS360 Application for CI/CD testing
   paws360-app:
-    image: ${FULL_IMAGE_NAME}:latest
+    image: ${FULL_IMAGE_NAME}
     container_name: paws360-app-ci
     ports:
       - "8087:8080"
