@@ -235,13 +235,13 @@ jobs:
           echo "Waiting for application to be ready..."
           # Wait for application to be ready
           timeout 300 bash -c \
-            'until curl -f http://localhost:8080/actuator/health; do echo "Waiting for health check..."; sleep 5; done'
+            'until curl -f http://localhost:8087/actuator/health; do echo "Waiting for health check..."; sleep 5; done'
 
       - name: Run UI tests
         working-directory: tests/ui
         run: npm test
         env:
-          BASE_URL: http://localhost:8080
+          BASE_URL: http://localhost:8087
           CI: true
 
       - name: Upload UI test results
