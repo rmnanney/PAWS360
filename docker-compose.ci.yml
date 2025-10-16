@@ -1,10 +1,10 @@
 services:
   # Main PAWS360 Application for CI/CD testing
   paws360-app:
-    image: ${REGISTRY}/${IMAGE_NAME}:latest
+    image: ${FULL_IMAGE_NAME}:latest
     container_name: paws360-app-ci
     ports:
-      - "8080:8080"
+      - "8087:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=test
       - SERVER_PORT=8080
@@ -27,7 +27,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 30s
 
   # PostgreSQL Database for CI testing
   postgres:
@@ -38,11 +38,10 @@ services:
       - POSTGRES_USER=paws360
       - POSTGRES_PASSWORD=test_password
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_ci_data:/var/lib/postgresql/data
-      - ../../database/paws360_database_schema_docs.md:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ../../database/paws360_seed_data.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./database/test_schema.sql:/docker-entrypoint-initdb.d/01-init.sql
     networks:
       - ci-network
     healthcheck:
