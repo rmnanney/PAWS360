@@ -303,13 +303,23 @@ jobs:
           echo "Staging deployment completed"
 
   # Deploy to production
-  cleanup:
+  deploy-production:
     needs:
-      - deploy-production
+      - test-and-build
+      - docker-build
+      - security-scan
+      - ui-tests
     runs-on: ubuntu-latest
-    if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           submodules: false
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production environment..."
+          # Add your production deployment commands here
+          echo "Production deployment completed"
