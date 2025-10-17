@@ -110,4 +110,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         return ResponseEntity.ok(res);
     }
+
+    // Resolve Student.id by email for enrollment automation
+    @GetMapping("/student-id")
+    public ResponseEntity<GetStudentIdResponseDTO> getStudentIdByEmail(@RequestParam("email") String email) {
+        int sid = userService.getStudentIdByEmail(email);
+        GetStudentIdResponseDTO body = new GetStudentIdResponseDTO(sid, email);
+        if (sid == -1) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
+        return ResponseEntity.ok(body);
+    }
 }
