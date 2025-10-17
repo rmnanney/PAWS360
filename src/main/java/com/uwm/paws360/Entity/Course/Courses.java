@@ -44,7 +44,7 @@ public class Courses {
     private BigDecimal creditHours;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "delivery_method", columnDefinition = "delivery_method DEFAULT 'in_person'")
+    @Column(name = "delivery_method", nullable = false, length = 20)
     private Delivery_Method deliveryMethod = Delivery_Method.IN_PERSON;
 
     @Column(name = "is_active", nullable = false)
