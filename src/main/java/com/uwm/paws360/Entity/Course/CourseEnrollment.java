@@ -7,8 +7,8 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "course_enrollments", schema = "paws360", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"student_id", "lecture_section_id"})
+@Table(name = "course_enrollments", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "student_id", "lecture_section_id" })
 })
 public class CourseEnrollment {
 
@@ -54,7 +54,8 @@ public class CourseEnrollment {
     public CourseEnrollment() {
     }
 
-    public CourseEnrollment(Student student, CourseSection lectureSection, CourseSection labSection, SectionEnrollmentStatus status) {
+    public CourseEnrollment(Student student, CourseSection lectureSection, CourseSection labSection,
+            SectionEnrollmentStatus status) {
         this.student = student;
         this.lectureSection = lectureSection;
         this.labSection = labSection;
