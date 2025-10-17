@@ -254,6 +254,10 @@ public class CourseCatalogService {
                 .orElseThrow(() -> new EntityNotFoundException("Course not found for id " + courseId));
     }
 
+    public java.util.List<Courses> listAllCourses() {
+        return courseRepository.findAll();
+    }
+
     private boolean isValidInstructionalRole(com.uwm.paws360.Entity.EntityDomains.User.Role userRole, InstructionalRole assignmentRole) {
         return switch (assignmentRole) {
             case PROFESSOR -> userRole == com.uwm.paws360.Entity.EntityDomains.User.Role.PROFESSOR;
