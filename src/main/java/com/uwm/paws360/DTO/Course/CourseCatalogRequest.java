@@ -1,6 +1,7 @@
 package com.uwm.paws360.DTO.Course;
 
 import com.uwm.paws360.Entity.EntityDomains.Delivery_Method;
+import com.uwm.paws360.Entity.EntityDomains.Department;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,9 +21,8 @@ public record CourseCatalogRequest(
         @Size(max = 2000)
         String courseDescription,
 
-        @NotBlank(message = "Department code is required")
-        @Size(max = 10)
-        String departmentCode,
+        @NotNull(message = "Department is required")
+        Department department,
 
         @Size(max = 10)
         String courseLevel,

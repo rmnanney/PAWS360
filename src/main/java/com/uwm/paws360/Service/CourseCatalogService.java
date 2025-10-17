@@ -76,7 +76,7 @@ public class CourseCatalogService {
         course.setCourseCode(request.courseCode());
         course.setCourseName(request.courseName());
         course.setCourseDescription(request.courseDescription());
-        course.setDepartmentCode(request.departmentCode());
+        course.setDepartment(request.department());
         course.setCourseLevel(request.courseLevel());
         course.setCreditHours(request.creditHours());
         if (request.deliveryMethod() != null) {
@@ -210,7 +210,7 @@ public class CourseCatalogService {
                 course.getCourseCode(),
                 course.getCourseName(),
                 course.getCourseDescription(),
-                course.getDepartmentCode(),
+                course.getDepartment(),
                 course.getCourseLevel(),
                 course.getCreditHours(),
                 course.getDeliveryMethod(),
