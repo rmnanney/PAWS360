@@ -22,6 +22,15 @@ public class CourseController {
         this.courseCatalogService = courseCatalogService;
     }
 
+    @GetMapping
+    public ResponseEntity<java.util.List<CourseCatalogResponse>> listCourses() {
+        java.util.List<com.uwm.paws360.Entity.Course.Courses> all = courseCatalogService.listAllCourses();
+        java.util.List<CourseCatalogResponse> out = all.stream()
+                .map(courseCatalogService::toCourseResponse)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(out);
+    }
+
     @PostMapping
     public ResponseEntity<CourseCatalogResponse> createOrUpdateCourse(@Valid @RequestBody CourseCatalogRequest request) {
         Courses course = courseCatalogService.createOrUpdateCourse(request);
