@@ -7,13 +7,9 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(
-        name = "section_staff_assignments",
-        schema = "paws360",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"section_id", "user_id", "role"})
-        }
-)
+@Table(name = "section_staff_assignments", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "section_id", "user_id", "role" })
+})
 public class SectionStaffAssignment {
 
     @Id

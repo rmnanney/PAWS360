@@ -12,7 +12,6 @@ import java.util.Set;
 @Entity
 @Table(
         name = "courses",
-        schema = "paws360",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "course_code")
         }

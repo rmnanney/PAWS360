@@ -3,8 +3,8 @@ package com.uwm.paws360.Entity.Course;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "course_prerequisites", schema = "paws360", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"course_id", "prerequisite_course_id"})
+@Table(name = "course_prerequisites", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "course_id", "prerequisite_course_id" })
 })
 public class CoursePrerequisite {
 
@@ -30,7 +30,8 @@ public class CoursePrerequisite {
     public CoursePrerequisite() {
     }
 
-    public CoursePrerequisite(Courses course, Courses prerequisiteCourse, String minimumGrade, boolean concurrentAllowed) {
+    public CoursePrerequisite(Courses course, Courses prerequisiteCourse, String minimumGrade,
+            boolean concurrentAllowed) {
         this.course = course;
         this.prerequisiteCourse = prerequisiteCourse;
         this.minimumGrade = minimumGrade;
