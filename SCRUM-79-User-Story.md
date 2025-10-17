@@ -1,4 +1,4 @@
-# SCRUM-61: Implement Multi-Role AdminLTE Dashboard with Full Interactive Features
+# SCRUM-79: Implement Multi-Role AdminLTE Dashboard with Full Interactive Features
 
 ## 📋 User Story
 **As a** PAWS360 administrator, instructor, student, or registrar  

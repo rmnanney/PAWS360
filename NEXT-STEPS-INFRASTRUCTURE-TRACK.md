@@ -19,9 +19,9 @@
 - ✅ Playwright UI testing framework (6/17 tests passing - infrastructure validated)
 - ✅ Application builds, deploys, and connects to services successfully
 
-### SCRUM-61: User Story Created
+### SCRUM-79: User Story Created
 - ✅ Comprehensive 13-point user story with detailed acceptance criteria
-- ✅ Complete TDD implementation guide (`SCRUM-61-gpt-context.md`)
+- ✅ Complete TDD implementation guide (`SCRUM-79-gpt-context.md`)
 - ✅ Ready for implementation (8-10 hours estimated)
 
 ### Documentation
@@ -156,9 +156,9 @@ API breaking changes from master merge caused:
 
 ---
 
-## 🔧 Alternative: SCRUM-61 (AdminLTE Dashboard)
+## 🔧 Alternative: SCRUM-79 (AdminLTE Dashboard)
 
-**If SCRUM-56 is blocked or waiting on reviews**, you can work on SCRUM-61 in parallel:
+**If SCRUM-56 is blocked or waiting on reviews**, you can work on SCRUM-79 in parallel:
 
 **Advantages**:
 - Independent of compilation fixes
@@ -171,11 +171,11 @@ API breaking changes from master merge caused:
    ```bash
    git checkout master
    git pull origin master
-   git checkout -b SCRUM-61-AdminLTE-Dashboard
+   git checkout -b SCRUM-79-AdminLTE-Dashboard
    ```
 
 2. Follow the complete TDD guide:
-   - Read `SCRUM-61-gpt-context.md` thoroughly
+   - Read `SCRUM-79-gpt-context.md` thoroughly
    - Follow RED-GREEN-REFACTOR cycle
    - Run tests frequently: `cd tests/ui && npm test`
 
@@ -192,8 +192,8 @@ API breaking changes from master merge caused:
 | **PR #22 is approved and ready** | Merge PR #22 → Start SCRUM-56 |
 | **PR #22 needs review/revisions** | Address review comments → Re-request review |
 | **PR #22 has merge conflicts** | Resolve conflicts locally → Force push → Merge |
-| **Waiting on PR approval** | Start SCRUM-61 in parallel (separate branch) |
-| **SCRUM-56 is too daunting** | Start with simpler approach: SCRUM-61 |
+| **Waiting on PR approval** | Start SCRUM-79 in parallel (separate branch) |
+| **SCRUM-56 is too daunting** | Start with simpler approach: SCRUM-79 |
 
 ---
 
@@ -218,7 +218,7 @@ Production-ready infrastructure ✅
 
 ### Option B: Parallel Track (Lower Risk)
 ```
-PR #22 Review/Merge  +  SCRUM-61 (AdminLTE Dashboard - 8-10 hours)
+PR #22 Review/Merge  +  SCRUM-79 (AdminLTE Dashboard - 8-10 hours)
   ↓                       ↓
 SCRUM-56                17/17 UI tests passing
   ↓                       ↓
@@ -251,9 +251,9 @@ Production infrastructure ✅
 - [ ] Verify compilation succeeds
 - [ ] Create PR
 
-**For SCRUM-61** (if doing parallel):
-- [ ] Create branch from master: `SCRUM-61-AdminLTE-Dashboard`
-- [ ] Read `SCRUM-61-gpt-context.md` completely
+**For SCRUM-79** (if doing parallel):
+- [ ] Create branch from master: `SCRUM-79-AdminLTE-Dashboard`
+- [ ] Read `SCRUM-79-gpt-context.md` completely
 - [ ] Start with Phase 1 (JavaScript infrastructure)
 - [ ] Follow TDD approach religiously
 - [ ] Run tests after each phase
@@ -272,8 +272,8 @@ Production infrastructure ✅
 - Compilation errors are systematic - fix patterns not individual errors
 - Test incrementally after each batch of fixes
 
-**For SCRUM-61**:
-- `SCRUM-61-gpt-context.md` has COMPLETE implementation guide
+**For SCRUM-79**:
+- `SCRUM-79-gpt-context.md` has COMPLETE implementation guide
 - Follow TDD process strictly (RED → GREEN → REFACTOR)
 - Run tests frequently to catch regressions early
 

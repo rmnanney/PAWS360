@@ -1118,10 +1118,10 @@ git commit -m "Implement multi-role AdminLTE dashboard with full interactive fea
 Closes #61"
 
 # 7. Push to branch
-git push origin SCRUM-61-AdminLTE-Dashboard
+git push origin SCRUM-79-AdminLTE-Dashboard
 
 # 8. Create Pull Request
-# Title: "SCRUM-61: Implement Multi-Role AdminLTE Dashboard"
+# Title: "SCRUM-79: Implement Multi-Role AdminLTE Dashboard"
 # Description: Reference the user story, mention 17/17 tests passing
 ```
 

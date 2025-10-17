@@ -20,7 +20,7 @@
 **Test Results**: 6/17 tests passing
 - ✅ API Integration: 3 endpoints working
 - ✅ Dashboard: Basic structure, responsive, navigation
-- ❌ 11 tests failing (expected - require full application features per SCRUM-61)
+- ❌ 11 tests failing (expected - require full application features per SCRUM-79)
 
 **Files Changed**:
 - `.github/workflows/ci-cd.yml` - GitHub Actions CI/CD pipeline
@@ -41,15 +41,15 @@
 
 # After PR is merged, the following stories become actionable:
 # - SCRUM-56: Fix compilation errors (high priority)
-# - SCRUM-61: AdminLTE dashboard implementation
+# - SCRUM-79: AdminLTE dashboard implementation
 ```
 
-### ✅ SCRUM-61: Multi-Role AdminLTE Dashboard (CREATED)
+### ✅ SCRUM-79: Multi-Role AdminLTE Dashboard (CREATED)
 **Status**: Ready for Implementation  
 **Story Points**: 13 (8-10 hours estimated)  
 **Files Created**:
-- `SCRUM-61-User-Story.md` - Comprehensive user story with acceptance criteria
-- `SCRUM-61-gpt-context.md` - Detailed TDD implementation guide for future agent
+- `SCRUM-79-User-Story.md` - Comprehensive user story with acceptance criteria
+- `SCRUM-79-gpt-context.md` - Detailed TDD implementation guide for future agent
 
 **What's Defined**:
 - Complete acceptance criteria for all 4 roles (Admin, Student, Instructor, Registrar)
@@ -116,7 +116,7 @@
 
 ### 🎨 Medium Priority - UI Features
 
-#### SCRUM-61: Multi-Role AdminLTE Dashboard
+#### SCRUM-79: Multi-Role AdminLTE Dashboard
 **Status**: Story Created - Ready for Implementation  
 **Priority**: MEDIUM (UI testing validation)  
 **Blockers**: None - Can start immediately  
@@ -124,7 +124,7 @@
 
 **Goal**: Pass all 17 Playwright UI tests
 
-**Context File**: `SCRUM-61-gpt-context.md` provides complete TDD guide
+**Context File**: `SCRUM-79-gpt-context.md` provides complete TDD guide
 
 ---
 
@@ -164,7 +164,7 @@
 ---
 
 ### Option 2: UI Development Track
-**Path**: SCRUM-61 (AdminLTE Dashboard)
+**Path**: SCRUM-79 (AdminLTE Dashboard)
 1. Implement multi-role dashboard
 2. Pass all 17 UI tests
 3. Validate deployment process end-to-end
@@ -194,7 +194,7 @@
 
 ### ⚠️ Known Issues
 1. **71 Compilation Errors** (SCRUM-56) - Blocking CI/CD validation
-2. **11 UI Tests Failing** (SCRUM-61) - Missing application features
+2. **11 UI Tests Failing** (SCRUM-79) - Missing application features
 3. **Merge Conflicts with Master** - package.json, test files
 
 ### 🔧 Technical Improvements Made
@@ -216,7 +216,7 @@
 
 ### Next Sprint Goals
 - [ ] Fix all compilation errors (SCRUM-56)
-- [ ] Achieve 17/17 UI tests passing (SCRUM-61)
+- [ ] Achieve 17/17 UI tests passing (SCRUM-79)
 - [ ] Production deployment infrastructure (SCRUM-55)
 - [ ] Zero CI/CD failures on main branch
 
@@ -238,8 +238,8 @@
 - Focus on DTO/Entity API changes
 - Update test constructors to match new signatures
 
-**If Starting SCRUM-61 (AdminLTE Dashboard)**:
-- Read `SCRUM-61-gpt-context.md` - COMPLETE TDD GUIDE
+**If Starting SCRUM-79 (AdminLTE Dashboard)**:
+- Read `SCRUM-79-gpt-context.md` - COMPLETE TDD GUIDE
 - Follow RED-GREEN-REFACTOR cycle strictly
 - Run tests frequently: `cd tests/ui && npm test`
 - Goal: 17/17 tests passing
@@ -266,7 +266,7 @@ docker-compose -f docker-compose.ci.yml ps
 
 ## 🙏 Acknowledgments
 
-Great work on getting the CI/CD pipeline functional! The infrastructure is solid, tests are running, and the path forward is clear. The detailed documentation in SCRUM-61 will make the next implementation smooth and test-driven.
+Great work on getting the CI/CD pipeline functional! The infrastructure is solid, tests are running, and the path forward is clear. The detailed documentation in SCRUM-79 will make the next implementation smooth and test-driven.
 
 **High five!** 🙌
 
@@ -274,4 +274,4 @@ Great work on getting the CI/CD pipeline functional! The infrastructure is solid
 
 **Last Updated**: October 16, 2025  
 **Current Sprint**: SCRUM-54 Completion  
-**Next Sprint**: SCRUM-56 (Compilation Fixes) or SCRUM-61 (AdminLTE Dashboard)
+**Next Sprint**: SCRUM-56 (Compilation Fixes) or SCRUM-79 (AdminLTE Dashboard)

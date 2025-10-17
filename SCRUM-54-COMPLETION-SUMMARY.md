@@ -44,7 +44,7 @@ The CI/CD pipeline infrastructure is **fully functional** and ready for merge!
 - **6/17 tests currently passing** ✅
   - API Integration: 3/3 passing (all endpoints work)
   - Dashboard: 3/3 passing (structure, navigation, responsive)
-- 11 tests failing (expected - require full app features per SCRUM-61)
+- 11 tests failing (expected - require full app features per SCRUM-79)
 
 ---
 
@@ -61,7 +61,7 @@ The CI/CD pipeline infrastructure is **fully functional** and ready for merge!
    - Role navigation tabs visible
    - Responsive design works
 
-### ❌ Failing Tests (Feature Work Required - SCRUM-61)
+### ❌ Failing Tests (Feature Work Required - SCRUM-79)
 - API error handling (1 test)
 - Admin role modals and tables (2 tests)
 - Student role interface (2 tests)
@@ -69,7 +69,7 @@ The CI/CD pipeline infrastructure is **fully functional** and ready for merge!
 - Registrar role interface (2 tests)
 - System status tab (2 tests)
 
-**Conclusion**: Infrastructure is solid. Failing tests require application features documented in SCRUM-61.
+**Conclusion**: Infrastructure is solid. Failing tests require application features documented in SCRUM-79.
 
 ---
 
@@ -97,8 +97,8 @@ The CI/CD pipeline infrastructure is **fully functional** and ready for merge!
 - `TEST_STATUS.md` - Test analysis and recommendations
 - `SPRINT-STATUS.md` - Sprint summary
 - `NEXT-STEPS-INFRASTRUCTURE-TRACK.md` - Roadmap
-- `SCRUM-61-User-Story.md` - Next story (AdminLTE implementation)
-- `SCRUM-61-gpt-context.md` - Complete TDD guide for SCRUM-61
+- `SCRUM-79-User-Story.md` - Next story (AdminLTE implementation)
+- `SCRUM-79-gpt-context.md` - Complete TDD guide for SCRUM-79
 
 ---
 
@@ -204,7 +204,7 @@ git push origin SCRUM-56-Fix-Compilation-Errors
 
 ---
 
-### Optional Parallel: SCRUM-61 (AdminLTE Dashboard)
+### Optional Parallel: SCRUM-79 (AdminLTE Dashboard)
 
 **Goal**: Pass all 17 UI tests by implementing multi-role dashboard
 
@@ -215,10 +215,10 @@ git push origin SCRUM-56-Fix-Compilation-Errors
 # 1. Create branch from master
 git checkout master
 git pull origin master
-git checkout -b SCRUM-61-AdminLTE-Dashboard
+git checkout -b SCRUM-79-AdminLTE-Dashboard
 
 # 2. Read complete implementation guide
-cat SCRUM-61-gpt-context.md
+cat SCRUM-79-gpt-context.md
 # This file has EVERYTHING you need - detailed TDD guide
 
 # 3. Implement following TDD approach
@@ -253,7 +253,7 @@ cd tests/ui && npm test
 ### Recommendations for Next Stories
 1. **Follow TDD strictly** - Run tests first, make them pass, refactor
 2. **Commit frequently** - Small atomic commits are easier to review
-3. **Document decisions** - Future agents need context (like SCRUM-61-gpt-context.md)
+3. **Document decisions** - Future agents need context (like SCRUM-79-gpt-context.md)
 4. **Test in CI early** - Don't wait until end to run CI/CD pipeline
 
 ---
@@ -263,8 +263,8 @@ cd tests/ui && npm test
 ### Documentation
 - `SCRUM-54-User-Story.md` - This story's requirements
 - `SCRUM-56-User-Story.md` - Next story (compilation fixes)
-- `SCRUM-61-User-Story.md` - UI implementation story
-- `SCRUM-61-gpt-context.md` - **Complete TDD guide for future work**
+- `SCRUM-79-User-Story.md` - UI implementation story
+- `SCRUM-79-gpt-context.md` - **Complete TDD guide for future work**
 - `NEXT-STEPS-INFRASTRUCTURE-TRACK.md` - Detailed roadmap
 
 ### Key Commands
@@ -316,7 +316,7 @@ docker-compose -f docker-compose.ci.yml logs -f paws360-app
 
 **Excellent work on this sprint!** The CI/CD infrastructure is solid, well-tested, and thoroughly documented. The path forward is crystal clear with:
 
-- Comprehensive user stories (SCRUM-56, SCRUM-61)
+- Comprehensive user stories (SCRUM-56, SCRUM-79)
 - Detailed implementation guides
 - Test-driven validation
 - Clear prioritization
