@@ -154,6 +154,15 @@ public class UserService {
         return toUserResponseDTO(user);
     }
 
+    // Lookup: resolve Student.id by user email (returns -1 if not found or not a student)
+    public int getStudentIdByEmail(String email) {
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        if (user == null) return -1;
+        return studentRepository.findByUser(user)
+                .map(Student::getId)
+                .orElse(-1);
+    }
+
     public boolean deleteUser(DeleteUserRequestDTO deleteUserRequestDTO){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(deleteUserRequestDTO.email());
         if(user == null) return false;
