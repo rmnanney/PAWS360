@@ -12,4 +12,7 @@ public interface CourseEnrollmentRepository extends JpaRepository<CourseEnrollme
     Optional<CourseEnrollment> findByStudentIdAndLectureSectionId(Integer studentId, Long lectureSectionId);
 
     List<CourseEnrollment> findByLectureSectionAndStatusOrderByWaitlistPositionAsc(CourseSection lectureSection, SectionEnrollmentStatus status);
+
+    // List all enrollments (any status) for a given student
+    List<CourseEnrollment> findByStudentId(Integer studentId);
 }
