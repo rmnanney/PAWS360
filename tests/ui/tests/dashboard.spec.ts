@@ -205,4 +205,102 @@ test.describe('PAWS360 AdminLTE Dashboard', () => {
     await expect(page.locator('.role-nav')).toBeVisible();
     await expect(page.locator('a[onclick*="setRole(\'admin\'\)"]')).toBeVisible();
   });
+
+  test.describe('Resources Module', () => {
+    test('should display resources navigation tab', async ({ page }) => {
+      // Check that resources tab exists
+      await expect(page.locator('a[onclick*="setRole(\'resources\'\)"]')).toBeVisible();
+    });
+
+    test('should load resources content', async ({ page }) => {
+      // Click resources navigation link
+      await page.locator('a[onclick*="setRole(\'resources\'\)"]').click();
+
+      // Wait for content to load
+      await page.waitForTimeout(500);
+
+      // Check resources header is visible
+      await expect(page.locator('text=Campus Resources Hub')).toBeVisible();
+    });
+
+    test('should display quick link boxes', async ({ page }) => {
+      // Navigate to resources
+      await page.locator('a[onclick*="setRole(\'resources\'\)"]').click();
+      await page.waitForTimeout(500);
+
+      // Check all four quick link boxes are present
+      await expect(page.locator('text=Library')).toBeVisible();
+      await expect(page.locator('text=Career Services')).toBeVisible();
+      await expect(page.locator('text=IT Support')).toBeVisible();
+      await expect(page.locator('text=Health Services')).toBeVisible();
+    });
+
+    test('should display academic resources card', async ({ page }) => {
+      // Navigate to resources
+      await page.locator('a[onclick*="setRole(\'resources\'\)"]').click();
+      await page.waitForTimeout(500);
+
+      // Check academic resources card
+      await expect(page.locator('text=Academic Resources')).toBeVisible();
+      await expect(page.locator('text=Library & Research Tools')).toBeVisible();
+      await expect(page.locator('text=Writing Center')).toBeVisible();
+      await expect(page.locator('text=Tutoring Services')).toBeVisible();
+    });
+
+    test('should display campus services card', async ({ page }) => {
+      // Navigate to resources
+      await page.locator('a[onclick*="setRole(\'resources\'\)"]').click();
+      await page.waitForTimeout(500);
+
+      // Check campus services card
+      await expect(page.locator('text=Campus Services')).toBeVisible();
+      await expect(page.locator('text=Dining Services & Meal Plans')).toBeVisible();
+      await expect(page.locator('text=Transportation & Parking')).toBeVisible();
+    });
+
+    test('should display student life card', async ({ page }) => {
+      // Navigate to resources
+      await page.locator('a[onclick*="setRole(\'resources\'\)"]').click();
+      await page.waitForTimeout(500);
+
+      // Check student life card
+      await expect(page.locator('text=Student Life')).toBeVisible();
+      await expect(page.locator('text=Student Organizations & Clubs')).toBeVisible();
+      await expect(page.locator('text=Campus Events & Activities')).toBeVisible();
+    });
+
+    test('should display support services card', async ({ page }) => {
+      // Navigate to resources
+      await page.locator('a[onclick*="setRole(\'resources\'\)"]').click();
+      await page.waitForTimeout(500);
+
+      // Check support services card
+      await expect(page.locator('text=Support Services')).toBeVisible();
+      await expect(page.locator('text=Counseling & Mental Health')).toBeVisible();
+      await expect(page.locator('text=Accessibility Services')).toBeVisible();
+    });
+
+    test('should display emergency resources', async ({ page }) => {
+      // Navigate to resources
+      await page.locator('a[onclick*="setRole(\'resources\'\)"]').click();
+      await page.waitForTimeout(500);
+
+      // Check emergency resources section
+      await expect(page.locator('text=Emergency Resources')).toBeVisible();
+      await expect(page.locator('text=Campus Police')).toBeVisible();
+      await expect(page.locator('text=Campus Map')).toBeVisible();
+    });
+
+    test('should handle external links correctly', async ({ page }) => {
+      // Navigate to resources
+      await page.locator('a[onclick*="setRole(\'resources\'\)"]').click();
+      await page.waitForTimeout(500);
+
+      // Check library link has correct attributes
+      const libraryLink = page.locator('a[href="https://library.uwm.edu"]');
+      await expect(libraryLink).toBeVisible();
+      await expect(libraryLink).toHaveAttribute('target', '_blank');
+    });
+  });
 });
+
