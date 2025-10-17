@@ -47,3 +47,25 @@ infrastructure/ansible/ansible.log
 
 # Docker services JAR files (built during CI/CD)
 infrastructure/docker/services/*.jar
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Application logs
+app.log
+*.log
+
+# Test results
+tests/ui/test-results/
+tests/ui/playwright-report/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Temporary files
+temp/
+tmp/
+
