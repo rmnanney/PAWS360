@@ -72,9 +72,11 @@ The local `SCRUM-80-User-Story.md` file describes a legitimate story:
 ## Action Items
 - [x] Rename SCRUM-61 files to SCRUM-79
 - [x] Update all SCRUM-61 references to SCRUM-79
-- [ ] Decide: Keep local SCRUM-80 file as-is (for reference) or rename to SCRUM-80+
+- [x] Rename SCRUM-56 files to SCRUM-80
+- [x] Update all SCRUM-80 references in documentation
+- [x] Create SCRUM-79 in JIRA (PGB-79) - Multi-Role AdminLTE Dashboard
+- [x] Create SCRUM-80 in JIRA (PGB-80) - Fix CI/CD Pipeline Blocking Issues
 - [ ] Decide: What to do with SCRUM-55 (similar to PGB-73 but local version exists)
-- [ ] Consider: Create actual JIRA stories from local user story files if they're valuable
 - [ ] Update: All documentation references to clarify which story number is being discussed
 
 ## Files Affected
@@ -90,9 +92,22 @@ The local `SCRUM-80-User-Story.md` file describes a legitimate story:
 - `SCRUM-60-User-Story.md` (matches JIRA)
 
 ## Summary
-The local repository had user story files created with numbers that conflict with actual JIRA backlog. The AdminLTE dashboard story (SCRUM-61) has been corrected to SCRUM-79. Other files (SCRUM-55, SCRUM-80) may need similar correction or clarification about whether they represent the actual JIRA stories or are local-only planning documents.
+The local repository had user story files created with numbers that conflict with actual JIRA backlog. Both conflicts have been resolved:
+
+1. **SCRUM-79 (PGB-79)**: AdminLTE Multi-Role Dashboard story
+   - Renamed from SCRUM-61-User-Story.md
+   - Created in JIRA with 13 story points
+   - Full TDD implementation guide (SCRUM-79-gpt-context.md)
+   - URL: https://paw360.atlassian.net/browse/PGB-79
+
+2. **SCRUM-80 (PGB-80)**: Fix CI/CD Pipeline Blocking Issues
+   - Renamed from SCRUM-56-User-Story.md
+   - Created in JIRA with 8 story points
+   - Resolves 71 compilation errors blocking CI/CD
+   - URL: https://paw360.atlassian.net/browse/PGB-80
+
+Other files (SCRUM-55, SCRUM-58, SCRUM-59, SCRUM-60) may need review to determine if they match JIRA content or need similar correction.
 
 **Date**: 2025-10-16  
 **Branch**: SCRUM-54-CI-CD-Pipeline-Setup  
-**Next Available JIRA Number**: SCRUM-79 (PGB-79) - now used for AdminLTE dashboard
-**Next After That**: SCRUM-80 (PGB-80) - available for "Fix Compilation Errors" story
+**Status**: ✅ SCRUM-79 and SCRUM-80 created in JIRA and match local files
