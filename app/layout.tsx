@@ -86,13 +86,7 @@ export default function RootLayout({
 					<SidebarProvider>
 						<Header />
 						<AppSidebar onNavigate={handleNavigation} />
-						<SidebarInset
-							className={
-								pathname === "/finances" || pathname === "/homepage"
-									? ""
-									: "pt-10"
-							}
-						>
+						<SidebarInset className={pathname === "/homepage" ? "" : "pt-10"}>
 							{children}
 						</SidebarInset>
 						<Toaster />
