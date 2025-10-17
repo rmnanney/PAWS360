@@ -38,8 +38,8 @@
 	padding-top: 0; /* pt-0 */
 }
 
-/* Dashboard Card Styles */
-.dashboardCard {
+/* Homepage Card Styles */
+.homepageCard {
 	padding: 1.5rem; /* p-6 */
 	border: 1px solid hsl(var(--border));
 	background: hsl(var(--card));
@@ -47,23 +47,23 @@
 	cursor: pointer;
 }
 
-.dashboardCard:hover {
+.homepageCard:hover {
 	box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* hover:shadow-md */
 }
 
-.dashboardIcon {
+.homepageIcon {
 	padding: 0.5rem; /* p-2 */
 	background: hsl(var(--primary) / 0.1); /* bg-primary/10 */
 	border-radius: 0.5rem; /* rounded-lg */
 }
 
-.dashboardTitle {
+.homepageTitle {
 	font-size: 1.125rem; /* text-lg */
 	font-weight: 600; /* font-semibold */
 	color: hsl(var(--card-foreground));
 }
 
-.dashboardDescription {
+.homepageDescription {
 	font-size: 0.875rem; /* text-sm */
 	color: hsl(var(--muted-foreground));
 	margin-top: 0.25rem; /* mt-1 */

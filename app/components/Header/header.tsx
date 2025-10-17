@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import s from "../../homepage/styles.module.css";
 
-// Dashboard items for the main cards
-const dashboardItems = [
+// Homepage items for the main cards
+const homepageItems = [
 	{
 		title: "Academic",
 		description: "Grades, transcripts, and academic records",
@@ -78,12 +78,14 @@ export function Header() {
 	return (
 		<header className={s.header}>
 			<div className={s.headerContainer}>
-				<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
+				<a href="/homepage">
+					<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
+				</a>
 				<div className={s.headerInner}>
 					{/* Desktop Search Bar */}
 					<div className={s.desktopSearch}>
 						<SearchBar
-							items={dashboardItems}
+							items={homepageItems}
 							// onResultClick={(item) => handleNavigation(item.title)}
 						/>
 					</div>
@@ -108,7 +110,7 @@ export function Header() {
 			{showMobileSearch && (
 				<div className={s.mobileSearchDropdown}>
 					<SearchBar
-						items={dashboardItems}
+						items={homepageItems}
 						onResultClick={() => setShowMobileSearch(false)}
 					/>
 				</div>

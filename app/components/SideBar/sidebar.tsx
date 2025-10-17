@@ -37,9 +37,9 @@ interface AppSidebarProps {
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
 	const academicItems = [
 		{
-			title: "Dashboard",
+			title: "Homepage",
 			icon: Home,
-			onClick: () => onNavigate("Dashboard"),
+			onClick: () => onNavigate("homepage"),
 		},
 		{
 			title: "Academic Records",
@@ -67,7 +67,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 		{
 			title: "Finances",
 			icon: DollarSign,
-			onClick: () => onNavigate("Finances"),
+			onClick: () => onNavigate("finances"),
 		},
 		{
 			title: "Advising",
