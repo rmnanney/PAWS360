@@ -33,15 +33,8 @@ public class Classroom {
     private RoomType roomType = RoomType.GENERAL_PURPOSE;
 
     @ElementCollection(fetch = FetchType.EAGER)
-<<<<<<< ours
-<<<<<<< ours
-    @CollectionTable(name = "classroom_features", schema = "paws360", joinColumns = @JoinColumn(name = "classroom_id"))
-=======
+
     @CollectionTable(name = "classroom_features", joinColumns = @JoinColumn(name = "classroom_id"))
->>>>>>> theirs
-=======
-    @CollectionTable(name = "classroom_features", joinColumns = @JoinColumn(name = "classroom_id"))
->>>>>>> theirs
     @Column(name = "feature", length = 80)
     private Set<String> features = new HashSet<>();
 

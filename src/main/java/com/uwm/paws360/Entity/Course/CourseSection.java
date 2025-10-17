@@ -50,15 +50,7 @@ public class CourseSection {
     private Classroom classroom;
 
     @ElementCollection(fetch = FetchType.EAGER)
-<<<<<<< ours
-<<<<<<< ours
-    @CollectionTable(name = "course_section_meeting_days", schema = "paws360", joinColumns = @JoinColumn(name = "section_id"))
-=======
     @CollectionTable(name = "course_section_meeting_days", joinColumns = @JoinColumn(name = "section_id"))
->>>>>>> theirs
-=======
-    @CollectionTable(name = "course_section_meeting_days", joinColumns = @JoinColumn(name = "section_id"))
->>>>>>> theirs
     @Column(name = "meeting_day", nullable = false)
     @Enumerated(EnumType.STRING)
     private Set<DayOfWeek> meetingDays = EnumSet.noneOf(DayOfWeek.class);
