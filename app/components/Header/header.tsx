@@ -78,32 +78,35 @@ export function Header() {
 	return (
 		<header className={s.header}>
 			<div className={s.headerContainer}>
+				<div className={s.headerLeft}>
+					<SidebarTrigger className={s.sidebarTrigger} />
+
+					<div className={s.headerInner}>
+						{/* Desktop Search Bar */}
+						<div className={s.desktopSearch}>
+							<SearchBar
+								items={homepageItems}
+								// onResultClick={(item) => handleNavigation(item.title)}
+							/>
+						</div>
+
+						{/* Mobile Search Button */}
+						<div className={s.mobileSearch}>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setShowMobileSearch(!showMobileSearch)}
+								className={s.mobileSearchButton}
+							>
+								<Search className="h-4 w-4" />
+							</Button>
+						</div>
+					</div>
+				</div>
+
 				<a href="/homepage">
 					<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
 				</a>
-				<div className={s.headerInner}>
-					{/* Desktop Search Bar */}
-					<div className={s.desktopSearch}>
-						<SearchBar
-							items={homepageItems}
-							// onResultClick={(item) => handleNavigation(item.title)}
-						/>
-					</div>
-
-					{/* Mobile Search Button */}
-					<div className={s.mobileSearch}>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => setShowMobileSearch(!showMobileSearch)}
-							className={s.mobileSearchButton}
-						>
-							<Search className="h-4 w-4" />
-						</Button>
-					</div>
-
-					<SidebarTrigger className={s.sidebarTrigger} />
-				</div>
 			</div>
 
 			{/* Mobile Search Dropdown */}

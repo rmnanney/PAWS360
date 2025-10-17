@@ -28,6 +28,7 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "../../components/Collapsible/collapsible";
+import s from "./styles.module.css";
 
 export default function FinancialAidPage() {
 	const router = useRouter();
@@ -88,7 +89,7 @@ export default function FinancialAidPage() {
 	};
 
 	return (
-		<div className="flex flex-1 flex-col gap-6 p-4 ">
+		<div className={s.pageContainer}>
 			{/* Back Button */}
 			<div>
 				<Button variant="ghost" onClick={handleBackClick} className="mb-2">
@@ -98,12 +99,12 @@ export default function FinancialAidPage() {
 			</div>
 			{/* Aid Overview Card */}
 			<Collapsible open={overviewOpen} onOpenChange={setOverviewOpen}>
-				<Card className="border-2 border-primary/20">
+				<Card className={s.overviewCard}>
 					<CollapsibleTrigger asChild>
-						<CardHeader className="cursor-pointer hover:bg-accent/50 transition-colors">
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-3">
-									<div className="p-2 bg-primary/10 rounded-lg">
+						<CardHeader className={s.collapsibleHeader}>
+							<div className={s.headerContent}>
+								<div className={s.headerLeft}>
+									<div className={s.iconWrapperLarge}>
 										<GraduationCap className="h-8 w-8 text-primary" />
 									</div>
 									<div>
@@ -122,22 +123,22 @@ export default function FinancialAidPage() {
 						</CardHeader>
 					</CollapsibleTrigger>
 					<CollapsibleContent>
-						<CardContent className="space-y-6">
+						<CardContent className={s.cardContentSpacing}>
 							{/* Total Aid */}
-							<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-								<div className="space-y-2">
+							<div className={s.totalAidGrid}>
+								<div className={s.aidItem}>
 									<p className="text-sm text-muted-foreground">
 										Total Aid Offered
 									</p>
 									<p className="text-3xl font-semibold">$18,750</p>
 								</div>
-								<div className="space-y-2">
+								<div className={s.aidItem}>
 									<p className="text-sm text-muted-foreground">Aid Accepted</p>
 									<p className="text-3xl font-semibold text-green-600">
 										$15,500
 									</p>
 								</div>
-								<div className="space-y-2">
+								<div className={s.aidItem}>
 									<p className="text-sm text-muted-foreground">
 										Pending Decision
 									</p>
@@ -148,11 +149,11 @@ export default function FinancialAidPage() {
 							</div>
 
 							{/* Aid Breakdown */}
-							<div className="space-y-4 pt-4 border-t">
+							<div className={s.aidBreakdown}>
 								<h4>Aid Breakdown</h4>
 
-								<div className="space-y-3">
-									<div className="flex justify-between items-center">
+								<div className={s.breakdownList}>
+									<div className={s.breakdownItem}>
 										<div>
 											<p className="font-medium">Federal Pell Grant</p>
 											<p className="text-sm text-muted-foreground">
@@ -162,7 +163,7 @@ export default function FinancialAidPage() {
 										<Badge variant="secondary">$6,500</Badge>
 									</div>
 
-									<div className="flex justify-between items-center">
+									<div className={s.breakdownItem}>
 										<div>
 											<p className="font-medium">University Scholarship</p>
 											<p className="text-sm text-muted-foreground">
@@ -172,7 +173,7 @@ export default function FinancialAidPage() {
 										<Badge variant="secondary">$5,000</Badge>
 									</div>
 
-									<div className="flex justify-between items-center">
+									<div className={s.breakdownItem}>
 										<div>
 											<p className="font-medium">
 												Federal Direct Subsidized Loan
@@ -184,7 +185,7 @@ export default function FinancialAidPage() {
 										<Badge variant="secondary">$4,000</Badge>
 									</div>
 
-									<div className="flex justify-between items-center">
+									<div className={s.breakdownItem}>
 										<div>
 											<p className="font-medium">Work-Study Program</p>
 											<p className="text-sm text-muted-foreground">
@@ -197,8 +198,8 @@ export default function FinancialAidPage() {
 							</div>
 
 							{/* Progress */}
-							<div className="space-y-2 pt-4 border-t">
-								<div className="flex justify-between text-sm">
+							<div className={s.progressSection}>
+								<div className={s.progressHeader}>
 									<span>Aid Acceptance Progress</span>
 									<span className="text-muted-foreground">82%</span>
 								</div>
@@ -210,7 +211,7 @@ export default function FinancialAidPage() {
 			</Collapsible>{" "}
 			{/* Financial Aid Services */}
 			<div>
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+				<div className={s.servicesGrid}>
 					{aidWidgets.map((widget) => {
 						const Icon = widget.icon;
 						const isUrgent = widget.status === "Urgent";
@@ -219,12 +220,12 @@ export default function FinancialAidPage() {
 						return (
 							<Card
 								key={widget.id}
-								className={`hover:shadow-md transition-all cursor-pointer border ${
+								className={`${s.widgetCard} ${
 									isUrgent
-										? "border-destructive/50"
+										? s.widgetCardUrgent
 										: isActionRequired
-										? "border-orange-500/50"
-										: "hover:border-primary/50"
+										? s.widgetCardAction
+										: ""
 								}`}
 								onClick={() => {
 									if (widget.link) {
@@ -233,14 +234,14 @@ export default function FinancialAidPage() {
 								}}
 							>
 								<CardHeader>
-									<div className="flex items-start justify-between">
+									<div className={s.widgetHeader}>
 										<div
-											className={`p-2 rounded-lg ${
+											className={`${s.iconWrapper} ${
 												isUrgent
-													? "bg-destructive/10"
+													? s.iconWrapperUrgent
 													: isActionRequired
-													? "bg-orange-500/10"
-													: "bg-primary/10"
+													? s.iconWrapperAction
+													: ""
 											}`}
 										>
 											<Icon
@@ -265,7 +266,9 @@ export default function FinancialAidPage() {
 											</Badge>
 										)}
 									</div>
-									<CardTitle className="mt-4">{widget.title}</CardTitle>
+									<CardTitle className={s.widgetTitleMargin}>
+										{widget.title}
+									</CardTitle>
 									<CardDescription>{widget.description}</CardDescription>
 								</CardHeader>
 							</Card>

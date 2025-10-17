@@ -10,6 +10,7 @@ import {
 import { Button } from "../../components/Button/button";
 import { Badge } from "../../components/Badge/badge";
 import { ChevronLeft, Gift, FileText, Search, AlertCircle } from "lucide-react";
+import s from "./styles.module.css";
 
 export default function ScholarshipsPage() {
 	const router = useRouter();
@@ -44,7 +45,7 @@ export default function ScholarshipsPage() {
 	];
 
 	return (
-		<div className="flex flex-1 flex-col gap-6 p-4 ">
+		<div className={s.pageContainer}>
 			{/* Back Button */}
 			<div>
 				<Button variant="ghost" onClick={handleBackClick} className="mb-2">
@@ -63,7 +64,7 @@ export default function ScholarshipsPage() {
 			</div>
 
 			{/* Widgets Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<div className={s.widgetsGrid}>
 				{widgets.map((widget) => {
 					const Icon = widget.icon;
 					const isUrgent = widget.status === "Urgent";
@@ -71,12 +72,12 @@ export default function ScholarshipsPage() {
 					return (
 						<Card
 							key={widget.id}
-							className={`hover:shadow-md transition-all cursor-pointer border ${
+							className={`${s.widgetCard} ${
 								isUrgent
-									? "border-destructive/50"
+									? s.widgetCardUrgent
 									: isActionRequired
-									? "border-orange-500/50"
-									: "hover:border-primary/50"
+									? s.widgetCardAction
+									: ""
 							}`}
 							onClick={() => {
 								if (widget.link) {
@@ -85,15 +86,15 @@ export default function ScholarshipsPage() {
 							}}
 						>
 							<CardHeader>
-								<div className="flex items-start justify-between">
+								<div className={s.widgetHeader}>
 									<div
-										className={`p-2 rounded-lg ${
+										className={`${s.iconWrapper} ${
 											isUrgent
-												? "bg-destructive/10"
+												? s.iconWrapperUrgent
 												: isActionRequired
-												? "bg-orange-500/10"
-												: "bg-primary/10"
-										}`}
+												? s.iconWrapperAction
+												: ""
+										} ${s.widgetFit}`}
 									>
 										<Icon
 											className={`h-6 w-6 ${
@@ -117,7 +118,9 @@ export default function ScholarshipsPage() {
 										</Badge>
 									)}
 								</div>
-								<CardTitle className="mt-4">{widget.title}</CardTitle>
+								<CardTitle className={s.widgetTitleMargin}>
+									{widget.title}
+								</CardTitle>
 								<CardDescription>{widget.description}</CardDescription>
 							</CardHeader>
 						</Card>

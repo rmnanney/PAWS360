@@ -27,10 +27,20 @@ export default function FinancesLayout({
 		console.log(`Navigating to ${section}`);
 
 		// Route to appropriate pages
-		if (section === "homepage" || section === "homepage") {
+		if (section === "homepage") {
 			router.push("/homepage");
 		} else if (section === "finances") {
 			router.push("/finances");
+		} else if (section === "advising") {
+			router.push("/advising");
+		} else if (section === "academic") {
+			router.push("/academic");
+		} else if (section === "personal") {
+			router.push("/personal");
+		} else if (section === "resources") {
+			router.push("/resources");
+		} else if (section.startsWith("https://")) {
+			window.open(section, "_blank");
 		} else if (section === "financial-aid") {
 			router.push("/finances/financial-aid");
 		} else if (section === "my-account") {

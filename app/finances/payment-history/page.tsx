@@ -9,8 +9,9 @@ import {
 } from "../../components/Card/card";
 import { Button } from "../../components/Button/button";
 import { ChevronLeft, FileText, Receipt } from "lucide-react";
+import s from "./styles.module.css";
 
-export default function BillingStatementPage() {
+export default function PaymentHistoryPage() {
 	const router = useRouter();
 
 	const handleBackClick = () => {
@@ -41,7 +42,7 @@ export default function BillingStatementPage() {
 	];
 
 	return (
-		<div className="flex flex-1 flex-col gap-6 p-4 ">
+		<div className={s.pageContainer}>
 			{/* Back Button */}
 			<div>
 				<Button variant="ghost" onClick={handleBackClick} className="mb-2">
@@ -52,20 +53,20 @@ export default function BillingStatementPage() {
 
 			{/* Page Header */}
 			<div className="mb-2">
-				<h1>View Billing Statement</h1>
+				<h1>View Payment History</h1>
 				<p className="text-muted-foreground mt-2">
 					Access and download your current and past billing statements.
 				</p>
 			</div>
 
 			{/* Widgets Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<div className={s.widgetsGrid}>
 				{widgets.map((widget) => {
 					const Icon = widget.icon;
 					return (
 						<Card
 							key={widget.id}
-							className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
+							className={s.widgetCard}
 							onClick={() => {
 								if (widget.link) {
 									window.open(widget.link, "_blank");
@@ -73,10 +74,12 @@ export default function BillingStatementPage() {
 							}}
 						>
 							<CardHeader>
-								<div className="p-2 bg-primary/10 rounded-lg w-fit">
+								<div className={s.iconWrapper}>
 									<Icon className="h-6 w-6 text-primary" />
 								</div>
-								<CardTitle className="mt-4">{widget.title}</CardTitle>
+								<CardTitle className={s.widgetTitleMargin}>
+									{widget.title}
+								</CardTitle>
 								<CardDescription>{widget.description}</CardDescription>
 							</CardHeader>
 						</Card>

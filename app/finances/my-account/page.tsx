@@ -84,6 +84,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import styles from "./styles.module.css";
 import {
 	Card,
 	CardContent,
@@ -258,37 +259,37 @@ export default function MyAccountPage() {
 	};
 
 	const getAmountColor = (amount: number) => {
-		return amount >= 0 ? "text-green-600" : "text-red-600";
+		return amount >= 0 ? styles.amountPositive : styles.amountNegative;
 	};
 
 	const getTransactionIcon = (type: string) => {
 		switch (type) {
 			case "Payment":
 			case "Credit":
-				return <TrendingUp className="h-4 w-4 text-green-600" />;
+				return <TrendingUp className={styles.iconGreen} />;
 			case "Charge":
-				return <TrendingDown className="h-4 w-4 text-red-600" />;
+				return <TrendingDown className={styles.iconRed} />;
 			default:
-				return <Receipt className="h-4 w-4 text-gray-600" />;
+				return <Receipt className={styles.iconGray} />;
 		}
 	};
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
 			case "Posted":
-				return "bg-green-100 text-green-800";
+				return styles.statusPosted;
 			case "Pending":
-				return "bg-yellow-100 text-yellow-800";
+				return styles.statusPending;
 			case "Active":
-				return "bg-blue-100 text-blue-800";
+				return styles.statusActive;
 			default:
-				return "bg-gray-100 text-gray-800";
+				return styles.statusDefault;
 		}
 	};
 
 	return (
-		<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-			<div className="flex items-center justify-between space-y-2">
+		<div className={styles.pageContainer}>
+			<div className={styles.header}>
 				<div>
 					<Button variant="ghost" onClick={handleBackClick} className="mb-2">
 						<ChevronLeft className="h-4 w-4 mr-2" />
@@ -296,11 +297,7 @@ export default function MyAccountPage() {
 					</Button>
 				</div>
 
-				{/* <h2 className="text-3xl font-bold tracking-tight">
-					Financial Information
-				</h2> */}
-
-				<div className="flex items-center space-x-2">
+				<div className={styles.headerActions}>
 					<Button variant="outline" size="sm">
 						<Download className="mr-2 h-4 w-4" />
 						Download Statement
@@ -315,7 +312,7 @@ export default function MyAccountPage() {
 			</div>
 
 			{/* Financial Overview Cards */}
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+			<div className={styles.overviewCardsGrid}>
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">
@@ -325,7 +322,7 @@ export default function MyAccountPage() {
 					</CardHeader>
 					<CardContent>
 						<div
-							className={`text-2xl font-bold ${getAmountColor(
+							className={`${styles.balanceAmount} ${getAmountColor(
 								accountSummary.currentBalance
 							)}`}
 						>
@@ -343,7 +340,7 @@ export default function MyAccountPage() {
 						<Receipt className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold text-red-600">
+						<div className={`${styles.balanceAmount} ${styles.amountNegative}`}>
 							${accountSummary.totalCharges.toFixed(2)}
 						</div>
 						<p className="text-xs text-muted-foreground">This semester</p>
@@ -356,7 +353,7 @@ export default function MyAccountPage() {
 						<CheckCircle className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold text-green-600">
+						<div className={`${styles.balanceAmount} ${styles.amountPositive}`}>
 							${accountSummary.financialAid.toFixed(2)}
 						</div>
 						<p className="text-xs text-muted-foreground">Awarded this year</p>
@@ -371,7 +368,7 @@ export default function MyAccountPage() {
 						<CreditCard className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold text-yellow-600">
+						<div className={`${styles.balanceAmount} ${styles.amountYellow}`}>
 							Payment Plan
 						</div>
 						<p className="text-xs text-muted-foreground">
@@ -395,7 +392,7 @@ export default function MyAccountPage() {
 				</TabsList>
 
 				<TabsContent value="overview" className="space-y-4">
-					<div className="grid gap-4 md:grid-cols-2">
+					<div className={styles.twoColumnGrid}>
 						<Card>
 							<CardHeader>
 								<CardTitle>Account Summary</CardTitle>
@@ -404,25 +401,25 @@ export default function MyAccountPage() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className="flex justify-between">
+								<div className={styles.summaryItem}>
 									<span>Total Charges:</span>
-									<span className="text-red-600">
+									<span className={styles.amountNegative}>
 										${accountSummary.totalCharges.toFixed(2)}
 									</span>
 								</div>
-								<div className="flex justify-between">
+								<div className={styles.summaryItem}>
 									<span>Total Payments:</span>
-									<span className="text-green-600">
+									<span className={styles.amountPositive}>
 										${accountSummary.totalPayments.toFixed(2)}
 									</span>
 								</div>
-								<div className="flex justify-between">
+								<div className={styles.summaryItem}>
 									<span>Financial Aid:</span>
-									<span className="text-green-600">
+									<span className={styles.amountPositive}>
 										${accountSummary.financialAid.toFixed(2)}
 									</span>
 								</div>
-								<div className="border-t pt-2 flex justify-between font-semibold">
+								<div className={styles.summaryTotal}>
 									<span>Current Balance:</span>
 									<span
 										className={getAmountColor(accountSummary.currentBalance)}
@@ -441,18 +438,19 @@ export default function MyAccountPage() {
 							<CardContent>
 								<div className="space-y-4">
 									{upcomingCharges.map((charge, index) => (
-										<div
-											key={index}
-											className="flex items-center justify-between p-3 border rounded-lg"
-										>
+										<div key={index} className={styles.chargeItem}>
 											<div>
-												<p className="font-medium">{charge.description}</p>
+												<p className={styles.mediumText}>
+													{charge.description}
+												</p>
 												<p className="text-sm text-muted-foreground">
 													Due: {charge.dueDate}
 												</p>
 											</div>
-											<div className="text-right">
-												<p className="font-semibold text-red-600">
+											<div className={styles.chargeDetails}>
+												<p
+													className={`${styles.semiboldText} ${styles.amountNegative}`}
+												>
 													${charge.amount.toFixed(2)}
 												</p>
 												<Badge className={getStatusColor(charge.status)}>
@@ -476,35 +474,37 @@ export default function MyAccountPage() {
 						<CardContent>
 							<div className="space-y-4">
 								{paymentPlans.map((plan, index) => (
-									<div key={index} className="border rounded-lg p-4">
-										<div className="flex items-center justify-between mb-4">
-											<h3 className="font-semibold">{plan.name}</h3>
+									<div key={index} className={styles.paymentPlanCard}>
+										<div className={styles.paymentPlanHeader}>
+											<h3 className={styles.semiboldText}>{plan.name}</h3>
 											<Badge className={getStatusColor(plan.status)}>
 												{plan.status}
 											</Badge>
 										</div>
-										<div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+										<div className={styles.fourColumnGrid}>
 											<div>
 												<p className="text-muted-foreground">Total Amount</p>
-												<p className="font-semibold">
+												<p className={styles.semiboldText}>
 													${plan.totalAmount.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Monthly Payment</p>
-												<p className="font-semibold">
+												<p className={styles.semiboldText}>
 													${plan.monthlyPayment.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Payments Left</p>
-												<p className="font-semibold">
+												<p className={styles.semiboldText}>
 													{plan.remainingPayments}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Next Payment</p>
-												<p className="font-semibold">{plan.nextPaymentDate}</p>
+												<p className={styles.semiboldText}>
+													{plan.nextPaymentDate}
+												</p>
 											</div>
 										</div>
 									</div>
@@ -525,23 +525,22 @@ export default function MyAccountPage() {
 						<CardContent>
 							<div className="space-y-4">
 								{recentTransactions.map((transaction, index) => (
-									<div
-										key={index}
-										className="flex items-center justify-between p-4 border rounded-lg"
-									>
-										<div className="flex items-center space-x-4">
+									<div key={index} className={styles.transactionItem}>
+										<div className={styles.transactionLeft}>
 											{getTransactionIcon(transaction.type)}
 											<div>
-												<p className="font-medium">{transaction.description}</p>
+												<p className={styles.mediumText}>
+													{transaction.description}
+												</p>
 												<p className="text-sm text-muted-foreground">
 													{transaction.date}
 												</p>
 											</div>
 										</div>
-										<div className="flex items-center space-x-4">
-											<div className="text-right">
+										<div className={styles.transactionRight}>
+											<div className={styles.transactionDetails}>
 												<p
-													className={`font-semibold ${getAmountColor(
+													className={`${styles.semiboldText} ${getAmountColor(
 														transaction.amount
 													)}`}
 												>
@@ -571,35 +570,41 @@ export default function MyAccountPage() {
 						<CardContent>
 							<div className="space-y-4">
 								{financialAid.map((aid, index) => (
-									<div key={index} className="border rounded-lg p-4">
-										<div className="flex items-center justify-between mb-4">
-											<h3 className="font-semibold">{aid.type}</h3>
+									<div key={index} className={styles.aidCard}>
+										<div className={styles.aidHeader}>
+											<h3 className={styles.semiboldText}>{aid.type}</h3>
 											<Badge className={getStatusColor(aid.status)}>
 												{aid.status}
 											</Badge>
 										</div>
-										<div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+										<div className={styles.fourColumnGrid}>
 											<div>
 												<p className="text-muted-foreground">Awarded</p>
-												<p className="font-semibold text-green-600">
+												<p
+													className={`${styles.semiboldText} ${styles.amountPositive}`}
+												>
 													${aid.awarded.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Disbursed</p>
-												<p className="font-semibold text-blue-600">
+												<p
+													className={`${styles.semiboldText} ${styles.amountBlue}`}
+												>
 													${aid.disbursed.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Remaining</p>
-												<p className="font-semibold text-orange-600">
+												<p
+													className={`${styles.semiboldText} ${styles.amountOrange}`}
+												>
 													${aid.remaining.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Total Aid</p>
-												<p className="font-semibold">
+												<p className={styles.semiboldText}>
 													${aid.amount.toFixed(2)}
 												</p>
 											</div>
@@ -621,25 +626,23 @@ export default function MyAccountPage() {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-6">
-								<div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-									<div className="flex items-center space-x-2 mb-2">
-										<AlertTriangle className="h-5 w-5 text-blue-600" />
-										<h3 className="font-semibold text-blue-900">
-											Current Balance
-										</h3>
+								<div className={styles.paymentAlert}>
+									<div className={styles.alertHeader}>
+										<AlertTriangle className={styles.iconBlue} />
+										<h3 className={styles.alertTitle}>Current Balance</h3>
 									</div>
-									<p className="text-blue-800">
+									<p className={styles.alertText}>
 										Your current balance is{" "}
-										<span className="font-semibold">
+										<span className={styles.semiboldText}>
 											${accountSummary.currentBalance.toFixed(2)}
 										</span>
 									</p>
-									<p className="text-sm text-blue-700 mt-1">
+									<p className={styles.alertSubtext}>
 										Due date: {accountSummary.dueDate}
 									</p>
 								</div>
-								<div className="grid gap-4 md:grid-cols-2">
-									<Button className="h-16" size="lg">
+								<div className={styles.paymentButtons}>
+									<Button className={styles.paymentButton} size="lg">
 										<CreditCard className="mr-2 h-5 w-5" />
 										Pay with Credit Card
 									</Button>
@@ -647,15 +650,19 @@ export default function MyAccountPage() {
 										href="https://quikpayasp.com/uwmil/qp/messageboard/index.do?dm=student_accounts_payer"
 										target="_blank"
 										rel="noopener noreferrer"
-										className="h-16 inline-block"
+										className={styles.paymentLink}
 									>
-										<Button variant="outline" size="lg" className="h-16 w-full">
+										<Button
+											variant="outline"
+											size="lg"
+											className={styles.paymentLinkButton}
+										>
 											<DollarSign className="mr-2 h-5 w-5" />
 											Bank Transfer (ACH)
 										</Button>
 									</a>
 								</div>{" "}
-								<div className="text-center">
+								<div className={styles.paymentInfo}>
 									<p className="text-sm text-muted-foreground mb-4">
 										For questions about payments, contact Student Accounts at
 										(414) 229-4000
