@@ -9,7 +9,6 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(
         name = "section_staff_assignments",
-        schema = "paws360",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"section_id", "user_id", "role"})
         }

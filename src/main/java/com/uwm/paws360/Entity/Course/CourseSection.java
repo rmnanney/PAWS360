@@ -15,7 +15,6 @@ import java.util.Set;
 @Entity
 @Table(
         name = "course_sections",
-        schema = "paws360",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"course_id", "section_code", "term", "academic_year", "section_type"})
         }
@@ -54,7 +53,7 @@ public class CourseSection {
     private Classroom classroom;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "course_section_meeting_days", schema = "paws360", joinColumns = @JoinColumn(name = "section_id"))
+    @CollectionTable(name = "course_section_meeting_days", joinColumns = @JoinColumn(name = "section_id"))
     @Column(name = "meeting_day", nullable = false)
     @Enumerated(EnumType.STRING)
     private Set<DayOfWeek> meetingDays = EnumSet.noneOf(DayOfWeek.class);

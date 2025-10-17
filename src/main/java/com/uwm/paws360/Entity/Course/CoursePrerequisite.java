@@ -3,7 +3,7 @@ package com.uwm.paws360.Entity.Course;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "course_prerequisites", schema = "paws360", uniqueConstraints = {
+@Table(name = "course_prerequisites", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"course_id", "prerequisite_course_id"})
 })
 public class CoursePrerequisite {

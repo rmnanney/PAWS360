@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "classrooms", schema = "paws360", uniqueConstraints = {
+@Table(name = "classrooms", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"building_id", "room_number"})
 })
 public class Classroom {
@@ -33,7 +33,7 @@ public class Classroom {
     private RoomType roomType = RoomType.GENERAL_PURPOSE;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "classroom_features", schema = "paws360", joinColumns = @JoinColumn(name = "classroom_id"))
+    @CollectionTable(name = "classroom_features", joinColumns = @JoinColumn(name = "classroom_id"))
     @Column(name = "feature", length = 80)
     private Set<String> features = new HashSet<>();
 
