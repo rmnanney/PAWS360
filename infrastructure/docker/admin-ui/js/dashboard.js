@@ -30,6 +30,9 @@ function setRole(role) {
         case 'system':
             loadSystemStatus();
             break;
+        case 'resources':
+            loadResourcesContent();
+            break;
         case 'personal-info':
             loadPersonalInfoContent();
             break;
@@ -367,6 +370,259 @@ function loadSystemStatus() {
     $('#main-content').html(content);
 }
 
+// ========== RESOURCES MODULE ==========
+function loadResourcesContent() {
+    const content = `
+        <div class="content-header">
+            <div class="container-fluid">
+                <h1 class="m-0">Campus Resources Hub</h1>
+                <p class="text-muted">Access university resources, services, and important links</p>
+            </div>
+        </div>
+        
+        <section class="content">
+            <div class="container-fluid">
+                <!-- Quick Links Section -->
+                <div class="row">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3><i class="fas fa-book"></i></h3>
+                                <p>Library</p>
+                            </div>
+                            <a href="#library" class="small-box-footer" onclick="loadResourceCategory('library')">
+                                Access Resources <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3><i class="fas fa-briefcase"></i></h3>
+                                <p>Career Services</p>
+                            </div>
+                            <a href="#career" class="small-box-footer" onclick="loadResourceCategory('career')">
+                                Explore Opportunities <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3><i class="fas fa-laptop"></i></h3>
+                                <p>IT Support</p>
+                            </div>
+                            <a href="#it" class="small-box-footer" onclick="loadResourceCategory('it')">
+                                Get Help <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3><i class="fas fa-heart"></i></h3>
+                                <p>Health Services</p>
+                            </div>
+                            <a href="#health" class="small-box-footer" onclick="loadResourceCategory('health')">
+                                Access Services <i class="fas fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Academic Resources -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-graduation-cap"></i> Academic Resources</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <a href="https://library.uwm.edu" target="_blank">
+                                            <i class="fas fa-book"></i> Library & Research Tools
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Writing Center coming soon!')">
+                                            <i class="fas fa-pen"></i> Writing Center
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Tutoring Services coming soon!')">
+                                            <i class="fas fa-chalkboard-teacher"></i> Tutoring Services
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Study Groups coming soon!')">
+                                            <i class="fas fa-users"></i> Study Groups & Peer Learning
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Academic Calendar coming soon!')">
+                                            <i class="fas fa-calendar"></i> Academic Calendar
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-building"></i> Campus Services</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Dining Services coming soon!')">
+                                            <i class="fas fa-utensils"></i> Dining Services & Meal Plans
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Transportation coming soon!')">
+                                            <i class="fas fa-bus"></i> Transportation & Parking
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Recreation coming soon!')">
+                                            <i class="fas fa-dumbbell"></i> Campus Recreation
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Housing coming soon!')">
+                                            <i class="fas fa-home"></i> Student Housing
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Bookstore coming soon!')">
+                                            <i class="fas fa-book-open"></i> Campus Bookstore
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Student Life Resources -->
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-users"></i> Student Life</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Student Organizations coming soon!')">
+                                            <i class="fas fa-flag"></i> Student Organizations & Clubs
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Events Calendar coming soon!')">
+                                            <i class="fas fa-calendar-alt"></i> Campus Events & Activities
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Volunteer Opportunities coming soon!')">
+                                            <i class="fas fa-hands-helping"></i> Volunteer Opportunities
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('International Services coming soon!')">
+                                            <i class="fas fa-globe"></i> International Student Services
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-tools"></i> Support Services</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Counseling Services coming soon!')">
+                                            <i class="fas fa-user-md"></i> Counseling & Mental Health
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Accessibility Services coming soon!')">
+                                            <i class="fas fa-universal-access"></i> Accessibility Services
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Campus Safety coming soon!')">
+                                            <i class="fas fa-shield-alt"></i> Campus Safety & Security
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="#" onclick="alert('Financial Aid coming soon!')">
+                                            <i class="fas fa-dollar-sign"></i> Financial Aid Office
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Campus Map & Emergency Info -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Emergency Resources</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="callout callout-danger">
+                                            <h5><i class="fas fa-phone"></i> Campus Police</h5>
+                                            <p><strong>Emergency:</strong> 911</p>
+                                            <p><strong>Non-Emergency:</strong> (414) 229-4627</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="callout callout-warning">
+                                            <h5><i class="fas fa-map-marked-alt"></i> Campus Map</h5>
+                                            <p><a href="https://uwm.edu/map" target="_blank">View Interactive Map</a></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="callout callout-info">
+                                            <h5><i class="fas fa-bell"></i> Emergency Alerts</h5>
+                                            <p><a href="#" onclick="alert('Alert system coming soon!')">Sign up for alerts</a></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    `;
+    
+    $('#main-content').html(content);
+}
+
+function loadResourceCategory(category) {
+    console.log('Loading resource category:', category);
+    // Placeholder for future category-specific loading
+    alert(`Loading ${category} resources - Feature coming soon!`);
+}
+
 // ========== PERSONAL INFO MODULE ==========
 function loadPersonalInfoContent() {
     const content = `
@@ -517,7 +773,6 @@ function loadPersonalInfoContent() {
                                                         <option>WI</option>
                                                         <option>IL</option>
                                                         <option>MN</option>
-                                                        <!-- Add more states -->
                                                     </select>
                                                 </div>
                                             </div>
