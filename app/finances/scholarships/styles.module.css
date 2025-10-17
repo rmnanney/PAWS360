@@ -1,0 +1,82 @@
+/* Scholarships Page Styles */
+
+.pageContainer {
+	display: flex;
+	flex: 1 1 0%;
+	flex-direction: column;
+	gap: 1.5rem;
+	padding: 1rem;
+}
+
+.widgetsGrid {
+	display: grid;
+	grid-template-columns: repeat(1, minmax(0, 1fr));
+	gap: 1rem;
+}
+
+@media (min-width: 768px) {
+	.widgetsGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 1024px) {
+	.widgetsGrid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+.widgetCard {
+	border: 1px solid hsl(var(--border));
+	cursor: pointer;
+	transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.widgetCard:hover {
+	box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	border-color: hsl(var(--primary) / 0.5);
+}
+
+.widgetCardUrgent {
+	border-color: hsl(var(--destructive) / 0.5);
+}
+
+.widgetCardUrgent:hover {
+	border-color: hsl(var(--destructive) / 0.5);
+}
+
+.widgetCardAction {
+	border-color: hsl(25 95% 53% / 0.5);
+}
+
+.widgetCardAction:hover {
+	border-color: hsl(25 95% 53% / 0.5);
+}
+
+.widgetHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+.iconWrapper {
+	padding: 0.5rem;
+	border-radius: 0.5rem;
+	background-color: hsl(var(--primary) / 0.1);
+}
+
+.iconWrapperUrgent {
+	background-color: hsl(var(--destructive) / 0.1);
+}
+
+.iconWrapperAction {
+	background-color: hsl(25 95% 53% / 0.1);
+}
+
+.widgetTitleMargin {
+	margin-top: 1rem;
+}
+
+.widgetFit {
+	width: fit-content;
+}
