@@ -1,90 +1,8 @@
-// "use client";
-
-// import { useRouter } from "next/navigation";
-// import {
-// 	Card,
-// 	CardDescription,
-// 	CardHeader,
-// 	CardTitle,
-// } from "../../components/Card/card";
-// import { Button } from "../../components/Button/button";
-// import { ChevronLeft, Wallet, FileText, User } from "lucide-react";
-
-// export default function MyAccountPage() {
-// 	const router = useRouter();
-
-// 	const handleBackClick = () => {
-// 		console.log("Back button clicked, navigating to finances");
-// 		router.push("/finances");
-// 	};
-
-// 	const widgets = [
-// 		{
-// 			id: "account-overview",
-// 			title: "Account Overview",
-// 			description: "Summary of your account",
-// 			icon: Wallet,
-// 		},
-// 		{
-// 			id: "transaction-history",
-// 			title: "Transaction History",
-// 			description: "View all transactions",
-// 			icon: FileText,
-// 		},
-// 		{
-// 			id: "account-settings",
-// 			title: "Account Settings",
-// 			description: "Manage account preferences",
-// 			icon: User,
-// 		},
-// 	];
-
-// 	return (
-// 		<div className="flex flex-1 flex-col gap-6 p-4 pt-20">
-// 			{/* Back Button */}
-// 			<div>
-// 				<Button variant="ghost" onClick={handleBackClick} className="mb-2">
-// 					<ChevronLeft className="h-4 w-4 mr-2" />
-// 					Back to Finances
-// 				</Button>
-// 			</div>
-
-// 			{/* Page Header */}
-// 			<div className="mb-2">
-// 				<h1>My Account</h1>
-// 				<p className="text-muted-foreground mt-2">
-// 					View your account overview, balances, and transaction history.
-// 				</p>
-// 			</div>
-
-// 			{/* Widgets Grid */}
-// 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-// 				{widgets.map((widget) => {
-// 					const Icon = widget.icon;
-// 					return (
-// 						<Card
-// 							key={widget.id}
-// 							className="hover:shadow-md transition-all cursor-pointer border hover:border-primary/50"
-// 						>
-// 							<CardHeader>
-// 								<div className="p-2 bg-primary/10 rounded-lg w-fit">
-// 									<Icon className="h-6 w-6 text-primary" />
-// 								</div>
-// 								<CardTitle className="mt-4">{widget.title}</CardTitle>
-// 								<CardDescription>{widget.description}</CardDescription>
-// 							</CardHeader>
-// 						</Card>
-// 					);
-// 				})}
-// 			</div>
-// 		</div>
-// 	);
-// }
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import styles from "./styles.module.css";
+import s from "./styles.module.css";
 import {
 	Card,
 	CardContent,
@@ -259,37 +177,37 @@ export default function MyAccountPage() {
 	};
 
 	const getAmountColor = (amount: number) => {
-		return amount >= 0 ? styles.amountPositive : styles.amountNegative;
+		return amount >= 0 ? s.amountPositive : s.amountNegative;
 	};
 
 	const getTransactionIcon = (type: string) => {
 		switch (type) {
 			case "Payment":
 			case "Credit":
-				return <TrendingUp className={styles.iconGreen} />;
+				return <TrendingUp className={s.iconGreen} />;
 			case "Charge":
-				return <TrendingDown className={styles.iconRed} />;
+				return <TrendingDown className={s.iconRed} />;
 			default:
-				return <Receipt className={styles.iconGray} />;
+				return <Receipt className={s.iconGray} />;
 		}
 	};
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
 			case "Posted":
-				return styles.statusPosted;
+				return s.statusPosted;
 			case "Pending":
-				return styles.statusPending;
+				return s.statusPending;
 			case "Active":
-				return styles.statusActive;
+				return s.statusActive;
 			default:
-				return styles.statusDefault;
+				return s.statusDefault;
 		}
 	};
 
 	return (
-		<div className={styles.pageContainer}>
-			<div className={styles.header}>
+		<div className={s.pageContainer}>
+			<div className={s.header}>
 				<div>
 					<Button variant="ghost" onClick={handleBackClick} className="mb-2">
 						<ChevronLeft className="h-4 w-4 mr-2" />
@@ -297,7 +215,7 @@ export default function MyAccountPage() {
 					</Button>
 				</div>
 
-				<div className={styles.headerActions}>
+				<div className={s.headerActions}>
 					<Button variant="outline" size="sm">
 						<Download className="mr-2 h-4 w-4" />
 						Download Statement
@@ -312,7 +230,7 @@ export default function MyAccountPage() {
 			</div>
 
 			{/* Financial Overview Cards */}
-			<div className={styles.overviewCardsGrid}>
+			<div className={s.overviewCardsGrid}>
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">
@@ -322,7 +240,7 @@ export default function MyAccountPage() {
 					</CardHeader>
 					<CardContent>
 						<div
-							className={`${styles.balanceAmount} ${getAmountColor(
+							className={`${s.balanceAmount} ${getAmountColor(
 								accountSummary.currentBalance
 							)}`}
 						>
@@ -340,7 +258,7 @@ export default function MyAccountPage() {
 						<Receipt className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className={`${styles.balanceAmount} ${styles.amountNegative}`}>
+						<div className={`${s.balanceAmount} ${s.amountNegative}`}>
 							${accountSummary.totalCharges.toFixed(2)}
 						</div>
 						<p className="text-xs text-muted-foreground">This semester</p>
@@ -353,7 +271,7 @@ export default function MyAccountPage() {
 						<CheckCircle className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className={`${styles.balanceAmount} ${styles.amountPositive}`}>
+						<div className={`${s.balanceAmount} ${s.amountPositive}`}>
 							${accountSummary.financialAid.toFixed(2)}
 						</div>
 						<p className="text-xs text-muted-foreground">Awarded this year</p>
@@ -368,7 +286,7 @@ export default function MyAccountPage() {
 						<CreditCard className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className={`${styles.balanceAmount} ${styles.amountYellow}`}>
+						<div className={`${s.balanceAmount} ${s.amountYellow}`}>
 							Payment Plan
 						</div>
 						<p className="text-xs text-muted-foreground">
@@ -392,7 +310,7 @@ export default function MyAccountPage() {
 				</TabsList>
 
 				<TabsContent value="overview" className="space-y-4">
-					<div className={styles.twoColumnGrid}>
+					<div className={s.twoColumnGrid}>
 						<Card>
 							<CardHeader>
 								<CardTitle>Account Summary</CardTitle>
@@ -401,25 +319,25 @@ export default function MyAccountPage() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className={styles.summaryItem}>
+								<div className={s.summaryItem}>
 									<span>Total Charges:</span>
-									<span className={styles.amountNegative}>
+									<span className={s.amountNegative}>
 										${accountSummary.totalCharges.toFixed(2)}
 									</span>
 								</div>
-								<div className={styles.summaryItem}>
+								<div className={s.summaryItem}>
 									<span>Total Payments:</span>
-									<span className={styles.amountPositive}>
+									<span className={s.amountPositive}>
 										${accountSummary.totalPayments.toFixed(2)}
 									</span>
 								</div>
-								<div className={styles.summaryItem}>
+								<div className={s.summaryItem}>
 									<span>Financial Aid:</span>
-									<span className={styles.amountPositive}>
+									<span className={s.amountPositive}>
 										${accountSummary.financialAid.toFixed(2)}
 									</span>
 								</div>
-								<div className={styles.summaryTotal}>
+								<div className={s.summaryTotal}>
 									<span>Current Balance:</span>
 									<span
 										className={getAmountColor(accountSummary.currentBalance)}
@@ -438,19 +356,15 @@ export default function MyAccountPage() {
 							<CardContent>
 								<div className="space-y-4">
 									{upcomingCharges.map((charge, index) => (
-										<div key={index} className={styles.chargeItem}>
+										<div key={index} className={s.chargeItem}>
 											<div>
-												<p className={styles.mediumText}>
-													{charge.description}
-												</p>
+												<p className={s.mediumText}>{charge.description}</p>
 												<p className="text-sm text-muted-foreground">
 													Due: {charge.dueDate}
 												</p>
 											</div>
-											<div className={styles.chargeDetails}>
-												<p
-													className={`${styles.semiboldText} ${styles.amountNegative}`}
-												>
+											<div className={s.chargeDetails}>
+												<p className={`${s.semiboldText} ${s.amountNegative}`}>
 													${charge.amount.toFixed(2)}
 												</p>
 												<Badge className={getStatusColor(charge.status)}>
@@ -474,37 +388,35 @@ export default function MyAccountPage() {
 						<CardContent>
 							<div className="space-y-4">
 								{paymentPlans.map((plan, index) => (
-									<div key={index} className={styles.paymentPlanCard}>
-										<div className={styles.paymentPlanHeader}>
-											<h3 className={styles.semiboldText}>{plan.name}</h3>
+									<div key={index} className={s.paymentPlanCard}>
+										<div className={s.paymentPlanHeader}>
+											<h3 className={s.semiboldText}>{plan.name}</h3>
 											<Badge className={getStatusColor(plan.status)}>
 												{plan.status}
 											</Badge>
 										</div>
-										<div className={styles.fourColumnGrid}>
+										<div className={s.fourColumnGrid}>
 											<div>
 												<p className="text-muted-foreground">Total Amount</p>
-												<p className={styles.semiboldText}>
+												<p className={s.semiboldText}>
 													${plan.totalAmount.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Monthly Payment</p>
-												<p className={styles.semiboldText}>
+												<p className={s.semiboldText}>
 													${plan.monthlyPayment.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Payments Left</p>
-												<p className={styles.semiboldText}>
+												<p className={s.semiboldText}>
 													{plan.remainingPayments}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Next Payment</p>
-												<p className={styles.semiboldText}>
-													{plan.nextPaymentDate}
-												</p>
+												<p className={s.semiboldText}>{plan.nextPaymentDate}</p>
 											</div>
 										</div>
 									</div>
@@ -525,11 +437,11 @@ export default function MyAccountPage() {
 						<CardContent>
 							<div className="space-y-4">
 								{recentTransactions.map((transaction, index) => (
-									<div key={index} className={styles.transactionItem}>
-										<div className={styles.transactionLeft}>
+									<div key={index} className={s.transactionItem}>
+										<div className={s.transactionLeft}>
 											{getTransactionIcon(transaction.type)}
 											<div>
-												<p className={styles.mediumText}>
+												<p className={s.mediumText}>
 													{transaction.description}
 												</p>
 												<p className="text-sm text-muted-foreground">
@@ -537,10 +449,10 @@ export default function MyAccountPage() {
 												</p>
 											</div>
 										</div>
-										<div className={styles.transactionRight}>
-											<div className={styles.transactionDetails}>
+										<div className={s.transactionRight}>
+											<div className={s.transactionDetails}>
 												<p
-													className={`${styles.semiboldText} ${getAmountColor(
+													className={`${s.semiboldText} ${getAmountColor(
 														transaction.amount
 													)}`}
 												>
@@ -570,41 +482,35 @@ export default function MyAccountPage() {
 						<CardContent>
 							<div className="space-y-4">
 								{financialAid.map((aid, index) => (
-									<div key={index} className={styles.aidCard}>
-										<div className={styles.aidHeader}>
-											<h3 className={styles.semiboldText}>{aid.type}</h3>
+									<div key={index} className={s.aidCard}>
+										<div className={s.aidHeader}>
+											<h3 className={s.semiboldText}>{aid.type}</h3>
 											<Badge className={getStatusColor(aid.status)}>
 												{aid.status}
 											</Badge>
 										</div>
-										<div className={styles.fourColumnGrid}>
+										<div className={s.fourColumnGrid}>
 											<div>
 												<p className="text-muted-foreground">Awarded</p>
-												<p
-													className={`${styles.semiboldText} ${styles.amountPositive}`}
-												>
+												<p className={`${s.semiboldText} ${s.amountPositive}`}>
 													${aid.awarded.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Disbursed</p>
-												<p
-													className={`${styles.semiboldText} ${styles.amountBlue}`}
-												>
+												<p className={`${s.semiboldText} ${s.amountBlue}`}>
 													${aid.disbursed.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Remaining</p>
-												<p
-													className={`${styles.semiboldText} ${styles.amountOrange}`}
-												>
+												<p className={`${s.semiboldText} ${s.amountOrange}`}>
 													${aid.remaining.toFixed(2)}
 												</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Total Aid</p>
-												<p className={styles.semiboldText}>
+												<p className={s.semiboldText}>
 													${aid.amount.toFixed(2)}
 												</p>
 											</div>
@@ -626,43 +532,42 @@ export default function MyAccountPage() {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-6">
-								<div className={styles.paymentAlert}>
-									<div className={styles.alertHeader}>
-										<AlertTriangle className={styles.iconBlue} />
-										<h3 className={styles.alertTitle}>Current Balance</h3>
+								<div className={s.paymentAlert}>
+									<div className={s.alertHeader}>
+										<AlertTriangle className={s.iconBlue} />
+										<h3 className={s.alertTitle}>Current Balance</h3>
 									</div>
-									<p className={styles.alertText}>
+									<p className={s.alertText}>
 										Your current balance is{" "}
-										<span className={styles.semiboldText}>
+										<span className={s.semiboldText}>
 											${accountSummary.currentBalance.toFixed(2)}
 										</span>
 									</p>
-									<p className={styles.alertSubtext}>
+									<p className={s.alertSubtext}>
 										Due date: {accountSummary.dueDate}
 									</p>
 								</div>
-								<div className={styles.paymentButtons}>
-									<Button className={styles.paymentButton} size="lg">
+								<div className={s.paymentButtons}>
+									<Button className={s.paymentButton} size="lg">
 										<CreditCard className="mr-2 h-5 w-5" />
 										Pay with Credit Card
 									</Button>
-									<a
-										href="https://quikpayasp.com/uwmil/qp/messageboard/index.do?dm=student_accounts_payer"
-										target="_blank"
-										rel="noopener noreferrer"
-										className={styles.paymentLink}
+									<Button
+										variant="outline"
+										size="lg"
+										className={s.paymentButton}
+										onClick={() =>
+											window.open(
+												"https://quikpayasp.com/uwmil/qp/messageboard/index.do?dm=student_accounts_payer",
+												"_blank"
+											)
+										}
 									>
-										<Button
-											variant="outline"
-											size="lg"
-											className={styles.paymentLinkButton}
-										>
-											<DollarSign className="mr-2 h-5 w-5" />
-											Bank Transfer (ACH)
-										</Button>
-									</a>
+										<DollarSign className="mr-2 h-5 w-5" />
+										Bank Transfer (ACH)
+									</Button>
 								</div>{" "}
-								<div className={styles.paymentInfo}>
+								<div className={s.paymentInfo}>
 									<p className="text-sm text-muted-foreground mb-4">
 										For questions about payments, contact Student Accounts at
 										(414) 229-4000

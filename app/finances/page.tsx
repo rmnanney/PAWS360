@@ -73,7 +73,10 @@ export default function FinancesPage() {
 	];
 
 	return (
-		<div className={s.pageContainer}>
+		<div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
+			<div className="flex items-center justify-between space-y-2">
+				<h2 className="text-3xl font-bold tracking-tight">Finances</h2>
+			</div>
 			{/* Account Summary - Collapsible */}
 			<Collapsible open={summaryOpen} onOpenChange={setSummaryOpen}>
 				<Card className={s.summaryCard}>

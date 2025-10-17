@@ -6,6 +6,13 @@
 	flex-direction: column;
 	gap: 1.5rem;
 	padding: 1rem;
+	padding-top: 1.5rem; /* pt-6 to match other pages */
+}
+
+@media (min-width: 768px) {
+	.pageContainer {
+		padding: 2rem;
+	}
 }
 
 .summaryCard {

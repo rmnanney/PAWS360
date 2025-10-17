@@ -13,7 +13,7 @@
 @media (min-width: 640px) {
 	.toastViewport {
 		bottom: 0;
-		left: 0;
+		right: 0;
 		top: auto;
 		flex-direction: column;
 		max-width: 420px; /* md:max-w-[420px] */

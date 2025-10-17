@@ -46,12 +46,14 @@ export default function ScholarshipsPage() {
 
 	return (
 		<div className={s.pageContainer}>
-			{/* Back Button */}
-			<div>
-				<Button variant="ghost" onClick={handleBackClick} className="mb-2">
-					<ChevronLeft className="h-4 w-4 mr-2" />
-					Back to Finances
-				</Button>
+			<div className={s.header}>
+				{/* Back Button */}
+				<div>
+					<Button variant="ghost" onClick={handleBackClick} className="mb-2">
+						<ChevronLeft className="h-4 w-4 mr-2" />
+						Back to Finances
+					</Button>
+				</div>
 			</div>
 
 			{/* Page Header */}
