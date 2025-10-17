@@ -40,7 +40,7 @@
 # - Paws360ApplicationTests.java deleted/modified conflict
 
 # After PR is merged, the following stories become actionable:
-# - SCRUM-56: Fix compilation errors (high priority)
+# - SCRUM-80: Fix compilation errors (high priority)
 # - SCRUM-79: AdminLTE dashboard implementation
 ```
 
@@ -75,7 +75,7 @@
 
 ### 🔥 High Priority - Infrastructure
 
-#### SCRUM-56: Fix CI/CD Pipeline Blocking Issues
+#### SCRUM-80: Fix CI/CD Pipeline Blocking Issues
 **Status**: Not Started  
 **Priority**: CRITICAL (blocks CI/CD validation)  
 **Blockers**: None - Can start immediately  
@@ -97,7 +97,7 @@
 #### SCRUM-55: Complete Production Deployment Setup
 **Status**: Not Started  
 **Priority**: HIGH  
-**Blockers**: SCRUM-56 must be complete (CI/CD must work)  
+**Blockers**: SCRUM-80 must be complete (CI/CD must work)  
 **Dependencies**: Requires working CI/CD pipeline
 
 **Scope**:
@@ -154,9 +154,9 @@
 ## 🎯 Recommended Next Steps
 
 ### Option 1: Continue Infrastructure Track (RECOMMENDED)
-**Path**: SCRUM-54 → SCRUM-56 → SCRUM-55
+**Path**: SCRUM-54 → SCRUM-80 → SCRUM-55
 1. Merge SCRUM-54 (create PR, resolve conflicts)
-2. Start SCRUM-56 (fix 71 compilation errors)
+2. Start SCRUM-80 (fix 71 compilation errors)
 3. Then SCRUM-55 (production deployment)
 
 **Rationale**: Infrastructure must be solid before building features. CI/CD validation is critical.
@@ -193,7 +193,7 @@
 - Test infrastructure (Playwright + Chromium)
 
 ### ⚠️ Known Issues
-1. **71 Compilation Errors** (SCRUM-56) - Blocking CI/CD validation
+1. **71 Compilation Errors** (SCRUM-80) - Blocking CI/CD validation
 2. **11 UI Tests Failing** (SCRUM-79) - Missing application features
 3. **Merge Conflicts with Master** - package.json, test files
 
@@ -215,7 +215,7 @@
 - ✅ 6/17 UI tests passing (basic structure)
 
 ### Next Sprint Goals
-- [ ] Fix all compilation errors (SCRUM-56)
+- [ ] Fix all compilation errors (SCRUM-80)
 - [ ] Achieve 17/17 UI tests passing (SCRUM-79)
 - [ ] Production deployment infrastructure (SCRUM-55)
 - [ ] Zero CI/CD failures on main branch
@@ -233,7 +233,7 @@
 2. Resolve merge conflicts (package.json, tests)
 3. Choose next story from prioritized backlog
 
-**If Starting SCRUM-56 (Compilation Fixes)**:
+**If Starting SCRUM-80 (Compilation Fixes)**:
 - Read compilation errors: `mvn clean test-compile`
 - Focus on DTO/Entity API changes
 - Update test constructors to match new signatures
@@ -274,4 +274,4 @@ Great work on getting the CI/CD pipeline functional! The infrastructure is solid
 
 **Last Updated**: October 16, 2025  
 **Current Sprint**: SCRUM-54 Completion  
-**Next Sprint**: SCRUM-56 (Compilation Fixes) or SCRUM-79 (AdminLTE Dashboard)
+**Next Sprint**: SCRUM-80 (Compilation Fixes) or SCRUM-79 (AdminLTE Dashboard)

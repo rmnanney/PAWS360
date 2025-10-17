@@ -1,4 +1,4 @@
-# SCRUM-56: Fix CI/CD Pipeline Blocking Issues
+# SCRUM-80: Fix CI/CD Pipeline Blocking Issues
 
 ## User Story
 **As a** Developer/DevOps engineer
@@ -97,4 +97,4 @@ The CI/CD pipeline setup in SCRUM-54 cannot be validated due to 71 compilation e
 - Entity/DTO changes appear to be from "Entities Update" and "CRUD Operations" commits
 - Changes affect Users ↔ Address relationships and DTO structures
 - Priority is to unblock CI/CD validation, not redesign entities</content>
-<parameter name="filePath">/home/ryan/repos/capstone/SCRUM-56-User-Story.md
+<parameter name="filePath">/home/ryan/repos/capstone/SCRUM-80-User-Story.md
