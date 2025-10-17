@@ -1,9 +1,13 @@
 package com.uwm.paws360.Entity.Course;
 import com.uwm.paws360.Entity.EntityDomains.Delivery_Method;
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(
@@ -40,9 +44,6 @@ public class Courses {
     @Column(name = "credit_hours", nullable = false, precision = 3, scale = 1)
     private BigDecimal creditHours;
 
-    @Column(name = "prerequisites", columnDefinition = "TEXT")
-    private String prerequisites;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "delivery_method", columnDefinition = "delivery_method DEFAULT 'in_person'")
     private Delivery_Method deliveryMethod = Delivery_Method.IN_PERSON;
@@ -52,9 +53,6 @@ public class Courses {
 
     @Column(name = "max_enrollment")
     private Integer maxEnrollment;
-
-    @Column(name = "current_enrollment")
-    private Integer currentEnrollment = 0;
 
     @Column(name = "academic_year", nullable = false)
     private Integer academicYear;
@@ -68,13 +66,19 @@ public class Courses {
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime updatedAt = OffsetDateTime.now();
 
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CourseSection> sections = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CoursePrerequisite> prerequisiteLinks = new HashSet<>();
+
     /*------------------------- Constructors -------------------------*/
 
     public Courses() {}
 
     public Courses(String courseCode, String courseName, String courseDescription,
                   String departmentCode, String courseLevel, BigDecimal creditHours,
-                  String prerequisites, Delivery_Method deliveryMethod, boolean isActive,
+                  Delivery_Method deliveryMethod, boolean isActive,
                   Integer maxEnrollment, Integer academicYear, String term) {
         this.courseCode = courseCode;
         this.courseName = courseName;
@@ -82,7 +86,6 @@ public class Courses {
         this.departmentCode = departmentCode;
         this.courseLevel = courseLevel;
         this.creditHours = creditHours;
-        this.prerequisites = prerequisites;
         this.deliveryMethod = deliveryMethod;
         this.isActive = isActive;
         this.maxEnrollment = maxEnrollment;
@@ -133,10 +136,6 @@ public class Courses {
         return creditHours;
     }
 
-    public String getPrerequisites() {
-        return prerequisites;
-    }
-
     public Delivery_Method getDeliveryMethod() {
         return deliveryMethod;
     }
@@ -147,10 +146,6 @@ public class Courses {
 
     public Integer getMaxEnrollment() {
         return maxEnrollment;
-    }
-
-    public Integer getCurrentEnrollment() {
-        return currentEnrollment;
     }
 
     public Integer getAcademicYear() {
@@ -167,6 +162,14 @@ public class Courses {
 
     public OffsetDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public List<CourseSection> getSections() {
+        return sections;
+    }
+
+    public Set<CoursePrerequisite> getPrerequisiteLinks() {
+        return prerequisiteLinks;
     }
 
     /*------------------------- Setters -------------------------*/
@@ -195,10 +198,6 @@ public class Courses {
         this.creditHours = creditHours;
     }
 
-    public void setPrerequisites(String prerequisites) {
-        this.prerequisites = prerequisites;
-    }
-
     public void setDeliveryMethod(Delivery_Method deliveryMethod) {
         this.deliveryMethod = deliveryMethod;
     }
@@ -211,10 +210,6 @@ public class Courses {
         this.maxEnrollment = maxEnrollment;
     }
 
-    public void setCurrentEnrollment(Integer currentEnrollment) {
-        this.currentEnrollment = currentEnrollment;
-    }
-
     public void setAcademicYear(Integer academicYear) {
         this.academicYear = academicYear;
     }
@@ -225,5 +220,25 @@ public class Courses {
 
     public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public void addSection(CourseSection section) {
+        this.sections.add(section);
+        section.setCourse(this);
+    }
+
+    public void removeSection(CourseSection section) {
+        this.sections.remove(section);
+        section.setCourse(null);
+    }
+
+    public void addPrerequisiteLink(CoursePrerequisite prerequisite) {
+        this.prerequisiteLinks.add(prerequisite);
+        prerequisite.setCourse(this);
+    }
+
+    public void removePrerequisiteLink(CoursePrerequisite prerequisite) {
+        this.prerequisiteLinks.remove(prerequisite);
+        prerequisite.setCourse(null);
     }
 }
