@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/enrollments")
@@ -35,5 +39,10 @@ public class CourseEnrollmentController {
     @PostMapping("/switch-lab")
     public ResponseEntity<CourseEnrollmentResponse> switchLab(@Valid @RequestBody SwitchLabRequest request) {
         return ResponseEntity.ok(courseEnrollmentService.switchLab(request));
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<CourseEnrollmentResponse>> listStudentEnrollments(@PathVariable Integer studentId) {
+        return ResponseEntity.ok(courseEnrollmentService.listEnrollmentsForStudent(studentId));
     }
 }

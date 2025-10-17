@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseEnrollmentService {
@@ -181,6 +182,20 @@ public class CourseEnrollmentService {
 
         CourseEnrollment saved = courseEnrollmentRepository.save(enrollment);
         return toResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseEnrollmentResponse> listEnrollmentsForStudent(Integer studentId) {
+        // Ensure the student exists (consistent with other service methods)
+        studentRepository.findById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
+
+        List<CourseEnrollment> enrollments = courseEnrollmentRepository.findByStudentId(studentId);
+        // "Signed up for" implies active or waitlisted; exclude DROPPED
+        return enrollments.stream()
+                .filter(e -> e.getStatus() != SectionEnrollmentStatus.DROPPED)
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     private boolean hasCapacity(CourseSection section) {
