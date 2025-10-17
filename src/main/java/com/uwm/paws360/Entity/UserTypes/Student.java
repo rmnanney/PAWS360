@@ -70,6 +70,10 @@ public class Student {
         this.user = user;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getCampusId() { return campusId; }
     public void setCampusId(String campusId) { this.campusId = campusId; }
 
