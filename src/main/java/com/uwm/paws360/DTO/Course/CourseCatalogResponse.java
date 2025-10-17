@@ -1,6 +1,7 @@
 package com.uwm.paws360.DTO.Course;
 
 import com.uwm.paws360.Entity.EntityDomains.Delivery_Method;
+import com.uwm.paws360.Entity.EntityDomains.Department;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -10,7 +11,7 @@ public record CourseCatalogResponse(
         String courseCode,
         String courseName,
         String courseDescription,
-        String departmentCode,
+        Department department,
         String courseLevel,
         BigDecimal creditHours,
         Delivery_Method deliveryMethod,

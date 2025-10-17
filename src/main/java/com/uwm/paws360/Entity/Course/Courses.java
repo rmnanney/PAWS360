@@ -1,5 +1,6 @@
 package com.uwm.paws360.Entity.Course;
 import com.uwm.paws360.Entity.EntityDomains.Delivery_Method;
+import com.uwm.paws360.Entity.EntityDomains.Department;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -34,8 +35,9 @@ public class Courses {
     @Column(name = "course_description", columnDefinition = "TEXT")
     private String courseDescription;
 
-    @Column(name = "department_code", nullable = false, length = 10)
-    private String departmentCode;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "department", nullable = false, length = 64)
+    private Department department;
 
     @Column(name = "course_level", length = 10)
     private String courseLevel; // e.g., 100, 200, 300, etc.
@@ -76,13 +78,13 @@ public class Courses {
     public Courses() {}
 
     public Courses(String courseCode, String courseName, String courseDescription,
-                  String departmentCode, String courseLevel, BigDecimal creditHours,
+                  Department department, String courseLevel, BigDecimal creditHours,
                   Delivery_Method deliveryMethod, boolean isActive,
                   Integer maxEnrollment, Integer academicYear, String term) {
         this.courseCode = courseCode;
         this.courseName = courseName;
         this.courseDescription = courseDescription;
-        this.departmentCode = departmentCode;
+        this.department = department;
         this.courseLevel = courseLevel;
         this.creditHours = creditHours;
         this.deliveryMethod = deliveryMethod;
@@ -123,8 +125,8 @@ public class Courses {
         return courseDescription;
     }
 
-    public String getDepartmentCode() {
-        return departmentCode;
+    public Department getDepartment() {
+        return department;
     }
 
     public String getCourseLevel() {
@@ -185,8 +187,8 @@ public class Courses {
         this.courseDescription = courseDescription;
     }
 
-    public void setDepartmentCode(String departmentCode) {
-        this.departmentCode = departmentCode;
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public void setCourseLevel(String courseLevel) {
