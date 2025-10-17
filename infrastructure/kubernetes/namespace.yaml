@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: paws360
+  labels:
+    name: paws360
+    environment: production
+    app.kubernetes.io/name: paws360
+    app.kubernetes.io/managed-by: kubernetes
