@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5434/paws360_test
-    username: paws360
-    password: test_password
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5434/paws360_test}
+    username: ${DATABASE_USERNAME:paws360}
+    password: ${DATABASE_PASSWORD:test_password}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -15,9 +15,8 @@ spring:
         default_schema: public
     database: postgresql
   redis:
-    host: localhost
-    port: 6380
-    password: test_redis_password
+    url: ${REDIS_URL:redis://localhost:6380}
+    password: ${REDIS_PASSWORD:test_redis_password}
 
 server:
   port: 9999
