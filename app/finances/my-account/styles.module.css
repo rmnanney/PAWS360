@@ -1,0 +1,293 @@
+/* Layout */
+.pageContainer {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: 1rem;
+	padding-top: 1.5rem;
+}
+
+@media (min-width: 768px) {
+	.pageContainer {
+		padding: 2rem;
+	}
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+.headerActions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* Grid Layouts */
+.overviewCardsGrid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+	.overviewCardsGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 1024px) {
+	.overviewCardsGrid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+.twoColumnGrid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+	.twoColumnGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.fourColumnGrid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+}
+
+@media (min-width: 768px) {
+	.fourColumnGrid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+/* Amount Colors */
+.amountPositive {
+	color: rgb(22 163 74);
+}
+
+.amountNegative {
+	color: rgb(220 38 38);
+}
+
+.amountBlue {
+	color: rgb(37 99 235);
+}
+
+.amountOrange {
+	color: rgb(234 88 12);
+}
+
+.amountYellow {
+	color: rgb(202 138 4);
+}
+
+/* Text Sizes and Weights */
+.balanceAmount {
+	font-size: 1.5rem;
+	line-height: 2rem;
+	font-weight: 700;
+}
+
+.semiboldText {
+	font-weight: 600;
+}
+
+.mediumText {
+	font-weight: 500;
+}
+
+/* Card Content Layouts */
+.summaryItem {
+	display: flex;
+	justify-content: space-between;
+}
+
+.summaryTotal {
+	border-top-width: 1px;
+	padding-top: 0.5rem;
+	display: flex;
+	justify-content: space-between;
+	font-weight: 600;
+}
+
+/* Charge/Transaction Items */
+.chargeItem {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem;
+	border-width: 1px;
+	border-radius: 0.5rem;
+}
+
+.chargeDetails {
+	text-align: right;
+}
+
+.transactionItem {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem;
+	border-width: 1px;
+	border-radius: 0.5rem;
+}
+
+.transactionLeft {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.transactionRight {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.transactionDetails {
+	text-align: right;
+}
+
+/* Payment Plan */
+.paymentPlanCard {
+	border-width: 1px;
+	border-radius: 0.5rem;
+	padding: 1rem;
+}
+
+.paymentPlanHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+
+/* Financial Aid */
+.aidCard {
+	border-width: 1px;
+	border-radius: 0.5rem;
+	padding: 1rem;
+}
+
+.aidHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+
+/* Payment Section */
+.paymentAlert {
+	background-color: rgb(239 246 255);
+	border-width: 1px;
+	border-color: rgb(191 219 254);
+	border-radius: 0.5rem;
+	padding: 1rem;
+}
+
+.alertHeader {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.alertTitle {
+	font-weight: 600;
+	color: rgb(30 58 138);
+}
+
+.alertText {
+	color: rgb(30 64 175);
+}
+
+.alertSubtext {
+	font-size: 0.875rem;
+	line-height: 1.25rem;
+	color: rgb(29 78 216);
+	margin-top: 0.25rem;
+}
+
+.paymentButtons {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+	.paymentButtons {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.paymentButton {
+	height: 4rem;
+}
+
+.paymentLink {
+	height: 4rem;
+	display: inline-block;
+}
+
+.paymentInfo {
+	text-align: center;
+}
+
+/* Status Badges */
+.statusPosted {
+	background-color: rgb(220 252 231);
+	color: rgb(22 101 52);
+}
+
+.statusPending {
+	background-color: rgb(254 249 195);
+	color: rgb(133 77 14);
+}
+
+.statusActive {
+	background-color: rgb(219 234 254);
+	color: rgb(30 64 175);
+}
+
+.statusDefault {
+	background-color: rgb(243 244 246);
+	color: rgb(31 41 55);
+}
+
+/* Icons */
+.iconGreen {
+	height: 1rem;
+	width: 1rem;
+	color: rgb(22 163 74);
+}
+
+.iconRed {
+	height: 1rem;
+	width: 1rem;
+	color: rgb(220 38 38);
+}
+
+.iconGray {
+	height: 1rem;
+	width: 1rem;
+	color: rgb(75 85 99);
+}
+
+.iconBlue {
+	height: 1.25rem;
+	width: 1.25rem;
+	color: rgb(37 99 235);
+}
