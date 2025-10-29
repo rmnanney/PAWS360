@@ -52,7 +52,7 @@ const CardFooter = React.forwardRef<
 ));
 CardFooter.displayName = "CardFooter";
 
-interface DashboardCardProps {
+interface HomepageCardProps {
 	title: string;
 	icon: LucideIcon;
 	description?: string;
@@ -69,23 +69,23 @@ export {
 	CardContent,
 };
 
-export function DashboardCard({
+export function HomepageCard({
 	title,
 	icon: Icon,
 	description,
 	className = "",
 	onClick,
-}: DashboardCardProps) {
+}: HomepageCardProps) {
 	return (
-		<Card className={`${s.dashboardCard} ${className}`} onClick={onClick}>
+		<Card className={`${s.homepageCard} ${className}`} onClick={onClick}>
 			<div className="flex flex-col items-start space-y-3">
-				<div className={s.dashboardIcon}>
+				<div className={s.homepageIcon}>
 					<Icon className="h-6 w-6 text-primary" />
 				</div>
 				<div>
-					<h3 className={s.dashboardTitle}>{title}</h3>
+					<h3 className={s.homepageTitle}>{title}</h3>
 					{description && (
-						<p className={s.dashboardDescription}>{description}</p>
+						<p className={s.homepageDescription}>{description}</p>
 					)}
 				</div>
 			</div>
