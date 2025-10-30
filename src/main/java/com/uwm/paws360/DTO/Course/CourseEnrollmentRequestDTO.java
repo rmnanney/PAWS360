@@ -2,14 +2,13 @@ package com.uwm.paws360.DTO.Course;
 
 import jakarta.validation.constraints.NotNull;
 
-public record SwitchLabRequest(
+public record CourseEnrollmentRequestDTO(
         @NotNull
         Integer studentId,
 
         @NotNull
         Long lectureSectionId,
 
-        @NotNull
-        Long newLabSectionId
+        Long labSectionId
 ) {
 }

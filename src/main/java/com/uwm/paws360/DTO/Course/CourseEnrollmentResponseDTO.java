@@ -4,7 +4,7 @@ import com.uwm.paws360.Entity.EntityDomains.SectionEnrollmentStatus;
 
 import java.time.OffsetDateTime;
 
-public record CourseEnrollmentResponse(
+public record CourseEnrollmentResponseDTO(
         Long enrollmentId,
         Integer studentId,
         Long lectureSectionId,

@@ -5,11 +5,12 @@ import com.uwm.paws360.Entity.EntityDomains.User.*;
 import java.time.LocalDate;
 import java.util.List;
 
-public record UserResponseDTO(
+public record UserSensitiveResponseDTO(
         int user_id,
         String email,
         String firstname,
         String lastname,
+        String ssn,
         Role role,
         Ethnicity ethnicity,
         Gender gender,

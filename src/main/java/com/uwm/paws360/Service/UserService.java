@@ -60,7 +60,11 @@ public class UserService {
                 user.countryCode(),
                 user.phone(),
                 user.status(),
-                user.role()
+                user.role(),
+                user.ssn(),
+                user.ethnicity(),
+                user.nationality(),
+                user.gender()
         );
 
         if (user.addresses() != null) {
@@ -133,11 +137,16 @@ public class UserService {
     public UserResponseDTO editUser(EditUserRequestDTO userDTO){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(userDTO.email());
         if(user == null) return new UserResponseDTO(-1, null, null, null,
-                null, null, null, null, null, List.of());
+                null, null, null, null, null, null,
+                null, null, List.of());
         user.setFirstname(userDTO.firstname());
         user.setMiddlename(userDTO.middlename());
         user.setLastname(userDTO.lastname());
         user.setDob(userDTO.dob());
+        user.setSocialsecurity(userDTO.ssn());
+        user.setEthnicity(userDTO.ethnicity());
+        user.setGender(userDTO.gender());
+        user.setNationality(userDTO.nationality());
         user.setPassword(hashIfNeeded(userDTO.password()));
         user.setCountryCode(userDTO.countryCode());
         user.setPhone(userDTO.phone());
@@ -184,7 +193,8 @@ public class UserService {
     public UserResponseDTO addAddress(AddAddressRequestDTO dto){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
         if (user == null) return new UserResponseDTO(-1, null, null, null,
-                null, null, null, null, null, List.of());
+                null, null, null, null, null, null, null,
+                null, List.of());
         Address addr = new Address();
         addr.setUser(user);
         addr.setAddress_type(dto.address().address_type());
@@ -204,7 +214,8 @@ public class UserService {
     public UserResponseDTO editAddress(EditAddressRequestDTO dto){
         Optional<Address> addressOpt = addressRepository.findById(dto.address_id());
         if (addressOpt.isEmpty()) return new UserResponseDTO(-1, null, null, null,
-                null, null, null, null, null, List.of());
+                null, null, null, null, null, null, null,
+                null, List.of());
         Address addr = addressOpt.get();
         addr.setAddress_type(dto.address().address_type());
         addr.setStreet_address_1(dto.address().street_address_1());
@@ -233,7 +244,8 @@ public class UserService {
     public UserResponseDTO getUser(GetUserRequestDTO dto){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
         if (user == null) return new UserResponseDTO(-1, null, null, null,
-                null, null, null, null, null, List.of());
+                null, null, null, null, null, null, null,
+                null, List.of());
         return toUserResponseDTO(user);
     }
 
@@ -325,18 +337,21 @@ public class UserService {
         return value.startsWith("$2a$") || value.startsWith("$2b$") || value.startsWith("$2y$");
     }
 
-    private UserResponseDTO toUserResponseDTO(Users u){
+    private UserResponseDTO toUserResponseDTO(Users user){
         return new UserResponseDTO(
-                u.getId(),
-                u.getEmail(),
-                u.getFirstname(),
-                u.getLastname(),
-                u.getRole(),
-                u.getStatus(),
-                u.getDob(),
-                u.getCountryCode(),
-                u.getPhone(),
-                toAddressDTOs(u.getAddresses())
+                user.getId(),
+                user.getEmail(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getRole(),
+                user.getEthnicity(),
+                user.getGender(),
+                user.getNationality(),
+                user.getStatus(),
+                user.getDob(),
+                user.getCountryCode(),
+                user.getPhone(),
+                toAddressDTOs(user.getAddresses())
         );
     }
 

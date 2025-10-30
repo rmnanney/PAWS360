@@ -6,7 +6,7 @@ import com.uwm.paws360.Entity.EntityDomains.Department;
 import java.math.BigDecimal;
 import java.util.List;
 
-public record CourseCatalogResponse(
+public record CourseCatalogResponseDTO(
         int courseId,
         String courseCode,
         String courseName,
@@ -19,6 +19,6 @@ public record CourseCatalogResponse(
         Integer catalogMaxEnrollment,
         Integer academicYear,
         String term,
-        List<CourseSectionResponse> sections
+        List<CourseSectionResponseDTO> sections
 ) {
 }

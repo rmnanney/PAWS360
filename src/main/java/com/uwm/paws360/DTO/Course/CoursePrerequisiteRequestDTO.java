@@ -3,7 +3,7 @@ package com.uwm.paws360.DTO.Course;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record CoursePrerequisiteRequest(
+public record CoursePrerequisiteRequestDTO(
         @NotNull
         Integer courseId,
 

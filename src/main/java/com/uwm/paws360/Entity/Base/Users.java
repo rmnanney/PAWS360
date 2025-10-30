@@ -2,10 +2,9 @@ package com.uwm.paws360.Entity.Base;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.uwm.paws360.Entity.EntityDomains.Ferpa_Compliance;
-import com.uwm.paws360.Entity.EntityDomains.User.Country_Code;
-import com.uwm.paws360.Entity.EntityDomains.User.Role;
-import com.uwm.paws360.Entity.EntityDomains.User.Status;
+import com.uwm.paws360.Entity.EntityDomains.User.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +32,22 @@ public class Users {
 
     @Column(nullable = false, updatable = false)
     private LocalDate dob;
+
+    @Column(nullable = false, unique = true, length = 9)
+    @Pattern(regexp = "\\d{9}", message = "SSN must be exactly 9 digits")
+    private String ssn;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Ethnicity ethnicity;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Nationality nationality;
 
     @Column(nullable = false, length = 50, unique = true)
     private String email;
@@ -97,7 +112,8 @@ public class Users {
 
     public Users(String firstname, String middlename, String lastname, LocalDate dob,
                  String email, String password, Country_Code countryCode,
-                 String phone, Status status, Role role) {
+                 String phone, Status status, Role role, String ssn,
+                 Ethnicity ethnicity, Nationality nationality, Gender gender) {
         this.firstname = firstname;
         this.middlename = middlename;
         this.lastname = lastname;
@@ -108,6 +124,10 @@ public class Users {
         this.phone = phone;
         this.status = status;
         this.role = role;
+        this.ssn = ssn;
+        this.ethnicity = ethnicity;
+        this.nationality = nationality;
+        this.gender = gender;
     }
 
 /*------------------------- Set Before Entering Into DB -------------------------*/
@@ -218,6 +238,22 @@ public class Users {
         return session_expiration;
     }
 
+    public String getSocialsecurity() {
+        return ssn;
+    }
+
+    public Ethnicity getEthnicity() {
+        return ethnicity;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public Nationality getNationality() {
+        return nationality;
+    }
+
     /*------------------------- Setters -------------------------*/
 
     public void setFirstname(String firstname) {
@@ -302,5 +338,21 @@ public class Users {
 
     public void setSession_expiration(LocalDateTime session_expiration) {
         this.session_expiration = session_expiration;
+    }
+
+    public void setSocialsecurity(String socialsecurity) {
+        this.ssn = socialsecurity;
+    }
+
+    public void setEthnicity(Ethnicity ethnicity) {
+        this.ethnicity = ethnicity;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    public void setNationality(Nationality nationality) {
+        this.nationality = nationality;
     }
 }

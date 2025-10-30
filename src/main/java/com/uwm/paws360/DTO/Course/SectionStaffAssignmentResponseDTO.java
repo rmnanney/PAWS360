@@ -4,7 +4,7 @@ import com.uwm.paws360.Entity.EntityDomains.InstructionalRole;
 
 import java.time.OffsetDateTime;
 
-public record SectionStaffAssignmentResponse(
+public record SectionStaffAssignmentResponseDTO(
         Long assignmentId,
         Long sectionId,
         Integer userId,

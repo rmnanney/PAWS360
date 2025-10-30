@@ -4,5 +4,6 @@ public enum SectionEnrollmentStatus {
     ENROLLED,
     WAITLISTED,
     DROPPED,
-    PENDING_APPROVAL
+    PENDING_APPROVAL,
+    COMPLETED
 }

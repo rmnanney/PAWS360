@@ -51,6 +51,22 @@ public class CourseEnrollment {
     @Column(name = "auto_enrolled_from_waitlist", nullable = false)
     private boolean autoEnrolledFromWaitlist = false;
 
+    // Grade tracking
+    @Column(name = "current_percentage")
+    private Integer currentPercentage;
+
+    @Column(name = "current_letter", length = 2)
+    private String currentLetter;
+
+    @Column(name = "final_letter", length = 2)
+    private String finalLetter;
+
+    @Column(name = "last_grade_update")
+    private OffsetDateTime lastGradeUpdate;
+
+    @Column(name = "completed_at")
+    private OffsetDateTime completedAt;
+
     public CourseEnrollment() {
     }
 
@@ -151,5 +167,45 @@ public class CourseEnrollment {
 
     public void setAutoEnrolledFromWaitlist(boolean autoEnrolledFromWaitlist) {
         this.autoEnrolledFromWaitlist = autoEnrolledFromWaitlist;
+    }
+
+    public Integer getCurrentPercentage() {
+        return currentPercentage;
+    }
+
+    public void setCurrentPercentage(Integer currentPercentage) {
+        this.currentPercentage = currentPercentage;
+    }
+
+    public String getCurrentLetter() {
+        return currentLetter;
+    }
+
+    public void setCurrentLetter(String currentLetter) {
+        this.currentLetter = currentLetter;
+    }
+
+    public String getFinalLetter() {
+        return finalLetter;
+    }
+
+    public void setFinalLetter(String finalLetter) {
+        this.finalLetter = finalLetter;
+    }
+
+    public OffsetDateTime getLastGradeUpdate() {
+        return lastGradeUpdate;
+    }
+
+    public void setLastGradeUpdate(OffsetDateTime lastGradeUpdate) {
+        this.lastGradeUpdate = lastGradeUpdate;
+    }
+
+    public OffsetDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(OffsetDateTime completedAt) {
+        this.completedAt = completedAt;
     }
 }
