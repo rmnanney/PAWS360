@@ -69,7 +69,7 @@ public class CourseCatalogService {
     }
 
     @Transactional
-    public Courses createOrUpdateCourse(CourseCatalogRequest request) {
+    public Courses createOrUpdateCourse(CourseCatalogRequestDTO request) {
         Courses course = courseRepository.findByCourseCodeIgnoreCase(request.courseCode())
                 .orElse(new Courses());
 
@@ -79,6 +79,13 @@ public class CourseCatalogService {
         course.setDepartment(request.department());
         course.setCourseLevel(request.courseLevel());
         course.setCreditHours(request.creditHours());
+        if (request.courseCost() != null) {
+            course.setCourseCost(request.courseCost());
+        } else if (course.getCourseCost() == null && request.creditHours() != null) {
+            // Default cost: $400 per credit if not provided
+            java.math.BigDecimal perCredit = new java.math.BigDecimal("100.00");
+            course.setCourseCost(perCredit.multiply(request.creditHours()));
+        }
         if (request.deliveryMethod() != null) {
             course.setDeliveryMethod(request.deliveryMethod());
         }
@@ -91,7 +98,7 @@ public class CourseCatalogService {
     }
 
     @Transactional
-    public CourseSection createOrUpdateSection(CourseSectionRequest request) {
+    public CourseSection createOrUpdateSection(CourseSectionRequestDTO request) {
         Courses course = courseRepository.findById(request.courseId())
                 .orElseThrow(() -> new EntityNotFoundException("Course not found for id " + request.courseId()));
 
@@ -165,7 +172,7 @@ public class CourseCatalogService {
     }
 
     @Transactional
-    public CoursePrerequisite addPrerequisite(CoursePrerequisiteRequest request) {
+    public CoursePrerequisite addPrerequisite(CoursePrerequisiteRequestDTO request) {
         Courses course = courseRepository.findById(request.courseId())
                 .orElseThrow(() -> new EntityNotFoundException("Course not found for id " + request.courseId()));
         Courses prerequisite = courseRepository.findById(request.prerequisiteCourseId())
@@ -180,7 +187,7 @@ public class CourseCatalogService {
     }
 
     @Transactional
-    public SectionStaffAssignment assignStaff(SectionStaffAssignmentRequest request) {
+    public SectionStaffAssignment assignStaff(SectionStaffAssignmentRequestDTO request) {
         CourseSection section = courseSectionRepository.findById(request.sectionId())
                 .orElseThrow(() -> new EntityNotFoundException("Section not found for id " + request.sectionId()));
         Users staff = userRepository.findById(request.userId())
@@ -199,13 +206,13 @@ public class CourseCatalogService {
         return sectionStaffAssignmentRepository.save(assignment);
     }
 
-    public CourseCatalogResponse toCourseResponse(Courses course) {
+    public CourseCatalogResponseDTO toCourseResponse(Courses course) {
         List<CourseSection> sections = courseSectionRepository.findByCourse(course);
-        List<CourseSectionResponse> sectionResponses = sections.stream()
+        List<CourseSectionResponseDTO> sectionResponses = sections.stream()
                 .map(this::toSectionResponse)
                 .collect(Collectors.toList());
 
-        return new CourseCatalogResponse(
+        return new CourseCatalogResponseDTO(
                 course.getCourseId(),
                 course.getCourseCode(),
                 course.getCourseName(),
@@ -222,13 +229,13 @@ public class CourseCatalogService {
         );
     }
 
-    public CourseSectionResponse toSectionResponse(CourseSection section) {
+    public CourseSectionResponseDTO toSectionResponse(CourseSection section) {
         Long parentId = section.getParentSection() != null ? section.getParentSection().getId() : null;
         Long buildingId = section.getBuilding() != null ? section.getBuilding().getId() : null;
         Long classroomId = section.getClassroom() != null ? section.getClassroom().getId() : null;
         Set<DayOfWeek> meetingDays = section.getMeetingDays();
 
-        return new CourseSectionResponse(
+        return new CourseSectionResponseDTO(
                 section.getId(),
                 section.getSectionType(),
                 section.getSectionCode(),

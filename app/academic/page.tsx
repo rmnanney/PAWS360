@@ -19,104 +19,159 @@ import { Badge } from "../components/Others/badge";
 import { Button } from "../components/Others/button";
 import { Progress } from "../components/Others/progress";
 import {
-	GraduationCap,
-	Download,
-	TrendingUp,
-	TrendingDown,
-	BookOpen,
-	Calendar,
-	Award,
-	AlertTriangle,
-	CheckCircle,
-	Clock,
+    GraduationCap,
+    Download,
+    TrendingUp,
+    TrendingDown,
+    BookOpen,
+    Calendar,
+    Award,
+    AlertTriangle,
+    CheckCircle,
+    Clock,
 } from "lucide-react";
 
-// Mock data for demonstration
-const currentGrades = [
-	{
-		course: "CS 351 - Data Structures",
-		grade: "A-",
-		credits: 3,
-		percentage: 92,
-		status: "In Progress",
-		lastUpdated: "2025-10-08",
-	},
-	{
-		course: "MATH 231 - Calculus II",
-		grade: "B+",
-		credits: 4,
-		percentage: 88,
-		status: "In Progress",
-		lastUpdated: "2025-10-08",
-	},
-	{
-		course: "ENGL 102 - Composition II",
-		grade: "A",
-		credits: 3,
-		percentage: 96,
-		status: "In Progress",
-		lastUpdated: "2025-10-07",
-	},
-];
-
-const transcriptData = [
-	{
-		term: "Fall 2025",
-		courses: [
-			{ course: "CS 351", title: "Data Structures", grade: "A-", credits: 3 },
-			{ course: "MATH 231", title: "Calculus II", grade: "B+", credits: 4 },
-			{ course: "ENGL 102", title: "Composition II", grade: "A", credits: 3 },
-		],
-		gpa: 3.67,
-		credits: 10,
-	},
-	{
-		term: "Spring 2025",
-		courses: [
-			{
-				course: "CS 250",
-				title: "Intro to Computer Science",
-				grade: "A",
-				credits: 3,
-			},
-			{ course: "MATH 230", title: "Calculus I", grade: "B", credits: 4 },
-			{ course: "HIST 101", title: "World History", grade: "A-", credits: 3 },
-		],
-		gpa: 3.78,
-		credits: 10,
-	},
-	{
-		term: "Fall 2024",
-		courses: [
-			{
-				course: "CS 150",
-				title: "Programming Fundamentals",
-				grade: "A",
-				credits: 3,
-			},
-			{
-				course: "MATH 208",
-				title: "Discrete Mathematics",
-				grade: "B+",
-				credits: 4,
-			},
-			{ course: "COMM 101", title: "Public Speaking", grade: "A", credits: 3 },
-		],
-		gpa: 3.83,
-		credits: 10,
-	},
-];
-
-const academicStats = {
-	cumulativeGPA: 3.76,
-	totalCredits: 30,
-	semestersCompleted: 3,
-	academicStanding: "Good Standing",
-	graduationProgress: 45, // percentage
-	expectedGraduation: "Spring 2027",
+type CurrentGrade = {
+    course: string;
+    grade: string;
+    credits: number;
+    percentage: number | null;
+    status: string;
+    lastUpdated: string | null;
 };
 
+type TranscriptCourse = {
+    course: string;
+    title: string;
+    grade: string;
+    credits: number;
+};
+
+type TranscriptTerm = {
+    term: string;
+    courses: TranscriptCourse[];
+    gpa: number;
+    credits: number;
+};
+
+type AcademicStats = {
+    cumulativeGPA: number;
+    totalCredits: number;
+    semestersCompleted: number;
+    academicStanding: string;
+    graduationProgress: number;
+    expectedGraduation: string;
+    currentTermGPA?: number;
+    currentTermLabel?: string;
+};
+
+const API_BASE = "http://localhost:8080";
+
 export default function Academic() {
+    const [stats, setStats] = React.useState<AcademicStats | null>(null);
+    const [currentGrades, setCurrentGrades] = React.useState<CurrentGrade[]>([]);
+    const [transcriptData, setTranscriptData] = React.useState<TranscriptTerm[]>([]);
+    const [loading, setLoading] = React.useState(true);
+    const { toast } = require("@/hooks/useToast");
+
+    React.useEffect(() => {
+        const init = async () => {
+            try {
+                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                if (!email) {
+                    setLoading(false);
+                    return;
+                }
+                const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
+                const sidData = await sidRes.json();
+                if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) {
+                    throw new Error("Unable to resolve student ID");
+                }
+                const studentId = sidData.student_id;
+
+                const [summaryRes, transcriptRes, gradesRes] = await Promise.all([
+                    fetch(`${API_BASE}/academics/student/${studentId}/summary`),
+                    fetch(`${API_BASE}/academics/student/${studentId}/transcript`),
+                    fetch(`${API_BASE}/academics/student/${studentId}/current-grades`),
+                ]);
+
+                if (summaryRes.ok) {
+                    const s = await summaryRes.json();
+                    setStats({
+                        cumulativeGPA: s.cumulativeGPA ?? 0,
+                        totalCredits: s.totalCredits ?? 0,
+                        semestersCompleted: s.semestersCompleted ?? 0,
+                        academicStanding: s.academicStanding ?? "",
+                        graduationProgress: s.graduationProgress ?? 0,
+                        expectedGraduation: s.expectedGraduation ?? "",
+                        currentTermGPA: s.currentTermGPA ?? undefined,
+                        currentTermLabel: s.currentTermLabel ?? undefined,
+                    });
+                }
+
+                if (transcriptRes.ok) {
+                    const t = await transcriptRes.json();
+                    const terms: TranscriptTerm[] = (t.terms ?? []).map((term: any) => ({
+                        term: term.termLabel,
+                        gpa: term.gpa,
+                        credits: term.credits,
+                        courses: (term.courses ?? []).map((c: any) => ({
+                            course: c.courseCode,
+                            title: c.title,
+                            grade: c.grade,
+                            credits: c.credits,
+                        })),
+                    }));
+                    setTranscriptData(terms);
+                }
+
+                if (gradesRes.ok) {
+                    const g = await gradesRes.json();
+                    const list: CurrentGrade[] = (g.grades ?? []).map((x: any) => ({
+                        course: `${x.courseCode} - ${x.title}`,
+                        grade: x.letter ?? "IP",
+                        credits: x.credits ?? 0,
+                        percentage: x.percentage ?? null,
+                        status: x.status ?? "",
+                        lastUpdated: x.lastUpdated ?? null,
+                    }));
+                    setCurrentGrades(list);
+                }
+            } catch (e: any) {
+                toast({
+                    variant: "destructive",
+                    title: "Failed to load academics",
+                    description: e?.message || "Please try again later.",
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+        init();
+    }, [toast]);
+
+    const handleDownloadTranscript = async () => {
+        try {
+            const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+            if (!email) return;
+            const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
+            const sidData = await sidRes.json();
+            if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) return;
+            const studentId = sidData.student_id;
+            const res = await fetch(`${API_BASE}/academics/student/${studentId}/transcript`);
+            if (!res.ok) return;
+            const data = await res.json();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "transcript.json";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch {}
+    };
 	const getGradeColor = (grade: string) => {
 		if (grade.startsWith("A")) return "bg-green-100 text-green-800";
 		if (grade.startsWith("B")) return "bg-blue-100 text-blue-800";
@@ -136,15 +191,23 @@ export default function Academic() {
 		}
 	};
 
-	return (
-		<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    if (loading) {
+        return (
+            <div className="flex-1 p-4 md:p-8 pt-6">
+                <p className="text-sm text-muted-foreground">Loading academic records...</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
 			<div className="flex items-center justify-between space-y-2">
 				<h2 className="text-3xl font-bold tracking-tight">Academic Records</h2>
 				<div className="flex items-center space-x-2">
-					<Button variant="outline" size="sm">
-						<Download className="mr-2 h-4 w-4" />
-						Download Transcript
-					</Button>
+                    <Button variant="outline" size="sm" onClick={handleDownloadTranscript}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Transcript
+                    </Button>
 				</div>
 			</div>
 
@@ -158,12 +221,12 @@ export default function Academic() {
 						<GraduationCap className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">
-							{academicStats.cumulativeGPA}
-						</div>
-						<p className="text-xs text-muted-foreground">
-							{academicStats.totalCredits} credits completed
-						</p>
+                <div className="text-2xl font-bold">
+                    {stats?.cumulativeGPA ?? 0}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                    {stats?.totalCredits ?? 0} credits completed
+                </p>
 					</CardContent>
 				</Card>
 
@@ -175,12 +238,12 @@ export default function Academic() {
 						<Award className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold text-green-600">
-							Good Standing
-						</div>
-						<p className="text-xs text-muted-foreground">
-							{academicStats.semestersCompleted} semesters completed
-						</p>
+                <div className="text-2xl font-bold text-green-600">
+                    {stats?.academicStanding || ""}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                    {stats?.semestersCompleted ?? 0} semesters completed
+                </p>
 					</CardContent>
 				</Card>
 
@@ -192,16 +255,16 @@ export default function Academic() {
 						<BookOpen className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">
-							{academicStats.graduationProgress}%
-						</div>
-						<Progress
-							value={academicStats.graduationProgress}
-							className="mt-2"
-						/>
-						<p className="text-xs text-muted-foreground mt-1">
-							Expected: {academicStats.expectedGraduation}
-						</p>
+                <div className="text-2xl font-bold">
+                    {stats?.graduationProgress ?? 0}%
+                </div>
+                <Progress
+                    value={stats?.graduationProgress ?? 0}
+                    className="mt-2"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                    Expected: {stats?.expectedGraduation || ""}
+                </p>
 					</CardContent>
 				</Card>
 
@@ -213,8 +276,8 @@ export default function Academic() {
 						<Calendar className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">3.67</div>
-						<p className="text-xs text-muted-foreground">Fall 2025 GPA</p>
+                <div className="text-2xl font-bold">{stats?.currentTermGPA ?? "-"}</div>
+                <p className="text-xs text-muted-foreground">{stats?.currentTermLabel || "Current Term GPA"}</p>
 					</CardContent>
 				</Card>
 			</div>
@@ -229,12 +292,12 @@ export default function Academic() {
 
 				<TabsContent value="current" className="space-y-4">
 					<Card>
-						<CardHeader>
-							<CardTitle>Fall 2025 Grades</CardTitle>
-							<CardDescription>
-								Your current semester grades and progress
-							</CardDescription>
-						</CardHeader>
+                        <CardHeader>
+                            <CardTitle>{stats?.currentTermLabel || "Current Grades"}</CardTitle>
+                            <CardDescription>
+                                Your current semester grades and progress
+                            </CardDescription>
+                        </CardHeader>
 						<CardContent>
 							<div className="space-y-4">
 								{currentGrades.map((course, index) => (

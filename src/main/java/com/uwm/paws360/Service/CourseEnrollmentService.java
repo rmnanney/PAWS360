@@ -1,9 +1,11 @@
 package com.uwm.paws360.Service;
 
-import com.uwm.paws360.DTO.Course.CourseEnrollmentRequest;
-import com.uwm.paws360.DTO.Course.CourseEnrollmentResponse;
-import com.uwm.paws360.DTO.Course.DropEnrollmentRequest;
-import com.uwm.paws360.DTO.Course.SwitchLabRequest;
+import com.uwm.paws360.DTO.Course.CourseEnrollmentRequestDTO;
+import com.uwm.paws360.DTO.Course.CourseEnrollmentResponseDTO;
+import com.uwm.paws360.DTO.Course.DropEnrollmentRequestDTO;
+import com.uwm.paws360.DTO.Course.SwitchLabRequestDTO;
+import com.uwm.paws360.DTO.Course.FinalizeGradeRequestDTO;
+import com.uwm.paws360.DTO.Course.GradeUpdateRequestDTO;
 import com.uwm.paws360.Entity.Course.CourseEnrollment;
 import com.uwm.paws360.Entity.Course.CourseSection;
 import com.uwm.paws360.Entity.EntityDomains.SectionEnrollmentStatus;
@@ -36,7 +38,7 @@ public class CourseEnrollmentService {
     }
 
     @Transactional
-    public CourseEnrollmentResponse enrollStudent(CourseEnrollmentRequest request) {
+    public CourseEnrollmentResponseDTO enrollStudent(CourseEnrollmentRequestDTO request) {
         Student student = studentRepository.findById(request.studentId())
                 .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + request.studentId()));
 
@@ -115,7 +117,7 @@ public class CourseEnrollmentService {
     }
 
     @Transactional
-    public CourseEnrollmentResponse dropEnrollment(DropEnrollmentRequest request) {
+    public CourseEnrollmentResponseDTO dropEnrollment(DropEnrollmentRequestDTO request) {
         CourseEnrollment enrollment = courseEnrollmentRepository.findByStudentIdAndLectureSectionId(request.studentId(), request.lectureSectionId())
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found for student " + request.studentId()));
 
@@ -147,7 +149,7 @@ public class CourseEnrollmentService {
     }
 
     @Transactional
-    public CourseEnrollmentResponse switchLab(SwitchLabRequest request) {
+    public CourseEnrollmentResponseDTO switchLab(SwitchLabRequestDTO request) {
         CourseEnrollment enrollment = courseEnrollmentRepository.findByStudentIdAndLectureSectionId(request.studentId(), request.lectureSectionId())
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found for student " + request.studentId()));
 
@@ -185,7 +187,7 @@ public class CourseEnrollmentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CourseEnrollmentResponse> listEnrollmentsForStudent(Integer studentId) {
+    public List<CourseEnrollmentResponseDTO> listEnrollmentsForStudent(Integer studentId) {
         // Ensure the student exists (consistent with other service methods)
         studentRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
@@ -256,9 +258,9 @@ public class CourseEnrollmentService {
         }
     }
 
-    public CourseEnrollmentResponse toResponse(CourseEnrollment enrollment) {
+    public CourseEnrollmentResponseDTO toResponse(CourseEnrollment enrollment) {
         Long labId = enrollment.getLabSection() != null ? enrollment.getLabSection().getId() : null;
-        return new CourseEnrollmentResponse(
+        return new CourseEnrollmentResponseDTO(
                 enrollment.getId(),
                 enrollment.getStudent().getId(),
                 enrollment.getLectureSection().getId(),
@@ -270,5 +272,34 @@ public class CourseEnrollmentService {
                 enrollment.getWaitlistedAt(),
                 enrollment.getDroppedAt()
         );
+    }
+
+    // Grade updates
+    @Transactional
+    public CourseEnrollmentResponseDTO updateCurrentGrade(GradeUpdateRequestDTO request) {
+        CourseEnrollment enrollment = courseEnrollmentRepository
+                .findByStudentIdAndLectureSectionId(request.studentId(), request.lectureSectionId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Enrollment not found for student " + request.studentId()));
+        if (request.currentLetter() != null) {
+            enrollment.setCurrentLetter(request.currentLetter());
+        }
+        if (request.currentPercentage() != 0) {
+            enrollment.setCurrentPercentage(request.currentPercentage());
+        }
+        enrollment.setLastGradeUpdate(java.time.OffsetDateTime.now());
+        CourseEnrollment saved = courseEnrollmentRepository.save(enrollment);
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public CourseEnrollmentResponseDTO finalizeGrade(FinalizeGradeRequestDTO request) {
+        CourseEnrollment enrollment = courseEnrollmentRepository
+                .findByStudentIdAndLectureSectionId(request.studentId(), request.lectureSectionId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Enrollment not found for student " + request.studentId()));
+        enrollment.setFinalLetter(request.finalLetter());
+        enrollment.setStatus(com.uwm.paws360.Entity.EntityDomains.SectionEnrollmentStatus.COMPLETED);
+        enrollment.setCompletedAt(java.time.OffsetDateTime.now());
+        CourseEnrollment saved = courseEnrollmentRepository.save(enrollment);
+        return toResponse(saved);
     }
 }

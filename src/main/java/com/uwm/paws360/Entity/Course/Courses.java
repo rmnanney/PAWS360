@@ -2,6 +2,7 @@ package com.uwm.paws360.Entity.Course;
 import com.uwm.paws360.Entity.EntityDomains.Delivery_Method;
 import com.uwm.paws360.Entity.EntityDomains.Department;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -45,6 +46,10 @@ public class Courses {
     @Column(name = "credit_hours", nullable = false, precision = 3, scale = 1)
     private BigDecimal creditHours;
 
+    @Column(name = "course_cost", nullable = false, precision = 7, scale = 2)
+    @DecimalMin(value = "0.00", inclusive = true, message = "Course cost must be positive")
+    private BigDecimal courseCost;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "delivery_method", nullable = false, length = 20)
     private Delivery_Method deliveryMethod = Delivery_Method.IN_PERSON;
@@ -79,7 +84,7 @@ public class Courses {
 
     public Courses(String courseCode, String courseName, String courseDescription,
                   Department department, String courseLevel, BigDecimal creditHours,
-                  Delivery_Method deliveryMethod, boolean isActive,
+                  BigDecimal courseCost, Delivery_Method deliveryMethod, boolean isActive,
                   Integer maxEnrollment, Integer academicYear, String term) {
         this.courseCode = courseCode;
         this.courseName = courseName;
@@ -87,6 +92,7 @@ public class Courses {
         this.department = department;
         this.courseLevel = courseLevel;
         this.creditHours = creditHours;
+        this.courseCost = courseCost;
         this.deliveryMethod = deliveryMethod;
         this.isActive = isActive;
         this.maxEnrollment = maxEnrollment;
@@ -173,6 +179,10 @@ public class Courses {
         return prerequisiteLinks;
     }
 
+    public BigDecimal getCourseCost() {
+        return courseCost;
+    }
+
     /*------------------------- Setters -------------------------*/
 
     public void setCourseCode(String courseCode) {
@@ -241,5 +251,9 @@ public class Courses {
     public void removePrerequisiteLink(CoursePrerequisite prerequisite) {
         this.prerequisiteLinks.remove(prerequisite);
         prerequisite.setCourse(null);
+    }
+
+    public void setCourseCost(BigDecimal courseCost) {
+        this.courseCost = courseCost;
     }
 }

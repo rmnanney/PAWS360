@@ -1,6 +1,10 @@
 {
   "info": {
-    "name": "PAWS360 Seed Database",
+              "      dob: '1995-01-' + pad((idx % 28) + 1, 2),\n",
+              "      ssn: '999-7' + pad(idx % 89, 2) + '-' + pad((1000 + idx) % 9999, 4),\n",
+              "      ethnicity: 'WHITE',\n",
+              "      gender: (idx % 2 === 0 ? 'MALE' : 'FEMALE'),\n",
+              "      nationality: 'UNITED_STATES',\n",
     "_postman_id": "c46d4d7a-2f7a-4b51-9b5a-2f9b2a9bc0a5",
     "description": "Seeds the PAWS360 API with users, buildings, classrooms, courses, sections, staff assignments, and student enrollments.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"

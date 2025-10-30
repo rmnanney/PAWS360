@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
-public record CourseCatalogRequest(
+public record CourseCatalogRequestDTO(
         @NotBlank(message = "Course code is required")
         @Size(max = 20)
         String courseCode,
@@ -31,6 +31,9 @@ public record CourseCatalogRequest(
         BigDecimal creditHours,
 
         Delivery_Method deliveryMethod,
+
+        // Optional course cost per course; if omitted, server may compute a default
+        BigDecimal courseCost,
 
         boolean active,
 

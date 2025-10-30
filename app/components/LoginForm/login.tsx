@@ -57,16 +57,19 @@ export default function LoginForm() {
 				body: JSON.stringify(values),
 			});
 
-			const data = await res.json();
+    const data = await res.json();
 
-			if (res.ok && data.message === "Login Successful") {
-				localStorage.setItem("authToken", data.session_token);
+            if (res.ok && data.message === "Login Successful") {
+                localStorage.setItem("authToken", data.session_token);
+                // Persist minimal user info used by pages (e.g., academics)
+                if (data.email) localStorage.setItem("userEmail", data.email);
+                if (data.firstname) localStorage.setItem("userFirstName", data.firstname);
 
-				toast({
-					title: "Login Successful",
-					description: `Welcome ${data.fistname}! Redirecting...`,
-					duration: 1500,
-				});
+                toast({
+                    title: "Login Successful",
+                    description: `Welcome ${data.firstname}! Redirecting...`,
+                    duration: 1500,
+                });
 
 				setTimeout(() => {
 					router.push("/homepage");

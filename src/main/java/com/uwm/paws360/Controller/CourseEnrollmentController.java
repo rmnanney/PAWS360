@@ -1,9 +1,6 @@
 package com.uwm.paws360.Controller;
 
-import com.uwm.paws360.DTO.Course.CourseEnrollmentRequest;
-import com.uwm.paws360.DTO.Course.CourseEnrollmentResponse;
-import com.uwm.paws360.DTO.Course.DropEnrollmentRequest;
-import com.uwm.paws360.DTO.Course.SwitchLabRequest;
+import com.uwm.paws360.DTO.Course.*;
 import com.uwm.paws360.Service.CourseEnrollmentService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -27,22 +24,32 @@ public class CourseEnrollmentController {
     }
 
     @PostMapping("/enroll")
-    public ResponseEntity<CourseEnrollmentResponse> enroll(@Valid @RequestBody CourseEnrollmentRequest request) {
+    public ResponseEntity<CourseEnrollmentResponseDTO> enroll(@Valid @RequestBody CourseEnrollmentRequestDTO request) {
         return ResponseEntity.ok(courseEnrollmentService.enrollStudent(request));
     }
 
     @PostMapping("/drop")
-    public ResponseEntity<CourseEnrollmentResponse> drop(@Valid @RequestBody DropEnrollmentRequest request) {
+    public ResponseEntity<CourseEnrollmentResponseDTO> drop(@Valid @RequestBody DropEnrollmentRequestDTO request) {
         return ResponseEntity.ok(courseEnrollmentService.dropEnrollment(request));
     }
 
     @PostMapping("/switch-lab")
-    public ResponseEntity<CourseEnrollmentResponse> switchLab(@Valid @RequestBody SwitchLabRequest request) {
+    public ResponseEntity<CourseEnrollmentResponseDTO> switchLab(@Valid @RequestBody SwitchLabRequestDTO request) {
         return ResponseEntity.ok(courseEnrollmentService.switchLab(request));
     }
 
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<CourseEnrollmentResponse>> listStudentEnrollments(@PathVariable Integer studentId) {
+    public ResponseEntity<List<CourseEnrollmentResponseDTO>> listStudentEnrollments(@PathVariable Integer studentId) {
         return ResponseEntity.ok(courseEnrollmentService.listEnrollmentsForStudent(studentId));
+    }
+
+    @PostMapping("/grade")
+    public ResponseEntity<CourseEnrollmentResponseDTO> updateCurrentGrade(@Valid @RequestBody GradeUpdateRequestDTO request) {
+        return ResponseEntity.ok(courseEnrollmentService.updateCurrentGrade(request));
+    }
+
+    @PostMapping("/finalize")
+    public ResponseEntity<CourseEnrollmentResponseDTO> finalizeGrade(@Valid @RequestBody FinalizeGradeRequestDTO request) {
+        return ResponseEntity.ok(courseEnrollmentService.finalizeGrade(request));
     }
 }
