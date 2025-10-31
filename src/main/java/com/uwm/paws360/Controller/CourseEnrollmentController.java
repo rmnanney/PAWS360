@@ -43,6 +43,11 @@ public class CourseEnrollmentController {
         return ResponseEntity.ok(courseEnrollmentService.listEnrollmentsForStudent(studentId));
     }
 
+    @GetMapping("/student/{studentId}/today-schedule")
+    public ResponseEntity<List<com.uwm.paws360.DTO.Course.TodayScheduleItemDTO>> todaySchedule(@PathVariable Integer studentId) {
+        return ResponseEntity.ok(courseEnrollmentService.todaySchedule(studentId));
+    }
+
     @PostMapping("/grade")
     public ResponseEntity<CourseEnrollmentResponseDTO> updateCurrentGrade(@Valid @RequestBody GradeUpdateRequestDTO request) {
         return ResponseEntity.ok(courseEnrollmentService.updateCurrentGrade(request));

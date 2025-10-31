@@ -1,7 +1,7 @@
 package com.uwm.paws360.Controller;
 
-import com.uwm.paws360.DTO.Academics.AssignStudentProgramRequest;
-import com.uwm.paws360.DTO.Academics.CreateDegreeProgramRequest;
+import com.uwm.paws360.DTO.Academics.AssignStudentProgramRequestDTO;
+import com.uwm.paws360.DTO.Academics.CreateDegreeProgramRequestDTO;
 import com.uwm.paws360.Entity.Academics.DegreeProgram;
 import com.uwm.paws360.Entity.Academics.StudentProgram;
 import com.uwm.paws360.Service.AcademicsAdminService;
@@ -20,14 +20,14 @@ public class AcademicsAdminController {
     }
 
     @PostMapping("/programs")
-    public ResponseEntity<DegreeProgram> createProgram(@Valid @RequestBody CreateDegreeProgramRequest req) {
+    public ResponseEntity<DegreeProgram> createProgram(@Valid @RequestBody CreateDegreeProgramRequestDTO req) {
         DegreeProgram dp = service.createOrGetProgram(req.code(), req.name(), req.totalCreditsRequired());
         return ResponseEntity.ok(dp);
     }
 
     @PostMapping("/students/{studentId}/program")
     public ResponseEntity<StudentProgram> assignProgram(@PathVariable Integer studentId,
-                                                        @Valid @RequestBody AssignStudentProgramRequest req) {
+                                                        @Valid @RequestBody AssignStudentProgramRequestDTO req) {
         StudentProgram sp = service.assignProgramToStudent(studentId, req.degreeId(), req.expectedGradTerm(), req.expectedGradYear(), req.primary());
         return ResponseEntity.ok(sp);
     }

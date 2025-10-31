@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -197,6 +199,34 @@ public class CourseEnrollmentService {
         return enrollments.stream()
                 .filter(e -> e.getStatus() != SectionEnrollmentStatus.DROPPED)
                 .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.uwm.paws360.DTO.Course.TodayScheduleItemDTO> todaySchedule(Integer studentId) {
+        studentRepository.findById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
+        DayOfWeek today = java.time.OffsetDateTime.now().getDayOfWeek();
+        return courseEnrollmentRepository.findByStudentId(studentId).stream()
+                .filter(e -> e.getStatus() == SectionEnrollmentStatus.ENROLLED)
+                .map(CourseEnrollment::getLectureSection)
+                .filter(s -> s.getMeetingDays() != null && s.getMeetingDays().contains(today))
+                .map(s -> {
+                    String room = null;
+                    if (s.getClassroom() != null && s.getBuilding() != null) {
+                        room = s.getBuilding().getCode() + " " + s.getClassroom().getRoomNumber();
+                    } else {
+                        room = "TBD";
+                    }
+                    LocalTime st = s.getStartTime();
+                    LocalTime et = s.getEndTime();
+                    return new com.uwm.paws360.DTO.Course.TodayScheduleItemDTO(
+                            s.getCourse().getCourseCode(),
+                            s.getCourse().getCourseName(),
+                            st, et, room
+                    );
+                })
+                .sorted(java.util.Comparator.comparing(com.uwm.paws360.DTO.Course.TodayScheduleItemDTO::startTime))
                 .collect(Collectors.toList());
     }
 

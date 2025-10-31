@@ -46,7 +46,7 @@ public class AcademicsService {
         this.degreeProgramRepository = degreeProgramRepository;
     }
 
-    public AcademicSummaryResponse getSummary(Integer studentId) {
+    public AcademicSummaryResponseDTO getSummary(Integer studentId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
 
@@ -104,7 +104,7 @@ public class AcademicsService {
             }
         }
 
-        return new AcademicSummaryResponse(
+        return new AcademicSummaryResponseDTO(
                 cumulativeGPA,
                 totalCredits,
                 semestersCompleted,
@@ -150,7 +150,7 @@ public class AcademicsService {
         return out;
     }
 
-    public TranscriptResponse getTranscript(Integer studentId) {
+    public TranscriptResponseDTO getTranscript(Integer studentId) {
         List<CourseEnrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
         // Group by term label for completed/graded enrollments
         Map<String, List<CourseEnrollment>> byTerm = enrollments.stream()
@@ -174,10 +174,10 @@ public class AcademicsService {
             Double gpa = creds > 0 ? round2(pts / creds) : 0.0;
             terms.add(new TranscriptTermDTO(label, gpa, creds, courses));
         }
-        return new TranscriptResponse(terms);
+        return new TranscriptResponseDTO(terms);
     }
 
-    public TuitionSummaryResponse getTuition(Integer studentId, String term, Integer year) {
+    public TuitionSummaryResponseDTO getTuition(Integer studentId, String term, Integer year) {
         List<CourseEnrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
         String targetTerm = term != null && year != null ? term + " " + year
                 : latestTermLabel(enrollments.stream().map(CourseEnrollment::getLectureSection).collect(Collectors.toList()));
@@ -192,7 +192,7 @@ public class AcademicsService {
             items.add(new TuitionItemDTO(c.getCourseCode(), c.getCourseName(), cost));
             total = total.add(cost);
         }
-        return new TuitionSummaryResponse(targetTerm, total, items);
+        return new TuitionSummaryResponseDTO(targetTerm, total, items);
     }
 
     // Helpers

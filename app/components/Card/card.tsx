@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { LucideIcon, Calendar, Clock } from "lucide-react";
 
@@ -94,33 +96,34 @@ export function HomepageCard({
 }
 
 export function ScheduleCard() {
-	// Sample schedule data - in a real app, this would come from an API
-	const todayClasses = [
-		{
-			time: "9:00 AM",
-			course: "CS 301",
-			title: "Data Structures",
-			room: "Room 204",
-		},
-		{
-			time: "11:00 AM",
-			course: "MATH 205",
-			title: "Calculus II",
-			room: "Room 156",
-		},
-		{
-			time: "2:00 PM",
-			course: "ENG 102",
-			title: "English Composition",
-			room: "Room 89",
-		},
-		{
-			time: "4:00 PM",
-			course: "PHYS 201",
-			title: "Physics Lab",
-			room: "Lab 3",
-		},
-	];
+    const [items, setItems] = React.useState<Array<{ time: string; course: string; title: string; room: string }>>([]);
+    const { toast } = require("@/hooks/useToast");
+    const { API_BASE } = require("@/lib/api");
+
+    React.useEffect(() => {
+        const load = async () => {
+            try {
+                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                if (!email) return;
+                const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
+                const sidData = await sidRes.json();
+                if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) return;
+                const res = await fetch(`${API_BASE}/enrollments/student/${sidData.student_id}/today-schedule`);
+                if (!res.ok) return;
+                const data = await res.json();
+                const mapped = (data || []).map((d: any) => ({
+                    time: d.startTime ? new Date(`1970-01-01T${d.startTime}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "",
+                    course: d.courseCode,
+                    title: d.title,
+                    room: d.room || "TBD",
+                }));
+                setItems(mapped);
+            } catch (e: any) {
+                toast({ variant: "destructive", title: "Failed to load schedule", description: e?.message || "Try again later." });
+            }
+        };
+        load();
+    }, [toast]);
 
 	return (
 		<Card className={s.scheduleCard}>
@@ -132,7 +135,7 @@ export function ScheduleCard() {
 
 			{/* Schedule items list */}
 			<div className="space-y-3">
-				{todayClasses.map((classItem, index) => (
+				{items.map((classItem, index) => (
 					<div key={index} className={s.scheduleClass}>
 						<div className={s.scheduleClassInfo}>
 							<div className={s.scheduleClassTime}>
@@ -151,6 +154,9 @@ export function ScheduleCard() {
 						<div className={s.scheduleClassRoom}>{classItem.room}</div>
 					</div>
 				))}
+				{items.length === 0 && (
+					<div className="text-sm text-muted-foreground">No classes today.</div>
+				)}
 			</div>
 
 			{/* Footer with view full schedule link */}

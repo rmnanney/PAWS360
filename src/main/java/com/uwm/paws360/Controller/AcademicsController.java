@@ -19,7 +19,7 @@ public class AcademicsController {
     }
 
     @GetMapping("/student/{studentId}/summary")
-    public ResponseEntity<AcademicSummaryResponse> getSummary(@PathVariable Integer studentId) {
+    public ResponseEntity<AcademicSummaryResponseDTO> getSummary(@PathVariable Integer studentId) {
         return ResponseEntity.ok(academicsService.getSummary(studentId));
     }
 
@@ -33,12 +33,12 @@ public class AcademicsController {
     }
 
     @GetMapping("/student/{studentId}/transcript")
-    public ResponseEntity<TranscriptResponse> getTranscript(@PathVariable Integer studentId) {
+    public ResponseEntity<TranscriptResponseDTO> getTranscript(@PathVariable Integer studentId) {
         return ResponseEntity.ok(academicsService.getTranscript(studentId));
     }
 
     @GetMapping("/student/{studentId}/tuition")
-    public ResponseEntity<TuitionSummaryResponse> getTuition(
+    public ResponseEntity<TuitionSummaryResponseDTO> getTuition(
             @PathVariable Integer studentId,
             @RequestParam(value = "term", required = false) String term,
             @RequestParam(value = "year", required = false) Integer year
