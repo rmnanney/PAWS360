@@ -508,7 +508,7 @@ const securityInfo = {
                                                     if (res.ok) {
                                                         const data = await res.json();
                                                         const last4 = data?.last4 || "XXXX";
-                                                        setSsnMasked(`***-**-${last4}`);
+                                                        setSsnMasked(`XXX-XX-${last4}`);
                                                     }
                                                 } catch {}
                                                 setShowSSN(true);
