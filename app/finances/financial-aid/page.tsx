@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
 	Card,
@@ -31,8 +31,30 @@ import {
 import s from "./styles.module.css";
 
 export default function FinancialAidPage() {
-	const router = useRouter();
-	const [overviewOpen, setOverviewOpen] = useState(false);
+    const router = useRouter();
+    const [overviewOpen, setOverviewOpen] = useState(false);
+    const [aid, setAid] = useState<any | null>(null);
+    const { API_BASE } = require("@/lib/api");
+    const { toast } = require("@/hooks/useToast");
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                if (!email) return;
+                const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
+                const sidData = await sidRes.json();
+                if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) return;
+                const res = await fetch(`${API_BASE}/finances/student/${sidData.student_id}/aid`);
+                if (!res.ok) throw new Error("Failed to load aid overview");
+                const data = await res.json();
+                setAid(data);
+            } catch (e: any) {
+                toast({ variant: "destructive", title: "Failed to load financial aid", description: e?.message || "Try again later." });
+            }
+        };
+        load();
+    }, [toast]);
 	const aidWidgets = [
 		{
 			id: "apply-financial-aid",
@@ -110,10 +132,8 @@ export default function FinancialAidPage() {
 										<GraduationCap className="h-8 w-8 text-primary" />
 									</div>
 									<div>
-										<CardTitle className="text-2xl">
-											Financial Aid Overview
-										</CardTitle>
-										<CardDescription>Academic Year 2024-2025</CardDescription>
+                    <CardTitle className="text-2xl">Financial Aid Overview</CardTitle>
+                    <CardDescription>Academic Year</CardDescription>
 									</div>
 								</div>
 								{overviewOpen ? (
@@ -132,80 +152,47 @@ export default function FinancialAidPage() {
 									<p className="text-sm text-muted-foreground">
 										Total Aid Offered
 									</p>
-									<p className="text-3xl font-semibold">$18,750</p>
+                            <p className="text-3xl font-semibold">{aid ? `$${Number(aid.totalOffered || 0).toLocaleString()}` : "--"}</p>
 								</div>
 								<div className={s.aidItem}>
 									<p className="text-sm text-muted-foreground">Aid Accepted</p>
-									<p className="text-3xl font-semibold text-green-600">
-										$15,500
-									</p>
+                            <p className="text-3xl font-semibold text-green-600">{aid ? `$${Number(aid.totalAccepted || 0).toLocaleString()}` : "--"}</p>
 								</div>
 								<div className={s.aidItem}>
 									<p className="text-sm text-muted-foreground">
 										Pending Decision
 									</p>
-									<p className="text-3xl font-semibold text-orange-600">
-										$3,250
-									</p>
+                            <p className="text-3xl font-semibold text-orange-600">{aid ? `$${Number(((aid.totalOffered || 0) - (aid.totalAccepted || 0))).toLocaleString()}` : "--"}</p>
 								</div>
 							</div>
 
 							{/* Aid Breakdown */}
 							<div className={s.aidBreakdown}>
-								<h4>Aid Breakdown</h4>
+                        <h4>Aid Breakdown</h4>
 
-								<div className={s.breakdownList}>
-									<div className={s.breakdownItem}>
-										<div>
-											<p className="font-medium">Federal Pell Grant</p>
-											<p className="text-sm text-muted-foreground">
-												Grant - No repayment required
-											</p>
-										</div>
-										<Badge variant="secondary">$6,500</Badge>
-									</div>
-
-									<div className={s.breakdownItem}>
-										<div>
-											<p className="font-medium">University Scholarship</p>
-											<p className="text-sm text-muted-foreground">
-												Scholarship - Merit based
-											</p>
-										</div>
-										<Badge variant="secondary">$5,000</Badge>
-									</div>
-
-									<div className={s.breakdownItem}>
-										<div>
-											<p className="font-medium">
-												Federal Direct Subsidized Loan
-											</p>
-											<p className="text-sm text-muted-foreground">
-												Loan - 4.53% interest
-											</p>
-										</div>
-										<Badge variant="secondary">$4,000</Badge>
-									</div>
-
-									<div className={s.breakdownItem}>
-										<div>
-											<p className="font-medium">Work-Study Program</p>
-											<p className="text-sm text-muted-foreground">
-												Need to accept by Nov 1
-											</p>
-										</div>
-										<Badge variant="outline">$3,250</Badge>
-									</div>
-								</div>
+                        <div className={s.breakdownList}>
+                            {(aid?.awards || []).map((w: any, idx: number) => (
+                                <div key={idx} className={s.breakdownItem}>
+                                    <div>
+                                        <p className="font-medium">{w.type}</p>
+                                        <p className="text-sm text-muted-foreground">{w.description}</p>
+                                    </div>
+                                    <Badge variant="secondary">${'{'}Number(w.amountAccepted || w.amountOffered || 0).toLocaleString(){'}'}</Badge>
+                                </div>
+                            ))}
+                            {(!aid || (aid.awards || []).length === 0) && (
+                                <p className="text-sm text-muted-foreground">No awards found.</p>
+                            )}
+                        </div>
 							</div>
 
 							{/* Progress */}
 							<div className={s.progressSection}>
-								<div className={s.progressHeader}>
-									<span>Aid Acceptance Progress</span>
-									<span className="text-muted-foreground">82%</span>
-								</div>
-								<Progress value={82} />
+                        <div className={s.progressHeader}>
+                            <span>Aid Acceptance Progress</span>
+                            <span className="text-muted-foreground">{aid ? Math.round(((aid.totalAccepted || 0) / Math.max(1, (aid.totalOffered || 0))) * 100) : 0}%</span>
+                        </div>
+                        <Progress value={aid ? Math.round(((aid.totalAccepted || 0) / Math.max(1, (aid.totalOffered || 0))) * 100) : 0} />
 							</div>
 						</CardContent>
 					</CollapsibleContent>

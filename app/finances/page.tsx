@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
 	Card,
@@ -33,12 +33,34 @@ import { Badge } from "../components/Badge/badge";
 import s from "./styles.module.css";
 
 export default function FinancesPage() {
-	const router = useRouter();
-	const [summaryOpen, setSummaryOpen] = useState(false);
-	const [chargesDueVisible, setChargesDueVisible] = useState(false);
-	const [accountBalanceVisible, setAccountBalanceVisible] = useState(false);
-	const [pendingAidVisible, setPendingAidVisible] = useState(false);
-	const [lastPaymentVisible, setLastPaymentVisible] = useState(false);
+    const router = useRouter();
+    const [summaryOpen, setSummaryOpen] = useState(false);
+    const [chargesDueVisible, setChargesDueVisible] = useState(false);
+    const [accountBalanceVisible, setAccountBalanceVisible] = useState(false);
+    const [pendingAidVisible, setPendingAidVisible] = useState(false);
+    const [lastPaymentVisible, setLastPaymentVisible] = useState(false);
+    const [summary, setSummary] = useState<any | null>(null);
+    const { toast } = require("@/hooks/useToast");
+    const { API_BASE } = require("@/lib/api");
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                if (!email) return;
+                const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
+                const sidData = await sidRes.json();
+                if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) return;
+                const res = await fetch(`${API_BASE}/finances/student/${sidData.student_id}/summary`);
+                if (!res.ok) throw new Error("Failed to load summary");
+                const data = await res.json();
+                setSummary(data);
+            } catch (e: any) {
+                toast({ variant: "destructive", title: "Failed to load finances", description: e?.message || "Try again later." });
+            }
+        };
+        load();
+    }, [toast]);
 
 	const financialWidgets = [
 		{
@@ -119,9 +141,9 @@ export default function FinancesPage() {
 														setChargesDueVisible(!chargesDueVisible)
 													}
 												>
-													{chargesDueVisible ? (
-														<p className="text-2xl font-semibold">$4,567.89</p>
-													) : (
+                            {chargesDueVisible ? (
+                                <p className="text-2xl font-semibold">{summary ? `$${Number(summary.chargesDue || 0).toLocaleString()}` : "--"}</p>
+                            ) : (
 														<div className={s.dotsContainer}>
 															<div className={s.dot}></div>
 															<div className={s.dot}></div>
@@ -133,7 +155,7 @@ export default function FinancesPage() {
 												</div>
 											</div>
 										</div>
-										<Badge variant="destructive">Due Nov 15</Badge>
+                            <Badge variant="destructive">{summary?.dueDate ? `Due ${new Date(summary.dueDate).toLocaleDateString()}`: "Due Soon"}</Badge>
 									</div>
 
 									{/* Payment Center Link */}
@@ -162,9 +184,9 @@ export default function FinancesPage() {
 												setAccountBalanceVisible(!accountBalanceVisible)
 											}
 										>
-											{accountBalanceVisible ? (
-												<p className="text-lg font-semibold">$4,567.89</p>
-											) : (
+                                {accountBalanceVisible ? (
+                                    <p className="text-lg font-semibold">{summary ? `$${Number(summary.accountBalance || 0).toLocaleString()}` : "--"}</p>
+                                ) : (
 												<div className={s.dotsContainer}>
 													<div className={s.dot}></div>
 													<div className={s.dot}></div>
@@ -180,11 +202,9 @@ export default function FinancesPage() {
 											className={s.statValue}
 											onClick={() => setPendingAidVisible(!pendingAidVisible)}
 										>
-											{pendingAidVisible ? (
-												<p className="text-lg font-semibold text-green-600">
-													$8,200.00
-												</p>
-											) : (
+                                {pendingAidVisible ? (
+                                    <p className="text-lg font-semibold text-green-600">{summary ? `$${Number(summary.pendingAid || 0).toLocaleString()}` : "--"}</p>
+                                ) : (
 												<div className={s.dotsContainer}>
 													<div className={s.dot}></div>
 													<div className={s.dot}></div>
@@ -202,9 +222,9 @@ export default function FinancesPage() {
 											className={s.statValue}
 											onClick={() => setLastPaymentVisible(!lastPaymentVisible)}
 										>
-											{lastPaymentVisible ? (
-												<p className="text-lg font-semibold">$2,500.00</p>
-											) : (
+                                {lastPaymentVisible ? (
+                                    <p className="text-lg font-semibold">{summary && summary.lastPaymentAmount ? `$${Number(summary.lastPaymentAmount).toLocaleString()}` : "--"}</p>
+                                ) : (
 												<div className={s.dotsContainer}>
 													<div className={s.dot}></div>
 													<div className={s.dot}></div>
