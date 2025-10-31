@@ -37,19 +37,19 @@ interface AppSidebarProps {
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
 	const academicItems = [
 		{
-			title: "Dashboard",
+			title: "Homepage",
 			icon: Home,
-			onClick: () => onNavigate("Dashboard"),
+			onClick: () => onNavigate("homepage"),
 		},
 		{
 			title: "Academic Records",
 			icon: GraduationCap,
-			onClick: () => onNavigate("Academic"),
+			onClick: () => onNavigate("academic"),
 		},
 		{
 			title: "Schedule",
 			icon: Calendar,
-			onClick: () => onNavigate("Schedule of Classes"),
+			onClick: () => onNavigate("schedule of classes"),
 		},
 		{
 			title: "Class Search",
@@ -67,22 +67,22 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 		{
 			title: "Finances",
 			icon: DollarSign,
-			onClick: () => onNavigate("Finances"),
+			onClick: () => onNavigate("finances"),
 		},
 		{
 			title: "Advising",
 			icon: MessageSquare,
-			onClick: () => onNavigate("Advising"),
+			onClick: () => onNavigate("advising"),
 		},
 		{
 			title: "Career Services",
 			icon: Briefcase,
-			onClick: () => onNavigate("Handshake/Workday"),
+			onClick: () => onNavigate("https://uwm.edu/set/"),
 		},
 		{
 			title: "Resources",
 			icon: BookOpen,
-			onClick: () => onNavigate("Resources"),
+			onClick: () => onNavigate("resources"),
 		},
 	];
 
@@ -90,7 +90,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 		{
 			title: "Personal Info",
 			icon: User,
-			onClick: () => onNavigate("Personal Information"),
+			onClick: () => onNavigate("personal"),
 		},
 		{
 			title: "Holds & Tasks",
@@ -131,7 +131,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 	}
 
 	return (
-		<Sidebar variant="inset" side="right" className={s.sidebarSolid}>
+		<Sidebar variant="inset" side="left" className={s.sidebarSolid}>
 			<SidebarHeader>
 				<SidebarMenu>
 					<SidebarMenuItem>

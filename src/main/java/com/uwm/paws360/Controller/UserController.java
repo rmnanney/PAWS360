@@ -110,4 +110,66 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         return ResponseEntity.ok(res);
     }
+
+    // Resolve Student.id by email for enrollment automation
+    @GetMapping("/student-id")
+    public ResponseEntity<GetStudentIdResponseDTO> getStudentIdByEmail(@RequestParam("email") String email) {
+        int sid = userService.getStudentIdByEmail(email);
+        GetStudentIdResponseDTO body = new GetStudentIdResponseDTO(sid, email);
+        if (sid == -1) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
+        return ResponseEntity.ok(body);
+    }
+
+    // Preferences and privacy
+    @GetMapping("/preferences")
+    public ResponseEntity<UserPreferencesResponseDTO> getPreferences(@RequestParam("email") String email){
+        return ResponseEntity.ok(userService.getPreferences(email));
+    }
+
+    @PostMapping("/preferences")
+    public ResponseEntity<UserPreferencesResponseDTO> updatePreferences(@Valid @RequestBody UpdatePrivacyRequestDTO dto){
+        return ResponseEntity.ok(userService.updatePreferences(dto));
+    }
+
+    // Contact info (phone)
+    @PostMapping("/contact")
+    public ResponseEntity<String> updateContact(@Valid @RequestBody UpdateContactInfoRequestDTO dto){
+        boolean ok = userService.updateContactInfo(dto);
+        return ok ? ResponseEntity.ok("Updated") : ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
+    }
+
+    // Personal details (subset update)
+    @PostMapping("/personal")
+    public ResponseEntity<UserResponseDTO> updatePersonal(@Valid @RequestBody UpdatePersonalDetailsRequestDTO dto){
+        UserResponseDTO res = userService.updatePersonalDetails(dto);
+        if (res.user_id() == -1) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        return ResponseEntity.ok(res);
+    }
+
+    // SSN last 4 only
+    @GetMapping("/ssn-last4")
+    public ResponseEntity<SsnLast4ResponseDTO> getSsnLast4(@RequestParam("email") String email){
+        return ResponseEntity.ok(userService.getSsnLast4(email));
+    }
+
+    // Emergency contacts
+    @GetMapping("/emergency-contacts")
+    public ResponseEntity<List<EmergencyContactDTO>> emergencyContacts(@RequestParam("email") String email){
+        return ResponseEntity.ok(userService.listEmergencyContacts(email));
+    }
+
+    @PostMapping("/emergency-contacts")
+    public ResponseEntity<EmergencyContactDTO> upsertEmergency(@Valid @RequestBody UpsertEmergencyContactRequestDTO dto){
+        EmergencyContactDTO res = userService.upsertEmergencyContact(dto);
+        if (res == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/emergency-contacts/delete")
+    public ResponseEntity<String> deleteEmergency(@Valid @RequestBody DeleteEmergencyContactRequestDTO dto){
+        boolean ok = userService.deleteEmergencyContact(dto);
+        return ok ? ResponseEntity.ok("Deleted") : ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not found");
+    }
 }
