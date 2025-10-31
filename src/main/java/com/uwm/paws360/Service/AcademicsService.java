@@ -46,6 +46,44 @@ public class AcademicsService {
         this.degreeProgramRepository = degreeProgramRepository;
     }
 
+    public com.uwm.paws360.DTO.Academics.ProgramInfoDTO getProgramInfo(Integer studentId) {
+        com.uwm.paws360.Entity.UserTypes.Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Student not found for id " + studentId));
+
+        java.util.List<com.uwm.paws360.Entity.Academics.StudentProgram> programs = studentProgramRepository.findByStudent(student);
+        if (programs.isEmpty()) {
+            return new com.uwm.paws360.DTO.Academics.ProgramInfoDTO(null, null, null, 120);
+        }
+        com.uwm.paws360.Entity.Academics.DegreeProgram program = programs.stream()
+                .filter(com.uwm.paws360.Entity.Academics.StudentProgram::isPrimary)
+                .findFirst().orElse(programs.get(0)).getProgram();
+
+        if (program == null) {
+            return new com.uwm.paws360.DTO.Academics.ProgramInfoDTO(null, null, null, 120);
+        }
+
+        // Derive department from required courses if present (most frequent)
+        java.util.List<com.uwm.paws360.Entity.Academics.DegreeRequirement> reqs = degreeRequirementRepository.findByDegreeProgram(program);
+        java.util.Map<String, Integer> freq = new java.util.HashMap<>();
+        for (com.uwm.paws360.Entity.Academics.DegreeRequirement r : reqs) {
+            if (r.getCourse() != null && r.getCourse().getDepartment() != null) {
+                String label = r.getCourse().getDepartment().getLabel();
+                freq.put(label, freq.getOrDefault(label, 0) + 1);
+            }
+        }
+        String department = null;
+        int best = -1;
+        for (java.util.Map.Entry<String, Integer> e : freq.entrySet()) {
+            if (e.getValue() > best) {
+                best = e.getValue();
+                department = e.getKey();
+            }
+        }
+
+        Integer total = program.getTotalCreditsRequired() != null ? program.getTotalCreditsRequired() : 120;
+        return new com.uwm.paws360.DTO.Academics.ProgramInfoDTO(program.getCode(), program.getName(), department, total);
+    }
+
     public com.uwm.paws360.DTO.Academics.DegreeRequirementsBreakdownDTO getRequirements(Integer studentId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));

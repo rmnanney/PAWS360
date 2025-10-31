@@ -119,6 +119,12 @@ export default function AdvisingPage() {
                     setAdvisorDirectory(list.map(a => ({ ...a })));
                 }
 
+                // Load primary advisor details
+                if (advisorRes && advisorRes.ok) {
+                    const adv: AdvisorDTO = await advisorRes.json();
+                    setPrimaryAdvisor(adv);
+                }
+
                 // Load requirements breakdown
                 const reqRes = await fetch(`${API_BASE}/academics/student/${studentId}/requirements`).catch(() => null);
                 if (reqRes && reqRes.ok) {

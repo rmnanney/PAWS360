@@ -57,5 +57,11 @@ public class AcademicsController {
             @PathVariable Integer studentId) {
         return ResponseEntity.ok(academicsService.getRequirementItems(studentId));
     }
+
+    @GetMapping("/student/{studentId}/program")
+    public ResponseEntity<com.uwm.paws360.DTO.Academics.ProgramInfoDTO> getProgramInfo(
+            @PathVariable Integer studentId) {
+        return ResponseEntity.ok(academicsService.getProgramInfo(studentId));
+    }
 }
 
