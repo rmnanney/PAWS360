@@ -28,40 +28,82 @@ import {
 	EyeOff,
 	AlertTriangle,
 } from "lucide-react";
+const { API_BASE } = require("@/lib/api");
 
-// Mock data for personal information
-const personalInfo = {
-	studentId: "123456789",
-	firstName: "John",
-	lastName: "Doe",
-	preferredName: "Johnny",
-	dateOfBirth: "2000-05-15",
-	gender: "Male",
-	ethnicity: "Caucasian",
-	citizenship: "United States",
-	ssn: "XXX-XX-1234",
-};
+export default function PersonalPage() {
+	const [isEditing, setIsEditing] = React.useState(false);
+	const [showSSN, setShowSSN] = React.useState(false);
+	const [user, setUser] = React.useState<any | null>(null);
+	const [studentId, setStudentId] = React.useState<number | null>(null);
+	const [homeAddress, setHomeAddress] = React.useState<any | null>(null);
+	const [mailingAddress, setMailingAddress] = React.useState<any | null>(null);
+	const { toast } = require("@/hooks/useToast");
 
-const contactInfo = {
-	email: "john.doe@uwm.edu",
-	alternateEmail: "johnny.doe@gmail.com",
-	phone: "(414) 555-0123",
-	alternatePhone: "(414) 555-0456",
-	address: {
-		street: "123 University Drive",
-		city: "Milwaukee",
-		state: "WI",
-		zipCode: "53211",
-		country: "United States",
-	},
-	permanentAddress: {
-		street: "456 Home Street",
-		city: "Madison",
-		state: "WI",
-		zipCode: "53703",
-		country: "United States",
-	},
-};
+	React.useEffect(() => {
+		const load = async () => {
+			try {
+				const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+				if (!email) return;
+				const [userRes, sidRes] = await Promise.all([
+					fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`),
+					fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`),
+				]);
+				if (userRes.ok) {
+					const u = await userRes.json();
+					setUser(u);
+					const addrs = Array.isArray(u.addresses) ? u.addresses : [];
+					const home = addrs.find((a: any) => (a.address_type || "").toUpperCase() === "HOME");
+					const mail = addrs.find((a: any) => (a.address_type || "").toUpperCase() === "MAILING") || addrs.find((a: any) => (a.address_type || "").toUpperCase() === "BILLING");
+					setHomeAddress(home || null);
+					setMailingAddress(mail || null);
+				}
+				if (sidRes.ok) {
+					const sid = await sidRes.json();
+					if (typeof sid.student_id === "number" && sid.student_id >= 0) setStudentId(sid.student_id);
+				}
+			} catch (e: any) {
+				toast({ variant: "destructive", title: "Failed to load profile", description: e?.message || "Try again later." });
+			}
+		};
+		load();
+	}, [toast]);
+
+	const personalInfo = {
+		studentId: studentId ? String(studentId) : "-",
+		firstName: user?.firstname || "",
+		lastName: user?.lastname || "",
+		preferredName: user?.firstname || "",
+		dateOfBirth: user?.dob || "",
+		gender: user?.gender || "",
+		ethnicity: user?.ethnicity || "",
+		citizenship: user?.nationality || "",
+		ssn: "***-**-****",
+	};
+
+	const contactInfo: any = {
+		email: user?.email || "",
+		alternateEmail: "",
+		phone: user?.phone || "",
+		alternatePhone: "",
+		address: homeAddress
+			? {
+				street: homeAddress.street_address_1,
+				city: homeAddress.city,
+				state: homeAddress.us_states,
+				zipCode: homeAddress.zipcode,
+				country: "United States",
+			}
+			: null,
+		permanentAddress: mailingAddress
+			? {
+				street: mailingAddress.street_address_1,
+				city: mailingAddress.city,
+				state: mailingAddress.us_states,
+				zipCode: mailingAddress.zipcode,
+				country: "United States",
+			}
+			: null,
+	};
 
 const emergencyContacts = [
 	{
@@ -97,9 +139,7 @@ const securityInfo = {
 	securityQuestions: true,
 };
 
-export default function PersonalPage() {
-	const [isEditing, setIsEditing] = React.useState(false);
-	const [showSSN, setShowSSN] = React.useState(false);
+    // component continues
 
 	const getPrivacyLevelColor = (level: string) => {
 		switch (level) {
@@ -188,10 +228,10 @@ export default function PersonalPage() {
 						<Mail className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">
-							{contactInfo.email.split("@")[0]}
-						</div>
-						<p className="text-xs text-muted-foreground">@uwm.edu</p>
+                        <div className="text-2xl font-bold">
+                            {contactInfo.email ? String(contactInfo.email).split("@")[0] : ""}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{contactInfo.email ? `@${String(contactInfo.email).split("@")[1]}` : ""}</p>
 					</CardContent>
 				</Card>
 
@@ -358,29 +398,38 @@ export default function PersonalPage() {
 									<h3 className="font-semibold mb-2">Campus Address</h3>
 									<div className="flex items-start space-x-3">
 										<MapPin className="h-5 w-5 text-blue-600 mt-0.5" />
-										<div className="text-sm">
-											<p>{contactInfo.address.street}</p>
-											<p>
-												{contactInfo.address.city}, {contactInfo.address.state}{" "}
-												{contactInfo.address.zipCode}
-											</p>
-											<p>{contactInfo.address.country}</p>
-										</div>
+                                <div className="text-sm">
+                                    {contactInfo.address ? (
+                                        <>
+                                            <p>{contactInfo.address.street}</p>
+                                            <p>
+                                                {contactInfo.address.city}, {contactInfo.address.state} {contactInfo.address.zipCode}
+                                            </p>
+                                            <p>{contactInfo.address.country}</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-muted-foreground">No campus address on file</p>
+                                    )}
+                                </div>
 									</div>
 								</div>
 								<div>
 									<h3 className="font-semibold mb-2">Permanent Address</h3>
 									<div className="flex items-start space-x-3">
 										<MapPin className="h-5 w-5 text-green-600 mt-0.5" />
-										<div className="text-sm">
-											<p>{contactInfo.permanentAddress.street}</p>
-											<p>
-												{contactInfo.permanentAddress.city},{" "}
-												{contactInfo.permanentAddress.state}{" "}
-												{contactInfo.permanentAddress.zipCode}
-											</p>
-											<p>{contactInfo.permanentAddress.country}</p>
-										</div>
+                                <div className="text-sm">
+                                    {contactInfo.permanentAddress ? (
+                                        <>
+                                            <p>{contactInfo.permanentAddress.street}</p>
+                                            <p>
+                                                {contactInfo.permanentAddress.city}, {contactInfo.permanentAddress.state} {contactInfo.permanentAddress.zipCode}
+                                            </p>
+                                            <p>{contactInfo.permanentAddress.country}</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-muted-foreground">No permanent address on file</p>
+                                    )}
+                                </div>
 									</div>
 								</div>
 							</CardContent>

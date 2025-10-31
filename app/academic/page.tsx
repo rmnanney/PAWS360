@@ -65,7 +65,7 @@ type AcademicStats = {
     currentTermLabel?: string;
 };
 
-const API_BASE = "http://localhost:8080";
+const { API_BASE } = require("@/lib/api");
 
 export default function Academic() {
     const [stats, setStats] = React.useState<AcademicStats | null>(null);
@@ -276,8 +276,8 @@ export default function Academic() {
 						<Calendar className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-                <div className="text-2xl font-bold">{stats?.currentTermGPA ?? "-"}</div>
-                <p className="text-xs text-muted-foreground">{stats?.currentTermLabel || "Current Term GPA"}</p>
+                <div className="text-2xl font-bold">{stats?.currentTermLabel || "Current Term"}</div>
+                <p className="text-xs text-muted-foreground">GPA: {typeof stats?.currentTermGPA === "number" ? stats?.currentTermGPA : "N/A"}</p>
 					</CardContent>
 				</Card>
 			</div>

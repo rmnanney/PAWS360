@@ -17,146 +17,188 @@ import {
 import { Badge } from "../components/Others/badge";
 import { Button } from "../components/Others/button";
 import {
-	Calendar,
-	Clock,
-	User,
-	MessageSquare,
-	CheckCircle,
-	AlertCircle,
-	BookOpen,
-	GraduationCap,
-	Mail,
-	Phone,
+    Calendar,
+    Clock,
+    User,
+    MessageSquare,
+    CheckCircle,
+    AlertCircle,
+    BookOpen,
+    GraduationCap,
+    Mail,
+    Phone,
 } from "lucide-react";
+const { API_BASE } = require("@/lib/api");
 
-// Mock data for advising
-const upcomingAppointments = [
-	{
-		id: 1,
-		date: "2025-10-15",
-		time: "2:00 PM",
-		advisor: "Dr. Sarah Johnson",
-		type: "Academic Advising",
-		location: "Virtual",
-		status: "Confirmed",
-		notes: "Discuss course selection for Spring 2026",
-	},
-	{
-		id: 2,
-		date: "2025-10-22",
-		time: "10:00 AM",
-		advisor: "Prof. Michael Chen",
-		type: "Degree Planning",
-		location: "Student Services Building, Room 204",
-		status: "Confirmed",
-		notes: "Review graduation requirements",
-	},
-];
-
-const advisorDirectory = [
-	{
-		id: 1,
-		name: "Dr. Sarah Johnson",
-		title: "Academic Advisor",
-		department: "College of Arts & Sciences",
-		email: "sarah.johnson@uwm.edu",
-		phone: "(414) 229-1234",
-		office: "Student Services Building, Room 201",
-		specialties: [
-			"General Education",
-			"Transfer Students",
-			"Academic Planning",
-		],
-		availability: "Mon-Fri 9AM-5PM",
-	},
-	{
-		id: 2,
-		name: "Prof. Michael Chen",
-		title: "Degree Advisor",
-		department: "College of Engineering",
-		email: "michael.chen@uwm.edu",
-		phone: "(414) 229-5678",
-		office: "Engineering Building, Room 305",
-		specialties: ["Computer Science", "Engineering", "Graduation Planning"],
-		availability: "Tue-Thu 10AM-4PM",
-	},
-	{
-		id: 3,
-		name: "Ms. Jennifer Davis",
-		title: "Career Advisor",
-		department: "Career Services",
-		email: "jennifer.davis@uwm.edu",
-		phone: "(414) 229-9012",
-		office: "Career Center, Room 101",
-		specialties: ["Career Planning", "Internships", "Job Search"],
-		availability: "Mon-Fri 8AM-6PM",
-	},
-];
-
-const degreeProgress = {
-	overallProgress: 78,
-	totalCredits: 120,
-	completedCredits: 94,
-	requiredCredits: 45,
-	electiveCredits: 30,
-	generalEducationCredits: 45,
-	majorCredits: 60,
-	minorCredits: 21,
-	gpa: 3.45,
-	expectedGraduation: "Spring 2027",
+type AdvisorDTO = {
+    advisorId: number;
+    name: string;
+    title: string;
+    department?: string;
+    email?: string;
+    phone?: string;
+    officeLocation?: string;
+    availability?: string;
 };
 
-const degreeRequirements = [
-	{
-		category: "General Education",
-		required: 45,
-		completed: 42,
-		remaining: 3,
-		status: "Almost Complete",
-	},
-	{
-		category: "Major Requirements",
-		required: 60,
-		completed: 48,
-		remaining: 12,
-		status: "In Progress",
-	},
-	{
-		category: "Electives",
-		required: 30,
-		completed: 24,
-		remaining: 6,
-		status: "In Progress",
-	},
-	{
-		category: "Minor Requirements",
-		required: 21,
-		completed: 18,
-		remaining: 3,
-		status: "Almost Complete",
-	},
-];
+type AppointmentDTO = {
+    id: number;
+    scheduledAt: string;
+    advisorName: string;
+    type: string;
+    location?: string;
+    status: string;
+    notes?: string;
+};
+
+type DegreeProgress = {
+    overallProgress: number;
+    totalCredits: number;
+    completedCredits: number;
+    gpa: number;
+    expectedGraduation: string;
+};
 
 export default function AdvisingPage() {
-	const getStatusColor = (status: string) => {
-		switch (status) {
-			case "Confirmed":
-				return "bg-green-100 text-green-800";
-			case "Pending":
-				return "bg-yellow-100 text-yellow-800";
-			case "Cancelled":
-				return "bg-red-100 text-red-800";
-			default:
-				return "bg-gray-100 text-gray-800";
-		}
-	};
+    const { toast } = require("@/hooks/useToast");
+    const [upcomingAppointments, setUpcomingAppointments] = React.useState<Array<{
+        id: number;
+        date: string;
+        time: string;
+        advisor: string;
+        type: string;
+        location?: string;
+        status: string;
+        notes?: string;
+    }>>([]);
+    const [advisorDirectory, setAdvisorDirectory] = React.useState<Array<AdvisorDTO & { specialties?: string[] }>>([]);
+    const [degreeProgress, setDegreeProgress] = React.useState<DegreeProgress>({
+        overallProgress: 0,
+        totalCredits: 120,
+        completedCredits: 0,
+        gpa: 0,
+        expectedGraduation: "",
+    });
+    const [degreeRequirements, setDegreeRequirements] = React.useState<Array<{ category: string; required: number; completed: number; remaining: number; status: string }>>([]);
+    const [requirementItems, setRequirementItems] = React.useState<Array<{ courseId: number; courseCode: string; courseName: string; credits: number; required: boolean; completed: boolean; finalLetter?: string | null; termLabel?: string | null }>>([]);
+    const [primaryAdvisor, setPrimaryAdvisor] = React.useState<AdvisorDTO | null>(null);
+    const [loading, setLoading] = React.useState(true);
 
-	const getProgressColor = (progress: number) => {
-		if (progress >= 90) return "bg-green-500";
-		if (progress >= 70) return "bg-blue-500";
-		if (progress >= 50) return "bg-yellow-500";
-		return "bg-red-500";
-	};
+    React.useEffect(() => {
+        const load = async () => {
+            try {
+                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                if (!email) { setLoading(false); return; }
+                const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
+                const sidData = await sidRes.json();
+                if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) {
+                    throw new Error("Unable to resolve student ID");
+                }
+                const studentId = sidData.student_id;
+
+                const [advisorRes, apptRes, dirRes, summaryRes] = await Promise.all([
+                    fetch(`${API_BASE}/advising/student/${studentId}/advisor`).catch(() => null),
+                    fetch(`${API_BASE}/advising/student/${studentId}/appointments`).catch(() => null),
+                    fetch(`${API_BASE}/advising/advisors`).catch(() => null),
+                    fetch(`${API_BASE}/academics/student/${studentId}/summary`).catch(() => null),
+                ]);
+
+                if (summaryRes && summaryRes.ok) {
+                    const s = await summaryRes.json();
+                    setDegreeProgress({
+                        overallProgress: s.graduationProgress ?? 0,
+                        totalCredits: 120, // fallback displayed denominator
+                        completedCredits: s.totalCredits ?? 0,
+                        gpa: s.cumulativeGPA ?? 0,
+                        expectedGraduation: s.expectedGraduation ?? "",
+                    });
+                }
+
+                if (dirRes && dirRes.ok) {
+                    const list: AdvisorDTO[] = await dirRes.json();
+                    setAdvisorDirectory(list.map(a => ({ ...a })));
+                }
+
+                // Load requirements breakdown
+                const reqRes = await fetch(`${API_BASE}/academics/student/${studentId}/requirements`).catch(() => null);
+                if (reqRes && reqRes.ok) {
+                    const body = await reqRes.json();
+                    const cats = (body.categories || []).map((c: any) => ({
+                        category: c.category,
+                        required: Number(c.required || 0),
+                        completed: Number(c.completed || 0),
+                        remaining: Number(c.remaining || 0),
+                        status: c.status || "",
+                    }));
+                    setDegreeRequirements(cats);
+                }
+
+                // Load requirement items table
+                const itemsRes = await fetch(`${API_BASE}/academics/student/${studentId}/requirements/items`).catch(() => null);
+                if (itemsRes && itemsRes.ok) {
+                    const list = await itemsRes.json();
+                    setRequirementItems(list || []);
+                }
+
+                // Build upcoming appointments list
+                if (apptRes && apptRes.ok) {
+                    const items: AppointmentDTO[] = await apptRes.json();
+                    const mapped = items.map(it => {
+                        const d = new Date(it.scheduledAt);
+                        const date = isNaN(d.getTime()) ? "" : d.toLocaleDateString();
+                        const time = isNaN(d.getTime()) ? "" : d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                        const status = humanize(it.status);
+                        const type = humanize(it.type);
+                        return {
+                            id: it.id,
+                            date,
+                            time,
+                            advisor: it.advisorName,
+                            type,
+                            location: it.location,
+                            status,
+                            notes: it.notes,
+                        };
+                    });
+                    setUpcomingAppointments(mapped);
+                }
+            } catch (e: any) {
+                toast({ variant: "destructive", title: "Failed to load advising data", description: e?.message || "Try again later." });
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, [toast]);
+
+    if (loading) {
+        return (
+            <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+                <p className="text-sm text-muted-foreground">Loading advising data...</p>
+            </div>
+        );
+    }
+
+    function humanize(v?: string) {
+        if (!v) return "";
+        return v.toLowerCase().split("_").map(s => s ? s[0].toUpperCase() + s.slice(1) : s).join(" ");
+    }
+    
+    function getStatusColor(status: string) {
+        const s = (status || "").toLowerCase();
+        if (s.includes("confirm")) return "bg-green-100 text-green-800";
+        if (s.includes("pending")) return "bg-yellow-100 text-yellow-800";
+        if (s.includes("cancel")) return "bg-red-100 text-red-800";
+        return "bg-gray-100 text-gray-800";
+    }
+
+    function getProgressColor(progress: number) {
+        if (progress >= 90) return "bg-green-500";
+        if (progress >= 70) return "bg-blue-500";
+        if (progress >= 50) return "bg-yellow-500";
+        return "bg-red-500";
+    }
+
 
 	return (
 		<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -208,24 +250,30 @@ export default function AdvisingPage() {
 						</CardTitle>
 						<Calendar className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
-					<CardContent>
-						<div className="text-2xl font-bold">Oct 15</div>
-						<p className="text-xs text-muted-foreground">
-							With Dr. Sarah Johnson
-						</p>
-					</CardContent>
-				</Card>
+                    <CardContent>
+                        {upcomingAppointments.length > 0 ? (
+                            <>
+                                <div className="text-2xl font-bold">{upcomingAppointments[0].date}</div>
+                                <p className="text-xs text-muted-foreground">
+                                    With {upcomingAppointments[0].advisor} • {upcomingAppointments[0].time}
+                                </p>
+                            </>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No upcoming appointments</p>
+                        )}
+                    </CardContent>
+                </Card>
 
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">Advisor</CardTitle>
 						<User className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
-					<CardContent>
-						<div className="text-2xl font-bold">Dr. Johnson</div>
-						<p className="text-xs text-muted-foreground">Academic Advisor</p>
-					</CardContent>
-				</Card>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{primaryAdvisor?.name || "—"}</div>
+                        <p className="text-xs text-muted-foreground">{primaryAdvisor?.title || "Academic Advisor"}</p>
+                    </CardContent>
+                </Card>
 			</div>
 
 			{/* Main Content Tabs */}
@@ -336,22 +384,24 @@ export default function AdvisingPage() {
 															</span>
 														</div>
 													</div>
-													<div>
-														<p className="text-sm font-medium mb-1">
-															Specialties:
-														</p>
-														<div className="flex flex-wrap gap-1">
-															{advisor.specialties.map((specialty, idx) => (
-																<Badge
-																	key={idx}
-																	variant="secondary"
-																	className="text-xs"
-																>
-																	{specialty}
-																</Badge>
-															))}
-														</div>
-													</div>
+                                                {advisor.specialties?.length ? (
+                                                    <div>
+                                                        <p className="text-sm font-medium mb-1">
+                                                            Specialties:
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {advisor.specialties?.map((specialty: string, idx: number) => (
+                                                                <Badge
+                                                                    key={idx}
+                                                                    variant="secondary"
+                                                                    className="text-xs"
+                                                                >
+                                                                    {specialty}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ) : null}
 												</div>
 											</div>
 											<div className="flex space-x-2">
@@ -423,51 +473,94 @@ export default function AdvisingPage() {
 						</Card>
 
 						<Card>
-							<CardHeader>
-								<CardTitle>Requirements Breakdown</CardTitle>
-								<CardDescription>
-									Detailed view of degree requirements
-								</CardDescription>
-							</CardHeader>
+                        <CardHeader>
+                            <CardTitle>Requirements Breakdown</CardTitle>
+                            <CardDescription>
+                                Detailed view of degree requirements
+                            </CardDescription>
+                        </CardHeader>
 							<CardContent>
-								<div className="space-y-4">
-									{degreeRequirements.map((req, index) => (
-										<div key={index} className="space-y-2">
-											<div className="flex items-center justify-between">
-												<span className="text-sm font-medium">
-													{req.category}
-												</span>
-												<Badge
-													variant={
-														req.status === "Almost Complete"
-															? "default"
-															: "secondary"
-													}
-												>
-													{req.status}
-												</Badge>
-											</div>
-											<div className="flex items-center justify-between text-sm">
-												<span>
-													{req.completed}/{req.required} credits
-												</span>
-												<span>{req.remaining} remaining</span>
-											</div>
-											<div className="w-full bg-gray-200 rounded-full h-1">
-												<div
-													className="bg-blue-500 h-1 rounded-full"
-													style={{
-														width: `${(req.completed / req.required) * 100}%`,
-													}}
-												></div>
-											</div>
-										</div>
-									))}
-								</div>
+                                <div className="space-y-4">
+                                    {degreeRequirements.map((req, index) => (
+                                        <div key={index} className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium">
+                                                    {req.category}
+                                                </span>
+                                                <Badge
+                                                    variant={req.status?.toLowerCase().includes("complete") ? "default" : "secondary"}
+                                                >
+                                                    {req.status}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span>
+                                                    {req.completed}/{req.required} credits
+                                                </span>
+                                                <span>{req.remaining} remaining</span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-1">
+                                                <div
+                                                    className="bg-blue-500 h-1 rounded-full"
+                                                    style={{
+                                                        width: `${req.required > 0 ? (req.completed / req.required) * 100 : 0}%`,
+                                                    }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {degreeRequirements.length === 0 && (
+                                        <div className="text-sm text-muted-foreground">No degree requirements available.</div>
+                                    )}
+                                </div>
 							</CardContent>
-						</Card>
-					</div>
-				</TabsContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Required Courses</CardTitle>
+                            <CardDescription>Core courses for your program and completion status</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full text-sm">
+                                    <thead>
+                                        <tr className="text-left text-muted-foreground border-b">
+                                            <th className="py-2 pr-4">Course</th>
+                                            <th className="py-2 pr-4">Title</th>
+                                            <th className="py-2 pr-4">Credits</th>
+                                            <th className="py-2 pr-4">Status</th>
+                                            <th className="py-2 pr-4">Term</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {requirementItems.map((it, idx) => (
+                                            <tr key={idx} className="border-b last:border-0">
+                                                <td className="py-2 pr-4 font-medium">{it.courseCode}</td>
+                                                <td className="py-2 pr-4">{it.courseName}</td>
+                                                <td className="py-2 pr-4">{it.credits ?? 0}</td>
+                                                <td className="py-2 pr-4">
+                                                    {it.completed ? (
+                                                        <Badge className="bg-green-100 text-green-800">Completed {it.finalLetter || ''}</Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary">Required</Badge>
+                                                    )}
+                                                </td>
+                                                <td className="py-2 pr-4">{it.termLabel || '-'}</td>
+                                            </tr>
+                                        ))}
+                                        {requirementItems.length === 0 && (
+                                            <tr>
+                                                <td className="py-3 text-muted-foreground" colSpan={5}>No requirement items available.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </TabsContent>
 
 				<TabsContent value="messages" className="space-y-4">
 					<Card>

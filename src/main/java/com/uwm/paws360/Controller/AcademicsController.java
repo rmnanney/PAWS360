@@ -45,5 +45,17 @@ public class AcademicsController {
     ) {
         return ResponseEntity.ok(academicsService.getTuition(studentId, term, year));
     }
+
+    @GetMapping("/student/{studentId}/requirements")
+    public ResponseEntity<com.uwm.paws360.DTO.Academics.DegreeRequirementsBreakdownDTO> requirements(
+            @PathVariable Integer studentId) {
+        return ResponseEntity.ok(academicsService.getRequirements(studentId));
+    }
+
+    @GetMapping("/student/{studentId}/requirements/items")
+    public ResponseEntity<java.util.List<com.uwm.paws360.DTO.Academics.RequirementItemDTO>> requirementItems(
+            @PathVariable Integer studentId) {
+        return ResponseEntity.ok(academicsService.getRequirementItems(studentId));
+    }
 }
 
