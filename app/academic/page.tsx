@@ -151,26 +151,48 @@ export default function Academic() {
     }, [toast]);
 
     const handleDownloadTranscript = async () => {
+        const { toast } = require("@/hooks/useToast");
         try {
             const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
-            if (!email) return;
+            if (!email) throw new Error("Missing user email");
+
             const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
             const sidData = await sidRes.json();
-            if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) return;
+            if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) {
+                throw new Error("Unable to resolve student ID");
+            }
             const studentId = sidData.student_id;
-            const res = await fetch(`${API_BASE}/academics/student/${studentId}/transcript`);
-            if (!res.ok) return;
-            const data = await res.json();
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "transcript.json";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-        } catch {}
+
+            const [summaryRes, transcriptRes, userRes, advisorRes, programRes] = await Promise.all([
+                fetch(`${API_BASE}/academics/student/${studentId}/summary`).catch(() => null),
+                fetch(`${API_BASE}/academics/student/${studentId}/transcript`).catch(() => null),
+                fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`).catch(() => null),
+                fetch(`${API_BASE}/advising/student/${studentId}/advisor`).catch(() => null),
+                fetch(`${API_BASE}/academics/student/${studentId}/program`).catch(() => null),
+            ]);
+
+            if (!transcriptRes || !transcriptRes.ok) throw new Error("Transcript unavailable");
+            const transcript = await transcriptRes.json();
+            const summary = summaryRes && summaryRes.ok ? await summaryRes.json() : {};
+            const student = userRes && userRes.ok ? await userRes.json() : {};
+            const advisor = advisorRes && advisorRes.ok ? await advisorRes.json() : null;
+            const program = programRes && programRes.ok ? await programRes.json() : { code: null, name: null, department: null };
+
+            const { generateTranscriptPdf } = await import("@/lib/transcript-pdf");
+            await generateTranscriptPdf({
+                universityName: "University of Wisconsin, Milwaukee",
+                student,
+                studentId,
+                summary,
+                transcript,
+                program,
+                advisor,
+            });
+
+            toast({ title: "Transcript Generated", description: "Saved as transcript.pdf" });
+        } catch (e: any) {
+            toast({ variant: "destructive", title: "Failed to generate transcript", description: e?.message || "Please try again later." });
+        }
     };
 	const getGradeColor = (grade: string) => {
 		if (grade.startsWith("A")) return "bg-green-100 text-green-800";
