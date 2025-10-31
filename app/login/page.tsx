@@ -5,13 +5,12 @@ import Logo from "@/components/Others/logo";
 import LoginForm from "@/components/LoginForm/login";
 
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/Card/card";
-``;
 import s from "./styles.module.css";
 
 export default function Login() {

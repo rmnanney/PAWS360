@@ -5,6 +5,7 @@ import com.uwm.paws360.Entity.UserTypes.*;
 import com.uwm.paws360.Entity.Base.Address;
 import com.uwm.paws360.Entity.Base.Users;
 import com.uwm.paws360.JPARepository.User.*;
+import com.uwm.paws360.Entity.Base.EmergencyContact;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,6 +29,7 @@ public class UserService {
     private final StudentRepository studentRepository;
     private final TARepository taRepository;
     private final AddressRepository addressRepository;
+    private final EmergencyContactRepository emergencyContactRepository;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -35,7 +37,8 @@ public class UserService {
                        CounselorRepository counselorRepository, FacultyRepository facultyRepository,
                        InstructorRepository instructorRepository, MentorRepository mentorRepository,
                        ProfessorRepository professorRepository, StudentRepository studentRepository,
-                       TARepository taRepository, AddressRepository addressRepository
+                       TARepository taRepository, AddressRepository addressRepository,
+                       EmergencyContactRepository emergencyContactRepository
     ) {
         this.userRepository = userRepository;
         this.advisorRepository = advisorRepository;
@@ -47,6 +50,7 @@ public class UserService {
         this.studentRepository = studentRepository;
         this.taRepository = taRepository;
         this.addressRepository = addressRepository;
+        this.emergencyContactRepository = emergencyContactRepository;
     }
 
     public UserResponseDTO createUser(CreateUserDTO user){
@@ -60,7 +64,11 @@ public class UserService {
                 user.countryCode(),
                 user.phone(),
                 user.status(),
-                user.role()
+                user.role(),
+                user.ssn(),
+                user.ethnicity(),
+                user.nationality(),
+                user.gender()
         );
 
         if (user.addresses() != null) {
@@ -132,12 +140,15 @@ public class UserService {
 
     public UserResponseDTO editUser(EditUserRequestDTO userDTO){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(userDTO.email());
-        if(user == null) return new UserResponseDTO(-1, null, null, null,
-                null, null, null, null, null, List.of());
+        if(user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         user.setFirstname(userDTO.firstname());
         user.setMiddlename(userDTO.middlename());
         user.setLastname(userDTO.lastname());
         user.setDob(userDTO.dob());
+        user.setSocialsecurity(userDTO.ssn());
+        user.setEthnicity(userDTO.ethnicity());
+        user.setGender(userDTO.gender());
+        user.setNationality(userDTO.nationality());
         user.setPassword(hashIfNeeded(userDTO.password()));
         user.setCountryCode(userDTO.countryCode());
         user.setPhone(userDTO.phone());
@@ -152,6 +163,15 @@ public class UserService {
         }
         userRepository.save(user);
         return toUserResponseDTO(user);
+    }
+
+    // Lookup: resolve Student.id by user email (returns -1 if not found or not a student)
+    public int getStudentIdByEmail(String email) {
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        if (user == null) return -1;
+        return studentRepository.findByUser(user)
+                .map(Student::getId)
+                .orElse(-1);
     }
 
     public boolean deleteUser(DeleteUserRequestDTO deleteUserRequestDTO){
@@ -174,8 +194,7 @@ public class UserService {
     // Address management
     public UserResponseDTO addAddress(AddAddressRequestDTO dto){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
-        if (user == null) return new UserResponseDTO(-1, null, null, null,
-                null, null, null, null, null, List.of());
+        if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         Address addr = new Address();
         addr.setUser(user);
         addr.setAddress_type(dto.address().address_type());
@@ -194,8 +213,7 @@ public class UserService {
 
     public UserResponseDTO editAddress(EditAddressRequestDTO dto){
         Optional<Address> addressOpt = addressRepository.findById(dto.address_id());
-        if (addressOpt.isEmpty()) return new UserResponseDTO(-1, null, null, null,
-                null, null, null, null, null, List.of());
+        if (addressOpt.isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         Address addr = addressOpt.get();
         addr.setAddress_type(dto.address().address_type());
         addr.setStreet_address_1(dto.address().street_address_1());
@@ -223,9 +241,144 @@ public class UserService {
 
     public UserResponseDTO getUser(GetUserRequestDTO dto){
         Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
-        if (user == null) return new UserResponseDTO(-1, null, null, null,
-                null, null, null, null, null, List.of());
+        if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         return toUserResponseDTO(user);
+    }
+
+    // Preferences
+    public UserPreferencesResponseDTO getPreferences(String email){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        if (user == null) return new UserPreferencesResponseDTO(
+                com.uwm.paws360.Entity.EntityDomains.Ferpa_Compliance.RESTRICTED,
+                false, false, true, true, false
+        );
+        return new UserPreferencesResponseDTO(
+                user.getFerpa_compliance(),
+                user.isFerpa_directory_opt_in(),
+                user.isPhoto_release_opt_in(),
+                user.isContact_by_phone(),
+                user.isContact_by_email(),
+                user.isContact_by_mail()
+        );
+    }
+
+    public UserPreferencesResponseDTO updatePreferences(UpdatePrivacyRequestDTO dto){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        if (user == null) return getPreferences("non-existent");
+        user.setFerpa_compliance(dto.ferpa_compliance());
+        user.setFerpa_directory_opt_in(Boolean.TRUE.equals(dto.ferpaDirectory()));
+        user.setPhoto_release_opt_in(Boolean.TRUE.equals(dto.photoRelease()));
+        user.setContact_by_phone(Boolean.TRUE.equals(dto.contactByPhone()));
+        user.setContact_by_email(Boolean.TRUE.equals(dto.contactByEmail()));
+        user.setContact_by_mail(Boolean.TRUE.equals(dto.contactByMail()));
+        userRepository.save(user);
+        return getPreferences(user.getEmail());
+    }
+
+    public boolean updateContactInfo(UpdateContactInfoRequestDTO dto){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        if (user == null) return false;
+        if (dto.phone() != null) {
+            String p = dto.phone().trim();
+            if (p.isEmpty()) return false;
+            user.setPhone(p);
+        }
+        userRepository.save(user);
+        return true;
+    }
+
+    public UserResponseDTO updatePersonalDetails(UpdatePersonalDetailsRequestDTO dto){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+        if (dto.firstname() != null) {
+            if (dto.firstname().trim().isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+            user.setFirstname(dto.firstname().trim());
+        }
+        if (dto.middlename() != null) {
+            user.setMiddlename(dto.middlename().trim());
+        }
+        if (dto.lastname() != null) {
+            if (dto.lastname().trim().isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+            user.setLastname(dto.lastname().trim());
+        }
+        if (dto.preferredName() != null) {
+            String pn = dto.preferredName().trim();
+            user.setPreferred_name(pn.isEmpty() ? null : pn);
+        }
+        if (dto.ethnicity() != null) user.setEthnicity(dto.ethnicity());
+        if (dto.gender() != null) user.setGender(dto.gender());
+        if (dto.nationality() != null) user.setNationality(dto.nationality());
+        if (dto.dob() != null) {
+            java.time.LocalDate min = java.time.LocalDate.of(1900,1,1);
+            java.time.LocalDate now = java.time.LocalDate.now();
+            if (dto.dob().isBefore(min) || dto.dob().isAfter(now)) {
+                return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+            }
+            user.setDob(dto.dob());
+        }
+        if (dto.ssn() != null) {
+            String digits = dto.ssn().trim();
+            if (!digits.matches("^\\d{9}$")) {
+                return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+            }
+            user.setSocialsecurity(digits);
+        }
+        userRepository.save(user);
+        return toUserResponseDTO(user);
+    }
+
+    // Emergency contacts
+    public List<EmergencyContactDTO> listEmergencyContacts(String email){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        if (user == null) return List.of();
+        return emergencyContactRepository.findByUser(user).stream().map(this::toEmergencyDTO).toList();
+    }
+
+    public EmergencyContactDTO upsertEmergencyContact(UpsertEmergencyContactRequestDTO dto){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        if (user == null) return null;
+        EmergencyContact ec;
+        if (dto.contact_id() != null){
+            ec = emergencyContactRepository.findById(dto.contact_id()).orElse(null);
+            if (ec == null) return null;
+        } else {
+            ec = new EmergencyContact();
+            ec.setUser(user);
+        }
+        ec.setName(dto.name());
+        ec.setRelationship(dto.relationship());
+        ec.setEmail(dto.contact_email());
+        ec.setPhone(dto.phone());
+        ec.setStreet_address_1(dto.street_address_1());
+        ec.setStreet_address_2(dto.street_address_2());
+        ec.setCity(dto.city());
+        ec.setUs_state(dto.us_states());
+        ec.setZipcode(dto.zipcode());
+        emergencyContactRepository.save(ec);
+        return toEmergencyDTO(ec);
+    }
+
+    public boolean deleteEmergencyContact(DeleteEmergencyContactRequestDTO dto){
+        var found = emergencyContactRepository.findById(dto.contact_id());
+        if (found.isEmpty()) return false;
+        emergencyContactRepository.delete(found.get());
+        return true;
+    }
+
+    private EmergencyContactDTO toEmergencyDTO(EmergencyContact c){
+        return new EmergencyContactDTO(
+                c.getId(), c.getName(), c.getRelationship(), c.getEmail(), c.getPhone(),
+                c.getStreet_address_1(), c.getStreet_address_2(), c.getCity(), c.getUs_state(), c.getZipcode()
+        );
+    }
+
+    public SsnLast4ResponseDTO getSsnLast4(String email){
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        if (user == null || user.getSocialsecurity() == null) return new SsnLast4ResponseDTO("***-**-****", null);
+        String ssn = user.getSocialsecurity();
+        String last4 = ssn.length() >= 4 ? ssn.substring(ssn.length() - 4) : null;
+        String masked = last4 != null ? ("***-**-" + last4) : "***-**-****";
+        return new SsnLast4ResponseDTO(masked, last4);
     }
 
     public List<Role> listRoles(ListRolesRequestDTO dto){
@@ -316,18 +469,22 @@ public class UserService {
         return value.startsWith("$2a$") || value.startsWith("$2b$") || value.startsWith("$2y$");
     }
 
-    private UserResponseDTO toUserResponseDTO(Users u){
+    private UserResponseDTO toUserResponseDTO(Users user){
         return new UserResponseDTO(
-                u.getId(),
-                u.getEmail(),
-                u.getFirstname(),
-                u.getLastname(),
-                u.getRole(),
-                u.getStatus(),
-                u.getDob(),
-                u.getCountryCode(),
-                u.getPhone(),
-                toAddressDTOs(u.getAddresses())
+                user.getId(),
+                user.getEmail(),
+                user.getFirstname(),
+                user.getPreferred_name(),
+                user.getLastname(),
+                user.getRole(),
+                user.getEthnicity(),
+                user.getGender(),
+                user.getNationality(),
+                user.getStatus(),
+                user.getDob(),
+                user.getCountryCode(),
+                user.getPhone(),
+                toAddressDTOs(user.getAddresses())
         );
     }
 

@@ -67,7 +67,7 @@ describe("Homepage Authentication Tests", () => {
 				<div data-testid="homepage">
 					<div data-testid="header">Header</div>
 					<div data-testid="sidebar">Sidebar</div>
-					<div data-testid="dashboard-cards">
+					<div data-testid="homepage-cards">
 						<div data-testid="academic-card">Academic</div>
 						<div data-testid="advising-card">Advising</div>
 						<div data-testid="finances-card">Finances</div>
@@ -88,7 +88,7 @@ describe("Homepage Authentication Tests", () => {
 		expect(screen.getByTestId("schedule-card")).toBeInTheDocument();
 	});
 
-	test("handles dashboard card navigation", () => {
+	test("handles homepage card navigation", () => {
 		(localStorage.getItem as jest.Mock).mockReturnValue("mock-auth-token");
 
 		const MockHomepage = () => {

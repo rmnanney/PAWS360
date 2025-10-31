@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import s from "../../homepage/styles.module.css";
 
-// Dashboard items for the main cards
-const dashboardItems = [
+// Homepage items for the main cards
+const homepageItems = [
 	{
 		title: "Academic",
 		description: "Grades, transcripts, and academic records",
@@ -78,37 +78,42 @@ export function Header() {
 	return (
 		<header className={s.header}>
 			<div className={s.headerContainer}>
-				<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
-				<div className={s.headerInner}>
-					{/* Desktop Search Bar */}
-					<div className={s.desktopSearch}>
-						<SearchBar
-							items={dashboardItems}
-							// onResultClick={(item) => handleNavigation(item.title)}
-						/>
-					</div>
-
-					{/* Mobile Search Button */}
-					<div className={s.mobileSearch}>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => setShowMobileSearch(!showMobileSearch)}
-							className={s.mobileSearchButton}
-						>
-							<Search className="h-4 w-4" />
-						</Button>
-					</div>
-
+				<div className={s.headerLeft}>
 					<SidebarTrigger className={s.sidebarTrigger} />
+
+					<div className={s.headerInner}>
+						{/* Desktop Search Bar */}
+						<div className={s.desktopSearch}>
+							<SearchBar
+								items={homepageItems}
+								// onResultClick={(item) => handleNavigation(item.title)}
+							/>
+						</div>
+
+						{/* Mobile Search Button */}
+						<div className={s.mobileSearch}>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setShowMobileSearch(!showMobileSearch)}
+								className={s.mobileSearchButton}
+							>
+								<Search className="h-4 w-4" />
+							</Button>
+						</div>
+					</div>
 				</div>
+
+				<a href="/homepage">
+					<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
+				</a>
 			</div>
 
 			{/* Mobile Search Dropdown */}
 			{showMobileSearch && (
 				<div className={s.mobileSearchDropdown}>
 					<SearchBar
-						items={dashboardItems}
+						items={homepageItems}
 						onResultClick={() => setShowMobileSearch(false)}
 					/>
 				</div>
