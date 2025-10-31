@@ -46,6 +46,74 @@ public class AcademicsService {
         this.degreeProgramRepository = degreeProgramRepository;
     }
 
+    public com.uwm.paws360.DTO.Academics.DegreeRequirementsBreakdownDTO getRequirements(Integer studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
+
+        // Completed enrollments and total completed credits
+        List<CourseEnrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
+        List<CourseEnrollment> completed = enrollments.stream()
+                .filter(e -> e.getFinalLetter() != null || e.getStatus() == SectionEnrollmentStatus.COMPLETED)
+                .collect(Collectors.toList());
+        int totalCompletedCredits = 0;
+        for (CourseEnrollment e : completed) {
+            Courses c = e.getLectureSection().getCourse();
+            totalCompletedCredits += c.getCreditHours() != null ? c.getCreditHours().intValue() : 0;
+        }
+
+        // Primary program (or first) and degree info
+        List<StudentProgram> programs = studentProgramRepository.findByStudent(student);
+        DegreeProgram program = null;
+        if (!programs.isEmpty()) {
+            program = programs.stream().filter(StudentProgram::isPrimary).findFirst().orElse(programs.get(0)).getProgram();
+        }
+        int totalRequiredCredits = program != null && program.getTotalCreditsRequired() != null
+                ? program.getTotalCreditsRequired() : 120;
+
+        // Required core courses for the program
+        List<DegreeRequirement> reqs = program != null ? degreeRequirementRepository.findByDegreeProgram(program) : List.of();
+        java.util.Set<Integer> requiredCourseIds = reqs.stream()
+                .filter(DegreeRequirement::isRequired)
+                .map(r -> r.getCourse().getCourseId())
+                .collect(Collectors.toSet());
+
+        int requiredCoreCredits = reqs.stream()
+                .filter(DegreeRequirement::isRequired)
+                .map(r -> r.getCourse().getCreditHours() != null ? r.getCourse().getCreditHours().intValue() : 0)
+                .reduce(0, Integer::sum);
+
+        int completedCoreCredits = completed.stream()
+                .filter(e -> requiredCourseIds.contains(e.getLectureSection().getCourse().getCourseId()))
+                .map(e -> e.getLectureSection().getCourse().getCreditHours() != null ? e.getLectureSection().getCourse().getCreditHours().intValue() : 0)
+                .reduce(0, Integer::sum);
+
+        int coreRemaining = Math.max(0, requiredCoreCredits - completedCoreCredits);
+
+        int electivesRequired = Math.max(0, totalRequiredCredits - requiredCoreCredits);
+        int electivesCompleted = Math.max(0, totalCompletedCredits - completedCoreCredits);
+        int electivesRemaining = Math.max(0, electivesRequired - electivesCompleted);
+
+        // Derive statuses
+        String coreStatus = statusFor(coreRemaining);
+        String elecStatus = statusFor(electivesRemaining);
+
+        java.util.List<com.uwm.paws360.DTO.Academics.RequirementCategoryDTO> categories = new java.util.ArrayList<>();
+        categories.add(new com.uwm.paws360.DTO.Academics.RequirementCategoryDTO(
+                "Major Requirements", requiredCoreCredits, completedCoreCredits, coreRemaining, coreStatus));
+        categories.add(new com.uwm.paws360.DTO.Academics.RequirementCategoryDTO(
+                "Electives", electivesRequired, electivesCompleted, electivesRemaining, elecStatus));
+
+        return new com.uwm.paws360.DTO.Academics.DegreeRequirementsBreakdownDTO(
+                totalRequiredCredits, totalCompletedCredits, categories
+        );
+    }
+
+    private String statusFor(int remaining) {
+        if (remaining <= 0) return "Complete";
+        if (remaining <= 3) return "Almost Complete";
+        return "In Progress";
+    }
+
     public AcademicSummaryResponseDTO getSummary(Integer studentId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
@@ -233,6 +301,72 @@ public class AcademicsService {
                 .filter(l -> l != null && !l.trim().isEmpty())
                 .findFirst()
                 .orElse(null);
+    }
+
+    public java.util.List<com.uwm.paws360.DTO.Academics.RequirementItemDTO> getRequirementItems(Integer studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
+
+        List<CourseEnrollment> enrollments = enrollmentRepository.findByStudentId(studentId);
+        // Map courseId -> best completion info (final letter and term)
+        java.util.Map<Integer, com.uwm.paws360.DTO.Academics.RequirementItemDTO> completedMap = new java.util.HashMap<>();
+        for (CourseEnrollment e : enrollments) {
+            if (e.getFinalLetter() == null && e.getStatus() != SectionEnrollmentStatus.COMPLETED) continue;
+            CourseSection s = e.getLectureSection();
+            if (s == null || s.getCourse() == null) continue;
+            Integer cid = s.getCourse().getCourseId();
+            String term = termLabel(s);
+            String letter = e.getFinalLetter();
+            int credits = s.getCourse().getCreditHours() != null ? s.getCourse().getCreditHours().intValue() : 0;
+            completedMap.put(cid, new com.uwm.paws360.DTO.Academics.RequirementItemDTO(
+                    cid,
+                    s.getCourse().getCourseCode(),
+                    s.getCourse().getCourseName(),
+                    credits,
+                    true,
+                    true,
+                    letter,
+                    term
+            ));
+        }
+
+        // Resolve program requirements
+        List<StudentProgram> programs = studentProgramRepository.findByStudent(student);
+        DegreeProgram program = null;
+        if (!programs.isEmpty()) {
+            program = programs.stream().filter(StudentProgram::isPrimary).findFirst().orElse(programs.get(0)).getProgram();
+        }
+        List<DegreeRequirement> reqs = program != null ? degreeRequirementRepository.findByDegreeProgram(program) : List.of();
+
+        java.util.List<com.uwm.paws360.DTO.Academics.RequirementItemDTO> items = new java.util.ArrayList<>();
+        for (DegreeRequirement r : reqs) {
+            if (r.getCourse() == null) continue;
+            Integer cid = r.getCourse().getCourseId();
+            boolean done = completedMap.containsKey(cid);
+            if (done) {
+                items.add(completedMap.get(cid));
+            } else {
+                int credits = r.getCourse().getCreditHours() != null ? r.getCourse().getCreditHours().intValue() : 0;
+                items.add(new com.uwm.paws360.DTO.Academics.RequirementItemDTO(
+                        cid,
+                        r.getCourse().getCourseCode(),
+                        r.getCourse().getCourseName(),
+                        credits,
+                        r.isRequired(),
+                        false,
+                        null,
+                        null
+                ));
+            }
+        }
+        // Sort: incomplete first, then by course code
+        items.sort((a,b) -> {
+            if (a.completed() != b.completed()) return a.completed() ? 1 : -1;
+            String ca = a.courseCode() != null ? a.courseCode() : "";
+            String cb = b.courseCode() != null ? b.courseCode() : "";
+            return ca.compareToIgnoreCase(cb);
+        });
+        return items;
     }
 
     private int termOrder(String term) {
