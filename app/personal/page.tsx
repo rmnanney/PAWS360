@@ -30,76 +30,7 @@ import {
 } from "lucide-react";
 const { API_BASE } = require("@/lib/api");
 
-const GENDERS = [
-    { value: "MALE", label: "Male" },
-    { value: "FEMALE", label: "Female" },
-    { value: "OTHER", label: "Other" },
-];
-
-const ETHNICITIES = [
-    { value: "HISPANIC_OR_LATINO", label: "Hispanic or Latino" },
-    { value: "NOT_HISPANIC_OR_LATINO", label: "Not Hispanic or Latino" },
-    { value: "AMERICAN_INDIAN_OR_ALASKA_NATIVE", label: "American Indian or Alaska Native" },
-    { value: "ASIAN", label: "Asian" },
-    { value: "BLACK_OR_AFRICAN_AMERICAN", label: "Black or African American" },
-    { value: "NATIVE_HAWAIIAN_OR_OTHER_PACIFIC_ISLANDER", label: "Native Hawaiian or Other Pacific Islander" },
-    { value: "WHITE", label: "White" },
-    { value: "TWO_OR_MORE_RACES", label: "Two or More Races" },
-    { value: "OTHER", label: "Other" },
-    { value: "PREFER_NOT_TO_ANSWER", label: "Prefer not to answer" },
-];
-
-const NATIONALITIES = [
-    { value: "UNITED_STATES", label: "United States" },
-    { value: "CANADA", label: "Canada" },
-    { value: "MEXICO", label: "Mexico" },
-    { value: "UNITED_KINGDOM", label: "United Kingdom" },
-    { value: "FRANCE", label: "France" },
-    { value: "GERMANY", label: "Germany" },
-    { value: "ITALY", label: "Italy" },
-    { value: "SPAIN", label: "Spain" },
-    { value: "PORTUGAL", label: "Portugal" },
-    { value: "NETHERLANDS", label: "Netherlands" },
-    { value: "BELGIUM", label: "Belgium" },
-    { value: "SWEDEN", label: "Sweden" },
-    { value: "NORWAY", label: "Norway" },
-    { value: "DENMARK", label: "Denmark" },
-    { value: "FINLAND", label: "Finland" },
-    { value: "POLAND", label: "Poland" },
-    { value: "GREECE", label: "Greece" },
-    { value: "SWITZERLAND", label: "Switzerland" },
-    { value: "IRELAND", label: "Ireland" },
-    { value: "RUSSIA", label: "Russia" },
-    { value: "NIGERIA", label: "Nigeria" },
-    { value: "SOUTH_AFRICA", label: "South Africa" },
-    { value: "EGYPT", label: "Egypt" },
-    { value: "KENYA", label: "Kenya" },
-    { value: "GHANA", label: "Ghana" },
-    { value: "ETHIOPIA", label: "Ethiopia" },
-    { value: "MOROCCO", label: "Morocco" },
-    { value: "SAUDI_ARABIA", label: "Saudi Arabia" },
-    { value: "UNITED_ARAB_EMIRATES", label: "United Arab Emirates" },
-    { value: "TURKEY", label: "Turkey" },
-    { value: "ISRAEL", label: "Israel" },
-    { value: "IRAN", label: "Iran" },
-    { value: "INDIA", label: "India" },
-    { value: "CHINA", label: "China" },
-    { value: "JAPAN", label: "Japan" },
-    { value: "SOUTH_KOREA", label: "South Korea" },
-    { value: "PAKISTAN", label: "Pakistan" },
-    { value: "BANGLADESH", label: "Bangladesh" },
-    { value: "INDONESIA", label: "Indonesia" },
-    { value: "PHILIPPINES", label: "Philippines" },
-    { value: "VIETNAM", label: "Vietnam" },
-    { value: "THAILAND", label: "Thailand" },
-    { value: "MALAYSIA", label: "Malaysia" },
-    { value: "SINGAPORE", label: "Singapore" },
-    { value: "AUSTRALIA", label: "Australia" },
-    { value: "NEW_ZEALAND", label: "New Zealand" },
-    { value: "FIJI", label: "Fiji" },
-    { value: "OTHER", label: "Other" },
-    { value: "PREFER_NOT_TO_ANSWER", label: "Prefer not to answer" },
-];
+// Values are loaded from backend domain endpoints
 
 function labelFor(value: string | null | undefined, list: {value:string;label:string}[]) {
     if (!value) return "";
@@ -128,6 +59,9 @@ export default function PersonalPage() {
 	const [nationalityEdit, setNationalityEdit] = React.useState<string>("");
 	const [dobEdit, setDobEdit] = React.useState<string>("");
 	const [ssnEdit, setSsnEdit] = React.useState<string>("");
+	const [genders, setGenders] = React.useState<Array<{value:string;label:string}>>([]);
+	const [ethnicities, setEthnicities] = React.useState<Array<{value:string;label:string}>>([]);
+	const [nationalities, setNationalities] = React.useState<Array<{value:string;label:string}>>([]);
 	const [preferences, setPreferences] = React.useState<any>({
 		ferpa_compliance: "RESTRICTED",
 		ferpaDirectory: false,
@@ -145,12 +79,15 @@ export default function PersonalPage() {
 			try {
 				const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
 				if (!email) return;
-				const [userRes, sidRes, prefRes, emgRes] = await Promise.all([
-					fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`),
-					fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`),
-					fetch(`${API_BASE}/users/preferences?email=${encodeURIComponent(email)}`),
-					fetch(`${API_BASE}/users/emergency-contacts?email=${encodeURIComponent(email)}`),
-				]);
+					const [userRes, sidRes, prefRes, emgRes, genRes, ethRes, natRes] = await Promise.all([
+						fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`),
+						fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`),
+						fetch(`${API_BASE}/users/preferences?email=${encodeURIComponent(email)}`),
+						fetch(`${API_BASE}/users/emergency-contacts?email=${encodeURIComponent(email)}`),
+						fetch(`${API_BASE}/domains/genders`),
+						fetch(`${API_BASE}/domains/ethnicities`),
+						fetch(`${API_BASE}/domains/nationalities`),
+					]);
 				if (userRes.ok) {
 					const u = await userRes.json();
 					setUser(u);
@@ -183,6 +120,9 @@ export default function PersonalPage() {
 					const list = await emgRes.json();
 					setEmergencyContacts(Array.isArray(list) ? list : []);
 				}
+				if (genRes.ok) setGenders(await genRes.json());
+				if (ethRes.ok) setEthnicities(await ethRes.json());
+				if (natRes.ok) setNationalities(await natRes.json());
 			} catch (e: any) {
 				toast({ variant: "destructive", title: "Failed to load profile", description: e?.message || "Try again later." });
 			}
@@ -510,12 +450,12 @@ const securityInfo = {
                                 {isEditing ? (
                                     <select className="w-full border rounded-md p-2" value={genderEdit || ""} onChange={(e) => setGenderEdit(e.target.value)}>
                                         <option value="">Select...</option>
-                                        {GENDERS.map((g) => (
+                                        {genders.map((g) => (
                                             <option key={g.value} value={g.value}>{g.label}</option>
                                         ))}
                                     </select>
                                 ) : (
-                                    <p className="text-lg">{labelFor(user?.gender, GENDERS)}</p>
+                                    <p className="text-lg">{labelFor(user?.gender, genders)}</p>
                                 )}
                             </div>
                             <div>
@@ -523,12 +463,12 @@ const securityInfo = {
                                 {isEditing ? (
                                     <select className="w-full border rounded-md p-2" value={ethnicityEdit || ""} onChange={(e) => setEthnicityEdit(e.target.value)}>
                                         <option value="">Select...</option>
-                                        {ETHNICITIES.map((e1) => (
+                                        {ethnicities.map((e1) => (
                                             <option key={e1.value} value={e1.value}>{e1.label}</option>
                                         ))}
                                     </select>
                                 ) : (
-                                    <p className="text-lg">{labelFor(user?.ethnicity, ETHNICITIES)}</p>
+                                    <p className="text-lg">{labelFor(user?.ethnicity, ethnicities)}</p>
                                 )}
                             </div>
                             <div>
@@ -536,12 +476,12 @@ const securityInfo = {
                                 {isEditing ? (
                                     <select className="w-full border rounded-md p-2" value={nationalityEdit || ""} onChange={(e) => setNationalityEdit(e.target.value)}>
                                         <option value="">Select...</option>
-                                        {NATIONALITIES.map((n) => (
+                                        {nationalities.map((n) => (
                                             <option key={n.value} value={n.value}>{n.label}</option>
                                         ))}
                                     </select>
                                 ) : (
-                                    <p className="text-lg">{labelFor(user?.nationality, NATIONALITIES)}</p>
+                                    <p className="text-lg">{labelFor(user?.nationality, nationalities)}</p>
                                 )}
                             </div>
                             {/* SSN display with last 4 when unhidden; input when editing */}
@@ -1020,3 +960,4 @@ const securityInfo = {
 		</div>
 	);
 }
+
