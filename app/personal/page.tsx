@@ -30,6 +30,85 @@ import {
 } from "lucide-react";
 const { API_BASE } = require("@/lib/api");
 
+const GENDERS = [
+    { value: "MALE", label: "Male" },
+    { value: "FEMALE", label: "Female" },
+    { value: "OTHER", label: "Other" },
+];
+
+const ETHNICITIES = [
+    { value: "HISPANIC_OR_LATINO", label: "Hispanic or Latino" },
+    { value: "NOT_HISPANIC_OR_LATINO", label: "Not Hispanic or Latino" },
+    { value: "AMERICAN_INDIAN_OR_ALASKA_NATIVE", label: "American Indian or Alaska Native" },
+    { value: "ASIAN", label: "Asian" },
+    { value: "BLACK_OR_AFRICAN_AMERICAN", label: "Black or African American" },
+    { value: "NATIVE_HAWAIIAN_OR_OTHER_PACIFIC_ISLANDER", label: "Native Hawaiian or Other Pacific Islander" },
+    { value: "WHITE", label: "White" },
+    { value: "TWO_OR_MORE_RACES", label: "Two or More Races" },
+    { value: "OTHER", label: "Other" },
+    { value: "PREFER_NOT_TO_ANSWER", label: "Prefer not to answer" },
+];
+
+const NATIONALITIES = [
+    { value: "UNITED_STATES", label: "United States" },
+    { value: "CANADA", label: "Canada" },
+    { value: "MEXICO", label: "Mexico" },
+    { value: "UNITED_KINGDOM", label: "United Kingdom" },
+    { value: "FRANCE", label: "France" },
+    { value: "GERMANY", label: "Germany" },
+    { value: "ITALY", label: "Italy" },
+    { value: "SPAIN", label: "Spain" },
+    { value: "PORTUGAL", label: "Portugal" },
+    { value: "NETHERLANDS", label: "Netherlands" },
+    { value: "BELGIUM", label: "Belgium" },
+    { value: "SWEDEN", label: "Sweden" },
+    { value: "NORWAY", label: "Norway" },
+    { value: "DENMARK", label: "Denmark" },
+    { value: "FINLAND", label: "Finland" },
+    { value: "POLAND", label: "Poland" },
+    { value: "GREECE", label: "Greece" },
+    { value: "SWITZERLAND", label: "Switzerland" },
+    { value: "IRELAND", label: "Ireland" },
+    { value: "RUSSIA", label: "Russia" },
+    { value: "NIGERIA", label: "Nigeria" },
+    { value: "SOUTH_AFRICA", label: "South Africa" },
+    { value: "EGYPT", label: "Egypt" },
+    { value: "KENYA", label: "Kenya" },
+    { value: "GHANA", label: "Ghana" },
+    { value: "ETHIOPIA", label: "Ethiopia" },
+    { value: "MOROCCO", label: "Morocco" },
+    { value: "SAUDI_ARABIA", label: "Saudi Arabia" },
+    { value: "UNITED_ARAB_EMIRATES", label: "United Arab Emirates" },
+    { value: "TURKEY", label: "Turkey" },
+    { value: "ISRAEL", label: "Israel" },
+    { value: "IRAN", label: "Iran" },
+    { value: "INDIA", label: "India" },
+    { value: "CHINA", label: "China" },
+    { value: "JAPAN", label: "Japan" },
+    { value: "SOUTH_KOREA", label: "South Korea" },
+    { value: "PAKISTAN", label: "Pakistan" },
+    { value: "BANGLADESH", label: "Bangladesh" },
+    { value: "INDONESIA", label: "Indonesia" },
+    { value: "PHILIPPINES", label: "Philippines" },
+    { value: "VIETNAM", label: "Vietnam" },
+    { value: "THAILAND", label: "Thailand" },
+    { value: "MALAYSIA", label: "Malaysia" },
+    { value: "SINGAPORE", label: "Singapore" },
+    { value: "AUSTRALIA", label: "Australia" },
+    { value: "NEW_ZEALAND", label: "New Zealand" },
+    { value: "FIJI", label: "Fiji" },
+    { value: "OTHER", label: "Other" },
+    { value: "PREFER_NOT_TO_ANSWER", label: "Prefer not to answer" },
+];
+
+function labelFor(value: string | null | undefined, list: {value:string;label:string}[]) {
+    if (!value) return "";
+    const f = list.find((x) => x.value === value);
+    if (f) return f.label;
+    // Fallback to prettify
+    return String(value).toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
 export default function PersonalPage() {
 	const [isEditing, setIsEditing] = React.useState(false);
 	const [showSSN, setShowSSN] = React.useState(false);
@@ -37,6 +116,28 @@ export default function PersonalPage() {
 	const [studentId, setStudentId] = React.useState<number | null>(null);
 	const [homeAddress, setHomeAddress] = React.useState<any | null>(null);
 	const [mailingAddress, setMailingAddress] = React.useState<any | null>(null);
+	const [phoneEdit, setPhoneEdit] = React.useState<string>("");
+	const [homeAddrEdit, setHomeAddrEdit] = React.useState<any | null>(null);
+	const [mailingAddrEdit, setMailingAddrEdit] = React.useState<any | null>(null);
+	const [firstNameEdit, setFirstNameEdit] = React.useState<string>("");
+	const [lastNameEdit, setLastNameEdit] = React.useState<string>("");
+	const [middleNameEdit, setMiddleNameEdit] = React.useState<string>("");
+	const [preferredNameEdit, setPreferredNameEdit] = React.useState<string>("");
+	const [genderEdit, setGenderEdit] = React.useState<string>("");
+	const [ethnicityEdit, setEthnicityEdit] = React.useState<string>("");
+	const [nationalityEdit, setNationalityEdit] = React.useState<string>("");
+	const [dobEdit, setDobEdit] = React.useState<string>("");
+	const [ssnEdit, setSsnEdit] = React.useState<string>("");
+	const [preferences, setPreferences] = React.useState<any>({
+		ferpa_compliance: "RESTRICTED",
+		ferpaDirectory: false,
+		photoRelease: false,
+		contactByPhone: true,
+		contactByEmail: true,
+		contactByMail: false,
+	});
+	const [emergencyContacts, setEmergencyContacts] = React.useState<any[]>([]);
+	const [ssnMasked, setSsnMasked] = React.useState<string>("***-**-****");
 	const { toast } = require("@/hooks/useToast");
 
 	React.useEffect(() => {
@@ -44,9 +145,11 @@ export default function PersonalPage() {
 			try {
 				const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
 				if (!email) return;
-				const [userRes, sidRes] = await Promise.all([
+				const [userRes, sidRes, prefRes, emgRes] = await Promise.all([
 					fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`),
 					fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`),
+					fetch(`${API_BASE}/users/preferences?email=${encodeURIComponent(email)}`),
+					fetch(`${API_BASE}/users/emergency-contacts?email=${encodeURIComponent(email)}`),
 				]);
 				if (userRes.ok) {
 					const u = await userRes.json();
@@ -56,10 +159,29 @@ export default function PersonalPage() {
 					const mail = addrs.find((a: any) => (a.address_type || "").toUpperCase() === "MAILING") || addrs.find((a: any) => (a.address_type || "").toUpperCase() === "BILLING");
 					setHomeAddress(home || null);
 					setMailingAddress(mail || null);
+					setPhoneEdit(u?.phone || "");
+					setHomeAddrEdit(home ? { ...home } : null);
+					setMailingAddrEdit(mail ? { ...mail } : null);
+					setFirstNameEdit(u?.firstname || "");
+					setLastNameEdit(u?.lastname || "");
+					setMiddleNameEdit(u?.middlename || "");
+					setPreferredNameEdit(u?.preferred_name || u?.firstname || "");
+					setGenderEdit(u?.gender || "");
+					setEthnicityEdit(u?.ethnicity || "");
+					setNationalityEdit(u?.nationality || "");
+					setDobEdit(u?.dob || "");
 				}
 				if (sidRes.ok) {
 					const sid = await sidRes.json();
 					if (typeof sid.student_id === "number" && sid.student_id >= 0) setStudentId(sid.student_id);
+				}
+				if (prefRes.ok) {
+					const p = await prefRes.json();
+					setPreferences(p);
+				}
+				if (emgRes.ok) {
+					const list = await emgRes.json();
+					setEmergencyContacts(Array.isArray(list) ? list : []);
 				}
 			} catch (e: any) {
 				toast({ variant: "destructive", title: "Failed to load profile", description: e?.message || "Try again later." });
@@ -72,12 +194,12 @@ export default function PersonalPage() {
 		studentId: studentId ? String(studentId) : "-",
 		firstName: user?.firstname || "",
 		lastName: user?.lastname || "",
-		preferredName: user?.firstname || "",
+		preferredName: user?.preferred_name || user?.firstname || "",
 		dateOfBirth: user?.dob || "",
 		gender: user?.gender || "",
 		ethnicity: user?.ethnicity || "",
 		citizenship: user?.nationality || "",
-		ssn: "***-**-****",
+		ssn: ssnMasked,
 	};
 
 	const contactInfo: any = {
@@ -105,30 +227,13 @@ export default function PersonalPage() {
 			: null,
 	};
 
-const emergencyContacts = [
-	{
-		name: "Jane Doe",
-		relationship: "Mother",
-		phone: "(608) 555-0123",
-		email: "jane.doe@email.com",
-		address: "456 Home Street, Madison, WI 53703",
-	},
-	{
-		name: "Bob Doe",
-		relationship: "Father",
-		phone: "(608) 555-0456",
-		email: "bob.doe@email.com",
-		address: "456 Home Street, Madison, WI 53703",
-	},
-];
-
 const privacySettings = {
-	ferpaDirectory: true,
-	photoRelease: false,
-	infoRelease: "restricted",
-	contactByPhone: true,
-	contactByEmail: true,
-	contactByMail: false,
+	ferpaDirectory: preferences.ferpaDirectory,
+	photoRelease: preferences.photoRelease,
+	infoRelease: String(preferences.ferpa_compliance || 'RESTRICTED').toLowerCase(),
+	contactByPhone: preferences.contactByPhone,
+	contactByEmail: preferences.contactByEmail,
+	contactByMail: preferences.contactByMail,
 };
 
 const securityInfo = {
@@ -177,7 +282,100 @@ const securityInfo = {
 					<Button
 						variant={isEditing ? "default" : "outline"}
 						size="sm"
-						onClick={() => setIsEditing(!isEditing)}
+						onClick={async () => {
+							if (!isEditing) { setIsEditing(true); return; }
+							try {
+								const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+								if (!email) return;
+								// Basic validation
+                                if (!firstNameEdit || !lastNameEdit) {
+                                    toast({ variant: "destructive", title: "Missing required fields", description: "First and last name are required." });
+                                    return;
+                                }
+                                if (phoneEdit && !/^\+?[0-9\-\s]{7,20}$/.test(phoneEdit)) {
+                                    toast({ variant: "destructive", title: "Invalid phone", description: "Enter a valid phone number." });
+                                    return;
+                                }
+                                if (dobEdit) {
+                                    const d = new Date(dobEdit);
+                                    const min = new Date('1900-01-01');
+                                    const now = new Date();
+                                    if (!(d instanceof Date) || isNaN(d.getTime()) || d < min || d > now) {
+                                        toast({ variant: "destructive", title: "Invalid date of birth", description: "Enter a valid date between 1900 and today." });
+                                        return;
+                                    }
+                                }
+                                const checkAddr = (a: any) => {
+									if (!a) return true;
+									const f = [a.street_address_1, a.city, a.us_states, a.zipcode];
+									const any = f.some((x) => !!x);
+									const all = f.every((x) => x !== undefined && x !== null && String(x).trim() !== "");
+									return !any || all;
+								};
+								if (!checkAddr(homeAddrEdit) || !checkAddr(mailingAddrEdit)) {
+									toast({ variant: "destructive", title: "Incomplete address", description: "Street, city, state, and zip are required for addresses." });
+									return;
+								}
+
+								// Update personal details first
+								const ssnDigits = ssnEdit ? ssnEdit.replace(/\D/g, "") : null;
+								const personalRes = await fetch(`${API_BASE}/users/personal`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, firstname: firstNameEdit, middlename: middleNameEdit || null, lastname: lastNameEdit, preferredName: preferredNameEdit || null, gender: genderEdit || null, ethnicity: ethnicityEdit || null, nationality: nationalityEdit || null, dob: dobEdit || null, ssn: ssnDigits }) });
+								if (!personalRes.ok) {
+									toast({ variant: "destructive", title: "Failed to update name", description: "Please check inputs and try again." });
+									return;
+								}
+								await fetch(`${API_BASE}/users/contact`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, phone: phoneEdit || null }) });
+								await fetch(`${API_BASE}/users/preferences`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, ...preferences }) });
+								// Upsert HOME address
+								if (homeAddrEdit && homeAddrEdit.street_address_1) {
+									const payload = {
+										id: homeAddrEdit.id || null,
+										address_type: "HOME",
+										street_address_1: homeAddrEdit.street_address_1,
+										street_address_2: homeAddrEdit.street_address_2 || null,
+										po_box: homeAddrEdit.po_box || null,
+										city: homeAddrEdit.city,
+										us_states: homeAddrEdit.us_states,
+										zipcode: homeAddrEdit.zipcode,
+									};
+									if (homeAddrEdit.id) {
+										await fetch(`${API_BASE}/users/addresses/edit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address_id: homeAddrEdit.id, address: payload }) });
+									} else {
+										await fetch(`${API_BASE}/users/addresses/add`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, address: payload }) });
+									}
+								}
+								// Upsert MAILING address
+								if (mailingAddrEdit && mailingAddrEdit.street_address_1) {
+									const payload = {
+										id: mailingAddrEdit.id || null,
+										address_type: "MAILING",
+										street_address_1: mailingAddrEdit.street_address_1,
+										street_address_2: mailingAddrEdit.street_address_2 || null,
+										po_box: mailingAddrEdit.po_box || null,
+										city: mailingAddrEdit.city,
+										us_states: mailingAddrEdit.us_states,
+										zipcode: mailingAddrEdit.zipcode,
+									};
+									if (mailingAddrEdit.id) {
+										await fetch(`${API_BASE}/users/addresses/edit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address_id: mailingAddrEdit.id, address: payload }) });
+									} else {
+										await fetch(`${API_BASE}/users/addresses/add`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, address: payload }) });
+									}
+								}
+								for (const c of emergencyContacts) {
+									const body = { email, contact_id: c.id || null, name: c.name, relationship: c.relationship || null, contact_email: c.email || null, phone: c.phone || null, street_address_1: c.street_address_1 || null, street_address_2: c.street_address_2 || null, city: c.city || null, us_states: c.us_states || null, zipcode: c.zipcode || null };
+									await fetch(`${API_BASE}/users/emergency-contacts`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+								}
+								// Reflect changes locally
+								setUser((prev: any) => ({ ...(prev || {}), firstname: firstNameEdit, middlename: middleNameEdit, lastname: lastNameEdit, preferred_name: preferredNameEdit, gender: genderEdit, ethnicity: ethnicityEdit, nationality: nationalityEdit, dob: dobEdit || prev?.dob, phone: phoneEdit }));
+								setHomeAddress(homeAddrEdit);
+								setMailingAddress(mailingAddrEdit);
+								toast({ title: "Profile Updated", description: "Your changes have been saved." });
+								setIsEditing(false);
+							} catch (e: any) {
+								toast({ variant: "destructive", title: "Update failed", description: e?.message || "Try again later." });
+							}
+						}}
 					>
 						{isEditing ? (
 							<>
@@ -273,66 +471,114 @@ const securityInfo = {
 											{personalInfo.studentId}
 										</p>
 									</div>
-									<div>
-										<label className="text-sm font-medium">First Name</label>
-										<p className="text-lg">{personalInfo.firstName}</p>
-									</div>
-									<div>
-										<label className="text-sm font-medium">Last Name</label>
-										<p className="text-lg">{personalInfo.lastName}</p>
-									</div>
-									<div>
-										<label className="text-sm font-medium">
-											Preferred Name
-										</label>
-										<p className="text-lg">{personalInfo.preferredName}</p>
-									</div>
+                            <div>
+                                <label className="text-sm font-medium">First Name</label>
+                                {isEditing ? (
+                                    <input className="w-full border rounded-md p-2" value={firstNameEdit} onChange={(e) => setFirstNameEdit(e.target.value)} />
+                                ) : (
+                                    <p className="text-lg">{personalInfo.firstName}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium">Last Name</label>
+                                {isEditing ? (
+                                    <input className="w-full border rounded-md p-2" value={lastNameEdit} onChange={(e) => setLastNameEdit(e.target.value)} />
+                                ) : (
+                                    <p className="text-lg">{personalInfo.lastName}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium">Preferred Name</label>
+                                {isEditing ? (
+                                    <input className="w-full border rounded-md p-2" value={preferredNameEdit} onChange={(e) => setPreferredNameEdit(e.target.value)} />
+                                ) : (
+                                    <p className="text-lg">{personalInfo.preferredName}</p>
+                                )}
+                            </div>
 								</div>
 								<div className="space-y-4">
-									<div>
-										<label className="text-sm font-medium">Date of Birth</label>
-										<p className="text-lg">{personalInfo.dateOfBirth}</p>
-									</div>
-									<div>
-										<label className="text-sm font-medium">Gender</label>
-										<p className="text-lg">{personalInfo.gender}</p>
-									</div>
-									<div>
-										<label className="text-sm font-medium">Ethnicity</label>
-										<p className="text-lg">{personalInfo.ethnicity}</p>
-									</div>
-									<div>
-										<label className="text-sm font-medium">Citizenship</label>
-										<p className="text-lg">{personalInfo.citizenship}</p>
-									</div>
+                            <div>
+                                <label className="text-sm font-medium">Date of Birth</label>
+                                {isEditing ? (
+                                    <input type="date" className="w-full border rounded-md p-2" value={dobEdit || ""} onChange={(e) => setDobEdit(e.target.value)} />
+                                ) : (
+                                    <p className="text-lg">{personalInfo.dateOfBirth}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium">Gender</label>
+                                {isEditing ? (
+                                    <select className="w-full border rounded-md p-2" value={genderEdit || ""} onChange={(e) => setGenderEdit(e.target.value)}>
+                                        <option value="">Select...</option>
+                                        {GENDERS.map((g) => (
+                                            <option key={g.value} value={g.value}>{g.label}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="text-lg">{labelFor(user?.gender, GENDERS)}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium">Ethnicity</label>
+                                {isEditing ? (
+                                    <select className="w-full border rounded-md p-2" value={ethnicityEdit || ""} onChange={(e) => setEthnicityEdit(e.target.value)}>
+                                        <option value="">Select...</option>
+                                        {ETHNICITIES.map((e1) => (
+                                            <option key={e1.value} value={e1.value}>{e1.label}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="text-lg">{labelFor(user?.ethnicity, ETHNICITIES)}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium">Citizenship</label>
+                                {isEditing ? (
+                                    <select className="w-full border rounded-md p-2" value={nationalityEdit || ""} onChange={(e) => setNationalityEdit(e.target.value)}>
+                                        <option value="">Select...</option>
+                                        {NATIONALITIES.map((n) => (
+                                            <option key={n.value} value={n.value}>{n.label}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="text-lg">{labelFor(user?.nationality, NATIONALITIES)}</p>
+                                )}
+                            </div>
+                            {/* SSN display with last 4 when unhidden; input when editing */}
+                            <div>
+                                <label className="text-sm font-medium">Social Security Number</label>
+                                {isEditing ? (
+                                    <input
+                                        className="w-full border rounded-md p-2 font-mono"
+                                        placeholder="123-45-6789"
+                                        value={ssnEdit}
+                                        onChange={(e) => setSsnEdit(e.target.value)}
+                                    />
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-lg font-mono">{showSSN ? personalInfo.ssn : "XXX-XX-XXXX"}</p>
+                                        {showSSN ? (
+                                            <EyeOff className="h-4 w-4 cursor-pointer" onClick={() => setShowSSN(false)} />
+                                        ) : (
+                                            <Eye className="h-4 w-4 cursor-pointer" onClick={async () => {
+                                                try {
+                                                    const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                                                    if (!email) { setShowSSN(true); return; }
+                                                    const res = await fetch(`${API_BASE}/users/ssn-last4?email=${encodeURIComponent(email)}`);
+                                                    if (res.ok) {
+                                                        const data = await res.json();
+                                                        const last4 = data?.last4 || "XXXX";
+                                                        setSsnMasked(`***-**-${last4}`);
+                                                    }
+                                                } catch {}
+                                                setShowSSN(true);
+                                            }} />
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 								</div>
-							</div>
-							<div className="border-t pt-4">
-								<div className="flex items-center space-x-2">
-									<Shield className="h-4 w-4 text-muted-foreground" />
-									<label className="text-sm font-medium">
-										Social Security Number
-									</label>
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => setShowSSN(!showSSN)}
-									>
-										{showSSN ? (
-											<EyeOff className="h-4 w-4" />
-										) : (
-											<Eye className="h-4 w-4" />
-										)}
-									</Button>
-								</div>
-								<p className="text-lg font-mono">
-									{showSSN ? personalInfo.ssn : "XXX-XX-XXXX"}
-								</p>
-								<p className="text-xs text-muted-foreground mt-1">
-									This information is protected under FERPA and only visible to
-									you.
-								</p>
-							</div>
+                        </div>
 						</CardContent>
 					</Card>
 				</TabsContent>
@@ -367,11 +613,13 @@ const securityInfo = {
 								</div>
 								<div className="flex items-center space-x-3">
 									<Phone className="h-5 w-5 text-green-600" />
-									<div>
+									<div className="w-full">
 										<p className="font-medium">Primary Phone</p>
-										<p className="text-sm text-muted-foreground">
-											{contactInfo.phone}
-										</p>
+										{isEditing ? (
+											<input className="w-full border rounded-md p-2" value={phoneEdit} onChange={(e) => setPhoneEdit(e.target.value)} />
+										) : (
+											<p className="text-sm text-muted-foreground">{contactInfo.phone}</p>
+										)}
 									</div>
 								</div>
 								<div className="flex items-center space-x-3">
@@ -399,7 +647,17 @@ const securityInfo = {
 									<div className="flex items-start space-x-3">
 										<MapPin className="h-5 w-5 text-blue-600 mt-0.5" />
                                 <div className="text-sm">
-                                    {contactInfo.address ? (
+                                    {isEditing ? (
+                                        <div className="space-y-2 w-full">
+                                            <input className="w-full border rounded-md p-2" placeholder="Street" value={homeAddrEdit?.street_address_1 || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), street_address_1: e.target.value })} />
+                                            <input className="w-full border rounded-md p-2" placeholder="Street 2" value={homeAddrEdit?.street_address_2 || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), street_address_2: e.target.value })} />
+                                            <div className="grid grid-cols-3 gap-2">
+                                                <input className="border rounded-md p-2" placeholder="City" value={homeAddrEdit?.city || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), city: e.target.value })} />
+                                                <input className="border rounded-md p-2" placeholder="State" value={homeAddrEdit?.us_states || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), us_states: e.target.value })} />
+                                                <input className="border rounded-md p-2" placeholder="Zip" value={homeAddrEdit?.zipcode || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), zipcode: e.target.value })} />
+                                            </div>
+                                        </div>
+                                    ) : contactInfo.address ? (
                                         <>
                                             <p>{contactInfo.address.street}</p>
                                             <p>
@@ -418,7 +676,17 @@ const securityInfo = {
 									<div className="flex items-start space-x-3">
 										<MapPin className="h-5 w-5 text-green-600 mt-0.5" />
                                 <div className="text-sm">
-                                    {contactInfo.permanentAddress ? (
+                                    {isEditing ? (
+                                        <div className="space-y-2 w-full">
+                                            <input className="w-full border rounded-md p-2" placeholder="Street" value={mailingAddrEdit?.street_address_1 || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), street_address_1: e.target.value })} />
+                                            <input className="w-full border rounded-md p-2" placeholder="Street 2" value={mailingAddrEdit?.street_address_2 || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), street_address_2: e.target.value })} />
+                                            <div className="grid grid-cols-3 gap-2">
+                                                <input className="border rounded-md p-2" placeholder="City" value={mailingAddrEdit?.city || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), city: e.target.value })} />
+                                                <input className="border rounded-md p-2" placeholder="State" value={mailingAddrEdit?.us_states || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), us_states: e.target.value })} />
+                                                <input className="border rounded-md p-2" placeholder="Zip" value={mailingAddrEdit?.zipcode || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), zipcode: e.target.value })} />
+                                            </div>
+                                        </div>
+                                    ) : contactInfo.permanentAddress ? (
                                         <>
                                             <p>{contactInfo.permanentAddress.street}</p>
                                             <p>
@@ -449,43 +717,78 @@ const securityInfo = {
 							<div className="space-y-6">
 								{emergencyContacts.map((contact, index) => (
 									<div key={index} className="border rounded-lg p-4">
-										<div className="flex items-start justify-between">
-											<div className="flex-1">
-												<div className="flex items-center space-x-3 mb-3">
-													<User className="h-6 w-6 text-blue-600" />
-													<div>
-														<h3 className="font-semibold">{contact.name}</h3>
-														<p className="text-sm text-muted-foreground">
-															{contact.relationship}
-														</p>
-													</div>
-												</div>
-												<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-													<div className="space-y-2">
-														<div className="flex items-center space-x-2">
-															<Phone className="h-4 w-4 text-muted-foreground" />
-															<span className="text-sm">{contact.phone}</span>
-														</div>
-														<div className="flex items-center space-x-2">
-															<Mail className="h-4 w-4 text-muted-foreground" />
-															<span className="text-sm">{contact.email}</span>
-														</div>
-													</div>
-													<div>
-														<p className="text-sm font-medium mb-1">Address:</p>
-														<p className="text-sm text-muted-foreground">
-															{contact.address}
-														</p>
-													</div>
-												</div>
+										<div className="flex justify-end mb-2">
+											{isEditing ? (
+												<button
+													className="text-sm text-red-600"
+													onClick={async () => {
+														if (contact.id) {
+															try {
+																await fetch(`${API_BASE}/users/emergency-contacts/delete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contact_id: contact.id }) });
+															} catch {}
+														}
+														setEmergencyContacts((prev) => prev.filter((_, i) => i !== index));
+													}}
+												>
+													Delete
+												</button>
+											) : null}
+										</div>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+											<div>
+												<label className="text-sm font-medium">Name</label>
+												{isEditing ? (
+													<input className="w-full border rounded-md p-2" value={contact.name || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], name: e.target.value }; setEmergencyContacts(u);} } />
+												) : (
+													<p className="text-lg">{contact.name}</p>
+												)}
 											</div>
-											<Button variant="outline" size="sm">
-												<Edit className="h-4 w-4 mr-2" />
-												Edit
-											</Button>
+											<div>
+												<label className="text-sm font-medium">Relationship</label>
+												{isEditing ? (
+													<input className="w-full border rounded-md p-2" value={contact.relationship || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], relationship: e.target.value }; setEmergencyContacts(u);} } />
+												) : (
+													<p className="text-lg">{contact.relationship}</p>
+												)}
+											</div>
+											<div>
+												<label className="text-sm font-medium">Phone</label>
+												{isEditing ? (
+													<input className="w-full border rounded-md p-2" value={contact.phone || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], phone: e.target.value }; setEmergencyContacts(u);} } />
+												) : (
+													<p className="text-lg">{contact.phone}</p>
+												)}
+											</div>
+											<div>
+												<label className="text-sm font-medium">Email</label>
+												{isEditing ? (
+													<input className="w-full border rounded-md p-2" value={contact.email || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], email: e.target.value }; setEmergencyContacts(u);} } />
+												) : (
+													<p className="text-lg">{contact.email}</p>
+												)}
+											</div>
+											<div className="md:col-span-2">
+												<label className="text-sm font-medium">Address</label>
+												{isEditing ? (
+													<div className="space-y-2">
+														<input className="w-full border rounded-md p-2" placeholder="Street" value={contact.street_address_1 || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], street_address_1: e.target.value }; setEmergencyContacts(u);} } />
+														<input className="w-full border rounded-md p-2" placeholder="Street 2" value={contact.street_address_2 || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], street_address_2: e.target.value }; setEmergencyContacts(u);} } />
+														<div className="grid grid-cols-3 gap-2">
+															<input className="border rounded-md p-2" placeholder="City" value={contact.city || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], city: e.target.value }; setEmergencyContacts(u);} } />
+															<input className="border rounded-md p-2" placeholder="State" value={contact.us_states || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], us_states: e.target.value }; setEmergencyContacts(u);} } />
+															<input className="border rounded-md p-2" placeholder="Zip" value={contact.zipcode || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], zipcode: e.target.value }; setEmergencyContacts(u);} } />
+														</div>
+													</div>
+												) : (
+													<p className="text-sm text-muted-foreground">{[contact.street_address_1, contact.street_address_2, contact.city, contact.us_states, contact.zipcode].filter(Boolean).join(", ")}</p>
+												)}
+											</div>
 										</div>
 									</div>
 								))}
+								{isEditing ? (
+									<button className="text-sm border rounded px-3 py-1" onClick={() => setEmergencyContacts([...emergencyContacts, { name: "", relationship: "", phone: "", email: "" }])}>Add Contact</button>
+								) : null}
 							</div>
 						</CardContent>
 					</Card>
@@ -508,15 +811,19 @@ const securityInfo = {
 											Allow basic info in student directory
 										</p>
 									</div>
-									<Badge
-										className={
-											privacySettings.ferpaDirectory
-												? "bg-green-100 text-green-800"
-												: "bg-red-100 text-red-800"
-										}
-									>
-										{privacySettings.ferpaDirectory ? "Allowed" : "Restricted"}
-									</Badge>
+									{isEditing ? (
+										<input type="checkbox" checked={!!privacySettings.ferpaDirectory} onChange={(e) => setPreferences({ ...preferences, ferpaDirectory: e.target.checked })} />
+									) : (
+										<Badge
+											className={
+												privacySettings.ferpaDirectory
+													? "bg-green-100 text-green-800"
+													: "bg-red-100 text-red-800"
+											}
+										>
+											{privacySettings.ferpaDirectory ? "Allowed" : "Restricted"}
+										</Badge>
+									)}
 								</div>
 								<div className="flex items-center justify-between">
 									<div>
@@ -525,15 +832,19 @@ const securityInfo = {
 											Allow use of photos in publications
 										</p>
 									</div>
-									<Badge
-										className={
-											privacySettings.photoRelease
-												? "bg-green-100 text-green-800"
-												: "bg-red-100 text-red-800"
-										}
-									>
-										{privacySettings.photoRelease ? "Allowed" : "Restricted"}
-									</Badge>
+									{isEditing ? (
+										<input type="checkbox" checked={!!privacySettings.photoRelease} onChange={(e) => setPreferences({ ...preferences, photoRelease: e.target.checked })} />
+									) : (
+										<Badge
+											className={
+												privacySettings.photoRelease
+													? "bg-green-100 text-green-800"
+													: "bg-red-100 text-red-800"
+											}
+										>
+											{privacySettings.photoRelease ? "Allowed" : "Restricted"}
+										</Badge>
+									)}
 								</div>
 								<div className="flex items-center justify-between">
 									<div>
@@ -542,13 +853,22 @@ const securityInfo = {
 											Overall privacy setting
 										</p>
 									</div>
-									<Badge
-										className={getPrivacyLevelColor(
-											privacySettings.infoRelease
-										)}
-									>
-										{privacySettings.infoRelease}
-									</Badge>
+									{isEditing ? (
+										<select className="border rounded-md p-2" value={preferences.ferpa_compliance} onChange={(e) => setPreferences({ ...preferences, ferpa_compliance: e.target.value })}>
+											<option value="PUBLIC">PUBLIC</option>
+											<option value="DIRECTORY">DIRECTORY</option>
+											<option value="RESTRICTED">RESTRICTED</option>
+											<option value="CONFIDENTIAL">CONFIDENTIAL</option>
+										</select>
+									) : (
+										<Badge
+											className={getPrivacyLevelColor(
+												privacySettings.infoRelease
+											)}
+										>
+											{privacySettings.infoRelease}
+										</Badge>
+									)}
 								</div>
 							</CardContent>
 						</Card>
@@ -568,15 +888,19 @@ const securityInfo = {
 											Allow phone communications
 										</p>
 									</div>
-									<Badge
-										className={
-											privacySettings.contactByPhone
-												? "bg-green-100 text-green-800"
-												: "bg-red-100 text-red-800"
-										}
-									>
-										{privacySettings.contactByPhone ? "Enabled" : "Disabled"}
-									</Badge>
+									{isEditing ? (
+										<input type="checkbox" checked={!!privacySettings.contactByPhone} onChange={(e) => setPreferences({ ...preferences, contactByPhone: e.target.checked })} />
+									) : (
+										<Badge
+											className={
+												privacySettings.contactByPhone
+													? "bg-green-100 text-green-800"
+													: "bg-red-100 text-red-800"
+											}
+										>
+											{privacySettings.contactByPhone ? "Enabled" : "Disabled"}
+										</Badge>
+									)}
 								</div>
 								<div className="flex items-center justify-between">
 									<div>
@@ -585,15 +909,19 @@ const securityInfo = {
 											Allow email communications
 										</p>
 									</div>
-									<Badge
-										className={
-											privacySettings.contactByEmail
-												? "bg-green-100 text-green-800"
-												: "bg-red-100 text-red-800"
-										}
-									>
-										{privacySettings.contactByEmail ? "Enabled" : "Disabled"}
-									</Badge>
+									{isEditing ? (
+										<input type="checkbox" checked={!!privacySettings.contactByEmail} onChange={(e) => setPreferences({ ...preferences, contactByEmail: e.target.checked })} />
+									) : (
+										<Badge
+											className={
+												privacySettings.contactByEmail
+													? "bg-green-100 text-green-800"
+													: "bg-red-100 text-red-800"
+											}
+										>
+											{privacySettings.contactByEmail ? "Enabled" : "Disabled"}
+										</Badge>
+									)}
 								</div>
 								<div className="flex items-center justify-between">
 									<div>
@@ -602,15 +930,19 @@ const securityInfo = {
 											Allow postal mail communications
 										</p>
 									</div>
-									<Badge
-										className={
-											privacySettings.contactByMail
-												? "bg-green-100 text-green-800"
-												: "bg-red-100 text-red-800"
-										}
-									>
-										{privacySettings.contactByMail ? "Enabled" : "Disabled"}
-									</Badge>
+									{isEditing ? (
+										<input type="checkbox" checked={!!privacySettings.contactByMail} onChange={(e) => setPreferences({ ...preferences, contactByMail: e.target.checked })} />
+									) : (
+										<Badge
+											className={
+												privacySettings.contactByMail
+													? "bg-green-100 text-green-800"
+													: "bg-red-100 text-red-800"
+											}
+										>
+											{privacySettings.contactByMail ? "Enabled" : "Disabled"}
+										</Badge>
+									)}
 								</div>
 							</CardContent>
 						</Card>

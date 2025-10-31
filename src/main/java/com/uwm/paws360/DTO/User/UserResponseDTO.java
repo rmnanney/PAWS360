@@ -9,6 +9,7 @@ public record UserResponseDTO(
         int user_id,
         String email,
         String firstname,
+        String preferred_name,
         String lastname,
         Role role,
         Ethnicity ethnicity,
