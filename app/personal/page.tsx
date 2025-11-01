@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Spinner } from "../components/Others/spinner";
 import {
 	Card,
 	CardContent,
@@ -73,6 +74,7 @@ export default function PersonalPage() {
 	const [emergencyContacts, setEmergencyContacts] = React.useState<any[]>([]);
 	const [ssnMasked, setSsnMasked] = React.useState<string>("***-**-****");
 	const { toast } = require("@/hooks/useToast");
+    const [loading, setLoading] = React.useState<boolean>(true);
 
 	React.useEffect(() => {
 		const load = async () => {
@@ -125,6 +127,8 @@ export default function PersonalPage() {
 				if (natRes.ok) setNationalities(await natRes.json());
 			} catch (e: any) {
 				toast({ variant: "destructive", title: "Failed to load profile", description: e?.message || "Try again later." });
+			} finally {
+				setLoading(false);
 			}
 		};
 		load();
@@ -211,6 +215,16 @@ const securityInfo = {
 				return "bg-gray-100 text-gray-800";
 		}
 	};
+
+	if (loading) {
+		return (
+			<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+				<div className="flex items-center justify-center text-sm text-muted-foreground" style={{ minHeight: 160 }}>
+					<span className="inline-flex items-center gap-2"><Spinner size="sm" /> Loading profile…</span>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Spinner } from "../components/Others/spinner";
 import { useRouter } from "next/navigation";
 import {
 	Card,
@@ -66,6 +67,11 @@ type AcademicStats = {
 };
 
 const { API_BASE } = require("@/lib/api");
+import type {
+    AcademicSummary,
+    Transcript as TranscriptResponse,
+    CurrentGradesResponse,
+} from "@/lib/types";
 
 export default function Academic() {
     const [stats, setStats] = React.useState<AcademicStats | null>(null);
@@ -96,7 +102,7 @@ export default function Academic() {
                 ]);
 
                 if (summaryRes.ok) {
-                    const s = await summaryRes.json();
+                    const s: AcademicSummary = await summaryRes.json();
                     setStats({
                         cumulativeGPA: s.cumulativeGPA ?? 0,
                         totalCredits: s.totalCredits ?? 0,
@@ -110,12 +116,12 @@ export default function Academic() {
                 }
 
                 if (transcriptRes.ok) {
-                    const t = await transcriptRes.json();
-                    const terms: TranscriptTerm[] = (t.terms ?? []).map((term: any) => ({
+                    const t: TranscriptResponse = await transcriptRes.json();
+                    const terms: TranscriptTerm[] = (t.terms ?? []).map((term) => ({
                         term: term.termLabel,
                         gpa: term.gpa,
                         credits: term.credits,
-                        courses: (term.courses ?? []).map((c: any) => ({
+                        courses: (term.courses ?? []).map((c) => ({
                             course: c.courseCode,
                             title: c.title,
                             grade: c.grade,
@@ -126,8 +132,8 @@ export default function Academic() {
                 }
 
                 if (gradesRes.ok) {
-                    const g = await gradesRes.json();
-                    const list: CurrentGrade[] = (g.grades ?? []).map((x: any) => ({
+                    const g: CurrentGradesResponse = await gradesRes.json();
+                    const list: CurrentGrade[] = (g.grades ?? []).map((x) => ({
                         course: `${x.courseCode} - ${x.title}`,
                         grade: x.letter ?? "IP",
                         credits: x.credits ?? 0,
@@ -216,7 +222,9 @@ export default function Academic() {
     if (loading) {
         return (
             <div className="flex-1 p-4 md:p-8 pt-6">
-                <p className="text-sm text-muted-foreground">Loading academic records...</p>
+                <div className="flex items-center justify-center text-sm text-muted-foreground" style={{ minHeight: 160 }}>
+                    <span className="inline-flex items-center gap-2"><Spinner size="sm" /> Loading academic records...</span>
+                </div>
             </div>
         );
     }

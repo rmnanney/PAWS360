@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import s from "./styles.module.css";
 import {
@@ -19,129 +19,90 @@ import {
 import { Badge } from "../../components/Others/badge";
 import { Button } from "../../components/Others/button";
 import {
-	ChevronLeft,
-	CreditCard,
-	DollarSign,
-	Receipt,
-	TrendingUp,
-	TrendingDown,
-	AlertTriangle,
-	CheckCircle,
-	Calendar,
-	Download,
-	Mail,
+    ChevronLeft,
+    CreditCard,
+    DollarSign,
+    Receipt,
+    TrendingUp,
+    TrendingDown,
+    AlertTriangle,
+    CheckCircle,
+    Calendar,
+    Download,
+    Mail,
+    Loader2,
 } from "lucide-react";
-
-// Mock data for finances
-const accountSummary = {
-	currentBalance: 2450.75,
-	totalCharges: 8750.0,
-	totalPayments: 6299.25,
-	financialAid: 3200.0,
-	refundAmount: 0.0,
-	dueDate: "2025-10-15",
-};
-
-const recentTransactions = [
-	{
-		id: 1,
-		date: "2025-10-01",
-		description: "Tuition - Fall 2025",
-		amount: -4250.0,
-		type: "Charge",
-		status: "Posted",
-	},
-	{
-		id: 2,
-		date: "2025-09-28",
-		description: "Financial Aid Disbursement",
-		amount: 1600.0,
-		type: "Credit",
-		status: "Posted",
-	},
-	{
-		id: 3,
-		date: "2025-09-15",
-		description: "Housing Deposit",
-		amount: -1200.0,
-		type: "Charge",
-		status: "Posted",
-	},
-	{
-		id: 4,
-		date: "2025-09-10",
-		description: "Meal Plan - Semester",
-		amount: -850.0,
-		type: "Charge",
-		status: "Posted",
-	},
-	{
-		id: 5,
-		date: "2025-09-05",
-		description: "Payment Received",
-		amount: 2000.0,
-		type: "Payment",
-		status: "Posted",
-	},
-];
-
-const upcomingCharges = [
-	{
-		description: "Tuition - Spring 2026",
-		amount: 4250.0,
-		dueDate: "2026-01-15",
-		status: "Pending",
-	},
-	{
-		description: "Housing - Spring 2026",
-		amount: 2400.0,
-		dueDate: "2026-01-10",
-		status: "Pending",
-	},
-];
-
-const financialAid = [
-	{
-		type: "Federal Pell Grant",
-		amount: 1800.0,
-		awarded: 1800.0,
-		disbursed: 900.0,
-		remaining: 900.0,
-		status: "Active",
-	},
-	{
-		type: "Federal Work Study",
-		amount: 2400.0,
-		awarded: 2400.0,
-		disbursed: 1200.0,
-		remaining: 1200.0,
-		status: "Active",
-	},
-	{
-		type: "State Grant",
-		amount: 800.0,
-		awarded: 800.0,
-		disbursed: 400.0,
-		remaining: 400.0,
-		status: "Active",
-	},
-];
-
-const paymentPlans = [
-	{
-		name: "Monthly Payment Plan",
-		totalAmount: 2450.75,
-		monthlyPayment: 245.08,
-		remainingPayments: 10,
-		nextPaymentDate: "2025-11-01",
-		status: "Active",
-	},
-];
+import type {
+  FinancesSummary,
+  Transaction as Tx,
+  AidOverview,
+  PaymentPlan,
+  GetStudentIdResponse,
+} from "@/lib/types";
+import { API_BASE } from "@/lib/api";
+import { useToast } from "@/hooks/useToast";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/Others/table";
+import { Spinner } from "../../components/Others/spinner";
 
 export default function MyAccountPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [activeTab, setActiveTab] = useState("overview");
+
+	// Remote data
+	const [summary, setSummary] = useState<FinancesSummary | null>(null);
+	const [transactions, setTransactions] = useState<Tx[]>([]);
+	const [aid, setAid] = useState<AidOverview | null>(null);
+	const [plans, setPlans] = useState<PaymentPlan[]>([]);
+	const [loading, setLoading] = useState<boolean>(true);
+	const [studentId, setStudentId] = useState<number | null>(null);
+	const [paying, setPaying] = useState<boolean>(false);
+	const { toast } = useToast();
+
+	useEffect(() => {
+		const load = async () => {
+			setLoading(true);
+			try {
+				const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+				if (!email) return;
+				const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
+				const sidData: GetStudentIdResponse = await sidRes.json();
+				if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) {
+					if (sidRes.status === 400) {
+						toast({ variant: "destructive", title: "User not found", description: "Please verify your account." });
+					}
+					return;
+				}
+				const studentId = sidData.student_id;
+				setStudentId(studentId);
+
+				const [sumRes, txRes, aidRes, planRes] = await Promise.all([
+					fetch(`${API_BASE}/finances/student/${studentId}/summary`).catch(() => null),
+					fetch(`${API_BASE}/finances/student/${studentId}/transactions`).catch(() => null),
+					fetch(`${API_BASE}/finances/student/${studentId}/aid`).catch(() => null),
+					fetch(`${API_BASE}/finances/student/${studentId}/payment-plans`).catch(() => null),
+				]);
+
+				if (sumRes && sumRes.ok) setSummary(await sumRes.json());
+				if (txRes && txRes.ok) setTransactions(await txRes.json());
+				if (aidRes && aidRes.ok) setAid(await aidRes.json());
+				if (planRes && planRes.ok) setPlans(await planRes.json());
+			} catch (e: any) {
+				toast({ variant: "destructive", title: "Failed to load account", description: e?.message || "Try again later." });
+			} finally {
+				setLoading(false);
+			}
+		};
+		load();
+	}, [toast]);
 
 	// Read tab from URL on mount and when URL changes
 	useEffect(() => {
@@ -180,6 +141,11 @@ export default function MyAccountPage() {
 		return amount >= 0 ? s.amountPositive : s.amountNegative;
 	};
 
+	const getBalanceColor = (balance?: number | null) => {
+		const v = typeof balance === 'number' ? balance : 0;
+		return v <= 0 ? s.amountPositive : s.amountNegative;
+	};
+
 	const getTransactionIcon = (type: string) => {
 		switch (type) {
 			case "Payment":
@@ -204,6 +170,17 @@ export default function MyAccountPage() {
 				return s.statusDefault;
 		}
 	};
+
+	const upcomingCharges = useMemo(() => {
+		const list = (transactions || []).filter((t) => {
+			const type = (t.type || "").toUpperCase();
+			return type === "CHARGE" || (typeof t.amount === "number" && t.amount < 0);
+		});
+		return list.slice(0, 5);
+	}, [transactions]);
+
+	const formatMoney = (v?: number | null) =>
+		typeof v === "number" ? `$${v.toFixed(2)}` : "-";
 
 	return (
 		<div className={s.pageContainer}>
@@ -239,15 +216,14 @@ export default function MyAccountPage() {
 						<DollarSign className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div
-							className={`${s.balanceAmount} ${getAmountColor(
-								accountSummary.currentBalance
-							)}`}
-						>
-							${accountSummary.currentBalance.toFixed(2)}
+						<div className={`${s.balanceAmount} ${getBalanceColor(summary?.accountBalance)}`}>
+							{formatMoney(summary?.accountBalance ?? null)}
 						</div>
+						{summary && Number(summary.chargesDue || 0) <= 0 && (
+							<Badge variant="secondary">Paid in Full</Badge>
+						)}
 						<p className="text-xs text-muted-foreground">
-							Due: {accountSummary.dueDate}
+							Due: {summary?.dueDate || "-"}
 						</p>
 					</CardContent>
 				</Card>
@@ -259,9 +235,9 @@ export default function MyAccountPage() {
 					</CardHeader>
 					<CardContent>
 						<div className={`${s.balanceAmount} ${s.amountNegative}`}>
-							${accountSummary.totalCharges.toFixed(2)}
+							{formatMoney((transactions || []).filter(t => (t.type || "").toUpperCase() === "CHARGE").reduce((sum, t) => sum + (t.amount || 0), 0))}
 						</div>
-						<p className="text-xs text-muted-foreground">This semester</p>
+						<p className="text-xs text-muted-foreground">Recent charges total</p>
 					</CardContent>
 				</Card>
 
@@ -272,9 +248,9 @@ export default function MyAccountPage() {
 					</CardHeader>
 					<CardContent>
 						<div className={`${s.balanceAmount} ${s.amountPositive}`}>
-							${accountSummary.financialAid.toFixed(2)}
+							{formatMoney(aid?.totalAccepted ?? null)}
 						</div>
-						<p className="text-xs text-muted-foreground">Awarded this year</p>
+						<p className="text-xs text-muted-foreground">Aid accepted</p>
 					</CardContent>
 				</Card>
 
@@ -287,10 +263,10 @@ export default function MyAccountPage() {
 					</CardHeader>
 					<CardContent>
 						<div className={`${s.balanceAmount} ${s.amountYellow}`}>
-							Payment Plan
+							{(plans && plans.length > 0) ? (plans[0].name || "Payment Plan") : "Payment Plan"}
 						</div>
 						<p className="text-xs text-muted-foreground">
-							10 payments remaining
+							{(plans && plans.length > 0 && typeof plans[0].remainingPayments === 'number') ? `${plans[0].remainingPayments} payments remaining` : '—'}
 						</p>
 					</CardContent>
 				</Card>
@@ -310,73 +286,66 @@ export default function MyAccountPage() {
 				</TabsList>
 
 				<TabsContent value="overview" className="space-y-4">
+					{loading ? (
+						<div className="flex items-center justify-center text-sm text-muted-foreground" style={{ minHeight: 120 }}>
+							<span className="inline-flex items-center gap-2"><Spinner size="sm" /> Loading overview…</span>
+						</div>
+					) : (
 					<div className={s.twoColumnGrid}>
 						<Card>
-							<CardHeader>
-								<CardTitle>Account Summary</CardTitle>
-								<CardDescription>
-									Your current financial standing
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-4">
-								<div className={s.summaryItem}>
-									<span>Total Charges:</span>
-									<span className={s.amountNegative}>
-										${accountSummary.totalCharges.toFixed(2)}
-									</span>
-								</div>
-								<div className={s.summaryItem}>
-									<span>Total Payments:</span>
-									<span className={s.amountPositive}>
-										${accountSummary.totalPayments.toFixed(2)}
-									</span>
-								</div>
-								<div className={s.summaryItem}>
-									<span>Financial Aid:</span>
-									<span className={s.amountPositive}>
-										${accountSummary.financialAid.toFixed(2)}
-									</span>
-								</div>
-								<div className={s.summaryTotal}>
-									<span>Current Balance:</span>
-									<span
-										className={getAmountColor(accountSummary.currentBalance)}
-									>
-										${accountSummary.currentBalance.toFixed(2)}
-									</span>
-								</div>
-							</CardContent>
-						</Card>
+						<CardHeader>
+							<CardTitle>Account Summary</CardTitle>
+							<CardDescription>
+								Your current financial standing
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<div className={s.summaryItem}>
+								<span>Total Charges:</span>
+								<span className={s.amountNegative}>{formatMoney((transactions || []).filter(t => (t.type || "").toUpperCase() === "CHARGE").reduce((sum, t) => sum + (t.amount || 0), 0))}</span>
+							</div>
+							<div className={s.summaryItem}>
+								<span>Total Payments:</span>
+								<span className={s.amountPositive}>{formatMoney((transactions || []).filter(t => (t.type || "").toUpperCase() !== "CHARGE").reduce((sum, t) => sum + (t.amount || 0), 0))}</span>
+							</div>
+							<div className={s.summaryItem}>
+								<span>Financial Aid:</span>
+								<span className={s.amountPositive}>{formatMoney(aid?.totalDisbursed ?? null)}</span>
+							</div>
+							<div className={s.summaryTotal}>
+								<span>Current Balance:</span>
+								<span className={getAmountColor(Number(summary?.accountBalance || 0))}>{formatMoney(summary?.accountBalance ?? null)}</span>
+							</div>
+						</CardContent>
+					</Card>
 
 						<Card>
-							<CardHeader>
-								<CardTitle>Upcoming Charges</CardTitle>
-								<CardDescription>Pending charges and due dates</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-4">
-									{upcomingCharges.map((charge, index) => (
-										<div key={index} className={s.chargeItem}>
-											<div>
-												<p className={s.mediumText}>{charge.description}</p>
-												<p className="text-sm text-muted-foreground">
-													Due: {charge.dueDate}
-												</p>
-											</div>
-											<div className={s.chargeDetails}>
-												<p className={`${s.semiboldText} ${s.amountNegative}`}>
-													${charge.amount.toFixed(2)}
-												</p>
-												<Badge className={getStatusColor(charge.status)}>
-													{charge.status}
-												</Badge>
-											</div>
+						<CardHeader>
+							<CardTitle>Recent Charges</CardTitle>
+							<CardDescription>Latest posted or pending charges</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<div className="space-y-4">
+								{upcomingCharges.map((t, index) => (
+									<div key={index} className={s.chargeItem}>
+										<div>
+											<p className={s.mediumText}>{t.description || "Charge"}</p>
+											<p className="text-sm text-muted-foreground">Due: {t.dueDate || "-"}</p>
 										</div>
-									))}
-								</div>
-							</CardContent>
-						</Card>
+										<div className={s.chargeDetails}>
+											<p className={`${s.semiboldText} ${s.amountNegative}`}>{formatMoney(t.amount ?? null)}</p>
+											<Badge className={getStatusColor(String(t.status || ""))}>{String(t.status || "")}</Badge>
+										</div>
+									</div>
+								))}
+								{upcomingCharges.length === 0 && (
+									<p className="text-sm text-muted-foreground">No recent charges.</p>
+								)}
+							</div>
+						</CardContent>
+					</Card>
 					</div>
+					)}
 
 					<Card>
 						<CardHeader>
@@ -387,91 +356,97 @@ export default function MyAccountPage() {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-4">
-								{paymentPlans.map((plan, index) => (
+								{plans.map((plan, index) => (
 									<div key={index} className={s.paymentPlanCard}>
 										<div className={s.paymentPlanHeader}>
 											<h3 className={s.semiboldText}>{plan.name}</h3>
-											<Badge className={getStatusColor(plan.status)}>
-												{plan.status}
-											</Badge>
+											<Badge className={getStatusColor(String(plan.status || ""))}>{String(plan.status || "")}</Badge>
 										</div>
 										<div className={s.fourColumnGrid}>
 											<div>
 												<p className="text-muted-foreground">Total Amount</p>
-												<p className={s.semiboldText}>
-													${plan.totalAmount.toFixed(2)}
-												</p>
+												<p className={s.semiboldText}>{formatMoney(plan.totalAmount)}</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Monthly Payment</p>
-												<p className={s.semiboldText}>
-													${plan.monthlyPayment.toFixed(2)}
-												</p>
+												<p className={s.semiboldText}>{formatMoney(plan.monthlyPayment)}</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Payments Left</p>
-												<p className={s.semiboldText}>
-													{plan.remainingPayments}
-												</p>
+												<p className={s.semiboldText}>{plan.remainingPayments ?? "-"}</p>
 											</div>
 											<div>
 												<p className="text-muted-foreground">Next Payment</p>
-												<p className={s.semiboldText}>{plan.nextPaymentDate}</p>
+												<p className={s.semiboldText}>{plan.nextPaymentDate || "-"}</p>
 											</div>
 										</div>
 									</div>
 								))}
+								{plans.length === 0 && (
+									<p className="text-sm text-muted-foreground">No active payment plans.</p>
+								)}
 							</div>
 						</CardContent>
 					</Card>
 				</TabsContent>
 
 				<TabsContent value="transactions" className="space-y-4">
+					{loading ? (
+						<div className="flex items-center justify-center text-sm text-muted-foreground" style={{ minHeight: 120 }}>
+							<span className="inline-flex items-center gap-2"><Spinner size="sm" /> Loading transactions…</span>
+						</div>
+					) : (
 					<Card>
 						<CardHeader>
 							<CardTitle>Transaction History</CardTitle>
-							<CardDescription>
-								Your recent financial transactions
-							</CardDescription>
+							<CardDescription>Your recent financial transactions</CardDescription>
 						</CardHeader>
 						<CardContent>
-							<div className="space-y-4">
-								{recentTransactions.map((transaction, index) => (
-									<div key={index} className={s.transactionItem}>
-										<div className={s.transactionLeft}>
-											{getTransactionIcon(transaction.type)}
-											<div>
-												<p className={s.mediumText}>
-													{transaction.description}
-												</p>
-												<p className="text-sm text-muted-foreground">
-													{transaction.date}
-												</p>
-											</div>
-										</div>
-										<div className={s.transactionRight}>
-											<div className={s.transactionDetails}>
-												<p
-													className={`${s.semiboldText} ${getAmountColor(
-														transaction.amount
-													)}`}
-												>
-													{transaction.amount >= 0 ? "+" : ""}$
-													{transaction.amount.toFixed(2)}
-												</p>
-												<Badge className={getStatusColor(transaction.status)}>
-													{transaction.status}
-												</Badge>
-											</div>
-										</div>
-									</div>
-								))}
-							</div>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Date</TableHead>
+										<TableHead>Description</TableHead>
+										<TableHead>Type</TableHead>
+										<TableHead className="text-right">Amount</TableHead>
+										<TableHead>Status</TableHead>
+										<TableHead>Due Date</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{transactions.map((t, idx) => {
+										const date = t.postedAt ? new Date(t.postedAt) : null;
+										const due = t.dueDate ? new Date(t.dueDate) : null;
+										const amt = typeof t.amount === 'number' ? t.amount : 0;
+										return (
+											<TableRow key={idx}>
+												<TableCell>{date ? date.toLocaleDateString() : '-'}</TableCell>
+												<TableCell>{t.description || '-'}</TableCell>
+												<TableCell>{t.type || '-'}</TableCell>
+												<TableCell className={`text-right ${getAmountColor(amt)}`}>{amt >= 0 ? '+' : ''}{formatMoney(amt)}</TableCell>
+                                        <TableCell>
+                                            <Badge className={getStatusColor(String(t.status || ''))}>{String(t.status || '')}</Badge>
+                                        </TableCell>
+												<TableCell>{due ? due.toLocaleDateString() : '-'}</TableCell>
+											</TableRow>
+										);
+									})}
+								</TableBody>
+								{transactions.length === 0 && (
+									<TableCaption>No transactions found.</TableCaption>
+								)}
+							</Table>
 						</CardContent>
 					</Card>
+					)}
 				</TabsContent>
 
 				<TabsContent value="aid" className="space-y-4">
+					{loading ? (
+						<div className="flex items-center justify-center text-sm text-muted-foreground" style={{ minHeight: 120 }}>
+							<span className="inline-flex items-center gap-2"><Spinner size="sm" /> Loading financial aid…</span>
+						</div>
+					) : (
 					<Card>
 						<CardHeader>
 							<CardTitle>Financial Aid Awards</CardTitle>
@@ -481,48 +456,49 @@ export default function MyAccountPage() {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-4">
-								{financialAid.map((aid, index) => (
+								{(aid?.awards || []).map((aw, index) => (
 									<div key={index} className={s.aidCard}>
-										<div className={s.aidHeader}>
-											<h3 className={s.semiboldText}>{aid.type}</h3>
-											<Badge className={getStatusColor(aid.status)}>
-												{aid.status}
-											</Badge>
+									<div className={s.aidHeader}>
+										<h3 className={s.semiboldText}>{aw.type}</h3>
+										<Badge className={getStatusColor(String(aw.status || ""))}>
+											{aw.status}
+										</Badge>
+									</div>
+									<div className={s.fourColumnGrid}>
+										<div>
+											<p className="text-muted-foreground">Awarded</p>
+											<p className={`${s.semiboldText} ${s.amountPositive}`}>{formatMoney(aw.amountOffered)}</p>
 										</div>
-										<div className={s.fourColumnGrid}>
-											<div>
-												<p className="text-muted-foreground">Awarded</p>
-												<p className={`${s.semiboldText} ${s.amountPositive}`}>
-													${aid.awarded.toFixed(2)}
-												</p>
-											</div>
-											<div>
-												<p className="text-muted-foreground">Disbursed</p>
-												<p className={`${s.semiboldText} ${s.amountBlue}`}>
-													${aid.disbursed.toFixed(2)}
-												</p>
-											</div>
-											<div>
-												<p className="text-muted-foreground">Remaining</p>
-												<p className={`${s.semiboldText} ${s.amountOrange}`}>
-													${aid.remaining.toFixed(2)}
-												</p>
-											</div>
-											<div>
-												<p className="text-muted-foreground">Total Aid</p>
-												<p className={s.semiboldText}>
-													${aid.amount.toFixed(2)}
-												</p>
-											</div>
+										<div>
+											<p className="text-muted-foreground">Disbursed</p>
+											<p className={`${s.semiboldText} ${s.amountBlue}`}>{formatMoney(aw.amountDisbursed)}</p>
+										</div>
+										<div>
+											<p className="text-muted-foreground">Remaining</p>
+											<p className={`${s.semiboldText} ${s.amountOrange}`}>{formatMoney((aw.amountOffered || 0) - (aw.amountAccepted || 0))}</p>
+										</div>
+										<div>
+											<p className="text-muted-foreground">Total Aid</p>
+											<p className={s.semiboldText}>{formatMoney(aw.amountAccepted)}</p>
 										</div>
 									</div>
-								))}
-							</div>
-						</CardContent>
+								</div>
+							))}
+							{(!aid || (aid.awards || []).length === 0) && (
+								<p className="text-sm text-muted-foreground">No awards found.</p>
+							)}
+						</div>
+					</CardContent>
 					</Card>
+					)}
 				</TabsContent>
 
 				<TabsContent value="payments" className="space-y-4">
+					{loading ? (
+						<div className="flex items-center justify-center text-sm text-muted-foreground" style={{ minHeight: 120 }}>
+							<span className="inline-flex items-center gap-2"><Spinner size="sm" /> Loading payments…</span>
+						</div>
+					) : (
 					<Card>
 						<CardHeader>
 							<CardTitle>Make a Payment</CardTitle>
@@ -540,16 +516,46 @@ export default function MyAccountPage() {
 									<p className={s.alertText}>
 										Your current balance is{" "}
 										<span className={s.semiboldText}>
-											${accountSummary.currentBalance.toFixed(2)}
+											{formatMoney(summary?.accountBalance ?? null)}
 										</span>
 									</p>
 									<p className={s.alertSubtext}>
-										Due date: {accountSummary.dueDate}
+										Due date: {summary?.dueDate || "-"}
 									</p>
+									{summary && Number(summary.chargesDue || 0) <= 0 && (
+										<Badge variant="secondary">Paid in Full</Badge>
+									)}
 								</div>
 								<div className={s.paymentButtons}>
-									<Button className={s.paymentButton} size="lg">
-										<CreditCard className="mr-2 h-5 w-5" />
+									<Button className={s.paymentButton} size="lg" disabled={paying}
+										onClick={async () => {
+											try {
+												if (!studentId) return;
+												const due = Number(summary?.accountBalance || 0);
+												if (!(due > 0)) { toast({ title: "No balance due" }); return; }
+												setPaying(true);
+												const res = await fetch(`${API_BASE}/finances/admin/students/${studentId}/transactions`, {
+													method: "POST",
+													headers: { "Content-Type": "application/json" },
+													body: JSON.stringify({ amount: due, type: "PAYMENT", status: "POSTED", description: "Credit Card payment" })
+												});
+												if (!res.ok) throw new Error("Payment failed");
+												toast({ title: "Payment successful", description: `Paid ${formatMoney(due)}` });
+												// Reload account data
+												const [sumRes, txRes] = await Promise.all([
+													fetch(`${API_BASE}/finances/student/${studentId}/summary`).catch(() => null),
+													fetch(`${API_BASE}/finances/student/${studentId}/transactions`).catch(() => null),
+												]);
+												if (sumRes && sumRes.ok) setSummary(await sumRes.json());
+												if (txRes && txRes.ok) setTransactions(await txRes.json());
+											} catch (e: any) {
+												toast({ variant: "destructive", title: "Payment failed", description: e?.message || "Try again later." });
+											} finally {
+												setPaying(false);
+											}
+										}}
+									>
+										{paying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
 										Pay with Credit Card
 									</Button>
 									<Button
@@ -586,6 +592,7 @@ export default function MyAccountPage() {
 							</div>
 						</CardContent>
 					</Card>
+					)}
 				</TabsContent>
 			</Tabs>
 		</div>

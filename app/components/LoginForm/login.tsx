@@ -19,6 +19,7 @@ import {
 } from "../Others/form";
 import { Input } from "../Others/input";
 import { useToast } from "../../hooks/useToast";
+import { API_BASE } from "@/lib/api";
 import s from "./styles.module.css";
 
 const formSchema = z.object({
@@ -48,14 +49,14 @@ export default function LoginForm() {
 		setIsLoading(true);
 		// Simulate API call
 		await new Promise((resolve) => setTimeout(resolve, 1000));
-		try {
-			const res = await fetch("http://localhost:8080/login", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(values),
-			});
+        try {
+            const res = await fetch(`${API_BASE}/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(values),
+            });
 
     const data = await res.json();
 

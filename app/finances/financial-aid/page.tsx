@@ -29,11 +29,14 @@ import {
 	CollapsibleTrigger,
 } from "../../components/Collapsible/collapsible";
 import s from "./styles.module.css";
+import { Spinner } from "../../components/Others/spinner";
+import type { AidOverview, GetStudentIdResponse } from "@/lib/types";
 
 export default function FinancialAidPage() {
     const router = useRouter();
     const [overviewOpen, setOverviewOpen] = useState(false);
-    const [aid, setAid] = useState<any | null>(null);
+    const [aid, setAid] = useState<AidOverview | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
     const { API_BASE } = require("@/lib/api");
     const { toast } = require("@/hooks/useToast");
 
@@ -43,14 +46,21 @@ export default function FinancialAidPage() {
                 const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
                 if (!email) return;
                 const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
-                const sidData = await sidRes.json();
-                if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) return;
+                const sidData: GetStudentIdResponse = await sidRes.json();
+                if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) {
+                    if (sidRes.status === 400) {
+                        toast({ variant: "destructive", title: "User not found", description: "Please verify your account." });
+                    }
+                    return;
+                }
                 const res = await fetch(`${API_BASE}/finances/student/${sidData.student_id}/aid`);
                 if (!res.ok) throw new Error("Failed to load aid overview");
-                const data = await res.json();
+                const data: AidOverview = await res.json();
                 setAid(data);
             } catch (e: any) {
                 toast({ variant: "destructive", title: "Failed to load financial aid", description: e?.message || "Try again later." });
+            } finally {
+                setLoading(false);
             }
         };
         load();
@@ -144,8 +154,15 @@ export default function FinancialAidPage() {
 							</div>
 						</CardHeader>
 					</CollapsibleTrigger>
-					<CollapsibleContent>
-						<CardContent className={s.cardContentSpacing}>
+                <CollapsibleContent>
+                    {loading ? (
+                        <CardContent className={s.cardContentSpacing}>
+                            <div className="flex items-center justify-center text-sm text-muted-foreground" style={{ minHeight: 120 }}>
+                                <span className="inline-flex items-center gap-2"><Spinner size="sm" /> Loading aid overview…</span>
+                            </div>
+                        </CardContent>
+                    ) : (
+                    <CardContent className={s.cardContentSpacing}>
 							{/* Total Aid */}
 							<div className={s.totalAidGrid}>
 								<div className={s.aidItem}>
@@ -194,8 +211,9 @@ export default function FinancialAidPage() {
                         </div>
                         <Progress value={aid ? Math.round(((aid.totalAccepted || 0) / Math.max(1, (aid.totalOffered || 0))) * 100) : 0} />
 							</div>
-						</CardContent>
-					</CollapsibleContent>
+                    </CardContent>
+                    )}
+                </CollapsibleContent>
 				</Card>
 			</Collapsible>{" "}
 			{/* Financial Aid Services */}
