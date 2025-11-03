@@ -5,6 +5,7 @@ import com.uwm.paws360.Entity.Finances.*;
 import com.uwm.paws360.Entity.UserTypes.Student;
 import com.uwm.paws360.JPARepository.Finances.*;
 import com.uwm.paws360.JPARepository.User.StudentRepository;
+import com.uwm.paws360.Service.FinancesService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,17 +24,20 @@ public class FinancesAdminController {
     private final AccountTransactionRepository transactionRepository;
     private final AidAwardRepository aidAwardRepository;
     private final PaymentPlanRepository paymentPlanRepository;
+    private final FinancesService financesService;
 
     public FinancesAdminController(StudentRepository studentRepository,
                                    FinancialAccountRepository financialAccountRepository,
                                    AccountTransactionRepository transactionRepository,
                                    AidAwardRepository aidAwardRepository,
-                                   PaymentPlanRepository paymentPlanRepository) {
+                                   PaymentPlanRepository paymentPlanRepository,
+                                   FinancesService financesService) {
         this.studentRepository = studentRepository;
         this.financialAccountRepository = financialAccountRepository;
         this.transactionRepository = transactionRepository;
         this.aidAwardRepository = aidAwardRepository;
         this.paymentPlanRepository = paymentPlanRepository;
+        this.financesService = financesService;
     }
 
     @PostMapping("/students/{studentId}/account")
@@ -63,10 +67,26 @@ public class FinancesAdminController {
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Student not found for id " + studentId));
         AccountTransaction t = new AccountTransaction();
         t.setStudent(s);
-        t.setAmount(req.amount());
+        // Cap payments to the remaining balance to avoid overpayment
+        if (req.type() == AccountTransaction.Type.PAYMENT && req.status() == AccountTransaction.Status.POSTED) {
+            var summary = financesService.getSummary(studentId);
+            java.math.BigDecimal due = java.util.Optional.ofNullable(summary.accountBalance()).orElse(java.math.BigDecimal.ZERO);
+            if (due.signum() <= 0) {
+                return ResponseEntity.badRequest().build();
+            }
+            java.math.BigDecimal requested = req.amount();
+            java.math.BigDecimal toPay = requested.min(due);
+            t.setAmount(toPay);
+            if (requested.compareTo(toPay) > 0) {
+                String desc = (req.description() != null ? req.description() + " " : "").trim();
+                t.setDescription((desc + "(capped to remaining balance)").trim());
+            }
+        } else {
+            t.setAmount(req.amount());
+        }
         t.setType(req.type());
         t.setStatus(req.status());
-        t.setDescription(req.description());
+        if (t.getDescription() == null) t.setDescription(req.description());
         if (req.postedAt() != null) t.setPostedAt(req.postedAt());
         t.setDueDate(req.dueDate());
         AccountTransaction saved = transactionRepository.save(t);
@@ -74,20 +94,20 @@ public class FinancesAdminController {
         if (saved.getStatus() == AccountTransaction.Status.POSTED) {
             financialAccountRepository.findByStudent(s).ifPresent(acc -> {
                 switch (saved.getType()) {
-                    case PAYMENT -> {
+                    case PAYMENT:
                         acc.setLastPaymentAmount(saved.getAmount());
                         acc.setLastPaymentAt(saved.getPostedAt());
                         acc.setAccountBalance(acc.getAccountBalance().subtract(saved.getAmount()));
                         acc.setChargesDue(acc.getChargesDue().subtract(saved.getAmount()));
-                    }
-                    case CHARGE -> {
+                        break;
+                    case CHARGE:
                         acc.setAccountBalance(acc.getAccountBalance().add(saved.getAmount()));
                         acc.setChargesDue(acc.getChargesDue().add(saved.getAmount()));
-                    }
-                    case CREDIT -> {
+                        break;
+                    case CREDIT:
                         acc.setAccountBalance(acc.getAccountBalance().subtract(saved.getAmount()));
                         acc.setChargesDue(acc.getChargesDue().subtract(saved.getAmount()));
-                    }
+                        break;
                 }
                 // Prevent negative chargesDue for stored field (summary derives true values anyway)
                 if (acc.getChargesDue().signum() < 0) {

@@ -62,7 +62,9 @@ public class FinancesService {
                 .filter(java.util.Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        var awards = aidAwardRepository.findByStudent(s);
+        var awards = aidAwardRepository.findByStudent(s).stream()
+                .filter(a -> a.getStatus() != AidAward.AidStatus.CANCELLED)
+                .collect(Collectors.toList());
         BigDecimal disbursedAid = awards.stream()
                 .map(AidAward::getAmountDisbursed)
                 .filter(java.util.Objects::nonNull)
@@ -112,9 +114,12 @@ public class FinancesService {
         var list = awards.stream().map(a -> new AidAwardDTO(
                 a.getId(), a.getType(), a.getDescription(), a.getAmountOffered(), a.getAmountAccepted(), a.getAmountDisbursed(), a.getStatus(), a.getTerm(), a.getAcademicYear()
         )).collect(Collectors.toList());
-        BigDecimal offered = awards.stream().map(AidAward::getAmountOffered).filter(java.util.Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal accepted = awards.stream().map(AidAward::getAmountAccepted).filter(java.util.Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal disbursed = awards.stream().map(AidAward::getAmountDisbursed).filter(java.util.Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+        var effectiveAwards = awards.stream()
+                .filter(a -> a.getStatus() != AidAward.AidStatus.CANCELLED)
+                .collect(Collectors.toList());
+        BigDecimal offered = effectiveAwards.stream().map(AidAward::getAmountOffered).filter(java.util.Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal accepted = effectiveAwards.stream().map(AidAward::getAmountAccepted).filter(java.util.Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal disbursed = effectiveAwards.stream().map(AidAward::getAmountDisbursed).filter(java.util.Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
         return new AidOverviewDTO(offered, accepted, disbursed, list);
     }
 
