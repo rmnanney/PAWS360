@@ -392,11 +392,16 @@ const securityInfo = {
 						<CardTitle className="text-sm font-medium">Privacy Level</CardTitle>
 						<Shield className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
-					<CardContent>
-						<div className="text-2xl font-bold">Restricted</div>
-						<p className="text-xs text-muted-foreground">FERPA Protected</p>
-					</CardContent>
-				</Card>
+                    <CardContent>
+                        <div className="text-2xl font-bold">
+                            {(() => {
+                                const lvl = privacySettings.infoRelease || 'restricted';
+                                return lvl.charAt(0).toUpperCase() + lvl.slice(1);
+                            })()}
+                        </div>
+                        <p className="text-xs text-muted-foreground">FERPA Privacy</p>
+                    </CardContent>
+                </Card>
 			</div>
 
 			{/* Main Content Tabs */}
