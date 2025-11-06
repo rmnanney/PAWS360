@@ -1,0 +1,164 @@
+
+> nextn@0.1.0 dev
+> next dev --turbopack -p 9002
+
+   ▲ Next.js 15.3.3 (Turbopack)
+   - Local:        http://localhost:9002
+   - Network:      http://10.255.255.254:9002
+
+ ✓ Starting...
+ ✓ Ready in 867ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2s
+ GET / 307 in 2216ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 1068ms
+ GET /login 200 in 1193ms
+ ○ Compiling /homepage ...
+ ✓ Compiled /homepage in 638ms
+ GET /homepage 200 in 673ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 575ms
+ GET /api/placeholder/64/64 404 in 611ms
+ ○ Compiling /personal ...
+ GET /personal 200 in 773ms
+ GET /personal 200 in 33ms
+ GET /personal 200 in 37ms
+ GET /finances 200 in 742ms
+ GET /finances 200 in 905ms
+ GET /finances 200 in 697ms
+ ✓ Compiled /personal in 2s
+ GET /advising 200 in 469ms
+ GET /advising 200 in 818ms
+ ○ Compiling /academic ...
+ ✓ Compiled /academic in 735ms
+ ⨯ ./app/lib/transcript-pdf.ts:58:36
+Module not found: Can't resolve 'jspdf'
+[0m [90m 56 |[39m   advisor[33m?[39m[33m:[39m { name[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m[33m;[39m email[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m[33m;[39m phone[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m } [33m|[39m [36mnull[39m[33m;[39m[0m
+[0m [90m 57 |[39m }) {[0m
+[0m[31m[1m>[22m[39m[90m 58 |[39m   [36mconst[39m { [36mdefault[39m[33m:[39m jsPDF } [33m=[39m [36mawait[39m [36mimport[39m([32m'jspdf'[39m)[33m;[39m[0m
+[0m [90m    |[39m                                    [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 59 |[39m   [36mawait[39m [36mimport[39m([32m'jspdf-autotable'[39m)[33m;[39m[0m
+[0m [90m 60 |[39m[0m
+[0m [90m 61 |[39m   [36mconst[39m doc [33m=[39m [36mnew[39m jsPDF({ unit[33m:[39m [32m'pt'[39m[33m,[39m format[33m:[39m [32m'letter'[39m })[33m;[39m[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/lib/transcript-pdf.ts:59:9
+Module not found: Can't resolve 'jspdf-autotable'
+[0m [90m 57 |[39m }) {[0m
+[0m [90m 58 |[39m   [36mconst[39m { [36mdefault[39m[33m:[39m jsPDF } [33m=[39m [36mawait[39m [36mimport[39m([32m'jspdf'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 59 |[39m   [36mawait[39m [36mimport[39m([32m'jspdf-autotable'[39m)[33m;[39m[0m
+[0m [90m    |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 60 |[39m[0m
+[0m [90m 61 |[39m   [36mconst[39m doc [33m=[39m [36mnew[39m jsPDF({ unit[33m:[39m [32m'pt'[39m[33m,[39m format[33m:[39m [32m'letter'[39m })[33m;[39m[0m
+[0m [90m 62 |[39m   [36mconst[39m margin [33m=[39m [35m48[39m[33m;[39m[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 962ms
+ GET /academic 500 in 1865ms
+ ⨯ ./app/lib/transcript-pdf.ts:58:36
+Module not found: Can't resolve 'jspdf'
+[0m [90m 56 |[39m   advisor[33m?[39m[33m:[39m { name[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m[33m;[39m email[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m[33m;[39m phone[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m } [33m|[39m [36mnull[39m[33m;[39m[0m
+[0m [90m 57 |[39m }) {[0m
+[0m[31m[1m>[22m[39m[90m 58 |[39m   [36mconst[39m { [36mdefault[39m[33m:[39m jsPDF } [33m=[39m [36mawait[39m [36mimport[39m([32m'jspdf'[39m)[33m;[39m[0m
+[0m [90m    |[39m                                    [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 59 |[39m   [36mawait[39m [36mimport[39m([32m'jspdf-autotable'[39m)[33m;[39m[0m
+[0m [90m 60 |[39m[0m
+[0m [90m 61 |[39m   [36mconst[39m doc [33m=[39m [36mnew[39m jsPDF({ unit[33m:[39m [32m'pt'[39m[33m,[39m format[33m:[39m [32m'letter'[39m })[33m;[39m[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/lib/transcript-pdf.ts:59:9
+Module not found: Can't resolve 'jspdf-autotable'
+[0m [90m 57 |[39m }) {[0m
+[0m [90m 58 |[39m   [36mconst[39m { [36mdefault[39m[33m:[39m jsPDF } [33m=[39m [36mawait[39m [36mimport[39m([32m'jspdf'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 59 |[39m   [36mawait[39m [36mimport[39m([32m'jspdf-autotable'[39m)[33m;[39m[0m
+[0m [90m    |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 60 |[39m[0m
+[0m [90m 61 |[39m   [36mconst[39m doc [33m=[39m [36mnew[39m jsPDF({ unit[33m:[39m [32m'pt'[39m[33m,[39m format[33m:[39m [32m'letter'[39m })[33m;[39m[0m
+[0m [90m 62 |[39m   [36mconst[39m margin [33m=[39m [35m48[39m[33m;[39m[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /academic 500 in 40ms
+ GET /homepage 500 in 48ms
+ GET /homepage 500 in 44ms
+ GET /login 500 in 44ms
+ GET /homepage 500 in 50ms
+ GET / 500 in 54ms
+
+Could not open transcript-pdf.ts in the editor.
+The editor process exited with an error: Terminal editors can only be used on macOS.
+
+To set up the editor integration, add something like REACT_EDITOR=atom to the .env.local file in your project folder and restart the development server.
+
+
+Could not open transcript-pdf.ts in the editor.
+The editor process exited with an error: Terminal editors can only be used on macOS.
+
+To set up the editor integration, add something like REACT_EDITOR=atom to the .env.local file in your project folder and restart the development server.
+
+
+Could not open transcript-pdf.ts in the editor.
+The editor process exited with an error: Terminal editors can only be used on macOS.
+
+To set up the editor integration, add something like REACT_EDITOR=atom to the .env.local file in your project folder and restart the development server.
+
+ ⨯ ./app/lib/transcript-pdf.ts:58:36
+Module not found: Can't resolve 'jspdf'
+[0m [90m 56 |[39m   advisor[33m?[39m[33m:[39m { name[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m[33m;[39m email[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m[33m;[39m phone[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m } [33m|[39m [36mnull[39m[33m;[39m[0m
+[0m [90m 57 |[39m }) {[0m
+[0m[31m[1m>[22m[39m[90m 58 |[39m   [36mconst[39m { [36mdefault[39m[33m:[39m jsPDF } [33m=[39m [36mawait[39m [36mimport[39m([32m'jspdf'[39m)[33m;[39m[0m
+[0m [90m    |[39m                                    [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 59 |[39m   [36mawait[39m [36mimport[39m([32m'jspdf-autotable'[39m)[33m;[39m[0m
+[0m [90m 60 |[39m[0m
+[0m [90m 61 |[39m   [36mconst[39m doc [33m=[39m [36mnew[39m jsPDF({ unit[33m:[39m [32m'pt'[39m[33m,[39m format[33m:[39m [32m'letter'[39m })[33m;[39m[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./app/lib/transcript-pdf.ts:58:36
+Module not found: Can't resolve 'jspdf'
+[0m [90m 56 |[39m   advisor[33m?[39m[33m:[39m { name[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m[33m;[39m email[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m[33m;[39m phone[33m?[39m[33m:[39m string [33m|[39m [36mnull[39m } [33m|[39m [36mnull[39m[33m;[39m[0m
+[0m [90m 57 |[39m }) {[0m
+[0m[31m[1m>[22m[39m[90m 58 |[39m   [36mconst[39m { [36mdefault[39m[33m:[39m jsPDF } [33m=[39m [36mawait[39m [36mimport[39m([32m'jspdf'[39m)[33m;[39m[0m
+[0m [90m    |[39m                                    [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+[0m [90m 59 |[39m   [36mawait[39m [36mimport[39m([32m'jspdf-autotable'[39m)[33m;[39m[0m
+[0m [90m 60 |[39m[0m
+[0m [90m 61 |[39m   [36mconst[39m doc [33m=[39m [36mnew[39m jsPDF({ unit[33m:[39m [32m'pt'[39m[33m,[39m format[33m:[39m [32m'letter'[39m })[33m;[39m[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ✓ Compiled in 2s
+ GET / 307 in 83ms
+ GET /login 200 in 57ms
+ GET /homepage 200 in 41ms
+ GET /api/placeholder/64/64 404 in 54ms
+ ✓ Compiled /academic in 364ms
+ GET /academic 200 in 524ms
+ GET /finances 200 in 37ms
+ ○ Compiling /finances/payment-history ...
+ ✓ Compiled /finances/payment-history in 1005ms
+ GET /finances/payment-history 200 in 1039ms
