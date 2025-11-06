@@ -162,3 +162,11 @@ https://nextjs.org/docs/messages/module-not-found
  ○ Compiling /finances/payment-history ...
  ✓ Compiled /finances/payment-history in 1005ms
  GET /finances/payment-history 200 in 1039ms
+ GET /homepage 200 in 79ms
+ GET /api/placeholder/64/64 404 in 49ms
+ GET /finances 200 in 46ms
+ GET /homepage 200 in 61ms
+ GET /api/placeholder/64/64 404 in 60ms
+ GET /homepage 200 in 79ms
+ GET /api/placeholder/64/64 404 in 63ms
+ GET /finances 200 in 43ms
