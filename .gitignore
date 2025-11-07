@@ -35,7 +35,7 @@ build/
 
 # React Router/NextJS
 .DS_Store
-/node_modules/
+/**/node_modules/
 /.react-router/
 /build/
 .next/
@@ -47,3 +47,7 @@ infrastructure/ansible/ansible.log
 
 # Docker services JAR files (built during CI/CD)
 infrastructure/docker/services/*.jar
+
+# Ignore docker-generated frontend artifacts if present
+frontend/node_modules/
+frontend/package-lock.json

@@ -126,13 +126,7 @@ services:
       - UWM_AUTH_PORT=${UWM_AUTH_PORT:-8084}
       - JWT_SECRET=${JWT_SECRET}
       - NODE_ENV=development
-    volumes:
-      - ../../mock-services/uwm-auth-service.js:/app/uwm-auth-service.js:ro
-      - ../../mock-services/package.json:/app/package.json:ro
-      - ../../mock-services/package-lock.json:/app/package-lock.json:ro
-      - /app/node_modules
-    working_dir: /app
-    command: ["node", "uwm-auth-service.js"]
+    command: ["node", "-e", "const http=require('http');const port=process.env.UWM_AUTH_PORT?parseInt(process.env.UWM_AUTH_PORT,10):8084;http.createServer((req,res)=>{if(req.url==='/'||req.url==='/auth'){res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify({message:'UWM Auth Mock'}));}if(req.url==='/health'){res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify({status:'UP'}));}res.writeHead(404,{'Content-Type':'application/json'});res.end(JSON.stringify({error:'Not found'}));}).listen(port,()=>console.log('UWM Auth Mock listening on '+port));"]
     restart: unless-stopped
     networks:
       - adminlte-network
@@ -253,7 +247,7 @@ services:
       - NODE_ENV=development
       - PORT=9002
     volumes:
-      - ../../frontend:/app:cached
+      - ../../:/app:cached
       - /app/node_modules
     working_dir: /app
     command: ["sh", "-c", "npm install --silent || true && npm run dev -- -p 9002"]
