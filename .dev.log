@@ -218,3 +218,24 @@ https://nextjs.org/docs/messages/module-not-found
  ✓ Compiled in 62ms
  GET /courses/search 200 in 208ms
  GET /api/placeholder/64/64 404 in 46ms
+ ✓ Compiled in 87ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 101ms
+ ⨯ ReferenceError: courses is not defined
+    at CourseSearchPage (app/courses/search/page.tsx:96:37)
+  94 |                     <div className="space-y-3">
+  95 |                         {loading && <div className="text-sm text-muted-foreground">Loading courses…</div>}
+> 96 |                         {!loading && courses.length === 0 && <div className="text-sm text-destructive">No course data loaded from backend — check the API (GET {API_BASE}/courses).</div>}
+     |                                     ^
+  97 |                         {!loading && courses.length > 0 && results.length === 0 && <div className="text-sm text-muted-foreground">No results. Try broadening your search or click Search to filter.</div>}
+  98 |
+  99 |                         {results.map((c) => ( {
+  digest: '1488215167'
+}
+ GET /courses/search 500 in 275ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 64ms
+ GET /courses/search 200 in 170ms
+ GET /api/placeholder/64/64 404 in 63ms
+ GET /courses/search 200 in 64ms
+ GET /api/placeholder/64/64 404 in 47ms
