@@ -170,3 +170,51 @@ https://nextjs.org/docs/messages/module-not-found
  GET /homepage 200 in 79ms
  GET /api/placeholder/64/64 404 in 63ms
  GET /finances 200 in 43ms
+ GET /homepage 200 in 73ms
+ GET /api/placeholder/64/64 404 in 61ms
+ GET /finances 200 in 34ms
+ GET /homepage 200 in 82ms
+ GET /api/placeholder/64/64 404 in 53ms
+ GET /homepage 200 in 78ms
+ GET /api/placeholder/64/64 404 in 61ms
+ GET /homepage 200 in 68ms
+ GET /api/placeholder/64/64 404 in 49ms
+ GET /login 200 in 64ms
+ GET /homepage 200 in 35ms
+ GET /api/placeholder/64/64 404 in 45ms
+ GET /api/placeholder/64/64 404 in 76ms
+ GET /academic 200 in 58ms
+ GET /finances 200 in 38ms
+ ✓ Compiled in 134ms
+ GET /homepage 200 in 186ms
+ GET /homepage 200 in 39ms
+ GET /homepage 200 in 152ms
+ GET /api/placeholder/64/64 404 in 55ms
+ ✓ Compiled in 92ms
+ GET /homepage 200 in 243ms
+ GET /api/placeholder/64/64 404 in 46ms
+ ○ Compiling /courses ...
+ ✓ Compiled /courses in 910ms
+ GET /courses 200 in 943ms
+ GET /homepage 200 in 37ms
+ GET /homepage 200 in 33ms
+ GET /homepage 200 in 30ms
+ GET /courses 200 in 32ms
+ GET /courses/search 404 in 29ms
+ GET /courses/search 404 in 44ms
+ GET /api/placeholder/64/64 404 in 46ms
+ GET /courses 200 in 50ms
+ GET /api/placeholder/64/64 404 in 41ms
+ GET /courses 200 in 147ms
+ GET /courses 200 in 38ms
+ GET /courses 200 in 124ms
+ GET /api/placeholder/64/64 404 in 50ms
+ GET /courses 200 in 56ms
+ GET /api/placeholder/64/64 404 in 44ms
+ ○ Compiling /courses/search ...
+ ✓ Compiled /courses/search in 677ms
+ GET /courses/search 200 in 706ms
+ ✓ Compiled in 88ms
+ ✓ Compiled in 62ms
+ GET /courses/search 200 in 208ms
+ GET /api/placeholder/64/64 404 in 46ms
