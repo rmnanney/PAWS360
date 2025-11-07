@@ -246,3 +246,7 @@ https://nextjs.org/docs/messages/module-not-found
  ✓ Compiled /courses/search in 17ms
  GET /courses/search 200 in 156ms
  GET /courses 200 in 128ms
+ ✓ Compiled in 68ms
+ GET /courses 200 in 140ms
+ GET /api/placeholder/64/64 404 in 87ms
+ GET /homepage 200 in 60ms
