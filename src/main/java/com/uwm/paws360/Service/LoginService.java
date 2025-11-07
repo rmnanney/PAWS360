@@ -43,8 +43,8 @@ public class LoginService {
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime lockedUntil = user.getAccount_locked_duration();
             if (lockedUntil != null && now.isBefore(lockedUntil)){
-                return new UserLoginResponseDTO(user.getId(), user.getEmail(),
-                        user.getFirstname(), user.getLastname(), user.getRole(), user.getStatus(), null, user.getAccount_locked_duration(), "Account Locked - Try again later");
+                return new UserLoginResponseDTO(-1, null,
+                        null, null, null, null, null, null, "Account Locked - Try again later");
             } else {
                 // Unlock account after timeout
                 user.setAccount_locked(false);
@@ -53,8 +53,8 @@ public class LoginService {
             }
         }
 
-        if(!user.getStatus().equals(Status.ACTIVE)) return new UserLoginResponseDTO(user.getId(), user.getEmail(),
-                user.getFirstname(), user.getLastname(), user.getRole(), user.getStatus(), null, null, "Account Is Not Active");
+        if(!user.getStatus().equals(Status.ACTIVE)) return new UserLoginResponseDTO(-1, null,
+                null, null, null, null, null, null, "Account Is Not Active");
 
         if(!passwordMatches(user.getPassword(), userLogin.password())){
             int fails = user.getFailed_attempts() + 1;
@@ -63,8 +63,8 @@ public class LoginService {
                 user.setAccount_locked(true);
                 user.setAccount_locked_duration(LocalDateTime.now().plusMinutes(LOCK_DURATION_MINUTES));
                 userRepository.save(user);
-                return new UserLoginResponseDTO(user.getId(), user.getEmail(),
-                        user.getFirstname(), user.getLastname(), user.getRole(), user.getStatus(), null, user.getAccount_locked_duration(), "Account Locked - Too many attempts");
+                return new UserLoginResponseDTO(-1, null,
+                        null, null, null, null, null, null, "Account Locked - Too many attempts");
             }
             userRepository.save(user);
             return new UserLoginResponseDTO(-1, null, null, null, null, null, null, null, "Invalid Email or Password");

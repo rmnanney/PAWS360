@@ -202,7 +202,7 @@ class AuthControllerTest {
             when(loginService.validateSSOSession("valid-token-123"))
                 .thenReturn(Optional.of(demoStudent));
             when(sessionManagementService.createSession(
-                any(Users.class), anyString(), anyString(), isNull(), anyString()
+                any(Users.class), anyString(), anyString(), eq("Mozilla/5.0 Test Browser"), anyString()
             )).thenReturn(validSession);
 
             // When & Then
@@ -255,7 +255,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.service_origin").value("admin-dashboard"));
 
             verify(sessionManagementService).createSession(
-                any(Users.class), anyString(), eq("admin-dashboard"), anyString(), anyString()
+                any(Users.class), anyString(), eq("127.0.0.1"), isNull(), eq("admin-dashboard")
             );
         }
 
@@ -314,7 +314,7 @@ class AuthControllerTest {
                 .andExpect(status().isOk());
 
             verify(sessionManagementService).createSession(
-                any(Users.class), anyString(), eq("10.0.0.100"), anyString(), anyString()
+                any(Users.class), anyString(), eq("10.0.0.100"), isNull(), anyString()
             );
         }
 
@@ -333,9 +333,9 @@ class AuthControllerTest {
                     .content(objectMapper.writeValueAsString(validLoginRequest)))
                 .andExpect(status().isOk());
 
-            // Verify called with request's remote address (usually 127.0.0.1 in tests)
+            // Verify called with request's remote address (usually 127.0.0.1 in tests), no User-Agent
             verify(sessionManagementService).createSession(
-                any(Users.class), anyString(), isNull(), anyString(), anyString()
+                any(Users.class), anyString(), eq("127.0.0.1"), isNull(), anyString()
             );
         }
     }
@@ -817,9 +817,9 @@ class AuthControllerTest {
                     .header("X-Forwarded-For", "203.0.113.195, 70.41.3.18, 150.172.238.178"))
                 .andExpect(status().isOk());
 
-            // Should extract first IP from comma-separated list
+            // Should extract first IP from comma-separated list, userAgent is null when not provided
             verify(sessionManagementService).createSession(
-                any(Users.class), anyString(), eq("203.0.113.195"), anyString(), anyString()
+                any(Users.class), anyString(), eq("203.0.113.195"), isNull(), anyString()
             );
         }
 
@@ -841,7 +841,7 @@ class AuthControllerTest {
                 .andExpect(status().isOk());
 
             verify(sessionManagementService).createSession(
-                any(Users.class), anyString(), eq("192.168.1.100"), anyString(), anyString()
+                any(Users.class), anyString(), eq("192.168.1.100"), isNull(), anyString()
             );
         }
     }
