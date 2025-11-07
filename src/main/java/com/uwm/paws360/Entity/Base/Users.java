@@ -52,6 +52,9 @@ public class Users {
     @Column(nullable = false, length = 50, unique = true)
     private String email;
 
+    @Column(length = 50)
+    private String alternateEmail;
+
     @Column(nullable = false, length = 120)
     @JsonIgnore
     private String password;
@@ -68,6 +71,12 @@ public class Users {
 
     @Column(length = 10)
     private String phone;
+
+    @Column(length = 20)
+    private String alternatePhone;
+
+    @Column(length = 255)
+    private String profilePictureUrl;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -199,6 +208,8 @@ public class Users {
         return email;
     }
 
+    public String getAlternateEmail() { return alternateEmail; }
+
     public String getPassword() {
         return password;
     }
@@ -214,6 +225,10 @@ public class Users {
     public String getPhone() {
         return phone;
     }
+
+    public String getAlternatePhone() { return alternatePhone; }
+
+    public String getProfilePictureUrl() { return profilePictureUrl; }
 
     public Status getStatus() {
         return status;
@@ -307,6 +322,8 @@ public class Users {
         this.email = email;
     }
 
+    public void setAlternateEmail(String alternateEmail) { this.alternateEmail = alternateEmail; }
+
     public void setPassword(String password) {
         this.password = password;
     }
@@ -328,6 +345,10 @@ public class Users {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+    public void setAlternatePhone(String alternatePhone) { this.alternatePhone = alternatePhone; }
+
+    public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
 
     public void setStatus(Status status) {
         this.status = status;

@@ -60,7 +60,7 @@ export default function PersonalPage() {
 	const [nationalityEdit, setNationalityEdit] = React.useState<string>("");
 	const [dobEdit, setDobEdit] = React.useState<string>("");
 	const [ssnEdit, setSsnEdit] = React.useState<string>("");
-	const [genders, setGenders] = React.useState<Array<{value:string;label:string}>>([]);
+    const [genders, setGenders] = React.useState<Array<{value:string;label:string}>>([]);
 	const [ethnicities, setEthnicities] = React.useState<Array<{value:string;label:string}>>([]);
 	const [nationalities, setNationalities] = React.useState<Array<{value:string;label:string}>>([]);
 	const [preferences, setPreferences] = React.useState<any>({
@@ -72,9 +72,21 @@ export default function PersonalPage() {
 		contactByMail: false,
 	});
 	const [emergencyContacts, setEmergencyContacts] = React.useState<any[]>([]);
-	const [ssnMasked, setSsnMasked] = React.useState<string>("***-**-****");
+    const [ssnMasked, setSsnMasked] = React.useState<string>("***-**-****");
+    const [primaryEmailEdit, setPrimaryEmailEdit] = React.useState<string>("");
+    const [altEmailEdit, setAltEmailEdit] = React.useState<string>("");
+	const [altPhoneEdit, setAltPhoneEdit] = React.useState<string>("");
+	const [profilePicEdit, setProfilePicEdit] = React.useState<string>("");
+	const [profilePicFile, setProfilePicFile] = React.useState<File | null>(null);
 	const { toast } = require("@/hooks/useToast");
     const [loading, setLoading] = React.useState<boolean>(true);
+
+	// Resolve image URL to absolute when needed
+	const resolveImg = (u: string) => {
+		if (!u) return "";
+		if (/^(https?:|blob:|data:)/.test(u)) return u;
+		return `${API_BASE}${u}`;
+	};
 
 	React.useEffect(() => {
 		const load = async () => {
@@ -90,9 +102,9 @@ export default function PersonalPage() {
 						fetch(`${API_BASE}/domains/ethnicities`),
 						fetch(`${API_BASE}/domains/nationalities`),
 					]);
-				if (userRes.ok) {
-					const u = await userRes.json();
-					setUser(u);
+                if (userRes.ok) {
+                    const u = await userRes.json();
+                    setUser(u);
 					const addrs = Array.isArray(u.addresses) ? u.addresses : [];
 					const home = addrs.find((a: any) => (a.address_type || "").toUpperCase() === "HOME");
 					const mail = addrs.find((a: any) => (a.address_type || "").toUpperCase() === "MAILING") || addrs.find((a: any) => (a.address_type || "").toUpperCase() === "BILLING");
@@ -108,8 +120,12 @@ export default function PersonalPage() {
 					setGenderEdit(u?.gender || "");
 					setEthnicityEdit(u?.ethnicity || "");
 					setNationalityEdit(u?.nationality || "");
-					setDobEdit(u?.dob || "");
-				}
+                    setDobEdit(u?.dob || "");
+                    setPrimaryEmailEdit(u?.email || "");
+                    setAltEmailEdit(u?.alternate_email || "");
+                    setAltPhoneEdit(u?.alternate_phone || "");
+                    setProfilePicEdit(u?.profile_picture_url || "");
+                }
 				if (sidRes.ok) {
 					const sid = await sidRes.json();
 					if (typeof sid.student_id === "number" && sid.student_id >= 0) setStudentId(sid.student_id);
@@ -134,24 +150,25 @@ export default function PersonalPage() {
 		load();
 	}, [toast]);
 
-	const personalInfo = {
-		studentId: studentId ? String(studentId) : "-",
-		firstName: user?.firstname || "",
-		lastName: user?.lastname || "",
-		preferredName: user?.preferred_name || user?.firstname || "",
-		dateOfBirth: user?.dob || "",
-		gender: user?.gender || "",
-		ethnicity: user?.ethnicity || "",
-		citizenship: user?.nationality || "",
-		ssn: ssnMasked,
-	};
+    const personalInfo = {
+        studentId: studentId ? String(studentId) : "-",
+        firstName: user?.firstname || "",
+        lastName: user?.lastname || "",
+        preferredName: user?.preferred_name || user?.firstname || "",
+        dateOfBirth: user?.dob || "",
+        gender: user?.gender || "",
+        ethnicity: user?.ethnicity || "",
+        citizenship: user?.nationality || "",
+        ssn: ssnMasked,
+        profilePictureUrl: user?.profile_picture_url || "",
+    };
 
-	const contactInfo: any = {
-		email: user?.email || "",
-		alternateEmail: "",
-		phone: user?.phone || "",
-		alternatePhone: "",
-		address: homeAddress
+    const contactInfo: any = {
+        email: user?.email || "",
+        alternateEmail: user?.alternate_email || "",
+        phone: user?.phone || "",
+        alternatePhone: user?.alternate_phone || "",
+        address: homeAddress
 			? {
 				street: homeAddress.street_address_1,
 				city: homeAddress.city,
@@ -190,18 +207,32 @@ const securityInfo = {
 
     // component continues
 
-	const getPrivacyLevelColor = (level: string) => {
-		switch (level) {
-			case "public":
-				return "bg-green-100 text-green-800";
-			case "restricted":
-				return "bg-yellow-100 text-yellow-800";
-			case "private":
-				return "bg-red-100 text-red-800";
-			default:
-				return "bg-gray-100 text-gray-800";
-		}
-	};
+    const getPrivacyLevelColor = (level: string) => {
+        switch (level) {
+            case "public":
+                return "bg-green-100 text-green-800";
+            case "restricted":
+                return "bg-yellow-100 text-yellow-800";
+            case "private":
+                return "bg-red-100 text-red-800";
+            default:
+                return "bg-gray-100 text-gray-800";
+        }
+    };
+
+    // Text-only color (no background) for inline privacy labels
+    const getPrivacyTextColor = (level: string) => {
+        switch (level) {
+            case "public":
+                return "text-green-800";
+            case "restricted":
+                return "text-yellow-800";
+            case "private":
+                return "text-red-800";
+            default:
+                return "text-gray-800";
+        }
+    };
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
@@ -273,12 +304,27 @@ const securityInfo = {
 
 								// Update personal details first
 								const ssnDigits = ssnEdit ? ssnEdit.replace(/\D/g, "") : null;
-								const personalRes = await fetch(`${API_BASE}/users/personal`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, firstname: firstNameEdit, middlename: middleNameEdit || null, lastname: lastNameEdit, preferredName: preferredNameEdit || null, gender: genderEdit || null, ethnicity: ethnicityEdit || null, nationality: nationalityEdit || null, dob: dobEdit || null, ssn: ssnDigits }) });
+                                // If a new profile picture file is selected, upload it first
+                                if (profilePicFile) {
+                                    const form = new FormData();
+                                    form.append("email", email);
+                                    form.append("file", profilePicFile);
+                                    const upRes = await fetch(`${API_BASE}/users/profile-picture`, { method: "POST", body: form });
+                                    if (!upRes.ok) {
+                                        toast({ variant: "destructive", title: "Failed to upload profile picture", description: "Please choose a valid image (png, jpg, webp) under 5MB." });
+                                        return;
+                                    }
+                                    const up = await upRes.json();
+                                    if (up?.url) {
+                                        setProfilePicEdit(up.url);
+                                    }
+                                }
+
+                                const personalRes = await fetch(`${API_BASE}/users/personal`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, firstname: firstNameEdit, middlename: middleNameEdit || null, lastname: lastNameEdit, preferredName: preferredNameEdit || null, gender: genderEdit || null, ethnicity: ethnicityEdit || null, nationality: nationalityEdit || null, dob: dobEdit || null, ssn: ssnDigits }) });
 								if (!personalRes.ok) {
 									toast({ variant: "destructive", title: "Failed to update name", description: "Please check inputs and try again." });
 									return;
 								}
-								await fetch(`${API_BASE}/users/contact`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, phone: phoneEdit || null }) });
 								await fetch(`${API_BASE}/users/preferences`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, ...preferences }) });
 								// Upsert HOME address
 								if (homeAddrEdit && homeAddrEdit.street_address_1) {
@@ -320,8 +366,13 @@ const securityInfo = {
 									const body = { email, contact_id: c.id || null, name: c.name, relationship: c.relationship || null, contact_email: c.email || null, phone: c.phone || null, street_address_1: c.street_address_1 || null, street_address_2: c.street_address_2 || null, city: c.city || null, us_states: c.us_states || null, zipcode: c.zipcode || null };
 									await fetch(`${API_BASE}/users/emergency-contacts`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 								}
-								// Reflect changes locally
-								setUser((prev: any) => ({ ...(prev || {}), firstname: firstNameEdit, middlename: middleNameEdit, lastname: lastNameEdit, preferred_name: preferredNameEdit, gender: genderEdit, ethnicity: ethnicityEdit, nationality: nationalityEdit, dob: dobEdit || prev?.dob, phone: phoneEdit }));
+                                // Now update contact info (do this last so earlier updates still find user by email)
+                                const contactRes = await fetch(`${API_BASE}/users/contact`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, phone: phoneEdit || null, newEmail: primaryEmailEdit || null, alternateEmail: altEmailEdit || null, alternatePhone: altPhoneEdit || null }) });
+                                if (contactRes && contactRes.ok && primaryEmailEdit && primaryEmailEdit !== email) {
+                                    try { if (typeof window !== 'undefined') localStorage.setItem('userEmail', primaryEmailEdit); } catch {}
+                                }
+                                // Reflect changes locally
+                                setUser((prev: any) => ({ ...(prev || {}), firstname: firstNameEdit, middlename: middleNameEdit, lastname: lastNameEdit, preferred_name: preferredNameEdit, profile_picture_url: profilePicEdit, gender: genderEdit, ethnicity: ethnicityEdit, nationality: nationalityEdit, dob: dobEdit || prev?.dob, email: primaryEmailEdit || prev?.email, phone: phoneEdit, alternate_email: altEmailEdit, alternate_phone: altPhoneEdit }));
 								setHomeAddress(homeAddrEdit);
 								setMailingAddress(mailingAddrEdit);
 								toast({ title: "Profile Updated", description: "Your changes have been saved." });
@@ -365,8 +416,20 @@ const securityInfo = {
 						<User className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">
-							{personalInfo.firstName} {personalInfo.lastName}
+						<div className="flex items-center gap-4">
+							<div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+								{personalInfo.profilePictureUrl ? (
+									// eslint-disable-next-line @next/next/no-img-element
+									<img src={resolveImg(personalInfo.profilePictureUrl)} alt="Profile" className="w-full h-full object-cover" />
+								) : (
+									<span className="text-lg text-muted-foreground">
+										{(personalInfo.firstName || "").charAt(0)}{(personalInfo.lastName || "").charAt(0)}
+									</span>
+								)}
+							</div>
+							<div className="text-2xl font-bold">
+								{personalInfo.firstName} {personalInfo.lastName}
+							</div>
 						</div>
 						<p className="text-xs text-muted-foreground">
 							Preferred: {personalInfo.preferredName}
@@ -393,7 +456,7 @@ const securityInfo = {
 						<Shield className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className={`text-2xl font-bold ${getPrivacyTextColor(privacySettings.infoRelease)}`}>
                             {(() => {
                                 const lvl = privacySettings.infoRelease || 'restricted';
                                 return lvl.charAt(0).toUpperCase() + lvl.slice(1);
@@ -422,14 +485,41 @@ const securityInfo = {
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-6">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-								<div className="space-y-4">
-									<div>
-										<label className="text-sm font-medium">Student ID</label>
-										<p className="text-lg font-semibold">
-											{personalInfo.studentId}
-										</p>
-									</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium">Profile Picture</label>
+                                    <div className="flex items-center gap-4 mt-2">
+                                        <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                                            { (isEditing ? profilePicEdit : personalInfo.profilePictureUrl) ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img src={resolveImg((isEditing ? profilePicEdit : personalInfo.profilePictureUrl) || '')} alt="Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">No image</span>
+                                            )}
+                                        </div>
+                                        {isEditing && (
+                                            <input
+                                                type="file"
+                                                accept="image/png,image/jpeg,image/jpg,image/webp"
+                                                className="flex-1 border rounded-md p-2"
+                                                onChange={(e) => {
+                                                    const f = e.target.files?.[0] || null;
+                                                    setProfilePicFile(f);
+                                                    if (f) {
+                                                        try { setProfilePicEdit(URL.createObjectURL(f)); } catch {}
+                                                    }
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Student ID</label>
+                                    <p className="text-lg font-semibold">
+                                        {personalInfo.studentId}
+                                    </p>
+                                </div>
                             <div>
                                 <label className="text-sm font-medium">First Name</label>
                                 {isEditing ? (
@@ -552,44 +642,50 @@ const securityInfo = {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className="flex items-center space-x-3">
-									<Mail className="h-5 w-5 text-blue-600" />
-									<div>
-										<p className="font-medium">Primary Email</p>
-										<p className="text-sm text-muted-foreground">
-											{contactInfo.email}
-										</p>
-									</div>
-								</div>
-								<div className="flex items-center space-x-3">
-									<Mail className="h-5 w-5 text-gray-600" />
-									<div>
-										<p className="font-medium">Alternate Email</p>
-										<p className="text-sm text-muted-foreground">
-											{contactInfo.alternateEmail}
-										</p>
-									</div>
-								</div>
+                            <div className="flex items-center space-x-3">
+                                <Mail className="h-5 w-5 text-blue-600" />
+                                <div className="w-full">
+                                    <p className="font-medium">Primary Email</p>
+                                    {isEditing ? (
+                                        <input className="w-full border rounded-md p-2" value={primaryEmailEdit} onChange={(e) => setPrimaryEmailEdit(e.target.value)} />
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">{contactInfo.email}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <Mail className="h-5 w-5 text-gray-600" />
+                                <div className="w-full">
+                                    <p className="font-medium">Alternate Email</p>
+                                    {isEditing ? (
+                                        <input className="w-full border rounded-md p-2" value={altEmailEdit} onChange={(e) => setAltEmailEdit(e.target.value)} />
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">{contactInfo.alternateEmail}</p>
+                                    )}
+                                </div>
+                            </div>
 								<div className="flex items-center space-x-3">
 									<Phone className="h-5 w-5 text-green-600" />
-									<div className="w-full">
-										<p className="font-medium">Primary Phone</p>
-										{isEditing ? (
-											<input className="w-full border rounded-md p-2" value={phoneEdit} onChange={(e) => setPhoneEdit(e.target.value)} />
-										) : (
-											<p className="text-sm text-muted-foreground">{contactInfo.phone}</p>
-										)}
-									</div>
-								</div>
-								<div className="flex items-center space-x-3">
-									<Phone className="h-5 w-5 text-gray-600" />
-									<div>
-										<p className="font-medium">Alternate Phone</p>
-										<p className="text-sm text-muted-foreground">
-											{contactInfo.alternatePhone}
-										</p>
-									</div>
-								</div>
+                            <div className="w-full">
+                                <p className="font-medium">Primary Phone</p>
+                                {isEditing ? (
+                                    <input className="w-full border rounded-md p-2" value={phoneEdit} onChange={(e) => setPhoneEdit(e.target.value)} />
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">{contactInfo.phone}</p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <Phone className="h-5 w-5 text-gray-600" />
+                            <div className="w-full">
+                                <p className="font-medium">Alternate Phone</p>
+                                {isEditing ? (
+                                    <input className="w-full border rounded-md p-2" value={altPhoneEdit} onChange={(e) => setAltPhoneEdit(e.target.value)} />
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">{contactInfo.alternatePhone}</p>
+                                )}
+                            </div>
+                        </div>
 							</CardContent>
 						</Card>
 

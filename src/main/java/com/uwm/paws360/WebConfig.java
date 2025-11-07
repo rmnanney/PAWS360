@@ -5,12 +5,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 @Configuration
 public class WebConfig {
 
     @Value("${cors.allowed-origins:${CORS_ALLOWED_ORIGINS:http://localhost:9002}}")
     private String corsAllowedOrigins;
+
+    @Value("${app.upload-dir:uploads}")
+    private String uploadDir;
 
     @Bean
     public WebMvcConfigurer corsConfigurer(){
@@ -26,6 +30,18 @@ public class WebConfig {
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
+            }
+
+            @Override
+            public void addResourceHandlers(ResourceHandlerRegistry registry) {
+                String uploadPath = java.nio.file.Paths.get(uploadDir)
+                        .toAbsolutePath()
+                        .normalize()
+                        .toUri()
+                        .toString();
+                registry.addResourceHandler("/uploads/**")
+                        .addResourceLocations(uploadPath)
+                        .setCachePeriod(3600);
             }
         };
     }

@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 
@@ -18,6 +20,22 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PostMapping(value = "/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UploadProfilePictureResponseDTO> uploadProfilePicture(
+            @RequestParam("email") String email,
+            @RequestPart("file") MultipartFile file
+    ) {
+        try {
+            String url = userService.uploadProfilePicture(email, file);
+            if (url == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.ok(new UploadProfilePictureResponseDTO(url));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UploadProfilePictureResponseDTO(null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UploadProfilePictureResponseDTO(null));
+        }
     }
 
     @PostMapping("/create")
