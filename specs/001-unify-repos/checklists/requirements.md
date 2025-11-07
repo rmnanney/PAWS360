@@ -60,8 +60,11 @@
 Notes:
 - Clarification resolved: Single Sign-On is required for the demo. The spec has been updated accordingly (FR-011).
 - Additional SSO requirements added (FR-012 to FR-016) defining session sharing, secure transmission, token reuse, CORS configuration, and session TTL.
+- Idempotency and repeatability requirements added (FR-017 to FR-020) ensuring automation runs cleanly on both fresh and repeat executions.
 - Enhanced acceptance scenarios in User Stories 1 and 2 to validate SSO behavior.
-- Added edge cases for session expiration and concurrent sessions.
+- Enhanced User Story 3 acceptance scenarios to validate idempotent automation behavior.
+- Added edge cases for session expiration, concurrent sessions, and automation reruns.
 - Added measurable outcomes SC-006 and SC-007 to quantify SSO success criteria.
+- Added measurable outcomes SC-008 and SC-009 to quantify automation idempotency and rebuild time.
 - All requirements remain technology-agnostic and testable.
 - Feature ready for planning phase; measurable outcomes will be verified during implementation and testing.
