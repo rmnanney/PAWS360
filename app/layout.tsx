@@ -1,6 +1,7 @@
 "use client";
 
 import type { Metadata } from "next";
+import { useEffect } from "react";
 import "./global.css";
 import { Toaster } from "./components/Toaster/toaster";
 import { Header } from "./components/Header/header";
@@ -11,6 +12,7 @@ import {
 } from "./components/SideBar/Base/sidebarbase";
 import { useRouter, usePathname } from "next/navigation";
 import useAuth from "./hooks/useAuth";
+import { useMonitoring } from "./hooks/useMonitoring";
 
 // Note: metadata must be exported from a Server Component, not Client Component
 // We'll need to move this or handle it differently
@@ -27,6 +29,12 @@ export default function RootLayout({
 	const router = useRouter();
 	const pathname = usePathname();
 	const { authChecked, isAuthenticated } = useAuth();
+	const { recordPageView, recordUserInteraction } = useMonitoring();
+
+	// Track page views
+	useEffect(() => {
+		recordPageView(pathname);
+	}, [pathname, recordPageView]);
 
 	// Pages that don't need authentication or sidebar
 	const publicPages = ["/login", "/forgot-password"];
@@ -34,6 +42,9 @@ export default function RootLayout({
 
 	const handleNavigation = (section: string) => {
 		console.log(`Navigating to ${section}`);
+
+		// Track navigation interaction
+		recordUserInteraction('navigation', section, 0, true);
 
 		// Route to appropriate pages
 		if (section === "homepage") {
@@ -61,6 +72,7 @@ export default function RootLayout({
 		} else if (section === "scholarships") {
 			router.push("/finances/scholarships");
 		} else if (section.startsWith("https://")) {
+			recordUserInteraction('external_link', section, 0, true);
 			window.open(section, "_blank");
 		}
 	};

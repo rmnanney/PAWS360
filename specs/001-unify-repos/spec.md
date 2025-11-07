@@ -7,6 +7,16 @@
 
 Tomorrow we have a demo that needs to show this all working seamlessly together.  I do not want to change anyones existing code unless we really need to.  At that time we can discuss options."
 
+## Clarifications
+
+### Session 2025-11-06
+
+- Q: How many distinct test user accounts are needed for the demo? → A: 2-3 accounts with different roles (e.g., 1 student, 1 admin, 1 optional instructor/staff)
+- Q: What mechanism should be used to verify service health before the demo? → A: HTTP health check endpoints (e.g., /health or /actuator/health)
+- Q: How should automation failures or non-OK statuses be reported during setup or repeat runs? → A: Human-readable summary with actionable error details shown in terminal or dashboard
+- Q: What should happen if a user's authentication session expires during the demo? → A: Prompt for re-authentication with a clear message
+- Q: What is the preferred method for resetting demo data between runs? → A: Use the existing automated seed script to reset the database to a known baseline before each demo run
+
 ## Assumptions (contextual)
 
 - A single shared demo environment will be used for all modules (student portal, admin view, backend services, database).
@@ -89,11 +99,11 @@ A demo facilitator can prepare and execute the demonstration from a single, cons
 - FR-003: The system MUST present consistent student data across student portal and admin view for the same account.
 - FR-004: The demo MUST be executable without modifying application code; configuration-only adjustments are permitted when necessary.
 - FR-005: The demo facilitator MUST have a concise runbook to start, verify, and execute the demo within a limited timeframe.
-- FR-006: Health/availability indicators MUST be verifiable prior to starting the demo journey.
+- FR-006: Health/availability indicators MUST be verifiable prior to starting the demo journey using HTTP health check endpoints (e.g., /health or /actuator/health) for all services.
 - FR-007: The system MUST provide user-friendly error messaging for transient failures encountered during the demo and offer a retry path.
 - FR-008: The environment configuration MUST avoid breaking existing CI/CD and deployments; any temporary demo-specific configuration is documented and reversible.
 - FR-009: Cross-module navigation intents for the demo MUST be feasible (e.g., switching from portal verification to admin review without reconfiguration).
-- FR-010: Demo data sets (accounts and sample records) MUST be prepared and verified in advance and remain stable for the duration of the demo.
+- FR-010: Demo data sets (accounts and sample records) MUST be prepared and verified in advance and remain stable for the duration of the demo. The demo requires 2-3 test accounts with distinct roles: at minimum one student account and one admin account, with an optional third account for instructor or staff role. Existing seeded/test accounts and logic already present in the codebase (especially those authored by Zack, Randall, or Zenith) MUST be reused for the demo, avoiding duplication or reinvention.
 - FR-011: The authentication experience across modules MUST be single sign-on for the demo; a single successful login grants access across the student portal and admin view without additional sign-ins.
 - FR-012: The system MUST establish a shared authentication session upon successful login that is accessible across all demo modules on the same host.
 - FR-013: Authentication state MUST be persisted securely and transmitted automatically with each request from any demo module to the backend.
@@ -104,6 +114,9 @@ A demo facilitator can prepare and execute the demonstration from a single, cons
 - FR-018: Repeat builds and deployments MUST complete successfully with all tasks reporting OK status; no tasks may fail or report changed status when the environment is already in the desired state.
 - FR-019: The demo environment MUST be reproducible from a clean start using documented automation without manual intervention.
 - FR-020: Failed task conditions in automation MUST be approved exceptions with documented rationale; the default expectation is clean, idempotent execution.
+- FR-021: All automation failures or non-OK statuses MUST be reported as human-readable summaries with actionable error details in the terminal or dashboard, enabling rapid diagnosis and resolution by the demo facilitator.
+- FR-022: If a user's authentication session expires during the demo, the system MUST prompt for re-authentication with a clear message, allowing the demo to continue smoothly after login.
+- FR-023: Demo data MUST be reset to a known baseline before each run using the existing automated seed script, ensuring repeatability and consistency for every demo.
 
 ### Key Entities
 

@@ -18,7 +18,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.BASE_URL || 'http://localhost:8085',
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -28,6 +28,14 @@ export default defineConfig({
 
     /* Record video only when test fails */
     video: 'retain-on-failure',
+
+    /* SSO Authentication context */
+    extraHTTPHeaders: {
+      'X-Service-Origin': 'student-portal'
+    },
+
+    /* Accept cookies for SSO session management */
+    acceptDownloads: true,
   },
 
   /* Configure projects for major browsers */
@@ -38,11 +46,19 @@ export default defineConfig({
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: process.env.CI ? undefined : {
-    command: 'cd ../../infrastructure/docker && docker-compose up -d adminlte-ui',
-    url: 'http://localhost:8085',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  /* Configure multiple web servers for E2E SSO testing */
+  webServer: process.env.CI ? undefined : [
+    {
+      command: 'cd ../../ && npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    },
+    {
+      command: 'cd ../../ && ./mvnw spring-boot:run -Dspring-boot.run.profiles=test',
+      url: 'http://localhost:8081/actuator/health',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+    }
+  ],
 });
