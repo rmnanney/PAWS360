@@ -62,15 +62,27 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	cursor: pointer;
 }
 
 .profileImage {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .profileButton {
-	text-align: center;
-	justify-content: center;
+    text-align: center;
+    justify-content: center;
+}
+
+.profileFallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #6b7280; /* text-gray-500 */
+    font-size: 1rem; /* about text-base */
 }

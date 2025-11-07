@@ -1,3 +1,4 @@
+import React from "react";
 import {
 	GraduationCap,
 	DollarSign,
@@ -35,6 +36,35 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
+    const { API_BASE } = require("@/lib/api");
+    const [user, setUser] = React.useState<any | null>(null);
+    const [imgError, setImgError] = React.useState<boolean>(false);
+    const resolveImg = (u: string) => {
+        if (!u) return "";
+        if (/^(https?:|blob:|data:)/.test(u)) return u;
+        return `${API_BASE}${u}`;
+    };
+
+    React.useEffect(() => {
+        const load = async () => {
+            try {
+                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                if (!email) return;
+                const res = await fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`);
+                if (res.ok) {
+                    const u = await res.json();
+                    setUser(u);
+                    setImgError(false);
+                }
+            } catch {}
+        };
+        load();
+    }, []);
+
+    const firstName = (user?.firstname && String(user.firstname).trim()) || 'Profile';
+    const initials = (
+        `${(user?.firstname || '').charAt(0)}${(user?.lastname || '').charAt(0)}`.toUpperCase() || 'U'
+    );
 	const academicItems = [
 		{
 			title: "Homepage",
@@ -167,25 +197,27 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<div className={s.profileContainer}>
-							<div className={s.profileImageContainer}>
-								<img
-									src="/api/placeholder/64/64"
-									alt="Profile"
-									className={s.profileImage}
-									onError={(e) => {
-										// Fallback if profile image doesn't load
-										e.currentTarget.style.display = "none";
-										e.currentTarget.parentElement!.innerHTML =
-											'<User className="w-8 h-8 text-gray-500" />';
-									}}
-								/>
+							<div className={s.profileImageContainer} onClick={() => onNavigate("personal")}>
+								{/* eslint-disable-next-line @next/next/no-img-element */}
+								{user?.profile_picture_url && !imgError ? (
+									<img
+										src={resolveImg(user.profile_picture_url)}
+										alt="Profile"
+										className={s.profileImage}
+										onError={() => setImgError(true)}
+									/>
+								) : (
+									<div className={s.profileFallback} aria-label="No profile picture">
+										{initials.trim() || 'U'}
+									</div>
+								)}
 							</div>
 							<SidebarMenuButton
-								onClick={() => onNavigate("Profile")}
+								onClick={() => onNavigate("personal")}
 								className={s.profileButton}
 							>
 								<User className="w-4 h-4" />
-								<span>Profile</span>
+								<span>{firstName}</span>
 							</SidebarMenuButton>
 						</div>
 					</SidebarMenuItem>
