@@ -102,6 +102,42 @@ function CurrentlyEnrolledCard() {
 }
 
 function EnrollmentCart() {
+    const [cartItems, setCartItems] = React.useState<Array<{
+        course_code: string;
+        title: string;
+        meeting_pattern: string;
+        credits: number;
+    }>>([]);
+
+    React.useEffect(() => {
+        const loadCart = () => {
+            try {
+                const cartKey = "enrollment_cart";
+                const existingCart = localStorage.getItem(cartKey);
+                const cart = existingCart ? JSON.parse(existingCart) : [];
+                setCartItems(cart);
+            } catch (err) {
+                console.error("Failed to load cart:", err);
+            }
+        };
+        loadCart();
+
+        // Listen for storage changes to update cart when items are added
+        window.addEventListener('storage', loadCart);
+        return () => window.removeEventListener('storage', loadCart);
+    }, []);
+
+    const removeFromCart = (courseCode: string) => {
+        try {
+            const cartKey = "enrollment_cart";
+            const filtered = cartItems.filter(item => item.course_code !== courseCode);
+            localStorage.setItem(cartKey, JSON.stringify(filtered));
+            setCartItems(filtered);
+        } catch (err) {
+            console.error("Failed to remove from cart:", err);
+        }
+    };
+
     return (
         <div className={cardStyles.scheduleCard}>
             <div className={cardStyles.scheduleHeader}>
@@ -110,19 +146,47 @@ function EnrollmentCart() {
             </div>
 
             <div className="space-y-3">
-                <div className={cardStyles.scheduleClass}>
-                    <div className={cardStyles.scheduleClassInfo}>
-                        <div className={cardStyles.scheduleClassTime}>
-                            <Clock className="h-4 w-4" />
-                            <span>—</span>
+                {cartItems.length === 0 ? (
+                    <div className={cardStyles.scheduleClass}>
+                        <div className={cardStyles.scheduleClassInfo}>
+                            <div className={cardStyles.scheduleClassTime}>
+                                <Clock className="h-4 w-4" />
+                                <span>—</span>
+                            </div>
+                            <div>
+                                <p className="font-medium text-card-foreground">No items</p>
+                                <p className="text-sm text-muted-foreground">Add classes from the Class Search to your cart.</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="font-medium text-card-foreground">No items</p>
-                            <p className="text-sm text-muted-foreground">Add classes from the Class Search to your cart.</p>
-                        </div>
+                        <div className={cardStyles.scheduleClassRoom}>—</div>
                     </div>
-                    <div className={cardStyles.scheduleClassRoom}>—</div>
-                </div>
+                ) : (
+                    cartItems.map((item, idx) => (
+                        <div key={idx} className={cardStyles.scheduleClass}>
+                            <div className={cardStyles.scheduleClassInfo}>
+                                <div className={cardStyles.scheduleClassTime}>
+                                    <Clock className="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-card-foreground">{item.course_code}</p>
+                                    <p className="text-sm text-muted-foreground">{item.title}</p>
+                                    {item.meeting_pattern && (
+                                        <p className="text-xs text-muted-foreground">{item.meeting_pattern}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className={cardStyles.scheduleClassRoom}>{item.credits} cr</div>
+                                <button
+                                    onClick={() => removeFromCart(item.course_code)}
+                                    className="text-xs text-destructive hover:underline"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             <div className={cardStyles.scheduleViewFull}>

@@ -239,3 +239,10 @@ https://nextjs.org/docs/messages/module-not-found
  GET /api/placeholder/64/64 404 in 63ms
  GET /courses/search 200 in 64ms
  GET /api/placeholder/64/64 404 in 47ms
+ ✓ Compiled in 97ms
+ ✓ Compiled in 74ms
+ ✓ Compiled in 71ms
+ ✓ Compiled in 125ms
+ ✓ Compiled /courses/search in 17ms
+ GET /courses/search 200 in 156ms
+ GET /courses 200 in 128ms
