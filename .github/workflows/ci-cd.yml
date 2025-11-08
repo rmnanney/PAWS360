@@ -160,32 +160,6 @@ jobs:
   ui-tests:
     needs: docker-build
     runs-on: ubuntu-latest
-    env:
-      TEST_DB_NAME: test_db
-      TEST_DB_USERNAME: postgres
-      TEST_DB_PASSWORD: test_password
-      TEST_DB_PORT: 5442
-      TEST_REDIS_PORT: 6389
-      TEST_APP_PORT: 8091
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_DB: paws360_test
-          POSTGRES_USER: paws360
-          POSTGRES_PASSWORD: test_password
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
