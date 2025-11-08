@@ -63,8 +63,9 @@ services:
     environment:
       - NODE_ENV=test
       - PORT=3000
-      # Use host-accessible backend URL for E2E tests from outside Docker
-      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8081
+      # Use internal app service URL so the frontend inside Docker can reach the backend
+      # This avoids localhost/IPv6 resolution issues when the dev server proxies requests
+      - NEXT_PUBLIC_API_BASE_URL=http://app:8080
     volumes:
       - ../../:/app:cached
       - frontend_node_modules:/app/node_modules
