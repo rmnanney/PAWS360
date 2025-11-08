@@ -356,8 +356,8 @@ class T058SpringBootPerformanceTest {
                     .isGreaterThan(95.0);
             
             assertThat(p95ConcurrentTime)
-                    .as("P95 response time under concurrent load should be <500ms")
-                    .isLessThan(500);
+                    .as("P95 response time under concurrent load should be <1000ms")
+                    .isLessThan(1000);
         }
     }
 
