@@ -74,11 +74,11 @@ services:
     depends_on:
       - app
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 3000 || exit 1"]
+      test: ["CMD-SHELL", "pgrep -f 'next dev' > /dev/null || exit 1"]
       interval: 10s
-      timeout: 10s
-      retries: 20
-      start_period: 120s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
 
 volumes:
   postgres_test_data:
