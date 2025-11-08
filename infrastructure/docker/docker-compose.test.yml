@@ -58,17 +58,18 @@ services:
       - NODE_ENV=test
       - PORT=8085
     volumes:
-      - ../../../:/app:cached
+      - ../../:/app:cached
       - /app/node_modules
     working_dir: /app
-    command: ["sh", "-c", "npm install --silent && npm run dev -- -p 8085"]
+    command: ["sh", "-c", "npm install --silent && npm run dev -- -p 8085 --hostname 0.0.0.0"]
     depends_on:
       - app
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://localhost:8085/ > /dev/null"]
       interval: 30s
-      timeout: 10s
-      retries: 3
+      timeout: 60s
+      retries: 5
+      start_period: 60s
 
 volumes:
   postgres_test_data:
