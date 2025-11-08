@@ -49,3 +49,4 @@ infrastructure/ansible/ansible.log
 infrastructure/docker/services/*.jar
 services/*.jar
 *.jar
+!**/mvn*
