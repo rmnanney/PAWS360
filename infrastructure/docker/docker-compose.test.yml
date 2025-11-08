@@ -39,6 +39,10 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/test_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: test_password
+      DB_USERNAME: postgres
+      DB_PASSWORD: test_password
       SPRING_REDIS_URL: redis://redis:6379
     ports:
       - "${TEST_APP_PORT:-8081}:8080"
