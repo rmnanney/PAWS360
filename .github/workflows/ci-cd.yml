@@ -6,6 +6,11 @@ on:
     branches: [master, main, develop, '001-unify-repos']
   pull_request:
     branches: [master, main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: paws360-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
@@ -52,13 +57,15 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Run tests
-        run: mvn test -Dspring.profiles.active=test
+      - name: Run tests (parallel Maven)
+        run: mvn -T 1C test -Dspring.profiles.active=test
 
       - name: Generate coverage report
+        if: startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/master')
         run: mvn jacoco:report -Dspring.profiles.active=test
 
       - name: Display coverage summary
+        if: startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/master')
         run: |
           echo "## 📊 Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
@@ -82,6 +89,7 @@ jobs:
           fi
 
       - name: Upload coverage reports
+        if: startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/master')
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
@@ -95,8 +103,8 @@ jobs:
           publish_dir: target/site/jacoco/
           destination_dir: coverage
 
-      - name: Build with Maven
-        run: mvn clean package -DskipTests
+      - name: Build with Maven (parallel)
+        run: mvn -T 1C clean package -DskipTests
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -109,6 +117,7 @@ jobs:
   # Build and push Docker images
   docker-build:
     needs: test-and-build
+    if: startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -158,11 +167,18 @@ jobs:
 
   # UI Testing
   ui-tests:
-    needs: docker-build
+    needs: test-and-build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('tests/ui/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-playwright-
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -185,19 +201,23 @@ jobs:
         working-directory: tests/ui
         run: npx playwright install chromium
 
-      - name: Start application
+      - name: Start application stack
         run: |
           # Copy environment file for testing
           cp .env.example .env 2>/dev/null || true
           # Start the application stack
           cd infrastructure/docker
           docker compose -f docker-compose.test.yml up -d
-          # Wait for backend to be ready
-          timeout 300 bash -c \
-            'until curl -f http://localhost:8091/actuator/health; do sleep 5; done'
+          echo "Listing containers:" && docker ps
+          echo "Tailing backend logs while waiting for health..." &
+          BACKEND_CONTAINER_ID=$(docker ps --format '{{.ID}} {{.Ports}} {{.Image}}' | grep '8091->8080' | awk '{print $1}')
+          (docker logs -f $BACKEND_CONTAINER_ID &) 2>/dev/null || true
+          # Wait for backend (poll actuator)
+          timeout 360 bash -c 'until curl -sf http://localhost:8091/actuator/health | grep -q UP; do sleep 6; done'
           # Wait for frontend to be ready
-          timeout 300 bash -c \
-            'until curl -f http://localhost:8095; do sleep 5; done'
+          timeout 360 bash -c 'until curl -sf http://localhost:8095; do sleep 6; done'
+        env:
+          TEST_APP_PORT: 8091
 
       - name: Run UI tests
         working-directory: tests/ui
@@ -224,7 +244,8 @@ jobs:
 
   # Security scanning
   security-scan:
-    needs: [docker-build, ui-tests]
+    needs: [ui-tests]
+    if: startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/master')
     runs-on: ubuntu-latest
     permissions:
       contents: read

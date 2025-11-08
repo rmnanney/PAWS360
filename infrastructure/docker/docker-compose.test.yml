@@ -28,9 +28,13 @@ services:
       retries: 5
 
   app:
-    build:
-      context: ../..
-      dockerfile: infrastructure/docker/Dockerfile
+    # Use pre-built JAR artifact downloaded by GitHub Actions instead of rebuilding inside Docker.
+    # This cuts several minutes of CI time and avoids double Maven builds.
+    image: eclipse-temurin:21-jre-alpine
+    working_dir: /app
+    volumes:
+      - ../../services:/artifacts:ro
+    command: ["sh", "-c", "JAVA_OPTS='-Xms256m -Xmx512m' && JAR=$(ls /artifacts/*SNAPSHOT.jar | head -1) && echo Using $JAR && java $JAVA_OPTS -jar $JAR"]
     environment:
       SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/test_db
@@ -42,11 +46,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    # No internal healthcheck; the workflow polls the exposed port.
 
   frontend:
     image: node:18-alpine
