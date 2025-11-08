@@ -73,11 +73,11 @@ services:
     depends_on:
       - app
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/ > /dev/null"]
-      interval: 20s
-      timeout: 30s
-      retries: 10
-      start_period: 90s
+      test: ["CMD-SHELL", "nc -z localhost 3000 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
 
 volumes:
   postgres_test_data:
