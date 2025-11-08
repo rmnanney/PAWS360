@@ -82,13 +82,26 @@ public class AuthController {
                         serviceOrigin
                     );
                     
-                    // Set HTTP-only session cookie for SSO
-                    Cookie sessionCookie = new Cookie(SESSION_COOKIE_NAME, loginResponse.session_token());
-                    sessionCookie.setHttpOnly(COOKIE_HTTP_ONLY);
-                    sessionCookie.setMaxAge(COOKIE_MAX_AGE);
-                    sessionCookie.setPath("/");
-                    sessionCookie.setSecure(COOKIE_SECURE);
-                    response.addCookie(sessionCookie);
+                    // Set HTTP-only session cookie for SSO.
+                    // Build the Set-Cookie header explicitly so we can include SameSite and
+                    // control Secure/HttpOnly flags consistently across environments.
+                    // Note: using SameSite=Lax by default keeps reasonable CSRF protections
+                    // while still working for same-site deployments. If you run cross-site
+                    // in production (frontend and backend on different domains), consider
+                    // using `SameSite=None; Secure` and serving over HTTPS.
+                    StringBuilder cookieHeader = new StringBuilder();
+                    cookieHeader.append(SESSION_COOKIE_NAME).append("=").append(loginResponse.session_token());
+                    cookieHeader.append("; Max-Age=").append(COOKIE_MAX_AGE);
+                    cookieHeader.append("; Path=/");
+                    if (COOKIE_HTTP_ONLY) {
+                        cookieHeader.append("; HttpOnly");
+                    }
+                    if (COOKIE_SECURE) {
+                        cookieHeader.append("; Secure");
+                    }
+                    // Default to Lax which works for same-site setups and is safer for local dev.
+                    cookieHeader.append("; SameSite=Lax");
+                    response.addHeader("Set-Cookie", cookieHeader.toString());
                     
                     logger.info("Successful login for user ID: {} ({}), role: {}, from IP: {}", 
                         user.getId(), user.getEmail().replaceAll("(.{3}).*(@.*)", "$1***$2"), 
