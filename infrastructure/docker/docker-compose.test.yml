@@ -43,6 +43,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: test_password
       DB_USERNAME: postgres
       DB_PASSWORD: test_password
+      SERVER_PORT: 8080
       SPRING_REDIS_URL: redis://redis:6379
     ports:
       - "${TEST_APP_PORT:-8081}:8080"
