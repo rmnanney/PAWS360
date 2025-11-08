@@ -48,7 +48,7 @@ public class AuthController {
      * SSO Login endpoint that creates session cookies for cross-service authentication
      */
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody UserLoginRequestDTO loginDTO,
+    public ResponseEntity<UserLoginResponseDTO> login(@Valid @RequestBody UserLoginRequestDTO loginDTO,
                                                     HttpServletRequest request, 
                                                     HttpServletResponse response) {
         String clientIp = getClientIpAddress(request);
@@ -61,8 +61,6 @@ public class AuthController {
         try {
             // Use existing login service for authentication
             UserLoginResponseDTO loginResponse = loginService.login(loginDTO);
-            
-            Map<String, Object> responseBody = new HashMap<>();
             
             if (loginResponse.message().equals("Login Successful")) {
                 // Create SSO session with additional context
@@ -92,24 +90,11 @@ public class AuthController {
                     sessionCookie.setSecure(COOKIE_SECURE);
                     response.addCookie(sessionCookie);
                     
-                    // Response includes both cookie and token for backward compatibility
-                    responseBody.put("message", loginResponse.message());
-                    responseBody.put("session_token", loginResponse.session_token());
-                    responseBody.put("user_id", loginResponse.user_id());
-                    responseBody.put("email", loginResponse.email());
-                    responseBody.put("firstname", loginResponse.firstname());
-                    responseBody.put("lastname", loginResponse.lastname());
-                    responseBody.put("role", loginResponse.role());
-                    responseBody.put("status", loginResponse.status());
-                    responseBody.put("session_expiration", loginResponse.session_expiration());
-                    responseBody.put("sso_enabled", true);
-                    responseBody.put("service_origin", serviceOrigin);
-                    
                     logger.info("Successful login for user ID: {} ({}), role: {}, from IP: {}", 
                         user.getId(), user.getEmail().replaceAll("(.{3}).*(@.*)", "$1***$2"), 
                         user.getRole(), clientIp);
                     
-                    return ResponseEntity.ok(responseBody);
+                    return ResponseEntity.ok(loginResponse);
                 } else {
                     logger.warn("Login response indicated success but session validation failed for email: {}", 
                         loginDTO.email() != null ? loginDTO.email().replaceAll("(.{3}).*(@.*)", "$1***$2") : "null");
@@ -117,29 +102,25 @@ public class AuthController {
             }
             
             // Handle authentication failures
-            responseBody.put("message", loginResponse.message());
-            responseBody.put("sso_enabled", false);
-            
             logger.warn("Failed login attempt for email: {} from IP: {} - {}", 
                 loginDTO.email() != null ? loginDTO.email().replaceAll("(.{3}).*(@.*)", "$1***$2") : "null", 
                 clientIp, loginResponse.message());
             
             if (loginResponse.message().contains("Locked")) {
-                responseBody.put("session_expiration", loginResponse.session_expiration());
-                return ResponseEntity.status(HttpStatus.LOCKED).body(responseBody);
+                return ResponseEntity.status(HttpStatus.LOCKED).body(loginResponse);
             }
             
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(loginResponse);
             
         } catch (Exception e) {
             logger.error("Login error for email: {} from IP: {}: {}", 
                 loginDTO.email() != null ? loginDTO.email().replaceAll("(.{3}).*(@.*)", "$1***$2") : "null", 
                 clientIp, e.getMessage(), e);
             
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Authentication service temporarily unavailable");
-            errorResponse.put("sso_enabled", false);
-            errorResponse.put("error_type", "SERVICE_ERROR");
+            UserLoginResponseDTO errorResponse = new UserLoginResponseDTO(
+                -1, null, null, null, null, null, null, null,
+                "Authentication service temporarily unavailable"
+            );
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }

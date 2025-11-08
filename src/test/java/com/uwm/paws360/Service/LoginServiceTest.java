@@ -38,6 +38,9 @@ class LoginServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private com.uwm.paws360.JPARepository.User.AuthenticationSessionRepository sessionRepository;
+
     @InjectMocks
     private LoginService loginService;
 
@@ -99,9 +102,13 @@ class LoginServiceTest {
         @DisplayName("Should authenticate valid user with correct credentials")
         void shouldAuthenticateValidUser() {
             // Given
-            when(userRepository.findUsersByEmailLikeIgnoreCase("demo.student@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("demo.student@uwm.edu"))
                 .thenReturn(validUser);
             when(userRepository.save(any(Users.class))).thenReturn(validUser);
+            // Session repository mocks for SSO
+            when(sessionRepository.invalidateUserSessions(anyInt(), any())).thenReturn(1);
+            when(sessionRepository.deleteBySessionToken(any())).thenReturn(1);
+            when(sessionRepository.save(any())).thenReturn(null);
 
             // When
             UserLoginResponseDTO response = loginService.login(validLoginRequest);
@@ -131,9 +138,13 @@ class LoginServiceTest {
         @DisplayName("Should generate unique session tokens for multiple logins")
         void shouldGenerateUniqueSessionTokens() {
             // Given
-            when(userRepository.findUsersByEmailLikeIgnoreCase(anyString()))
+            when(userRepository.findUsersByEmailIgnoreCase(anyString()))
                 .thenReturn(validUser);
             when(userRepository.save(any(Users.class))).thenReturn(validUser);
+            // Session repository mocks for SSO
+            when(sessionRepository.invalidateUserSessions(anyInt(), any())).thenReturn(1);
+            when(sessionRepository.deleteBySessionToken(any())).thenReturn(1);
+            when(sessionRepository.save(any())).thenReturn(null);
 
             // When
             UserLoginResponseDTO response1 = loginService.login(validLoginRequest);
@@ -160,9 +171,13 @@ class LoginServiceTest {
             UserLoginRequestDTO legacyLoginRequest = 
                 new UserLoginRequestDTO("legacy.user@uwm.edu", "plaintext123");
 
-            when(userRepository.findUsersByEmailLikeIgnoreCase("legacy.user@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("legacy.user@uwm.edu"))
                 .thenReturn(legacyUser);
             when(userRepository.save(any(Users.class))).thenReturn(legacyUser);
+            // Session repository mocks for SSO
+            when(sessionRepository.invalidateUserSessions(anyInt(), any())).thenReturn(1);
+            when(sessionRepository.deleteBySessionToken(any())).thenReturn(1);
+            when(sessionRepository.save(any())).thenReturn(null);
 
             // When
             UserLoginResponseDTO response = loginService.login(legacyLoginRequest);
@@ -188,7 +203,7 @@ class LoginServiceTest {
         @DisplayName("Should reject login for non-existent user")
         void shouldRejectNonExistentUser() {
             // Given
-            when(userRepository.findUsersByEmailLikeIgnoreCase("nonexistent@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("nonexistent@uwm.edu"))
                 .thenReturn(null);
 
             UserLoginRequestDTO nonExistentRequest = 
@@ -211,7 +226,7 @@ class LoginServiceTest {
         @DisplayName("Should reject login with wrong password")
         void shouldRejectWrongPassword() {
             // Given
-            when(userRepository.findUsersByEmailLikeIgnoreCase("demo.student@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("demo.student@uwm.edu"))
                 .thenReturn(validUser);
 
             // When
@@ -228,7 +243,7 @@ class LoginServiceTest {
         @DisplayName("Should reject login for inactive user")
         void shouldRejectInactiveUser() {
             // Given
-            when(userRepository.findUsersByEmailLikeIgnoreCase("inactive.user@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("inactive.user@uwm.edu"))
                 .thenReturn(inactiveUser);
 
             UserLoginRequestDTO inactiveLoginRequest = 
@@ -237,8 +252,8 @@ class LoginServiceTest {
             // When
             UserLoginResponseDTO response = loginService.login(inactiveLoginRequest);
 
-            // Then - Inactive users return their ID, not -1
-            assertThat(response.user_id()).isEqualTo(inactiveUser.getId());
+            // Then - Inactive users should not expose user ID for security
+            assertThat(response.user_id()).isEqualTo(-1);
             assertThat(response.session_token()).isNull();
             assertThat(response.message()).isEqualTo("Account Is Not Active");
         }
@@ -252,7 +267,7 @@ class LoginServiceTest {
         @DisplayName("Should reject login for locked account")
         void shouldRejectLockedAccount() {
             // Given
-            when(userRepository.findUsersByEmailLikeIgnoreCase("locked.user@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("locked.user@uwm.edu"))
                 .thenReturn(lockedUser);
 
             UserLoginRequestDTO lockedLoginRequest = 
@@ -261,8 +276,8 @@ class LoginServiceTest {
             // When
             UserLoginResponseDTO response = loginService.login(lockedLoginRequest);
 
-            // Then - Locked users return their ID, not -1
-            assertThat(response.user_id()).isEqualTo(lockedUser.getId());
+            // Then - Locked users should not expose user ID for security
+            assertThat(response.user_id()).isEqualTo(-1);
             assertThat(response.session_token()).isNull();
             assertThat(response.message()).contains("Locked");
         }
@@ -279,7 +294,7 @@ class LoginServiceTest {
             userWithFailedAttempts.setAccount_locked(false);
             userWithFailedAttempts.setFailed_attempts(2); // Already has 2 failed attempts
 
-            when(userRepository.findUsersByEmailLikeIgnoreCase("failing.user@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("failing.user@uwm.edu"))
                 .thenReturn(userWithFailedAttempts);
             when(userRepository.save(any(Users.class))).thenReturn(userWithFailedAttempts);
 
@@ -310,7 +325,7 @@ class LoginServiceTest {
             userNearLockout.setAccount_locked(false);
             userNearLockout.setFailed_attempts(4); // One attempt away from lockout
 
-            when(userRepository.findUsersByEmailLikeIgnoreCase("nearlocked.user@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("nearlocked.user@uwm.edu"))
                 .thenReturn(userNearLockout);
             when(userRepository.save(any(Users.class))).thenReturn(userNearLockout);
 
@@ -351,7 +366,7 @@ class LoginServiceTest {
             userWithBCrypt.setAccount_locked(false);
             userWithBCrypt.setFailed_attempts(0);
 
-            when(userRepository.findUsersByEmailLikeIgnoreCase("bcrypt.user@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("bcrypt.user@uwm.edu"))
                 .thenReturn(userWithBCrypt);
             when(userRepository.save(any(Users.class))).thenReturn(userWithBCrypt);
 
@@ -381,7 +396,7 @@ class LoginServiceTest {
             plaintextUser.setAccount_locked(false);
             plaintextUser.setFailed_attempts(0);
 
-            when(userRepository.findUsersByEmailLikeIgnoreCase("plaintext.user@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("plaintext.user@uwm.edu"))
                 .thenReturn(plaintextUser);
             when(userRepository.save(any(Users.class))).thenReturn(plaintextUser);
 
@@ -412,9 +427,13 @@ class LoginServiceTest {
         @DisplayName("Should generate session token with proper length")
         void shouldGenerateProperLengthToken() {
             // Given
-            when(userRepository.findUsersByEmailLikeIgnoreCase("demo.student@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("demo.student@uwm.edu"))
                 .thenReturn(validUser);
             when(userRepository.save(any(Users.class))).thenReturn(validUser);
+            // Session repository mocks for SSO
+            when(sessionRepository.invalidateUserSessions(anyInt(), any())).thenReturn(1);
+            when(sessionRepository.deleteBySessionToken(any())).thenReturn(1);
+            when(sessionRepository.save(any())).thenReturn(null);
 
             // When
             UserLoginResponseDTO response = loginService.login(validLoginRequest);
@@ -429,9 +448,13 @@ class LoginServiceTest {
         @DisplayName("Should set session expiration to 1 hour from now")
         void shouldSetProperSessionExpiration() {
             // Given
-            when(userRepository.findUsersByEmailLikeIgnoreCase("demo.student@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("demo.student@uwm.edu"))
                 .thenReturn(validUser);
             when(userRepository.save(any(Users.class))).thenReturn(validUser);
+            // Session repository mocks for SSO
+            when(sessionRepository.invalidateUserSessions(anyInt(), any())).thenReturn(1);
+            when(sessionRepository.deleteBySessionToken(any())).thenReturn(1);
+            when(sessionRepository.save(any())).thenReturn(null);
 
             LocalDateTime beforeLogin = LocalDateTime.now();
 
@@ -452,9 +475,13 @@ class LoginServiceTest {
             // Given
             LocalDateTime originalLastLogin = validUser.getLast_login();
             
-            when(userRepository.findUsersByEmailLikeIgnoreCase("demo.student@uwm.edu"))
+            when(userRepository.findUsersByEmailIgnoreCase("demo.student@uwm.edu"))
                 .thenReturn(validUser);
             when(userRepository.save(any(Users.class))).thenReturn(validUser);
+            // Session repository mocks for SSO
+            when(sessionRepository.invalidateUserSessions(anyInt(), any())).thenReturn(1);
+            when(sessionRepository.deleteBySessionToken(any())).thenReturn(1);
+            when(sessionRepository.save(any())).thenReturn(null);
 
             // When
             loginService.login(validLoginRequest);

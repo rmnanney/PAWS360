@@ -220,8 +220,6 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.lastname").value("Student"))
                 .andExpect(jsonPath("$.role").value("STUDENT"))
                 .andExpect(jsonPath("$.status").value("ACTIVE"))
-                .andExpect(jsonPath("$.sso_enabled").value(true))
-                .andExpect(jsonPath("$.service_origin").value("student-portal"))
                 .andExpect(cookie().value("PAWS360_SESSION", "valid-token-123"))
                 .andExpect(cookie().httpOnly("PAWS360_SESSION", true))
                 .andExpect(cookie().maxAge("PAWS360_SESSION", 3600))
@@ -232,7 +230,7 @@ class AuthControllerTest {
                 eq(demoStudent),
                 eq("valid-token-123"),
                 eq("192.168.1.100"),
-                isNull(), // User-Agent header is null in MockMvc tests
+                eq("Mozilla/5.0 Test Browser"), // User-Agent header is set in the request
                 eq("student-portal")
             );
         }
@@ -251,8 +249,7 @@ class AuthControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validLoginRequest))
                     .header("X-Service-Origin", "admin-dashboard"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.service_origin").value("admin-dashboard"));
+                .andExpect(status().isOk());
 
             verify(sessionManagementService).createSession(
                 any(Users.class), anyString(), eq("127.0.0.1"), isNull(), eq("admin-dashboard")
@@ -272,7 +269,6 @@ class AuthControllerTest {
                     .content(objectMapper.writeValueAsString(validLoginRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Invalid Email or Password"))
-                .andExpect(jsonPath("$.sso_enabled").value(false))
                 .andExpect(cookie().doesNotExist("PAWS360_SESSION"));
 
             verify(sessionManagementService, never()).createSession(
@@ -293,7 +289,6 @@ class AuthControllerTest {
                     .content(objectMapper.writeValueAsString(validLoginRequest)))
                 .andExpect(status().isLocked())
                 .andExpect(jsonPath("$.message").value("Account Temporarily Locked - Too Many Failed Attempts"))
-                .andExpect(jsonPath("$.sso_enabled").value(false))
                 .andExpect(jsonPath("$.session_expiration").exists());
         }
 
