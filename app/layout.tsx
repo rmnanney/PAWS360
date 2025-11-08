@@ -80,10 +80,10 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<head>
-				<title>University of Wisconsin, Milwaukee</title>
+				<title>PAWS360 - University of Wisconsin, Milwaukee</title>
 				<meta
 					name="description"
-					content="University of Wisconsin, Milwaukee Student Portal"
+					content="PAWS360 - University of Wisconsin, Milwaukee Student Portal"
 				/>
 			</head>
 			<body className="font-body antialiased">

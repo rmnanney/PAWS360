@@ -60,7 +60,7 @@ setup_database() {
     fi
     
     # Start PostgreSQL via Docker Compose if not running
-    cd ../../
+    cd ../
     if ! docker-compose -f infrastructure/docker/docker-compose.yml ps postgres | grep -q "Up"; then
         echo "Starting PostgreSQL container..."
         docker-compose -f infrastructure/docker/docker-compose.yml up -d postgres
@@ -74,7 +74,7 @@ setup_database() {
 start_backend() {
     echo "🔧 Starting Spring Boot backend..."
     
-    cd ../../
+    cd ../
     
     # Kill any existing process on port 8081
     kill_port 8081 "Spring Boot"
@@ -103,7 +103,7 @@ start_backend() {
 start_frontend() {
     echo "⚛️  Starting Next.js frontend..."
     
-    cd ../../
+    cd ../
     
     # Kill any existing process on port 3000
     kill_port 3000 "Next.js"

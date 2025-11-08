@@ -9,6 +9,7 @@ services:
       - "5442:5432"
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -34,13 +35,13 @@ services:
     working_dir: /app
     volumes:
       - ../../services:/artifacts:ro
-    command: ["sh", "-c", "JAVA_OPTS='-Xms256m -Xmx512m' && JAR=$(ls /artifacts/*SNAPSHOT.jar | head -1) && echo Using $JAR && java $JAVA_OPTS -jar $JAR"]
+    command: ["sh", "-c", "java -Xms256m -Xmx512m -jar /artifacts/paws360-0.0.1-SNAPSHOT.jar"]
     environment:
       SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/test_db
       SPRING_REDIS_URL: redis://redis:6379
     ports:
-      - "${TEST_APP_PORT:-8091}:8080"
+      - "${TEST_APP_PORT:-8081}:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,25 +51,31 @@ services:
 
   frontend:
     image: node:18-alpine
+    # Add a named volume for node_modules to cache dependencies between runs
+    # This significantly reduces cold start time for dev server in CI-like loops
     ports:
-      - "8095:8095"
+      - "3000:3000"
     environment:
       - NODE_ENV=test
-      - PORT=8095
+      - PORT=3000
+      # Use Docker service name 'app' with internal port 8080
+      - NEXT_PUBLIC_API_BASE_URL=http://app:8080
     volumes:
       - ../../:/app:cached
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
     working_dir: /app
-    command: ["sh", "-c", "npm install --silent && npm run dev -- -p 8095 --hostname 0.0.0.0"]
+    # Install dependencies then start dev server on 3000 (explicit install needed due to anonymous node_modules volume)
+    command: ["sh", "-c", "npm install --no-audit --no-fund --loglevel error && npm run dev -- -p 3000 --hostname 0.0.0.0"]
     depends_on:
       - app
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:8095/ > /dev/null"]
-      interval: 30s
-      timeout: 60s
-      retries: 5
-      start_period: 60s
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/ > /dev/null"]
+      interval: 20s
+      timeout: 30s
+      retries: 10
+      start_period: 90s
 
 volumes:
   postgres_test_data:
   redis_test_data:
+  frontend_node_modules:

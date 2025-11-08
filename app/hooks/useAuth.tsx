@@ -162,8 +162,13 @@ export default function useAuth() {
 						isLoading: false,
 					});
 
-					sessionStorage.setItem("showAuthToast", "true");
-					router.push("/login");
+					// Only redirect to login if not already on public pages
+					const currentPath = window.location.pathname;
+					const publicPages = ["/login", "/forgot-password"];
+					if (!publicPages.includes(currentPath)) {
+						sessionStorage.setItem("showAuthToast", "true");
+						router.push("/login");
+					}
 				}
 			});
 		}

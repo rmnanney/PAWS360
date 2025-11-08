@@ -1,80 +1,50 @@
 -- PAWS360 Database Initialization for Docker
--- Simplified version for development environment
+-- Create tables matching the JPA Users entity
 
 -- Create extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Create schemas
-CREATE SCHEMA IF NOT EXISTS paws360;
-
--- Basic user roles enum
-CREATE TYPE user_role AS ENUM ('student', 'faculty', 'staff', 'admin', 'super_admin');
-
--- FERPA compliance levels
-CREATE TYPE ferpa_compliance_level AS ENUM ('public', 'directory', 'restricted', 'confidential');
-
--- Users table
-CREATE TABLE IF NOT EXISTS paws360.users (
-    user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255),
-    role user_role NOT NULL DEFAULT 'student',
-    is_active BOOLEAN NOT NULL DEFAULT true,
-    last_login_at TIMESTAMP,
-    failed_login_attempts INTEGER DEFAULT 0,
-    account_locked_until TIMESTAMP,
-    ferpa_consent_given BOOLEAN DEFAULT false,
+-- Create users table matching JPA entity
+CREATE TABLE IF NOT EXISTS users (
+    user_id SERIAL PRIMARY KEY,
+    firstname VARCHAR(100) NOT NULL,
+    middlename VARCHAR(100),
+    lastname VARCHAR(30) NOT NULL,
+    dob DATE NOT NULL,
+    ssn VARCHAR(9) NOT NULL UNIQUE,
+    ethnicity VARCHAR(255),
+    gender VARCHAR(255),
+    nationality VARCHAR(255),
+    email VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(120) NOT NULL,
+    preferred_name VARCHAR(100),
+    country_code VARCHAR(255),
+    phone VARCHAR(10),
+    status VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    date_created DATE NOT NULL DEFAULT CURRENT_DATE,
+    account_updated DATE NOT NULL DEFAULT CURRENT_DATE,
+    last_login TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    changed_password DATE NOT NULL DEFAULT CURRENT_DATE,
+    failed_attempts INTEGER NOT NULL DEFAULT 0,
+    account_locked BOOLEAN NOT NULL DEFAULT false,
+    account_locked_duration TIMESTAMP,
+    ferpa_compliance VARCHAR(255) NOT NULL DEFAULT 'RESTRICTED',
+    contact_by_phone BOOLEAN NOT NULL DEFAULT true,
+    contact_by_email BOOLEAN NOT NULL DEFAULT true,
+    contact_by_mail BOOLEAN NOT NULL DEFAULT false,
+    ferpa_directory_opt_in BOOLEAN NOT NULL DEFAULT false,
+    photo_release_opt_in BOOLEAN NOT NULL DEFAULT false,
     session_token VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    session_expiration TIMESTAMP
 );
 
--- Students table
-CREATE TABLE IF NOT EXISTS paws360.students (
-    student_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES paws360.users(user_id),
-    student_number VARCHAR(20) UNIQUE NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    date_of_birth DATE,
-    gender CHAR(1) CHECK (gender IN ('M', 'F', 'O')),
-    gpa DECIMAL(3,2) CHECK (gpa >= 0.0 AND gpa <= 4.0),
-    total_credits_earned DECIMAL(6,2) DEFAULT 0,
-    ferpa_level ferpa_compliance_level DEFAULT 'directory',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Insert demo users for E2E testing
+INSERT INTO users (firstname, lastname, dob, ssn, email, password, status, role, ferpa_compliance, contact_by_phone, contact_by_email, contact_by_mail, ferpa_directory_opt_in, photo_release_opt_in, failed_attempts, account_locked)
+VALUES ('Demo', 'Student', '1990-01-01', '123456789', 'demo.student@uwm.edu', '$2a$10$N9qo8uLOickgx2ZMRZoMye1IcUWa1aNOWWrF5Dq9/TXzXYpY1VQ.y', 'ACTIVE', 'STUDENT', 'RESTRICTED', true, true, false, false, false, 0, false)
+ON CONFLICT (email) DO NOTHING;
 
--- Courses table
-CREATE TABLE IF NOT EXISTS paws360.courses (
-    course_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    course_code VARCHAR(20) UNIQUE NOT NULL,
-    course_name VARCHAR(200) NOT NULL,
-    credit_hours DECIMAL(3,1) NOT NULL CHECK (credit_hours > 0),
-    max_enrollment INTEGER CHECK (max_enrollment > 0),
-    current_enrollment INTEGER DEFAULT 0,
-    academic_year INTEGER NOT NULL,
-    term VARCHAR(20) NOT NULL,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Basic indexes
-CREATE INDEX IF NOT EXISTS idx_users_username ON paws360.users(username);
-CREATE INDEX IF NOT EXISTS idx_users_email ON paws360.users(email);
-CREATE INDEX IF NOT EXISTS idx_students_user_id ON paws360.students(user_id);
-CREATE INDEX IF NOT EXISTS idx_courses_code ON paws360.courses(course_code);
-
--- Insert sample admin user
-INSERT INTO paws360.users (username, email, password_hash, role, is_active, ferpa_consent_given)
-VALUES ('admin', 'admin@paws360.uwm.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu', 'super_admin', true, true)
-ON CONFLICT (username) DO NOTHING;
-
--- Insert sample student
-INSERT INTO paws360.students (user_id, student_number, first_name, last_name, gpa)
-SELECT user_id, '123456789', 'John', 'Doe', 3.5
-FROM paws360.users WHERE username = 'admin'
-ON CONFLICT DO NOTHING;
+INSERT INTO users (firstname, lastname, dob, ssn, email, password, status, role, ferpa_compliance, contact_by_phone, contact_by_email, contact_by_mail, ferpa_directory_opt_in, photo_release_opt_in, failed_attempts, account_locked)
+VALUES ('Demo', 'Admin', '1980-01-01', '987654321', 'demo.admin@uwm.edu', '$2a$10$N9qo8uLOickgx2ZMRZoMye1IcUWa1aNOWWrF5Dq9/TXzXYpY1VQ.y', 'ACTIVE', 'Administrator', 'RESTRICTED', true, true, false, false, false, 0, false)
+ON CONFLICT (email) DO NOTHING;

@@ -37,6 +37,17 @@ Object.defineProperty(window, 'sessionStorage', {
   writable: true,
 });
 
+// Mock performance API
+Object.defineProperty(global, 'performance', {
+  value: {
+    getEntriesByType: jest.fn(() => []),
+    mark: jest.fn(),
+    measure: jest.fn(),
+    now: jest.fn(() => Date.now()),
+  },
+  writable: true,
+});
+
 // Mock fetch
 global.fetch = jest.fn();
 

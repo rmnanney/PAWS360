@@ -17,7 +17,7 @@ const customJestConfig = {
     // Mock lucide-react
     '^lucide-react$': '<rootDir>/__mocks__/lucide-react.js',
   },
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/', '<rootDir>/tests/'],
   transformIgnorePatterns: [
     'node_modules/(?!(lucide-react)/)',
   ],

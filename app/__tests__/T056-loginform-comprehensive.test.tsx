@@ -28,6 +28,19 @@ jest.mock("../hooks/useToast", () => ({
 	}),
 }));
 
+// Mock monitoring hook
+const mockMonitorLogin = jest.fn();
+const mockRecordAuthEvent = jest.fn();
+const mockSetUserId = jest.fn();
+
+jest.mock("../hooks/useMonitoring", () => ({
+	useAuthMonitoring: () => ({
+		monitorLogin: mockMonitorLogin,
+		recordAuthEvent: mockRecordAuthEvent,
+		setUserId: mockSetUserId,
+	}),
+}));
+
 // Mock fetch globally
 global.fetch = jest.fn();
 
@@ -42,6 +55,11 @@ describe("T056: LoginForm Component Tests", () => {
 		(localStorage.setItem as jest.Mock).mockClear();
 		(localStorage.getItem as jest.Mock).mockClear();
 		(localStorage.removeItem as jest.Mock).mockClear();
+
+		// Default mock behavior - the monitoring function should call the passed function
+		mockMonitorLogin.mockImplementation(async (loginFunction) => {
+			return await loginFunction();
+		});
 
 		// Reset fetch mock
 		(fetch as jest.Mock).mockClear();
@@ -191,7 +209,7 @@ describe("T056: LoginForm Component Tests", () => {
 
 			// Verify API call
 			await waitFor(() => {
-				expect(fetch).toHaveBeenCalledWith("http://localhost:8081/auth/login", {
+				expect(fetch).toHaveBeenCalledWith("/auth/login", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -261,26 +279,28 @@ describe("T056: LoginForm Component Tests", () => {
 			expect(localStorage.setItem).not.toHaveBeenCalledWith("authToken", expect.anything());
 		});
 
-		test("should handle network error gracefully", async () => {
-			(fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
+	test("should handle network error gracefully", async () => {
+		// Mock the monitorLogin function to return a network error result
+		mockMonitorLogin.mockResolvedValueOnce({
+			success: false,
+			error: "network_error"
+		});
 
-			render(<LoginForm />);
+		render(<LoginForm />);
 
-			const emailInput = screen.getByLabelText(/university email address/i);
-			const passwordInput = screen.getByLabelText(/password/i);
-			const submitButton = screen.getByRole("button", { name: /sign in/i });
+		const emailInput = screen.getByLabelText(/university email address/i);
+		const passwordInput = screen.getByLabelText(/password/i);
+		const submitButton = screen.getByRole("button", { name: /sign in/i });
 
-			// Fill form
-			await user.type(emailInput, "test@uwm.edu");
-			await user.type(passwordInput, "password123");
-			
-			await user.click(submitButton);
-
-			// Verify network error toast
+		// Fill form
+		await user.type(emailInput, "test@uwm.edu");
+		await user.type(passwordInput, "password123");
+		
+		await user.click(submitButton);			// Verify network error toast
 			await waitFor(() => {
 				expect(mockToast).toHaveBeenCalledWith({
 					variant: "destructive",
-					title: "Error",
+					title: "Service unavailable",
 					description: "Unable to connect to the server. Try again later.",
 				});
 			});
@@ -379,9 +399,9 @@ describe("T056: LoginForm Component Tests", () => {
 			// Submit form and verify loading behavior
 			await user.click(submitButton);
 
-			// Verify form submission occurred
-			await waitFor(() => {
-				expect(fetch).toHaveBeenCalledWith("http://localhost:8081/auth/login", expect.any(Object));
+		// Verify form submission occurred
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledWith("/auth/login", expect.any(Object));
 			});
 
 			// Verify success toast
@@ -417,9 +437,9 @@ describe("T056: LoginForm Component Tests", () => {
 			await user.type(passwordInput, "password123");
 			await user.click(submitButton);
 
-			// Verify form submission
-			await waitFor(() => {
-				expect(fetch).toHaveBeenCalledWith("http://localhost:8081/auth/login", {
+		// Verify form submission
+		await waitFor(() => {
+			expect(fetch).toHaveBeenCalledWith("/auth/login", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",

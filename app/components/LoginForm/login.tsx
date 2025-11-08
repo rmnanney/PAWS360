@@ -50,8 +50,9 @@ export default function LoginForm() {
 		setIsLoading(true);
 		
 		// Wrap login with monitoring
-		const result = await monitorLogin(async () => {
-			const res = await fetch("http://localhost:8081/auth/login", {
+	const result = await monitorLogin(async () => {
+		// Use relative path so Next.js rewrites proxy to backend and cookies are first-party
+		const res = await fetch(`/auth/login`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -79,9 +80,8 @@ export default function LoginForm() {
 					duration: 1500,
 				});
 
-				setTimeout(() => {
-					router.push("/homepage");
-				}, 1500);
+				// Navigate immediately to reduce perceived latency in tests and UX
+				router.push("/homepage");
 
 				return { success: true, data };
 			} else if (res.status === 423) {
@@ -107,9 +107,10 @@ export default function LoginForm() {
 		// Handle monitoring result
 		if (!result.success) {
 			if (result.error === "network_error") {
+				// Align wording with E2E expectations
 				toast({
 					variant: "destructive",
-					title: "Error",
+					title: "Service unavailable",
 					description: "Unable to connect to the server. Try again later.",
 				});
 			}

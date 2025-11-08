@@ -1,0 +1,15 @@
+{
+  "cookies": [
+    {
+      "name": "PAWS360_SESSION",
+      "value": "BqkesMRKgcmbQqLMb1aNwc7Z3BZlGlYk",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1762631516.014211,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

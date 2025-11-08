@@ -102,3 +102,10 @@ paws360:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:9002}
     allowed-credentials: true
     max-age: 3600
+  session:
+    cookie:
+      # If we keep cross-origin in some environments, these can be overridden.
+      # SameSite 'Lax' works for first-party rewrite approach. Use 'None' with Secure in HTTPS.
+      same-site: ${SESSION_COOKIE_SAMESITE:Lax}
+      secure: ${SESSION_COOKIE_SECURE:false}
+      http-only: true
