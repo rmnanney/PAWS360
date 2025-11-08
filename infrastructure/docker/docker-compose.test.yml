@@ -35,7 +35,7 @@ services:
     working_dir: /app
     volumes:
       - ../../services:/artifacts:ro
-    command: ["sh", "-c", "java -Xms256m -Xmx512m -jar /artifacts/paws360-0.0.1-SNAPSHOT.jar"]
+    command: ["sh", "-c", "echo 'Contents of /artifacts:' && ls -la /artifacts/ && echo 'Starting application...' && java -Xms256m -Xmx512m -jar /artifacts/paws360-*.jar"]
     environment:
       SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/test_db

@@ -24,8 +24,8 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_DB: paws360_test
-          POSTGRES_USER: paws360
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: test_password
         options: >-
           --health-cmd pg_isready
@@ -110,9 +110,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: paws360-jars
-          path: |
-            target/*.jar
-            */target/*.jar
+          path: target/paws360-*.jar
 
   # Build and push Docker images
   docker-build:
@@ -210,20 +208,20 @@ jobs:
           docker compose -f docker-compose.test.yml up -d
           echo "Listing containers:" && docker ps
           echo "Tailing backend logs while waiting for health..." &
-          BACKEND_CONTAINER_ID=$(docker ps --format '{{.ID}} {{.Ports}} {{.Image}}' | grep '8091->8080' | awk '{print $1}')
+          BACKEND_CONTAINER_ID=$(docker ps --format '{{.ID}} {{.Ports}} {{.Image}}' | grep '8081->8080' | awk '{print $1}')
           (docker logs -f $BACKEND_CONTAINER_ID &) 2>/dev/null || true
           # Wait for backend (poll actuator)
-          timeout 360 bash -c 'until curl -sf http://localhost:8091/actuator/health | grep -q UP; do sleep 6; done'
+          timeout 360 bash -c 'until curl -sf http://localhost:8081/actuator/health | grep -q UP; do sleep 6; done'
           # Wait for frontend to be ready
-          timeout 360 bash -c 'until curl -sf http://localhost:8095; do sleep 6; done'
+          timeout 360 bash -c 'until curl -sf http://localhost:3000; do sleep 6; done'
         env:
-          TEST_APP_PORT: 8091
+          TEST_APP_PORT: 8081
 
       - name: Run UI tests
         working-directory: tests/ui
         run: npm test
         env:
-          BASE_URL: http://localhost:8095
+          BASE_URL: http://localhost:3000
           CI: true
 
       - name: Upload UI test results
