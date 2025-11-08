@@ -30,6 +30,17 @@ async function globalSetup() {
 
       if (!resp.ok()) {
         console.warn(`[global-setup] Backend login failed for ${u.key}: ${resp.status()}`);
+        // Save diagnostic artifact for CI
+        try {
+          const diagDir = path.join(stateDir, 'diagnostics');
+          await fs.promises.mkdir(diagDir, { recursive: true });
+          const body = await resp.text().catch(() => '<non-text-response>');
+          const diag = { status: resp.status(), headers: resp.headers(), body };
+          const diagPath = path.join(diagDir, `${u.key}-backend-fail-${Date.now()}.json`);
+          await fs.promises.writeFile(diagPath, JSON.stringify(diag, null, 2));
+        } catch (e) {
+          console.warn('[global-setup] Failed to write diagnostic file', e);
+        }
         // Fall back to UI login if backend auth failed
         await requestContext.dispose();
         await runUiLoginAndPersist(u, baseURL, stateDir);
@@ -41,6 +52,17 @@ async function globalSetup() {
       const match = /PAWS360_SESSION=([^;]+)/.exec(setCookie);
       if (!match) {
         console.warn(`[global-setup] No PAWS360_SESSION cookie in backend response for ${u.key}. Falling back to UI login.`);
+        // Save diagnostic artifact for CI
+        try {
+          const diagDir = path.join(stateDir, 'diagnostics');
+          await fs.promises.mkdir(diagDir, { recursive: true });
+          const body = await resp.text().catch(() => '<non-text-response>');
+          const diag = { status: resp.status(), headers: resp.headers(), body };
+          const diagPath = path.join(diagDir, `${u.key}-no-cookie-${Date.now()}.json`);
+          await fs.promises.writeFile(diagPath, JSON.stringify(diag, null, 2));
+        } catch (e) {
+          console.warn('[global-setup] Failed to write diagnostic file', e);
+        }
         await requestContext.dispose();
         await runUiLoginAndPersist(u, baseURL, stateDir);
         continue;

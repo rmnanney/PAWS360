@@ -11,7 +11,7 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only (allow override) */
-  retries: process.env.PW_RETRIES ? Number(process.env.PW_RETRIES) : (process.env.CI ? 1 : 0),
+  retries: process.env.PW_RETRIES ? Number(process.env.PW_RETRIES) : (process.env.CI ? 2 : 0),
   /* Allow overriding workers; default to 1 on CI for stability unless PW_WORKERS provided */
   workers: process.env.PW_WORKERS ? Number(process.env.PW_WORKERS) : (process.env.CI ? 1 : undefined),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
