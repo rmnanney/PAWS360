@@ -222,6 +222,7 @@ jobs:
         run: npm test
         env:
           BASE_URL: http://localhost:3000
+          BACKEND_URL: http://localhost:8081
           CI: true
 
       - name: Upload UI test results
