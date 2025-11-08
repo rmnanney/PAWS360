@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [master, main, develop]
+    branches: [master, main, develop, '001-unify-repos']
   pull_request:
     branches: [master, main, develop]
 
