@@ -31,8 +31,8 @@ services:
 
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:postgresql://${TEST_DB_USERNAME:-postgres}:${TEST_DB_PASSWORD:-test_password}@postgres:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-test_db}
