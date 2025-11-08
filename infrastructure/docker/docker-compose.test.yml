@@ -29,71 +29,23 @@ services:
       timeout: 5s
       retries: 5
 
-  auth-service:
+  app:
     build:
       context: .
-      dockerfile: Dockerfile.auth
+      dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql://${TEST_DB_USERNAME:-postgres}:${TEST_DB_PASSWORD:-test_password}@postgres:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-test_db}
-      REDIS_URL: redis://redis:${TEST_REDIS_PORT:-6379}
-      SECRET_KEY: ${TEST_JWT_SECRET:-test_secret_key_for_ci_cd_pipeline}
-      APP_ENV: ${TEST_APP_ENV:-test}
-      APP_DEBUG: ${TEST_APP_DEBUG:-false}
+      SPRING_PROFILES_ACTIVE: test
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${TEST_DB_USERNAME:-postgres}:${TEST_DB_PASSWORD:-test_password}@postgres:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-test_db}
+      SPRING_REDIS_URL: redis://redis:${TEST_REDIS_PORT:-6379}
     ports:
-      - "${TEST_AUTH_SERVICE_PORT:-8081}:${TEST_AUTH_SERVICE_PORT:-8080}"
+      - "${TEST_APP_PORT:-8081}:8080"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${TEST_AUTH_SERVICE_PORT:-8080}/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  data-service:
-    build:
-      context: .
-      dockerfile: Dockerfile.data
-    environment:
-      DATABASE_URL: postgresql://${TEST_DB_USERNAME:-postgres}:${TEST_DB_PASSWORD:-test_password}@postgres:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-test_db}
-      REDIS_URL: redis://redis:${TEST_REDIS_PORT:-6379}
-      SECRET_KEY: ${TEST_JWT_SECRET:-test_secret_key_for_ci_cd_pipeline}
-      APP_ENV: ${TEST_APP_ENV:-test}
-      APP_DEBUG: ${TEST_APP_DEBUG:-false}
-    ports:
-      - "${TEST_DATA_SERVICE_PORT:-8082}:${TEST_DATA_SERVICE_PORT:-8080}"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${TEST_DATA_SERVICE_PORT:-8080}/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  analytics-service:
-    build:
-      context: .
-      dockerfile: Dockerfile.analytics
-    environment:
-      DATABASE_URL: postgresql://${TEST_DB_USERNAME:-postgres}:${TEST_DB_PASSWORD:-test_password}@postgres:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-test_db}
-      REDIS_URL: redis://redis:${TEST_REDIS_PORT:-6379}
-      SECRET_KEY: ${TEST_JWT_SECRET:-test_secret_key_for_ci_cd_pipeline}
-      APP_ENV: ${TEST_APP_ENV:-test}
-      APP_DEBUG: ${TEST_APP_DEBUG:-false}
-    ports:
-      - "${TEST_ANALYTICS_SERVICE_PORT:-8083}:${TEST_ANALYTICS_SERVICE_PORT:-8080}"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${TEST_ANALYTICS_SERVICE_PORT:-8080}/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -111,7 +63,7 @@ services:
     working_dir: /app
     command: ["sh", "-c", "npm install --silent && npm run dev -- -p 8085"]
     depends_on:
-      - auth-service
+      - app
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://localhost:8085/ > /dev/null"]
       interval: 30s
