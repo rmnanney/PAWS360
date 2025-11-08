@@ -98,6 +98,24 @@ services:
       timeout: 10s
       retries: 3
 
-volumes:
+  frontend:
+    image: node:18-alpine
+    ports:
+      - "8085:8085"
+    environment:
+      - NODE_ENV=test
+      - PORT=8085
+    volumes:
+      - ../../../:/app:cached
+      - /app/node_modules
+    working_dir: /app
+    command: ["sh", "-c", "npm install --silent && npm run dev -- -p 8085"]
+    depends_on:
+      - auth-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8085/ > /dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   postgres_test_data:
   redis_test_data:
