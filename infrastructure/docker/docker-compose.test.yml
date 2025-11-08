@@ -1,18 +1,16 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: ${TEST_DB_NAME:-test_db}
-      POSTGRES_USER: ${TEST_DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD:-test_password}
+      POSTGRES_DB: test_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_password
     ports:
-      - "${TEST_DB_PORT:-5432}:${TEST_DB_PORT:-5432}"
+      - "5442:5432"
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${TEST_DB_USERNAME:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,7 +18,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "${TEST_REDIS_PORT:-6379}:${TEST_REDIS_PORT:-6379}"
+      - "6389:6379"
     volumes:
       - redis_test_data:/data
     healthcheck:
@@ -35,10 +33,10 @@ services:
       dockerfile: infrastructure/docker/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: test
-      SPRING_DATASOURCE_URL: jdbc:postgresql://${TEST_DB_USERNAME:-postgres}:${TEST_DB_PASSWORD:-test_password}@postgres:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-test_db}
-      SPRING_REDIS_URL: redis://redis:${TEST_REDIS_PORT:-6379}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/test_db
+      SPRING_REDIS_URL: redis://redis:6379
     ports:
-      - "${TEST_APP_PORT:-8081}:8080"
+      - "${TEST_APP_PORT:-8091}:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,19 +51,19 @@ services:
   frontend:
     image: node:18-alpine
     ports:
-      - "8085:8085"
+      - "8095:8095"
     environment:
       - NODE_ENV=test
-      - PORT=8085
+      - PORT=8095
     volumes:
       - ../../:/app:cached
       - /app/node_modules
     working_dir: /app
-    command: ["sh", "-c", "npm install --silent && npm run dev -- -p 8085 --hostname 0.0.0.0"]
+    command: ["sh", "-c", "npm install --silent && npm run dev -- -p 8095 --hostname 0.0.0.0"]
     depends_on:
       - app
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:8085/ > /dev/null"]
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8095/ > /dev/null"]
       interval: 30s
       timeout: 60s
       retries: 5

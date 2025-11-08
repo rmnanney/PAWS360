@@ -164,9 +164,9 @@ jobs:
       TEST_DB_NAME: test_db
       TEST_DB_USERNAME: postgres
       TEST_DB_PASSWORD: test_password
-      TEST_DB_PORT: 5432
-      TEST_REDIS_PORT: 6379
-      TEST_APP_PORT: 8081
+      TEST_DB_PORT: 5442
+      TEST_REDIS_PORT: 6389
+      TEST_APP_PORT: 8091
     services:
       postgres:
         image: postgres:15-alpine
@@ -220,16 +220,16 @@ jobs:
           docker compose -f docker-compose.test.yml up -d
           # Wait for backend to be ready
           timeout 300 bash -c \
-            'until curl -f http://localhost:8081/actuator/health; do sleep 5; done'
+            'until curl -f http://localhost:8091/actuator/health; do sleep 5; done'
           # Wait for frontend to be ready
           timeout 300 bash -c \
-            'until curl -f http://localhost:8085; do sleep 5; done'
+            'until curl -f http://localhost:8095; do sleep 5; done'
 
       - name: Run UI tests
         working-directory: tests/ui
         run: npm test
         env:
-          BASE_URL: http://localhost:8085
+          BASE_URL: http://localhost:8095
           CI: true
 
       - name: Upload UI test results
