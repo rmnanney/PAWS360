@@ -45,8 +45,11 @@ tsconfig.tsbuildinfo
 infrastructure/ansible/.ansible/
 infrastructure/ansible/ansible.log
 
-# Docker services JAR files (built during CI/CD)
+# Build artifacts - JAR files (built during CI/CD)
 infrastructure/docker/services/*.jar
+services/*.jar
+*.jar
+!**/mvn*
 
 # Ignore docker-generated frontend artifacts if present
 frontend/node_modules/
