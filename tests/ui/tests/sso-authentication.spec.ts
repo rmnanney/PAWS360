@@ -294,13 +294,31 @@ test.describe('SSO Authentication End-to-End Tests', () => {
       }
 
       // Try unified validate first; fallback to demo validate if unified path not available
-      let response = await page.request.get(`${backendUrl}/auth/validate`, { headers });
-      if (!response.ok() && response.status() === 404) {
-        response = await page.request.get(`${backendUrl}/demo/validate`, { headers });
+      // Add retry mechanism for CI environment timing issues
+      let response;
+      let attempts = 0;
+      const maxAttempts = 3;
+      
+      while (attempts < maxAttempts) {
+        response = await page.request.get(`${backendUrl}/auth/validate`, { headers });
+        if (!response.ok() && response.status() === 404) {
+          response = await page.request.get(`${backendUrl}/demo/validate`, { headers });
+        }
+        
+        if (response.ok()) {
+          break;
+        }
+        
+        attempts++;
+        if (attempts < maxAttempts) {
+          console.log(`Validate attempt ${attempts} failed with status ${response.status()}, retrying...`);
+          await page.waitForTimeout(1000); // Wait 1 second before retry
+        }
       }
 
-      expect(response.ok()).toBeTruthy();
-      const userData = await response.json();
+      expect(response).toBeDefined();
+      expect(response!.ok()).toBeTruthy();
+      const userData = await response!.json();
       expect(userData.email).toBe(validCredentials.student.email);
     });
 
