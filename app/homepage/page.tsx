@@ -69,7 +69,7 @@ export default function Homepage() {
 
 		setProfileLoading(true);
 		try {
-			const response = await fetch("http://localhost:8081/api/profile/student", {
+			const response = await fetch("/api/profile/student", {
 				method: "GET",
 				credentials: "include", // Include SSO session cookie
 				headers: {
