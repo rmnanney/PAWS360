@@ -75,6 +75,6 @@ ON CONFLICT (email) DO UPDATE SET
 
 -- Insert corresponding student records
 INSERT INTO student (user_id, campus_id, department, standing, enrollement_status, gpa, expected_graduation)
-SELECT u.user_id, 'S1000001', 'COMPUTER_SCIENCE', 'SENIOR', 'ACTIVE', 3.50, '2026-05-15'
+SELECT u.user_id, 'S1000001', 'COMPUTER_SCIENCE', 'SENIOR', 'ENROLLED', 3.50, '2026-05-15'
 FROM users u WHERE u.email = 'demo.student@uwm.edu'
 ON CONFLICT (campus_id) DO NOTHING;
