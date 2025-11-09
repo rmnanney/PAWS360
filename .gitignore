@@ -35,7 +35,7 @@ build/
 
 # React Router/NextJS
 .DS_Store
-/node_modules/
+/**/node_modules/
 /.react-router/
 /build/
 .next/
@@ -50,3 +50,7 @@ infrastructure/docker/services/*.jar
 services/*.jar
 *.jar
 !**/mvn*
+
+# Ignore docker-generated frontend artifacts if present
+frontend/node_modules/
+frontend/package-lock.json
