@@ -8,7 +8,7 @@ import path from 'path';
  * UI-level proxy timing issues and makes the stored `storageState` deterministic.
  */
 async function globalSetup() {
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:8081';
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
   const baseURL = process.env.BASE_URL || 'http://localhost:3000';
 
   console.log('[global-setup] Starting authentication setup...');
