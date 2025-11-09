@@ -11,6 +11,11 @@ async function globalSetup() {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:8081';
   const baseURL = process.env.BASE_URL || 'http://localhost:3000';
 
+  console.log('[global-setup] Starting authentication setup...');
+  
+  // Brief delay to ensure account reset has taken effect
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
   const users = [
     { key: 'student', email: 'demo.student@uwm.edu', password: 'password' },
     { key: 'admin', email: 'demo.admin@uwm.edu', password: 'password' },

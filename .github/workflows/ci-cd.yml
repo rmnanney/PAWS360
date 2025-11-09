@@ -212,6 +212,14 @@ jobs:
           (docker logs -f $BACKEND_CONTAINER_ID &) 2>/dev/null || true
           # Wait for backend (poll actuator)
           timeout 360 bash -c 'until curl -sf http://localhost:8081/actuator/health | grep -q UP; do sleep 6; done'
+          
+          # Reset demo account locks before testing (prevents lockout from previous test runs)
+          echo "Resetting demo account locks..."
+          docker exec $(docker ps --format '{{.ID}} {{.Image}}' | grep 'postgres:15-alpine' | awk '{print $1}') \
+            psql -U postgres -d test_db -c \
+            "UPDATE users SET failed_attempts = 0, account_locked = false, account_locked_duration = null WHERE email IN ('demo.student@uwm.edu', 'demo.admin@uwm.edu');" \
+            2>/dev/null || echo "Account reset skipped (postgres container access failed)"
+            
           cd -
           # Install frontend deps and start Next.js dev server on host so hardcoded localhost URLs resolve correctly
           npm ci
