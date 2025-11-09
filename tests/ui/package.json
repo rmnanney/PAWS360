@@ -1,18 +1,21 @@
 {
-  "name": "paws360-ui-tests",
+  "name": "paws360-e2e-tests",
   "version": "1.0.0",
-  "description": "UI tests for PAWS360 AdminLTE dashboard",
+  "description": "End-to-End tests for PAWS360 SSO Authentication Flow",
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:ui": "playwright test --ui",
+    "test:sso": "playwright test sso-authentication.spec.ts",
     "report": "playwright show-report",
     "install-browsers": "playwright install chromium"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.47.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

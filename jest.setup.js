@@ -26,6 +26,28 @@ Object.defineProperty(window, 'localStorage', {
   writable: true,
 });
 
+// Mock sessionStorage
+Object.defineProperty(window, 'sessionStorage', {
+  value: {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn(),
+  },
+  writable: true,
+});
+
+// Mock performance API
+Object.defineProperty(global, 'performance', {
+  value: {
+    getEntriesByType: jest.fn(() => []),
+    mark: jest.fn(),
+    measure: jest.fn(),
+    now: jest.fn(() => Date.now()),
+  },
+  writable: true,
+});
+
 // Mock fetch
 global.fetch = jest.fn();
 

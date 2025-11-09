@@ -1,18 +1,17 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: ${TEST_DB_NAME:-test_db}
-      POSTGRES_USER: ${TEST_DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD:-test_password}
+      POSTGRES_DB: test_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_password
     ports:
-      - "${TEST_DB_PORT:-5432}:${TEST_DB_PORT:-5432}"
+      - "5442:5432"
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${TEST_DB_USERNAME:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -20,7 +19,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "${TEST_REDIS_PORT:-6379}:${TEST_REDIS_PORT:-6379}"
+      - "6389:6379"
     volumes:
       - redis_test_data:/data
     healthcheck:
@@ -29,75 +28,60 @@ services:
       timeout: 5s
       retries: 5
 
-  auth-service:
-    build:
-      context: .
-      dockerfile: Dockerfile.auth
+  app:
+    # Use pre-built JAR artifact downloaded by GitHub Actions instead of rebuilding inside Docker.
+    # This cuts several minutes of CI time and avoids double Maven builds.
+    image: eclipse-temurin:21-jre-alpine
+    working_dir: /app
+    volumes:
+      - ../../services:/artifacts:ro
+    command: ["sh", "-c", "echo 'Contents of /artifacts:' && ls -la /artifacts/ && echo 'Starting application...' && java -Xms256m -Xmx512m -jar /artifacts/paws360-*.jar"]
     environment:
-      DATABASE_URL: postgresql://${TEST_DB_USERNAME:-postgres}:${TEST_DB_PASSWORD:-test_password}@postgres:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-test_db}
-      REDIS_URL: redis://redis:${TEST_REDIS_PORT:-6379}
-      SECRET_KEY: ${TEST_JWT_SECRET:-test_secret_key_for_ci_cd_pipeline}
-      APP_ENV: ${TEST_APP_ENV:-test}
-      APP_DEBUG: ${TEST_APP_DEBUG:-false}
+      SPRING_PROFILES_ACTIVE: test
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/test_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: test_password
+      DB_USERNAME: postgres
+      DB_PASSWORD: test_password
+      SERVER_PORT: 8080
+      SPRING_REDIS_URL: redis://redis:6379
     ports:
-      - "${TEST_AUTH_SERVICE_PORT:-8081}:${TEST_AUTH_SERVICE_PORT:-8080}"
+      - "${TEST_APP_PORT:-8081}:8080"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${TEST_AUTH_SERVICE_PORT:-8080}/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    # No internal healthcheck; the workflow polls the exposed port.
 
-  data-service:
-    build:
-      context: .
-      dockerfile: Dockerfile.data
-    environment:
-      DATABASE_URL: postgresql://${TEST_DB_USERNAME:-postgres}:${TEST_DB_PASSWORD:-test_password}@postgres:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-test_db}
-      REDIS_URL: redis://redis:${TEST_REDIS_PORT:-6379}
-      SECRET_KEY: ${TEST_JWT_SECRET:-test_secret_key_for_ci_cd_pipeline}
-      APP_ENV: ${TEST_APP_ENV:-test}
-      APP_DEBUG: ${TEST_APP_DEBUG:-false}
+  frontend:
+    image: node:18-alpine
+    # Add a named volume for node_modules to cache dependencies between runs
+    # This significantly reduces cold start time for dev server in CI-like loops
     ports:
-      - "${TEST_DATA_SERVICE_PORT:-8082}:${TEST_DATA_SERVICE_PORT:-8080}"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${TEST_DATA_SERVICE_PORT:-8080}/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  analytics-service:
-    build:
-      context: .
-      dockerfile: Dockerfile.analytics
+      - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://${TEST_DB_USERNAME:-postgres}:${TEST_DB_PASSWORD:-test_password}@postgres:${TEST_DB_PORT:-5432}/${TEST_DB_NAME:-test_db}
-      REDIS_URL: redis://redis:${TEST_REDIS_PORT:-6379}
-      SECRET_KEY: ${TEST_JWT_SECRET:-test_secret_key_for_ci_cd_pipeline}
-      APP_ENV: ${TEST_APP_ENV:-test}
-      APP_DEBUG: ${TEST_APP_DEBUG:-false}
-    ports:
-      - "${TEST_ANALYTICS_SERVICE_PORT:-8083}:${TEST_ANALYTICS_SERVICE_PORT:-8080}"
+      - NODE_ENV=test
+      - PORT=3000
+      # Use internal app service URL so the frontend inside Docker can reach the backend
+      # This avoids localhost/IPv6 resolution issues when the dev server proxies requests
+      - NEXT_PUBLIC_API_BASE_URL=http://app:8080
+    volumes:
+      - ../../:/app:cached
+      - frontend_node_modules:/app/node_modules
+    working_dir: /app
+    # Install dependencies then start dev server on 3000 (explicit install needed due to anonymous node_modules volume)
+    command: ["sh", "-c", "npm install --no-audit --no-fund --loglevel error && npm run dev -- -p 3000 --hostname 0.0.0.0"]
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - app
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${TEST_ANALYTICS_SERVICE_PORT:-8080}/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "pgrep -f 'next dev' > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
 
 volumes:
   postgres_test_data:
   redis_test_data:
+  frontend_node_modules:

@@ -1,4 +1,8 @@
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
+
+// Backend base URL for proxying API requests in dev/prod.
+// Prefer NEXT_PUBLIC_API_BASE_URL if provided; fallback to local Spring Boot port.
+const backendBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -29,6 +33,23 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+  },
+  async rewrites() {
+    // Proxy auth and API requests to the backend to avoid cross-origin cookies/CORS.
+    return [
+      {
+        source: '/auth/:path*',
+        destination: `${backendBase}/auth/:path*`,
+      },
+      {
+        source: '/api/:path*',
+        destination: `${backendBase}/api/:path*`,
+      },
+      {
+        source: '/actuator/:path*',
+        destination: `${backendBase}/actuator/:path*`,
+      },
+    ];
   },
 };
 
