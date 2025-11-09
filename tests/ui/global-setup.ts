@@ -23,10 +23,23 @@ async function globalSetup() {
     // Use a request context to POST credentials directly to the backend auth endpoint
     const requestContext = await playwrightRequest.newContext({ baseURL: backendUrl });
     try {
-      const resp = await requestContext.post('/auth/login', {
+      // Try modern unified auth endpoint first
+      let resp = await requestContext.post('/auth/login', {
         headers: { 'Content-Type': 'application/json', 'X-Service-Origin': 'student-portal' },
         data: { email: u.email, password: u.password },
       });
+
+      // Fallback to legacy "/login" if unified endpoint is unavailable (404) or errors
+      if (!resp.ok() && (resp.status() === 404 || resp.status() >= 500)) {
+        try {
+          resp = await requestContext.post('/login', {
+            headers: { 'Content-Type': 'application/json', 'X-Service-Origin': 'student-portal' },
+            data: { email: u.email, password: u.password },
+          });
+        } catch (ignored) {
+          // continue to diagnostic and UI fallback below
+        }
+      }
 
       if (!resp.ok()) {
         console.warn(`[global-setup] Backend login failed for ${u.key}: ${resp.status()}`);
@@ -57,7 +70,7 @@ async function globalSetup() {
           const diagDir = path.join(stateDir, 'diagnostics');
           await fs.promises.mkdir(diagDir, { recursive: true });
           const body = await resp.text().catch(() => '<non-text-response>');
-          const diag = { status: resp.status(), headers: resp.headers(), body };
+          const diag = { status: resp.status(), headers: resp.headers(), body, endpointTried: ['/auth/login', '/login'] };
           const diagPath = path.join(diagDir, `${u.key}-no-cookie-${Date.now()}.json`);
           await fs.promises.writeFile(diagPath, JSON.stringify(diag, null, 2));
         } catch (e) {

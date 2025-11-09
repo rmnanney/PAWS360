@@ -2,10 +2,10 @@
   "cookies": [
     {
       "name": "PAWS360_SESSION",
-      "value": "BqkesMRKgcmbQqLMb1aNwc7Z3BZlGlYk",
+      "value": "Lq8QCgYs92H4f8oMc5KU7VMucoV6ZmX3",
       "domain": "localhost",
       "path": "/",
-      "expires": 1762631516.014211,
+      "expires": -1,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"

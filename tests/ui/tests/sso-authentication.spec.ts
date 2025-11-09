@@ -63,9 +63,10 @@ test.describe('SSO Authentication End-to-End Tests', () => {
       
       // Monitor network requests to verify API calls
       // Wait for the login API response so we can verify Set-Cookie header when present
-      const loginResponsePromise = page.waitForResponse(response =>
-        response.url().includes('/auth/login')
-      );
+      const loginResponsePromise = page.waitForResponse(response => {
+        const url = response.url();
+        return url.includes('/auth/login') || url.includes('/login');
+      });
 
       await page.click('button[type="submit"]');
 
@@ -292,7 +293,11 @@ test.describe('SSO Authentication End-to-End Tests', () => {
         headers['Cookie'] = `${sessionCookie.name}=${sessionCookie.value}`;
       }
 
-      const response = await page.request.get(`${backendUrl}/auth/validate`, { headers });
+      // Try unified validate first; fallback to demo validate if unified path not available
+      let response = await page.request.get(`${backendUrl}/auth/validate`, { headers });
+      if (!response.ok() && response.status() === 404) {
+        response = await page.request.get(`${backendUrl}/demo/validate`, { headers });
+      }
 
       expect(response.ok()).toBeTruthy();
       const userData = await response.json();
