@@ -41,17 +41,19 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Insert demo users for E2E testing (using BCrypt hashed passwords)
--- BCrypt hash for 'password': $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi. 
+-- BCrypt hash for 'password': $2b$10$MaeYWA1x4HxyI9gf0Fv7XO.J/ftO1mdIfDv62/YFuOsepgH5neqHe
 INSERT INTO users (firstname, lastname, dob, ssn, email, password, status, role, ferpa_compliance, contact_by_phone, contact_by_email, contact_by_mail, ferpa_directory_opt_in, photo_release_opt_in, failed_attempts, account_locked)
-VALUES ('Demo', 'Student', '1990-01-01', '123456789', 'demo.student@uwm.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'ACTIVE', 'STUDENT', 'RESTRICTED', true, true, false, false, false, 0, false)
+VALUES ('Demo', 'Student', '1990-01-01', '123456789', 'demo.student@uwm.edu', '$2b$10$MaeYWA1x4HxyI9gf0Fv7XO.J/ftO1mdIfDv62/YFuOsepgH5neqHe', 'ACTIVE', 'STUDENT', 'RESTRICTED', true, true, false, false, false, 0, false)
 ON CONFLICT (email) DO UPDATE SET 
+    password = EXCLUDED.password,
     failed_attempts = 0, 
     account_locked = false, 
     account_locked_duration = null;
 
 INSERT INTO users (firstname, lastname, dob, ssn, email, password, status, role, ferpa_compliance, contact_by_phone, contact_by_email, contact_by_mail, ferpa_directory_opt_in, photo_release_opt_in, failed_attempts, account_locked)
-VALUES ('Demo', 'Admin', '1980-01-01', '987654321', 'demo.admin@uwm.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'ACTIVE', 'Administrator', 'RESTRICTED', true, true, false, false, false, 0, false)
+VALUES ('Demo', 'Admin', '1980-01-01', '987654321', 'demo.admin@uwm.edu', '$2b$10$MaeYWA1x4HxyI9gf0Fv7XO.J/ftO1mdIfDv62/YFuOsepgH5neqHe', 'ACTIVE', 'Administrator', 'RESTRICTED', true, true, false, false, false, 0, false)
 ON CONFLICT (email) DO UPDATE SET 
+    password = EXCLUDED.password,
     failed_attempts = 0, 
     account_locked = false, 
     account_locked_duration = null;

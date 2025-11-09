@@ -215,10 +215,31 @@ jobs:
           
           # Reset demo account locks before testing (prevents lockout from previous test runs)
           echo "Resetting demo account locks..."
-          docker exec $(docker ps --format '{{.ID}} {{.Image}}' | grep 'postgres:15-alpine' | awk '{print $1}') \
-            psql -U postgres -d test_db -c \
-            "UPDATE users SET failed_attempts = 0, account_locked = false, account_locked_duration = null WHERE email IN ('demo.student@uwm.edu', 'demo.admin@uwm.edu');" \
-            2>/dev/null || echo "Account reset skipped (postgres container access failed)"
+          echo "Available containers:"
+          docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'
+          
+          # Find postgres container name and reset accounts
+          POSTGRES_CONTAINER=$(docker ps --format '{{.Names}}' | grep postgres || echo "")
+          if [ -n "$POSTGRES_CONTAINER" ]; then
+            echo "Resetting accounts in container: $POSTGRES_CONTAINER"
+            
+            echo "Current users in database:"
+            docker exec "$POSTGRES_CONTAINER" psql -U postgres -d test_db -c \
+              "SELECT email, failed_attempts, account_locked, password FROM users;" \
+              || echo "User listing failed"
+            
+            docker exec "$POSTGRES_CONTAINER" psql -U postgres -d test_db -c \
+              "UPDATE users SET failed_attempts = 0, account_locked = false, account_locked_duration = null WHERE email IN ('demo.student@uwm.edu', 'demo.admin@uwm.edu');" \
+              && echo "✓ Account reset successful" || echo "✗ Account reset failed"
+            
+            echo "Verifying account status after reset:"
+            docker exec "$POSTGRES_CONTAINER" psql -U postgres -d test_db -c \
+              "SELECT email, failed_attempts, account_locked FROM users WHERE email IN ('demo.student@uwm.edu', 'demo.admin@uwm.edu');" \
+              || echo "Status check failed"
+          else
+            echo "✗ Postgres container not found - account reset skipped"
+            docker ps
+          fi
             
           cd -
           # Install frontend deps and start Next.js dev server on host so hardcoded localhost URLs resolve correctly
