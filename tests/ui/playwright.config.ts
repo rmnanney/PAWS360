@@ -75,7 +75,7 @@ export default defineConfig({
     },
     {
       command: 'cd ../../ && ./mvnw spring-boot:run -Dspring-boot.run.profiles=test',
-      url: 'http://localhost:8081/actuator/health',
+      url: process.env.BACKEND_URL ? `${process.env.BACKEND_URL}/actuator/health` : 'http://localhost:8080/actuator/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
     }

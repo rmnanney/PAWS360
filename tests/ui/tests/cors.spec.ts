@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('CORS preflight', () => {
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:8081';
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
   const origin = process.env.BASE_URL || 'http://localhost:3000';
 
   test('should respond to preflight for POST /auth/login with proper headers', async ({ request }) => {

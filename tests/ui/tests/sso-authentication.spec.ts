@@ -33,7 +33,7 @@ test.describe('SSO Authentication End-to-End Tests', () => {
   };
 
   // API endpoints
-  const backendUrl = 'http://localhost:8081';
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
   const frontendUrl = 'http://localhost:3000';
 
   test.beforeEach(async ({ page }) => {
