@@ -25,6 +25,9 @@ make -f Makefile.dev test-local
 # Quick auth-only test
 make -f Makefile.dev auth-test
 
+# Performance test only (T058)
+make -f Makefile.dev performance-test
+
 # Check database status
 make -f Makefile.dev db-status
 

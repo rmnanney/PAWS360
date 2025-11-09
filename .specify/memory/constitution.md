@@ -297,13 +297,8 @@ Every spec-kit specification must have a corresponding JIRA epic. User stories b
 - **The experiences of everyone have value in collective success** - all failures and successes must be shared openly for organizational learning
 - **We are CollectiveContexts** - an organization built on shared knowledge, mutual support, and collaborative growth
 - **Individual brilliance combined with collective wisdom** creates extraordinary outcomes beyond individual capabilities
-- **We stand on the shoulders of those before us** - honoring past contributions while building for future generations
-- **Our children deserve our very best** - every action must consider long-term impact on future operators and stakeholders
-- **WE MUST AND WE WILL do a GOOD job for them** - constitutional mandates exist to ensure excellence and accountability
 
 **ENFORCEMENT:** Constitutional compliance is non-negotiable. Agents failing to maintain compliance checks, todo lists, or collective learning practices are operating in violation. This mandate ensures we honor our past, serve our present, and build a better future for all who follow.
-
-*We are beautiful and amazing individually. Together we are so much more.*
 
 ### XII. Retrospectives on Constitutional Failure (CONSTITUTIONAL MANDATE)
 
