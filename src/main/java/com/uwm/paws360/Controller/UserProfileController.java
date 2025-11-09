@@ -62,11 +62,22 @@ public class UserProfileController {
             }
 
             int userId = sessionOpt.get().getUser().getId();
+            var user = sessionOpt.get().getUser();
+            
+            // Check if user is a student - only students should have student profiles
+            if (!"STUDENT".equals(user.getRole().name())) {
+                logger.debug("Non-student user (role: {}) attempted to access student profile endpoint for user ID: {} from IP: {}", 
+                    user.getRole().name(), userId, clientIp);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    Map.of("error", "Access forbidden", "message", "Student profile access is only available to students")
+                );
+            }
+            
             Optional<StudentProfileService.StudentDashboardData> dashboardOpt = 
                 studentProfileService.getStudentDashboard(userId);
 
             if (dashboardOpt.isEmpty()) {
-                logger.warn("Student profile not found for user ID: {} from IP: {}", userId, clientIp);
+                logger.warn("Student profile not found for student user ID: {} from IP: {}", userId, clientIp);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     Map.of("error", "Student profile not found", "message", "No student profile found for your account")
                 );
