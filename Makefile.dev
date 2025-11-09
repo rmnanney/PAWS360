@@ -1,0 +1,66 @@
+# PAWS360 Development Makefile
+
+.PHONY: help test-local test-quick clean logs dev
+
+help: ## Show this help message
+	@echo "PAWS360 Development Commands"
+	@echo "============================"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+test-local: ## Run full local E2E tests (mirrors CI exactly)
+	@echo "🧪 Running local E2E tests..."
+	./test-e2e-local.sh
+
+test-quick: ## Quick authentication test without full E2E
+	@echo "🚀 Quick authentication test..."
+	@./test-e2e-local.sh | grep -E "(Step [1-6]|✅|❌|Authentication|Backend|Frontend)" || true
+
+dev: ## Start development environment
+	@echo "🚀 Starting development environment..."
+	@echo "Backend: http://localhost:8081"
+	@echo "Frontend: http://localhost:3000"
+	@docker compose -f infrastructure/docker/docker-compose.test.yml up -d postgres redis app
+	@echo "Waiting for backend..."
+	@sleep 10
+	@NEXT_PUBLIC_API_BASE_URL=http://localhost:8081 npm run dev
+
+clean: ## Clean up all containers and processes
+	@echo "🧹 Cleaning up..."
+	@docker compose -f infrastructure/docker/docker-compose.test.yml down -v 2>/dev/null || true
+	@pkill -f "npm run dev" 2>/dev/null || true
+	@pkill -f "next dev" 2>/dev/null || true
+	@rm -f /tmp/next-dev.log /tmp/backend.log
+	@echo "✅ Cleanup complete"
+
+logs: ## Show application logs
+	@echo "📋 Backend logs:"
+	@docker logs $(shell docker ps --format '{{.ID}} {{.Names}}' | grep app | awk '{print $$1}') 2>/dev/null | tail -20 || echo "No backend container running"
+	@echo ""
+	@echo "📋 Frontend logs:"
+	@tail -20 /tmp/next-dev.log 2>/dev/null || echo "No frontend log available"
+
+auth-test: ## Test authentication only
+	@echo "🔐 Testing authentication..."
+	@curl -s -X POST http://localhost:8081/auth/login \
+		-H "Content-Type: application/json" \
+		-H "X-Service-Origin: student-portal" \
+		-d '{"email": "demo.student@uwm.edu", "password": "password"}' \
+		| jq . 2>/dev/null || echo "Authentication test failed or jq not installed"
+
+db-status: ## Check database status
+	@echo "📊 Database status:"
+	@POSTGRES_CONTAINER=$$(docker ps --format '{{.Names}}' | grep postgres); \
+	if [ -n "$$POSTGRES_CONTAINER" ]; then \
+		docker exec "$$POSTGRES_CONTAINER" psql -U postgres -d test_db -c \
+			"SELECT u.email, u.role, u.failed_attempts, u.account_locked, s.campus_id FROM users u LEFT JOIN student s ON u.user_id = s.user_id;" \
+			2>/dev/null || echo "Database query failed"; \
+	else \
+		echo "No postgres container running"; \
+	fi
+
+build: ## Build backend JAR
+	@echo "🔨 Building backend..."
+	@mvn clean package -DskipTests -q
+	@mkdir -p services
+	@cp target/paws360-*.jar services/
+	@echo "✅ Backend built and copied to services/"
