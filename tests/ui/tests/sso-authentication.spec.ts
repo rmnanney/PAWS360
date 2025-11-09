@@ -296,12 +296,44 @@ test.describe('SSO Authentication End-to-End Tests', () => {
       const cookies = await page.context().cookies();
       const sessionCookie = cookies.find(c => c.name === 'PAWS360_SESSION');
 
+      console.log(`Session cookies found: ${cookies.length}`);
+      console.log(`PAWS360_SESSION cookie: ${sessionCookie ? 'found' : 'not found'}`);
+      if (sessionCookie) {
+        console.log(`Cookie value length: ${sessionCookie.value.length}`);
+      }
+
       const headers: Record<string, string> = {
         'X-Service-Origin': 'student-portal'
       };
 
       if (sessionCookie && sessionCookie.value) {
         headers['Cookie'] = `${sessionCookie.name}=${sessionCookie.value}`;
+      } else {
+        // If no session cookie is available, try to create a fresh login session
+        console.log('No session cookie available, attempting fresh login...');
+        
+        // Navigate to login page and perform login to get fresh session
+        await page.goto('/login');
+        await page.fill('input[name="email"]', validCredentials.student.email);
+        await page.fill('input[name="password"]', validCredentials.student.password);
+        
+        const loginResponsePromise = page.waitForResponse(response => 
+          response.url().includes('/auth/login') || response.url().includes('/login')
+        );
+        
+        await page.click('button[type="submit"]');
+        const loginResponse = await loginResponsePromise;
+        
+        expect(loginResponse.ok()).toBeTruthy();
+        
+        // Wait for redirect and get updated cookies
+        await page.waitForURL('/homepage', { timeout: 10000 });
+        const updatedCookies = await page.context().cookies();
+        const freshSessionCookie = updatedCookies.find(c => c.name === 'PAWS360_SESSION');
+        
+        if (freshSessionCookie?.value) {
+          headers['Cookie'] = `${freshSessionCookie.name}=${freshSessionCookie.value}`;
+        }
       }
 
       // Try unified validate first; fallback to demo validate if unified path not available
