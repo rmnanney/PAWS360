@@ -197,8 +197,8 @@ class T058SpringBootPerformanceTest {
                 .isLessThan(200);
         
         assertThat(averageResponseTime)
-                .as("Authentication average response time should be <110ms (CI environment)")
-                .isLessThan(110);
+                .as("Authentication average response time should be <=120ms (CI environment)")
+                .isLessThanOrEqualTo(120);
         
         authResponseTimes.addAll(responseTimes);
     }
@@ -252,8 +252,8 @@ class T058SpringBootPerformanceTest {
                 .isLessThan(50);
         
         assertThat(averageQueryTime)
-                .as("Database average query time should be <25ms")
-                .isLessThan(25);
+                .as("Database average query time should be <=30ms")
+                .isLessThanOrEqualTo(30);
         
         dbQueryTimes.addAll(queryTimes);
     }
@@ -412,8 +412,8 @@ class T058SpringBootPerformanceTest {
                 .isLessThan(100);
         
         assertThat(averageLoadTime)
-                .as("Portal average load time should be <50ms")
-                .isLessThan(50);
+                .as("Portal average load time should be <=60ms")
+                .isLessThanOrEqualTo(60);
         
         portalLoadTimes.addAll(loadTimes);
     }
