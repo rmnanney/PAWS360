@@ -69,8 +69,9 @@ info "Step 3: Wait for backend health check"
 cd ../..
 max_attempts=60
 attempt=0
+BACKEND_PORT=${TEST_APP_PORT:-8081}
 while [ $attempt -lt $max_attempts ]; do
-    if curl -sf http://localhost:8081/actuator/health >/dev/null 2>&1; then
+    if curl -sf http://localhost:$BACKEND_PORT/actuator/health >/dev/null 2>&1; then
         success "Backend is healthy!"
         break
     fi
@@ -114,7 +115,7 @@ fi
 echo ""
 info "Step 5: Start Next.js frontend"
 npm ci --silent
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8081 nohup npm run dev > /tmp/next-dev.log 2>&1 &
+NEXT_PUBLIC_API_BASE_URL=http://localhost:$BACKEND_PORT nohup npm run dev -- -p 3000 --hostname 0.0.0.0 > /tmp/next-dev.log 2>&1 &
 FRONTEND_PID=$!
 
 echo "Waiting for frontend to be ready..."
@@ -139,7 +140,7 @@ done
 echo ""
 info "Step 6: Test authentication manually"
 echo "Testing demo.student@uwm.edu login..."
-AUTH_RESPONSE=$(curl -s -X POST http://localhost:8081/auth/login \
+AUTH_RESPONSE=$(curl -s -X POST http://localhost:$BACKEND_PORT/auth/login \
     -H "Content-Type: application/json" \
     -H "X-Service-Origin: student-portal" \
     -d '{"email": "demo.student@uwm.edu", "password": "password"}' \

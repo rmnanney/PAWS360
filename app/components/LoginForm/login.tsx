@@ -20,6 +20,7 @@ import {
 import { Input } from "../Others/input";
 import { useToast } from "../../hooks/useToast";
 import { useAuthMonitoring } from "../../hooks/useMonitoring";
+import useAuth from "../../hooks/useAuth";
 import s from "./styles.module.css";
 
 const formSchema = z.object({
@@ -37,6 +38,7 @@ export default function LoginForm() {
 	const router = useRouter();
 	const { toast } = useToast();
 	const { monitorLogin, recordAuthEvent, setUserId } = useAuthMonitoring();
+	const { refreshAuth } = useAuth();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -80,7 +82,10 @@ export default function LoginForm() {
 					duration: 1500,
 				});
 
-				// Navigate immediately to reduce perceived latency in tests and UX
+				// Refresh auth state to ensure useAuth hook recognizes the new session
+				await refreshAuth();
+
+				// Navigate to homepage
 				router.push("/homepage");
 
 				return { success: true, data };

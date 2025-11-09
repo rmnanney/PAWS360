@@ -192,5 +192,6 @@ export default function useAuth() {
 		extendSession,
 		hasRole,
 		isAdmin,
+		refreshAuth: validateSession, // Expose for manual refresh after login
 	};
 }

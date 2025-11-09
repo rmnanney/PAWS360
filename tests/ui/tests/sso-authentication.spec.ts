@@ -44,14 +44,25 @@ test.describe('SSO Authentication End-to-End Tests', () => {
   test.describe('Student Authentication Flow (UI login)', () => {
     
     test('should complete full student authentication journey', async ({ page }) => {
-      // Clear any existing sessions for this test
+      // Completely isolate this test from any previous state
       await page.context().clearCookies();
+      await page.context().clearPermissions();
       
-  // Step 1: Navigate to login page (use explicit frontendUrl to avoid relying on baseURL)
-  await page.goto(`${frontendUrl}/login`);
+      // Step 1: Navigate to login page with fresh state
+      await page.goto(`${frontendUrl}/login`, { waitUntil: 'networkidle' });
+      
+      // Clear browser storage after we're on a page
+      await page.evaluate(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+      });
+      
       await expect(page).toHaveTitle(/PAWS360/);
       
-      // Step 2: Verify login form is present
+      // Ensure we're definitely on the login page
+      await expect(page).toHaveURL(/\/login/);
+      
+      // Step 2: Verify login form is present and wait for it to be ready
       await expect(page.locator('form')).toBeVisible();
       await expect(page.locator('input[name="email"]')).toBeVisible();
       await expect(page.locator('input[name="password"]')).toBeVisible();
@@ -62,13 +73,16 @@ test.describe('SSO Authentication End-to-End Tests', () => {
       await page.fill('input[name="password"]', validCredentials.student.password);
       
       // Monitor network requests to verify API calls
-      // Wait for the login API response so we can verify Set-Cookie header when present
       const loginResponsePromise = page.waitForResponse(response => {
         const url = response.url();
         return url.includes('/auth/login') || url.includes('/login');
       });
 
-      await page.click('button[type="submit"]');
+      // Submit and wait for both the network response AND navigation
+      await Promise.all([
+        page.waitForURL(/\/homepage/, { timeout: 15000 }),
+        page.click('button[type="submit"]')
+      ]);
 
       // Step 4: Wait for authentication response and optionally extract Set-Cookie
       const loginResponse = await loginResponsePromise;
@@ -104,14 +118,11 @@ test.describe('SSO Authentication End-to-End Tests', () => {
           }
         }
       } catch (e) {
-        // Don't fail the test on diagnostic attempts; we'll assert presence below and
-        // Playwright will surface useful trace/screenshots if this fails.
-        // eslint-disable-next-line no-console
         console.warn('Failed to parse/add Set-Cookie header fallback:', e);
       }
       
-  // Step 5: Verify redirect to dashboard/homepage (allow extra time in CI)
-  await expect(page).toHaveURL(/\/homepage/, { timeout: 30000 });
+      // Step 5: Verify we're on the homepage (should already be there from Promise.all above)
+      await expect(page).toHaveURL(/\/homepage/);
       
       // Step 6: Verify session cookie is set (with a short retry loop to handle CI timing)
       let sessionCookie;
