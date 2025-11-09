@@ -225,7 +225,7 @@ jobs:
             
             echo "Current users in database:"
             docker exec "$POSTGRES_CONTAINER" psql -U postgres -d test_db -c \
-              "SELECT email, failed_attempts, account_locked, password FROM users;" \
+              "SELECT u.user_id, u.email, u.role, u.failed_attempts, u.account_locked, s.student_id, s.campus_id FROM users u LEFT JOIN student s ON u.user_id = s.user_id;" \
               || echo "User listing failed"
             
             docker exec "$POSTGRES_CONTAINER" psql -U postgres -d test_db -c \
