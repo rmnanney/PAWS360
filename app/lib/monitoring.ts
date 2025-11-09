@@ -95,7 +95,7 @@ class PAWS360MonitoringService {
 
   // Get metrics endpoint URL
   private getMetricsEndpoint(): string {
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081';
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
     return `${baseUrl}/api/monitoring/frontend-metrics`;
   }
 

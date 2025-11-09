@@ -37,7 +37,7 @@ export default function useAuth() {
 	 */
 	const validateSession = async (): Promise<boolean> => {
 		try {
-			const response = await fetch("http://localhost:8081/auth/validate", {
+			const response = await fetch("/auth/validate", {
 				method: "GET",
 				credentials: "include", // Include HTTP-only cookies
 				headers: {
@@ -85,7 +85,7 @@ export default function useAuth() {
 	 */
 	const logout = async (): Promise<void> => {
 		try {
-			await fetch("http://localhost:8081/auth/logout", {
+			await fetch("/auth/logout", {
 				method: "POST",
 				credentials: "include",
 				headers: {
@@ -118,7 +118,7 @@ export default function useAuth() {
 	 */
 	const extendSession = async (): Promise<boolean> => {
 		try {
-			const response = await fetch("http://localhost:8081/auth/extend", {
+			const response = await fetch("/auth/extend", {
 				method: "POST",
 				credentials: "include",
 				headers: {
