@@ -208,10 +208,10 @@ jobs:
           docker compose -f docker-compose.test.yml up -d postgres redis app
           echo "Listing containers:" && docker ps
           echo "Tailing backend logs while waiting for health..." &
-          BACKEND_CONTAINER_ID=$(docker ps --format '{{.ID}} {{.Ports}} {{.Image}}' | grep '8081->8080' | awk '{print $1}')
+          BACKEND_CONTAINER_ID=$(docker ps --format '{{.ID}} {{.Ports}} {{.Image}}' | grep '8080:8080' | awk '{print $1}')
           (docker logs -f $BACKEND_CONTAINER_ID &) 2>/dev/null || true
           # Wait for backend (poll actuator)
-          timeout 360 bash -c 'until curl -sf http://localhost:8081/actuator/health | grep -q UP; do sleep 6; done'
+          timeout 360 bash -c 'until curl -sf http://localhost:8080/actuator/health | grep -q UP; do sleep 6; done'
           
           # Reset demo account locks before testing (prevents lockout from previous test runs)
           echo "Resetting demo account locks..."
@@ -245,18 +245,18 @@ jobs:
           # Install frontend deps and start Next.js dev server on host so hardcoded localhost URLs resolve correctly
           npm ci
           # Start Next dev server in background with proper API URL
-          NEXT_PUBLIC_API_BASE_URL=http://localhost:8081 nohup npm run dev -- -p 3000 --hostname 0.0.0.0 >/tmp/next-dev.log 2>&1 &
+          NEXT_PUBLIC_API_BASE_URL=http://localhost:8080 nohup npm run dev -- -p 3000 --hostname 0.0.0.0 >/tmp/next-dev.log 2>&1 &
           # Wait for frontend to be ready
           timeout 360 bash -c 'until curl -sf http://localhost:3000; do sleep 6; done'
         env:
-          TEST_APP_PORT: 8081
+          TEST_APP_PORT: 8080
 
       - name: Run UI tests
         working-directory: tests/ui
         run: npm test
         env:
           BASE_URL: http://localhost:3000
-          BACKEND_URL: http://localhost:8081
+          BACKEND_URL: http://localhost:8080
           CI: true
           PW_RETRIES: 2
 
@@ -272,7 +272,7 @@ jobs:
           echo "=== Playwright global setup diagnostics ==="
           find tests/ui/storageStates/diagnostics -name "*.json" -exec echo "File: {}" \; -exec cat {} \; 2>/dev/null || echo "No diagnostics found"
           echo "=== Network and port status ==="
-          ss -tlnp | grep -E ':(3000|8081)' || echo "No services on expected ports"
+          ss -tlnp | grep -E ':(3000|8080)' || echo "No services on expected ports"
 
       - name: Upload UI test results  
         uses: actions/upload-artifact@v4
