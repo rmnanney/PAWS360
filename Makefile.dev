@@ -1,6 +1,6 @@
 # PAWS360 Development Makefile
 
-.PHONY: help test-local test-quick clean logs dev
+.PHONY: help test-local test-quick clean logs dev auth-test db-status build performance-test
 
 help: ## Show this help message
 	@echo "PAWS360 Development Commands"
@@ -64,3 +64,7 @@ build: ## Build backend JAR
 	@mkdir -p services
 	@cp target/paws360-*.jar services/
 	@echo "✅ Backend built and copied to services/"
+
+performance-test: ## Run T058 performance tests specifically  
+	@echo "⚡ Running T058 performance tests..."
+	@mvn test -Dtest=T058SpringBootPerformanceTest -DfailIfNoTests=false -q

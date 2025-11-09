@@ -7560,3 +7560,316 @@ Caused by: java.io.EOFException: null
     drop sequence if exists users_seq
 2025-11-08 22:16:49.394 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2025-11-08 22:16:49.396 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-11-08 22:17:45.377 [main] INFO  [] c.u.p.p.T058SpringBootPerformanceTest - Starting T058SpringBootPerformanceTest using Java 21.0.8 with PID 230826 (started by ryan in /home/ryan/repos/PAWS360)
+2025-11-08 22:17:45.379 [main] INFO  [] c.u.p.p.T058SpringBootPerformanceTest - The following 1 profile is active: "test"
+2025-11-08 22:17:46.028 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-11-08 22:17:46.029 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode.
+2025-11-08 22:17:46.060 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Academics.DegreeProgramRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.061 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Academics.DegreeRequirementRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.062 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Academics.StudentProgramRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.063 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Advising.AdvisorAppointmentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.064 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Advising.AdvisorMessageRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.064 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Advising.StudentAdvisorRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.065 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Course.BuildingRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.066 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Course.ClassroomRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.067 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Course.CourseEnrollmentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.069 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Course.CoursePrerequisiteRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.070 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Course.CourseRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.071 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Course.CourseSectionRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.072 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Course.SectionStaffAssignmentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.073 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Finances.AccountTransactionRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.074 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Finances.AidAwardRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.075 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Finances.FinancialAccountRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.076 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.Finances.PaymentPlanRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.076 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.AddressRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.077 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.AdvisorRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.078 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.AuthenticationSessionRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.078 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.CounselorRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.079 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.EmergencyContactRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.080 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.FacultyRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.081 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.InstructorRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.082 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.MentorRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.083 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.ProfessorRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.084 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.StudentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.084 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.TARepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.085 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.uwm.paws360.JPARepository.User.UserRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2025-11-08 22:17:46.085 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 51 ms. Found 0 JDBC repository interfaces.
+2025-11-08 22:17:46.093 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-11-08 22:17:46.094 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-11-08 22:17:46.141 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 42 ms. Found 29 JPA repository interfaces.
+2025-11-08 22:17:46.546 [main] INFO  [] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 0 (http)
+2025-11-08 22:17:46.557 [main] INFO  [] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-11-08 22:17:46.557 [main] INFO  [] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.44]
+2025-11-08 22:17:46.587 [main] INFO  [] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-11-08 22:17:46.588 [main] INFO  [] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1199 ms
+2025-11-08 22:17:46.728 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-11-08 22:17:46.850 [main] INFO  [] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@56d5311e
+2025-11-08 22:17:46.851 [main] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-11-08 22:17:47.205 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-11-08 22:17:47.247 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-11-08 22:17:48.475 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-11-08 22:17:48.780 [main] INFO  [] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-11-08 22:17:49.629 [main] WARN  [] o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-11-08 22:17:49.649 [main] INFO  [] com.uwm.paws360.WebConfig - Configuring CORS with allowed origins: http://localhost:3000,http://localhost:9002
+2025-11-08 22:17:49.649 [main] INFO  [] com.uwm.paws360.WebConfig - CORS credentials allowed: true
+2025-11-08 22:17:49.651 [main] INFO  [] com.uwm.paws360.WebConfig - CORS configuration completed successfully
+2025-11-08 22:17:50.081 [main] INFO  [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 2 endpoints beneath base path '/actuator'
+2025-11-08 22:17:50.234 [main] INFO  [] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 42059 (http) with context path '/'
+2025-11-08 22:17:50.246 [main] INFO  [] c.u.p.p.T058SpringBootPerformanceTest - Started T058SpringBootPerformanceTest in 5.179 seconds (process running for 8.466)
+2025-11-08 22:17:50.367 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 0 active sessions (max: 100)
+2025-11-08 22:17:50.817 [http-nio-auto-1-exec-1] INFO  [] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-11-08 22:17:50.818 [http-nio-auto-1-exec-1] INFO  [] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-11-08 22:17:50.819 [http-nio-auto-1-exec-1] INFO  [] o.s.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2025-11-08 22:18:00.720 [SpringApplicationShutdownHook] INFO  [] o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-11-08 22:18:00.722 [tomcat-shutdown] INFO  [] o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-11-08 22:18:00.775 [SpringApplicationShutdownHook] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-11-08 22:18:00.777 [SpringApplicationShutdownHook] WARN  [] c.zaxxer.hikari.pool.ProxyConnection - HikariPool-1 - Connection org.postgresql.jdbc.PgConnection@56d5311e marked as broken because of SQLSTATE(08006), ErrorCode(0)
+org.postgresql.util.PSQLException: An I/O error occurred while sending to the backend.
+	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:399)
+	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:518)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:435)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:357)
+	at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:342)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:318)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:313)
+	at com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:95)
+	at com.zaxxer.hikari.pool.HikariProxyStatement.execute(HikariProxyStatement.java)
+	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80)
+	at org.hibernate.tool.schema.internal.SchemaDropperImpl$DelayedDropActionImpl.perform(SchemaDropperImpl.java:628)
+	at org.hibernate.boot.internal.SessionFactoryObserverForSchemaExport.sessionFactoryClosing(SessionFactoryObserverForSchemaExport.java:48)
+	at org.hibernate.internal.SessionFactoryObserverChain.sessionFactoryClosing(SessionFactoryObserverChain.java:48)
+	at org.hibernate.internal.SessionFactoryImpl.close(SessionFactoryImpl.java:928)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.invokeProxyMethod(AbstractEntityManagerFactoryBean.java:529)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean$ManagedEntityManagerFactoryInvocationHandler.invoke(AbstractEntityManagerFactoryBean.java:750)
+	at jdk.proxy2/jdk.proxy2.$Proxy184.close(Unknown Source)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.destroy(AbstractEntityManagerFactoryBean.java:662)
+	at org.springframework.beans.factory.support.DisposableBeanAdapter.destroy(DisposableBeanAdapter.java:211)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroyBean(DefaultSingletonBeanRegistry.java:798)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingleton(DefaultSingletonBeanRegistry.java:748)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingleton(DefaultListableBeanFactory.java:1481)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingletons(DefaultSingletonBeanRegistry.java:707)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingletons(DefaultListableBeanFactory.java:1474)
+	at org.springframework.context.support.AbstractApplicationContext.destroyBeans(AbstractApplicationContext.java:1219)
+	at org.springframework.context.support.AbstractApplicationContext.doClose(AbstractApplicationContext.java:1180)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.doClose(ServletWebServerApplicationContext.java:179)
+	at org.springframework.context.support.AbstractApplicationContext.close(AbstractApplicationContext.java:1126)
+	at org.springframework.boot.SpringApplicationShutdownHook.closeAndWait(SpringApplicationShutdownHook.java:147)
+	at java.base/java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.boot.SpringApplicationShutdownHook.run(SpringApplicationShutdownHook.java:116)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.io.EOFException: null
+	at org.postgresql.core.PGStream.receiveChar(PGStream.java:479)
+	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2175)
+	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:372)
+	... 33 common frames omitted
+2025-11-08 22:18:00.781 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    set client_min_messages = WARNING
+2025-11-08 22:18:00.781 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists account_transactions 
+       drop constraint if exists FK1vrxb98kn1mpw4wydnc1a828l
+2025-11-08 22:18:00.781 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists address 
+       drop constraint if exists FK6i66ijb8twgcqtetl8eeeed6v
+2025-11-08 22:18:00.781 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists advisor 
+       drop constraint if exists FKnpt0ewyx1oh40k1c835ak6kjr
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists advisor_appointments 
+       drop constraint if exists FK6e0vxg1ppc5brefa1ys9ewclh
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists advisor_appointments 
+       drop constraint if exists FKbo0igfpw0t0gcqs1k5iv4jiy9
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists advisor_messages 
+       drop constraint if exists FK2i4y9tfplrfmuffo2j6mktryn
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists advisor_messages 
+       drop constraint if exists FKlrexynj783nqprr1dwpxq2r54
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists aid_awards 
+       drop constraint if exists FK78tjlkbq62urrawj5ayddodtb
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists authentication_sessions 
+       drop constraint if exists FK5hjcfttlal36qo0pejlx9hor9
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists classroom_features 
+       drop constraint if exists FK6o2aofnje40ibwmb88ca1l8dx
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists classrooms 
+       drop constraint if exists FKp169e84csib3wbj8ipuh3omkg
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists counselor 
+       drop constraint if exists FK7o8cant90qt9xf19jxtpm0jfw
+2025-11-08 22:18:00.782 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_enrollments 
+       drop constraint if exists FKqiwek769v29r3n8b8wwllpq27
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_enrollments 
+       drop constraint if exists FKoqo123qptierplmltbvf4h340
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_enrollments 
+       drop constraint if exists FKlencphvbdvpfumgyn871fps4t
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_prerequisites 
+       drop constraint if exists FKhh4f1avebuvlv54m3j3l3pp36
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_prerequisites 
+       drop constraint if exists FKolf0a7iwh8c1mv9keyis4ebe8
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_section_meeting_days 
+       drop constraint if exists FK97iadtbomrg3fxh60b9ovtmda
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_sections 
+       drop constraint if exists FKq1ooiqf1p73lmdifqf04l657g
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_sections 
+       drop constraint if exists FKfhbvlm68op1v30bngy5ytm3ky
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_sections 
+       drop constraint if exists FK4xiaseygl0aodt5ahkbm8s2ds
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists course_sections 
+       drop constraint if exists FK1y9luj5asbv91o3hxa6jo2c6
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists degree_requirements 
+       drop constraint if exists FKq69nhh4savwx30kajth2do4qp
+2025-11-08 22:18:00.783 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists degree_requirements 
+       drop constraint if exists FKh2uh82wv3ko235090caxqdcha
+2025-11-08 22:18:00.784 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists emergency_contact 
+       drop constraint if exists FKntgmuu2ichvsflk6uupb4w6q9
+2025-11-08 22:18:00.784 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists faculty 
+       drop constraint if exists FKfakwwhqpm5bahy2do8t30j58r
+2025-11-08 22:18:00.784 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists financial_accounts 
+       drop constraint if exists FKhtkdj327u21b40i9tdd8xc238
+2025-11-08 22:18:00.784 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists instructor 
+       drop constraint if exists FKl05wgmungp55i9sr39da79agy
+2025-11-08 22:18:00.784 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists mentor 
+       drop constraint if exists FKpnuc2btrta2rqf4a1p7i542gi
+2025-11-08 22:18:00.784 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists payment_plans 
+       drop constraint if exists FKhyiy8fa28t2iqnjq68ajmk59k
+2025-11-08 22:18:00.784 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists professor 
+       drop constraint if exists FK61e8vtqmh2l1p3fiiildvva6t
+2025-11-08 22:18:00.784 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists section_staff_assignments 
+       drop constraint if exists FKlrdxlwnkehmd3hg00ish0dnsh
+2025-11-08 22:18:00.785 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists section_staff_assignments 
+       drop constraint if exists FKmga20mm6287wslj5k7uf8ai05
+2025-11-08 22:18:00.785 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists student 
+       drop constraint if exists FKk0thg920a3xk3v59yjbsatw1l
+2025-11-08 22:18:00.785 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists student_advisors 
+       drop constraint if exists FK5qmceylbrl9w6rue4mcuycf71
+2025-11-08 22:18:00.785 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists student_advisors 
+       drop constraint if exists FKkb6ycs0jd8ir3guo6o4q4ge3p
+2025-11-08 22:18:00.785 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists student_programs 
+       drop constraint if exists FKhgm4hl76xc1o4fwtxbcb6de8y
+2025-11-08 22:18:00.785 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists student_programs 
+       drop constraint if exists FK2qxlfsgxp1yo86gq47lphbvl3
+2025-11-08 22:18:00.785 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    alter table if exists ta 
+       drop constraint if exists FK9d7sppm77urhfa1v299bi4rjm
+2025-11-08 22:18:00.785 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists account_transactions cascade
+2025-11-08 22:18:00.785 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists address cascade
+2025-11-08 22:18:00.786 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists advisor cascade
+2025-11-08 22:18:00.786 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists advisor_appointments cascade
+2025-11-08 22:18:00.786 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists advisor_messages cascade
+2025-11-08 22:18:00.786 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists aid_awards cascade
+2025-11-08 22:18:00.786 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists authentication_sessions cascade
+2025-11-08 22:18:00.786 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists buildings cascade
+2025-11-08 22:18:00.786 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists classroom_features cascade
+2025-11-08 22:18:00.786 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists classrooms cascade
+2025-11-08 22:18:00.786 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists counselor cascade
+2025-11-08 22:18:00.787 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists course_enrollments cascade
+2025-11-08 22:18:00.787 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists course_prerequisites cascade
+2025-11-08 22:18:00.787 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists course_section_meeting_days cascade
+2025-11-08 22:18:00.787 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists course_sections cascade
+2025-11-08 22:18:00.787 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists courses cascade
+2025-11-08 22:18:00.787 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists degree_programs cascade
+2025-11-08 22:18:00.787 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists degree_requirements cascade
+2025-11-08 22:18:00.787 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists demo_data_sets cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists emergency_contact cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists faculty cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists financial_accounts cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists instructor cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists mentor cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists payment_plans cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists professor cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists section_staff_assignments cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists student cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists student_advisors cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists student_programs cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists ta cascade
+2025-11-08 22:18:00.788 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop table if exists users cascade
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists address_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists advisor_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists counselor_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists courses_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists emergency_contact_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists faculty_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists instructor_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists mentor_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists professor_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists student_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists ta_seq
+2025-11-08 22:18:00.789 [SpringApplicationShutdownHook] ERROR [] o.h.t.s.i.SchemaDropperImpl$DelayedDropActionImpl - HHH000478: Unsuccessful: 
+    drop sequence if exists users_seq
+2025-11-08 22:18:00.791 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-11-08 22:18:00.792 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
