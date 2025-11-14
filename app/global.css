@@ -86,13 +86,13 @@
 	/* Force scrollbar to always show to prevent layout shift */
 	html {
 		overflow-y: scroll !important;
-		width: 100vw;
+		width: calc(100vw);
 	}
 
 	body {
 		@apply bg-background text-foreground;
 		/* Force body to always be taller than viewport to ensure scrollbar */
-		min-height: calc(100vh + 1px);
+		min-height: calc(100vh);
 		overflow-x: hidden;
 		width: 100%;
 		position: relative;
