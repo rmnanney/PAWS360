@@ -44,7 +44,7 @@ export default function RootLayout({
 		console.log(`Navigating to ${section}`);
 
 		// Track navigation interaction
-		recordUserInteraction('navigation', section, 0, true);
+		recordUserInteraction("navigation", section, 0, true);
 
 		// Route to appropriate pages
 		if (section === "homepage") {
@@ -59,6 +59,8 @@ export default function RootLayout({
 			router.push("/personal");
 		} else if (section === "resources") {
 			router.push("/resources");
+		} else if (section === "quick-links") {
+			router.push("/quick-links");
 		} else if (section === "financial-aid") {
 			router.push("/finances/financial-aid");
 		} else if (section === "my-account") {
@@ -72,7 +74,7 @@ export default function RootLayout({
 		} else if (section === "scholarships") {
 			router.push("/finances/scholarships");
 		} else if (section.startsWith("https://")) {
-			recordUserInteraction('external_link', section, 0, true);
+			recordUserInteraction("external_link", section, 0, true);
 			window.open(section, "_blank");
 		}
 	};
