@@ -42,7 +42,9 @@ export default function Homepage() {
 	const bgImage = PlaceHolderImages.find((img) => img.id === "uwm-building");
 	const router = useRouter();
 	const { authChecked, isAuthenticated, user, isLoading } = useAuth();
-	const [studentProfile, setStudentProfile] = useState<StudentProfile | null>(null);
+	const [studentProfile, setStudentProfile] = useState<StudentProfile | null>(
+		null
+	);
 	const [profileLoading, setProfileLoading] = useState(false);
 
 	const handleCardClick = (section: string) => {
@@ -58,6 +60,8 @@ export default function Homepage() {
 			router.push("/resources");
 		} else if (section === "Handshake") {
 			window.open("https://uwm.joinhandshake.com/", "_blank");
+		} else if (section === "Quick Links") {
+			router.push("/quick-links");
 		}
 	};
 
@@ -113,10 +117,11 @@ export default function Homepage() {
 		return null;
 	}
 
-	const displayName = studentProfile?.preferred_name || user?.firstname || "Student";
-	const welcomeMessage = studentProfile ? 
-		`Welcome back, ${displayName}!` : 
-		`Welcome, ${displayName}!`;
+	const displayName =
+		studentProfile?.preferred_name || user?.firstname || "Student";
+	const welcomeMessage = studentProfile
+		? `Welcome back, ${displayName}!`
+		: `Welcome, ${displayName}!`;
 
 	return (
 		<div
@@ -134,16 +139,24 @@ export default function Homepage() {
 					<div className={s.studentInfo}>
 						<div className={s.studentDetails}>
 							{studentProfile.campus_id && (
-								<span className={s.studentDetail}>ID: {studentProfile.campus_id}</span>
+								<span className={s.studentDetail}>
+									ID: {studentProfile.campus_id}
+								</span>
 							)}
 							{studentProfile.department && (
-								<span className={s.studentDetail}>Department: {studentProfile.department}</span>
+								<span className={s.studentDetail}>
+									Department: {studentProfile.department}
+								</span>
 							)}
 							{studentProfile.standing && (
-								<span className={s.studentDetail}>Standing: {studentProfile.standing}</span>
+								<span className={s.studentDetail}>
+									Standing: {studentProfile.standing}
+								</span>
 							)}
 							{studentProfile.gpa && (
-								<span className={s.studentDetail}>GPA: {studentProfile.gpa.toFixed(2)}</span>
+								<span className={s.studentDetail}>
+									GPA: {studentProfile.gpa.toFixed(2)}
+								</span>
 							)}
 						</div>
 					</div>

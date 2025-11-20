@@ -28,16 +28,23 @@ import {
 	EyeOff,
 	AlertTriangle,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 const { API_BASE } = require("@/lib/api");
 
 // Values are loaded from backend domain endpoints
 
-function labelFor(value: string | null | undefined, list: {value:string;label:string}[]) {
-    if (!value) return "";
-    const f = list.find((x) => x.value === value);
-    if (f) return f.label;
-    // Fallback to prettify
-    return String(value).toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+function labelFor(
+	value: string | null | undefined,
+	list: { value: string; label: string }[]
+) {
+	if (!value) return "";
+	const f = list.find((x) => x.value === value);
+	if (f) return f.label;
+	// Fallback to prettify
+	return String(value)
+		.toLowerCase()
+		.replace(/_/g, " ")
+		.replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
 export default function PersonalPage() {
@@ -49,7 +56,9 @@ export default function PersonalPage() {
 	const [mailingAddress, setMailingAddress] = React.useState<any | null>(null);
 	const [phoneEdit, setPhoneEdit] = React.useState<string>("");
 	const [homeAddrEdit, setHomeAddrEdit] = React.useState<any | null>(null);
-	const [mailingAddrEdit, setMailingAddrEdit] = React.useState<any | null>(null);
+	const [mailingAddrEdit, setMailingAddrEdit] = React.useState<any | null>(
+		null
+	);
 	const [firstNameEdit, setFirstNameEdit] = React.useState<string>("");
 	const [lastNameEdit, setLastNameEdit] = React.useState<string>("");
 	const [middleNameEdit, setMiddleNameEdit] = React.useState<string>("");
@@ -59,9 +68,15 @@ export default function PersonalPage() {
 	const [nationalityEdit, setNationalityEdit] = React.useState<string>("");
 	const [dobEdit, setDobEdit] = React.useState<string>("");
 	const [ssnEdit, setSsnEdit] = React.useState<string>("");
-	const [genders, setGenders] = React.useState<Array<{value:string;label:string}>>([]);
-	const [ethnicities, setEthnicities] = React.useState<Array<{value:string;label:string}>>([]);
-	const [nationalities, setNationalities] = React.useState<Array<{value:string;label:string}>>([]);
+	const [genders, setGenders] = React.useState<
+		Array<{ value: string; label: string }>
+	>([]);
+	const [ethnicities, setEthnicities] = React.useState<
+		Array<{ value: string; label: string }>
+	>([]);
+	const [nationalities, setNationalities] = React.useState<
+		Array<{ value: string; label: string }>
+	>([]);
 	const [preferences, setPreferences] = React.useState<any>({
 		ferpa_compliance: "RESTRICTED",
 		ferpaDirectory: false,
@@ -73,17 +88,31 @@ export default function PersonalPage() {
 	const [emergencyContacts, setEmergencyContacts] = React.useState<any[]>([]);
 	const [ssnMasked, setSsnMasked] = React.useState<string>("***-**-****");
 	const { toast } = require("@/hooks/useToast");
+	const searchParams = useSearchParams();
+	const tab = searchParams.get("tab") || "personal";
 
 	React.useEffect(() => {
 		const load = async () => {
 			try {
-				const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+				const email =
+					typeof window !== "undefined"
+						? localStorage.getItem("userEmail")
+						: null;
 				if (!email) return;
-					const [userRes, sidRes, prefRes, emgRes, genRes, ethRes, natRes] = await Promise.all([
+				const [userRes, sidRes, prefRes, emgRes, genRes, ethRes, natRes] =
+					await Promise.all([
 						fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`),
-						fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`),
-						fetch(`${API_BASE}/users/preferences?email=${encodeURIComponent(email)}`),
-						fetch(`${API_BASE}/users/emergency-contacts?email=${encodeURIComponent(email)}`),
+						fetch(
+							`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`
+						),
+						fetch(
+							`${API_BASE}/users/preferences?email=${encodeURIComponent(email)}`
+						),
+						fetch(
+							`${API_BASE}/users/emergency-contacts?email=${encodeURIComponent(
+								email
+							)}`
+						),
 						fetch(`${API_BASE}/domains/genders`),
 						fetch(`${API_BASE}/domains/ethnicities`),
 						fetch(`${API_BASE}/domains/nationalities`),
@@ -92,8 +121,16 @@ export default function PersonalPage() {
 					const u = await userRes.json();
 					setUser(u);
 					const addrs = Array.isArray(u.addresses) ? u.addresses : [];
-					const home = addrs.find((a: any) => (a.address_type || "").toUpperCase() === "HOME");
-					const mail = addrs.find((a: any) => (a.address_type || "").toUpperCase() === "MAILING") || addrs.find((a: any) => (a.address_type || "").toUpperCase() === "BILLING");
+					const home = addrs.find(
+						(a: any) => (a.address_type || "").toUpperCase() === "HOME"
+					);
+					const mail =
+						addrs.find(
+							(a: any) => (a.address_type || "").toUpperCase() === "MAILING"
+						) ||
+						addrs.find(
+							(a: any) => (a.address_type || "").toUpperCase() === "BILLING"
+						);
 					setHomeAddress(home || null);
 					setMailingAddress(mail || null);
 					setPhoneEdit(u?.phone || "");
@@ -110,7 +147,8 @@ export default function PersonalPage() {
 				}
 				if (sidRes.ok) {
 					const sid = await sidRes.json();
-					if (typeof sid.student_id === "number" && sid.student_id >= 0) setStudentId(sid.student_id);
+					if (typeof sid.student_id === "number" && sid.student_id >= 0)
+						setStudentId(sid.student_id);
 				}
 				if (prefRes.ok) {
 					const p = await prefRes.json();
@@ -124,7 +162,11 @@ export default function PersonalPage() {
 				if (ethRes.ok) setEthnicities(await ethRes.json());
 				if (natRes.ok) setNationalities(await natRes.json());
 			} catch (e: any) {
-				toast({ variant: "destructive", title: "Failed to load profile", description: e?.message || "Try again later." });
+				toast({
+					variant: "destructive",
+					title: "Failed to load profile",
+					description: e?.message || "Try again later.",
+				});
 			}
 		};
 		load();
@@ -149,42 +191,44 @@ export default function PersonalPage() {
 		alternatePhone: "",
 		address: homeAddress
 			? {
-				street: homeAddress.street_address_1,
-				city: homeAddress.city,
-				state: homeAddress.us_states,
-				zipCode: homeAddress.zipcode,
-				country: "United States",
-			}
+					street: homeAddress.street_address_1,
+					city: homeAddress.city,
+					state: homeAddress.us_states,
+					zipCode: homeAddress.zipcode,
+					country: "United States",
+			  }
 			: null,
 		permanentAddress: mailingAddress
 			? {
-				street: mailingAddress.street_address_1,
-				city: mailingAddress.city,
-				state: mailingAddress.us_states,
-				zipCode: mailingAddress.zipcode,
-				country: "United States",
-			}
+					street: mailingAddress.street_address_1,
+					city: mailingAddress.city,
+					state: mailingAddress.us_states,
+					zipCode: mailingAddress.zipcode,
+					country: "United States",
+			  }
 			: null,
 	};
 
-const privacySettings = {
-	ferpaDirectory: preferences.ferpaDirectory,
-	photoRelease: preferences.photoRelease,
-	infoRelease: String(preferences.ferpa_compliance || 'RESTRICTED').toLowerCase(),
-	contactByPhone: preferences.contactByPhone,
-	contactByEmail: preferences.contactByEmail,
-	contactByMail: preferences.contactByMail,
-};
+	const privacySettings = {
+		ferpaDirectory: preferences.ferpaDirectory,
+		photoRelease: preferences.photoRelease,
+		infoRelease: String(
+			preferences.ferpa_compliance || "RESTRICTED"
+		).toLowerCase(),
+		contactByPhone: preferences.contactByPhone,
+		contactByEmail: preferences.contactByEmail,
+		contactByMail: preferences.contactByMail,
+	};
 
-const securityInfo = {
-	lastPasswordChange: "2025-09-01",
-	twoFactorEnabled: true,
-	loginAttempts: 0,
-	accountStatus: "Active",
-	securityQuestions: true,
-};
+	const securityInfo = {
+		lastPasswordChange: "2025-09-01",
+		twoFactorEnabled: true,
+		loginAttempts: 0,
+		accountStatus: "Active",
+		securityQuestions: true,
+	};
 
-    // component continues
+	// component continues
 
 	const getPrivacyLevelColor = (level: string) => {
 		switch (level) {
@@ -223,49 +267,112 @@ const securityInfo = {
 						variant={isEditing ? "default" : "outline"}
 						size="sm"
 						onClick={async () => {
-							if (!isEditing) { setIsEditing(true); return; }
+							if (!isEditing) {
+								setIsEditing(true);
+								return;
+							}
 							try {
-								const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+								const email =
+									typeof window !== "undefined"
+										? localStorage.getItem("userEmail")
+										: null;
 								if (!email) return;
 								// Basic validation
-                                if (!firstNameEdit || !lastNameEdit) {
-                                    toast({ variant: "destructive", title: "Missing required fields", description: "First and last name are required." });
-                                    return;
-                                }
-                                if (phoneEdit && !/^\+?[0-9\-\s]{7,20}$/.test(phoneEdit)) {
-                                    toast({ variant: "destructive", title: "Invalid phone", description: "Enter a valid phone number." });
-                                    return;
-                                }
-                                if (dobEdit) {
-                                    const d = new Date(dobEdit);
-                                    const min = new Date('1900-01-01');
-                                    const now = new Date();
-                                    if (!(d instanceof Date) || isNaN(d.getTime()) || d < min || d > now) {
-                                        toast({ variant: "destructive", title: "Invalid date of birth", description: "Enter a valid date between 1900 and today." });
-                                        return;
-                                    }
-                                }
-                                const checkAddr = (a: any) => {
+								if (!firstNameEdit || !lastNameEdit) {
+									toast({
+										variant: "destructive",
+										title: "Missing required fields",
+										description: "First and last name are required.",
+									});
+									return;
+								}
+								if (phoneEdit && !/^\+?[0-9\-\s]{7,20}$/.test(phoneEdit)) {
+									toast({
+										variant: "destructive",
+										title: "Invalid phone",
+										description: "Enter a valid phone number.",
+									});
+									return;
+								}
+								if (dobEdit) {
+									const d = new Date(dobEdit);
+									const min = new Date("1900-01-01");
+									const now = new Date();
+									if (
+										!(d instanceof Date) ||
+										isNaN(d.getTime()) ||
+										d < min ||
+										d > now
+									) {
+										toast({
+											variant: "destructive",
+											title: "Invalid date of birth",
+											description: "Enter a valid date between 1900 and today.",
+										});
+										return;
+									}
+								}
+								const checkAddr = (a: any) => {
 									if (!a) return true;
-									const f = [a.street_address_1, a.city, a.us_states, a.zipcode];
+									const f = [
+										a.street_address_1,
+										a.city,
+										a.us_states,
+										a.zipcode,
+									];
 									const any = f.some((x) => !!x);
-									const all = f.every((x) => x !== undefined && x !== null && String(x).trim() !== "");
+									const all = f.every(
+										(x) =>
+											x !== undefined && x !== null && String(x).trim() !== ""
+									);
 									return !any || all;
 								};
 								if (!checkAddr(homeAddrEdit) || !checkAddr(mailingAddrEdit)) {
-									toast({ variant: "destructive", title: "Incomplete address", description: "Street, city, state, and zip are required for addresses." });
+									toast({
+										variant: "destructive",
+										title: "Incomplete address",
+										description:
+											"Street, city, state, and zip are required for addresses.",
+									});
 									return;
 								}
 
 								// Update personal details first
 								const ssnDigits = ssnEdit ? ssnEdit.replace(/\D/g, "") : null;
-								const personalRes = await fetch(`${API_BASE}/users/personal`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, firstname: firstNameEdit, middlename: middleNameEdit || null, lastname: lastNameEdit, preferredName: preferredNameEdit || null, gender: genderEdit || null, ethnicity: ethnicityEdit || null, nationality: nationalityEdit || null, dob: dobEdit || null, ssn: ssnDigits }) });
+								const personalRes = await fetch(`${API_BASE}/users/personal`, {
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({
+										email,
+										firstname: firstNameEdit,
+										middlename: middleNameEdit || null,
+										lastname: lastNameEdit,
+										preferredName: preferredNameEdit || null,
+										gender: genderEdit || null,
+										ethnicity: ethnicityEdit || null,
+										nationality: nationalityEdit || null,
+										dob: dobEdit || null,
+										ssn: ssnDigits,
+									}),
+								});
 								if (!personalRes.ok) {
-									toast({ variant: "destructive", title: "Failed to update name", description: "Please check inputs and try again." });
+									toast({
+										variant: "destructive",
+										title: "Failed to update name",
+										description: "Please check inputs and try again.",
+									});
 									return;
 								}
-								await fetch(`${API_BASE}/users/contact`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, phone: phoneEdit || null }) });
-								await fetch(`${API_BASE}/users/preferences`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, ...preferences }) });
+								await fetch(`${API_BASE}/users/contact`, {
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({ email, phone: phoneEdit || null }),
+								});
+								await fetch(`${API_BASE}/users/preferences`, {
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({ email, ...preferences }),
+								});
 								// Upsert HOME address
 								if (homeAddrEdit && homeAddrEdit.street_address_1) {
 									const payload = {
@@ -279,9 +386,20 @@ const securityInfo = {
 										zipcode: homeAddrEdit.zipcode,
 									};
 									if (homeAddrEdit.id) {
-										await fetch(`${API_BASE}/users/addresses/edit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address_id: homeAddrEdit.id, address: payload }) });
+										await fetch(`${API_BASE}/users/addresses/edit`, {
+											method: "POST",
+											headers: { "Content-Type": "application/json" },
+											body: JSON.stringify({
+												address_id: homeAddrEdit.id,
+												address: payload,
+											}),
+										});
 									} else {
-										await fetch(`${API_BASE}/users/addresses/add`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, address: payload }) });
+										await fetch(`${API_BASE}/users/addresses/add`, {
+											method: "POST",
+											headers: { "Content-Type": "application/json" },
+											body: JSON.stringify({ email, address: payload }),
+										});
 									}
 								}
 								// Upsert MAILING address
@@ -297,23 +415,68 @@ const securityInfo = {
 										zipcode: mailingAddrEdit.zipcode,
 									};
 									if (mailingAddrEdit.id) {
-										await fetch(`${API_BASE}/users/addresses/edit`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address_id: mailingAddrEdit.id, address: payload }) });
+										await fetch(`${API_BASE}/users/addresses/edit`, {
+											method: "POST",
+											headers: { "Content-Type": "application/json" },
+											body: JSON.stringify({
+												address_id: mailingAddrEdit.id,
+												address: payload,
+											}),
+										});
 									} else {
-										await fetch(`${API_BASE}/users/addresses/add`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, address: payload }) });
+										await fetch(`${API_BASE}/users/addresses/add`, {
+											method: "POST",
+											headers: { "Content-Type": "application/json" },
+											body: JSON.stringify({ email, address: payload }),
+										});
 									}
 								}
 								for (const c of emergencyContacts) {
-									const body = { email, contact_id: c.id || null, name: c.name, relationship: c.relationship || null, contact_email: c.email || null, phone: c.phone || null, street_address_1: c.street_address_1 || null, street_address_2: c.street_address_2 || null, city: c.city || null, us_states: c.us_states || null, zipcode: c.zipcode || null };
-									await fetch(`${API_BASE}/users/emergency-contacts`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+									const body = {
+										email,
+										contact_id: c.id || null,
+										name: c.name,
+										relationship: c.relationship || null,
+										contact_email: c.email || null,
+										phone: c.phone || null,
+										street_address_1: c.street_address_1 || null,
+										street_address_2: c.street_address_2 || null,
+										city: c.city || null,
+										us_states: c.us_states || null,
+										zipcode: c.zipcode || null,
+									};
+									await fetch(`${API_BASE}/users/emergency-contacts`, {
+										method: "POST",
+										headers: { "Content-Type": "application/json" },
+										body: JSON.stringify(body),
+									});
 								}
 								// Reflect changes locally
-								setUser((prev: any) => ({ ...(prev || {}), firstname: firstNameEdit, middlename: middleNameEdit, lastname: lastNameEdit, preferred_name: preferredNameEdit, gender: genderEdit, ethnicity: ethnicityEdit, nationality: nationalityEdit, dob: dobEdit || prev?.dob, phone: phoneEdit }));
+								setUser((prev: any) => ({
+									...(prev || {}),
+									firstname: firstNameEdit,
+									middlename: middleNameEdit,
+									lastname: lastNameEdit,
+									preferred_name: preferredNameEdit,
+									gender: genderEdit,
+									ethnicity: ethnicityEdit,
+									nationality: nationalityEdit,
+									dob: dobEdit || prev?.dob,
+									phone: phoneEdit,
+								}));
 								setHomeAddress(homeAddrEdit);
 								setMailingAddress(mailingAddrEdit);
-								toast({ title: "Profile Updated", description: "Your changes have been saved." });
+								toast({
+									title: "Profile Updated",
+									description: "Your changes have been saved.",
+								});
 								setIsEditing(false);
 							} catch (e: any) {
-								toast({ variant: "destructive", title: "Update failed", description: e?.message || "Try again later." });
+								toast({
+									variant: "destructive",
+									title: "Update failed",
+									description: e?.message || "Try again later.",
+								});
 							}
 						}}
 					>
@@ -366,10 +529,14 @@ const securityInfo = {
 						<Mail className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-                        <div className="text-2xl font-bold">
-                            {contactInfo.email ? String(contactInfo.email).split("@")[0] : ""}
-                        </div>
-                        <p className="text-xs text-muted-foreground">{contactInfo.email ? `@${String(contactInfo.email).split("@")[1]}` : ""}</p>
+						<div className="text-2xl font-bold">
+							{contactInfo.email ? String(contactInfo.email).split("@")[0] : ""}
+						</div>
+						<p className="text-xs text-muted-foreground">
+							{contactInfo.email
+								? `@${String(contactInfo.email).split("@")[1]}`
+								: ""}
+						</p>
 					</CardContent>
 				</Card>
 
@@ -386,7 +553,7 @@ const securityInfo = {
 			</div>
 
 			{/* Main Content Tabs */}
-			<Tabs defaultValue="personal" className="space-y-4">
+			<Tabs defaultValue={tab} className="space-y-4">
 				<TabsList>
 					<TabsTrigger value="personal">Personal Details</TabsTrigger>
 					<TabsTrigger value="contact">Contact Information</TabsTrigger>
@@ -411,114 +578,177 @@ const securityInfo = {
 											{personalInfo.studentId}
 										</p>
 									</div>
-                            <div>
-                                <label className="text-sm font-medium">First Name</label>
-                                {isEditing ? (
-                                    <input className="w-full border rounded-md p-2" value={firstNameEdit} onChange={(e) => setFirstNameEdit(e.target.value)} />
-                                ) : (
-                                    <p className="text-lg">{personalInfo.firstName}</p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Last Name</label>
-                                {isEditing ? (
-                                    <input className="w-full border rounded-md p-2" value={lastNameEdit} onChange={(e) => setLastNameEdit(e.target.value)} />
-                                ) : (
-                                    <p className="text-lg">{personalInfo.lastName}</p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Preferred Name</label>
-                                {isEditing ? (
-                                    <input className="w-full border rounded-md p-2" value={preferredNameEdit} onChange={(e) => setPreferredNameEdit(e.target.value)} />
-                                ) : (
-                                    <p className="text-lg">{personalInfo.preferredName}</p>
-                                )}
-                            </div>
+									<div>
+										<label className="text-sm font-medium">First Name</label>
+										{isEditing ? (
+											<input
+												className="w-full border rounded-md p-2"
+												value={firstNameEdit}
+												onChange={(e) => setFirstNameEdit(e.target.value)}
+											/>
+										) : (
+											<p className="text-lg">{personalInfo.firstName}</p>
+										)}
+									</div>
+									<div>
+										<label className="text-sm font-medium">Last Name</label>
+										{isEditing ? (
+											<input
+												className="w-full border rounded-md p-2"
+												value={lastNameEdit}
+												onChange={(e) => setLastNameEdit(e.target.value)}
+											/>
+										) : (
+											<p className="text-lg">{personalInfo.lastName}</p>
+										)}
+									</div>
+									<div>
+										<label className="text-sm font-medium">
+											Preferred Name
+										</label>
+										{isEditing ? (
+											<input
+												className="w-full border rounded-md p-2"
+												value={preferredNameEdit}
+												onChange={(e) => setPreferredNameEdit(e.target.value)}
+											/>
+										) : (
+											<p className="text-lg">{personalInfo.preferredName}</p>
+										)}
+									</div>
 								</div>
 								<div className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium">Date of Birth</label>
-                                {isEditing ? (
-                                    <input type="date" className="w-full border rounded-md p-2" value={dobEdit || ""} onChange={(e) => setDobEdit(e.target.value)} />
-                                ) : (
-                                    <p className="text-lg">{personalInfo.dateOfBirth}</p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Gender</label>
-                                {isEditing ? (
-                                    <select className="w-full border rounded-md p-2" value={genderEdit || ""} onChange={(e) => setGenderEdit(e.target.value)}>
-                                        <option value="">Select...</option>
-                                        {genders.map((g) => (
-                                            <option key={g.value} value={g.value}>{g.label}</option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <p className="text-lg">{labelFor(user?.gender, genders)}</p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Ethnicity</label>
-                                {isEditing ? (
-                                    <select className="w-full border rounded-md p-2" value={ethnicityEdit || ""} onChange={(e) => setEthnicityEdit(e.target.value)}>
-                                        <option value="">Select...</option>
-                                        {ethnicities.map((e1) => (
-                                            <option key={e1.value} value={e1.value}>{e1.label}</option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <p className="text-lg">{labelFor(user?.ethnicity, ethnicities)}</p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Citizenship</label>
-                                {isEditing ? (
-                                    <select className="w-full border rounded-md p-2" value={nationalityEdit || ""} onChange={(e) => setNationalityEdit(e.target.value)}>
-                                        <option value="">Select...</option>
-                                        {nationalities.map((n) => (
-                                            <option key={n.value} value={n.value}>{n.label}</option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <p className="text-lg">{labelFor(user?.nationality, nationalities)}</p>
-                                )}
-                            </div>
-                            {/* SSN display with last 4 when unhidden; input when editing */}
-                            <div>
-                                <label className="text-sm font-medium">Social Security Number</label>
-                                {isEditing ? (
-                                    <input
-                                        className="w-full border rounded-md p-2 font-mono"
-                                        placeholder="123-45-6789"
-                                        value={ssnEdit}
-                                        onChange={(e) => setSsnEdit(e.target.value)}
-                                    />
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-lg font-mono">{showSSN ? personalInfo.ssn : "XXX-XX-XXXX"}</p>
-                                        {showSSN ? (
-                                            <EyeOff className="h-4 w-4 cursor-pointer" onClick={() => setShowSSN(false)} />
-                                        ) : (
-                                            <Eye className="h-4 w-4 cursor-pointer" onClick={async () => {
-                                                try {
-                                                    const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
-                                                    if (!email) { setShowSSN(true); return; }
-                                                    const res = await fetch(`${API_BASE}/users/ssn-last4?email=${encodeURIComponent(email)}`);
-                                                    if (res.ok) {
-                                                        const data = await res.json();
-                                                        const last4 = data?.last4 || "XXXX";
-                                                        setSsnMasked(`XXX-XX-${last4}`);
-                                                    }
-                                                } catch {}
-                                                setShowSSN(true);
-                                            }} />
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+									<div>
+										<label className="text-sm font-medium">Date of Birth</label>
+										{isEditing ? (
+											<input
+												type="date"
+												className="w-full border rounded-md p-2"
+												value={dobEdit || ""}
+												onChange={(e) => setDobEdit(e.target.value)}
+											/>
+										) : (
+											<p className="text-lg">{personalInfo.dateOfBirth}</p>
+										)}
+									</div>
+									<div>
+										<label className="text-sm font-medium">Gender</label>
+										{isEditing ? (
+											<select
+												className="w-full border rounded-md p-2"
+												value={genderEdit || ""}
+												onChange={(e) => setGenderEdit(e.target.value)}
+											>
+												<option value="">Select...</option>
+												{genders.map((g) => (
+													<option key={g.value} value={g.value}>
+														{g.label}
+													</option>
+												))}
+											</select>
+										) : (
+											<p className="text-lg">
+												{labelFor(user?.gender, genders)}
+											</p>
+										)}
+									</div>
+									<div>
+										<label className="text-sm font-medium">Ethnicity</label>
+										{isEditing ? (
+											<select
+												className="w-full border rounded-md p-2"
+												value={ethnicityEdit || ""}
+												onChange={(e) => setEthnicityEdit(e.target.value)}
+											>
+												<option value="">Select...</option>
+												{ethnicities.map((e1) => (
+													<option key={e1.value} value={e1.value}>
+														{e1.label}
+													</option>
+												))}
+											</select>
+										) : (
+											<p className="text-lg">
+												{labelFor(user?.ethnicity, ethnicities)}
+											</p>
+										)}
+									</div>
+									<div>
+										<label className="text-sm font-medium">Citizenship</label>
+										{isEditing ? (
+											<select
+												className="w-full border rounded-md p-2"
+												value={nationalityEdit || ""}
+												onChange={(e) => setNationalityEdit(e.target.value)}
+											>
+												<option value="">Select...</option>
+												{nationalities.map((n) => (
+													<option key={n.value} value={n.value}>
+														{n.label}
+													</option>
+												))}
+											</select>
+										) : (
+											<p className="text-lg">
+												{labelFor(user?.nationality, nationalities)}
+											</p>
+										)}
+									</div>
+									{/* SSN display with last 4 when unhidden; input when editing */}
+									<div>
+										<label className="text-sm font-medium">
+											Social Security Number
+										</label>
+										{isEditing ? (
+											<input
+												className="w-full border rounded-md p-2 font-mono"
+												placeholder="123-45-6789"
+												value={ssnEdit}
+												onChange={(e) => setSsnEdit(e.target.value)}
+											/>
+										) : (
+											<div className="flex items-center gap-2">
+												<p className="text-lg font-mono">
+													{showSSN ? personalInfo.ssn : "XXX-XX-XXXX"}
+												</p>
+												{showSSN ? (
+													<EyeOff
+														className="h-4 w-4 cursor-pointer"
+														onClick={() => setShowSSN(false)}
+													/>
+												) : (
+													<Eye
+														className="h-4 w-4 cursor-pointer"
+														onClick={async () => {
+															try {
+																const email =
+																	typeof window !== "undefined"
+																		? localStorage.getItem("userEmail")
+																		: null;
+																if (!email) {
+																	setShowSSN(true);
+																	return;
+																}
+																const res = await fetch(
+																	`${API_BASE}/users/ssn-last4?email=${encodeURIComponent(
+																		email
+																	)}`
+																);
+																if (res.ok) {
+																	const data = await res.json();
+																	const last4 = data?.last4 || "XXXX";
+																	setSsnMasked(`XXX-XX-${last4}`);
+																}
+															} catch {}
+															setShowSSN(true);
+														}}
+													/>
+												)}
+											</div>
+										)}
+									</div>
 								</div>
-                        </div>
+							</div>
 						</CardContent>
 					</Card>
 				</TabsContent>
@@ -556,9 +786,15 @@ const securityInfo = {
 									<div className="w-full">
 										<p className="font-medium">Primary Phone</p>
 										{isEditing ? (
-											<input className="w-full border rounded-md p-2" value={phoneEdit} onChange={(e) => setPhoneEdit(e.target.value)} />
+											<input
+												className="w-full border rounded-md p-2"
+												value={phoneEdit}
+												onChange={(e) => setPhoneEdit(e.target.value)}
+											/>
 										) : (
-											<p className="text-sm text-muted-foreground">{contactInfo.phone}</p>
+											<p className="text-sm text-muted-foreground">
+												{contactInfo.phone}
+											</p>
 										)}
 									</div>
 								</div>
@@ -586,58 +822,166 @@ const securityInfo = {
 									<h3 className="font-semibold mb-2">Campus Address</h3>
 									<div className="flex items-start space-x-3">
 										<MapPin className="h-5 w-5 text-blue-600 mt-0.5" />
-                                <div className="text-sm">
-                                    {isEditing ? (
-                                        <div className="space-y-2 w-full">
-                                            <input className="w-full border rounded-md p-2" placeholder="Street" value={homeAddrEdit?.street_address_1 || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), street_address_1: e.target.value })} />
-                                            <input className="w-full border rounded-md p-2" placeholder="Street 2" value={homeAddrEdit?.street_address_2 || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), street_address_2: e.target.value })} />
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <input className="border rounded-md p-2" placeholder="City" value={homeAddrEdit?.city || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), city: e.target.value })} />
-                                                <input className="border rounded-md p-2" placeholder="State" value={homeAddrEdit?.us_states || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), us_states: e.target.value })} />
-                                                <input className="border rounded-md p-2" placeholder="Zip" value={homeAddrEdit?.zipcode || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), zipcode: e.target.value })} />
-                                            </div>
-                                        </div>
-                                    ) : contactInfo.address ? (
-                                        <>
-                                            <p>{contactInfo.address.street}</p>
-                                            <p>
-                                                {contactInfo.address.city}, {contactInfo.address.state} {contactInfo.address.zipCode}
-                                            </p>
-                                            <p>{contactInfo.address.country}</p>
-                                        </>
-                                    ) : (
-                                        <p className="text-muted-foreground">No campus address on file</p>
-                                    )}
-                                </div>
+										<div className="text-sm">
+											{isEditing ? (
+												<div className="space-y-2 w-full">
+													<input
+														className="w-full border rounded-md p-2"
+														placeholder="Street"
+														value={homeAddrEdit?.street_address_1 || ""}
+														onChange={(e) =>
+															setHomeAddrEdit({
+																...(homeAddrEdit || {}),
+																street_address_1: e.target.value,
+															})
+														}
+													/>
+													<input
+														className="w-full border rounded-md p-2"
+														placeholder="Street 2"
+														value={homeAddrEdit?.street_address_2 || ""}
+														onChange={(e) =>
+															setHomeAddrEdit({
+																...(homeAddrEdit || {}),
+																street_address_2: e.target.value,
+															})
+														}
+													/>
+													<div className="grid grid-cols-3 gap-2">
+														<input
+															className="border rounded-md p-2"
+															placeholder="City"
+															value={homeAddrEdit?.city || ""}
+															onChange={(e) =>
+																setHomeAddrEdit({
+																	...(homeAddrEdit || {}),
+																	city: e.target.value,
+																})
+															}
+														/>
+														<input
+															className="border rounded-md p-2"
+															placeholder="State"
+															value={homeAddrEdit?.us_states || ""}
+															onChange={(e) =>
+																setHomeAddrEdit({
+																	...(homeAddrEdit || {}),
+																	us_states: e.target.value,
+																})
+															}
+														/>
+														<input
+															className="border rounded-md p-2"
+															placeholder="Zip"
+															value={homeAddrEdit?.zipcode || ""}
+															onChange={(e) =>
+																setHomeAddrEdit({
+																	...(homeAddrEdit || {}),
+																	zipcode: e.target.value,
+																})
+															}
+														/>
+													</div>
+												</div>
+											) : contactInfo.address ? (
+												<>
+													<p>{contactInfo.address.street}</p>
+													<p>
+														{contactInfo.address.city},{" "}
+														{contactInfo.address.state}{" "}
+														{contactInfo.address.zipCode}
+													</p>
+													<p>{contactInfo.address.country}</p>
+												</>
+											) : (
+												<p className="text-muted-foreground">
+													No campus address on file
+												</p>
+											)}
+										</div>
 									</div>
 								</div>
 								<div>
 									<h3 className="font-semibold mb-2">Permanent Address</h3>
 									<div className="flex items-start space-x-3">
 										<MapPin className="h-5 w-5 text-green-600 mt-0.5" />
-                                <div className="text-sm">
-                                    {isEditing ? (
-                                        <div className="space-y-2 w-full">
-                                            <input className="w-full border rounded-md p-2" placeholder="Street" value={mailingAddrEdit?.street_address_1 || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), street_address_1: e.target.value })} />
-                                            <input className="w-full border rounded-md p-2" placeholder="Street 2" value={mailingAddrEdit?.street_address_2 || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), street_address_2: e.target.value })} />
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <input className="border rounded-md p-2" placeholder="City" value={mailingAddrEdit?.city || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), city: e.target.value })} />
-                                                <input className="border rounded-md p-2" placeholder="State" value={mailingAddrEdit?.us_states || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), us_states: e.target.value })} />
-                                                <input className="border rounded-md p-2" placeholder="Zip" value={mailingAddrEdit?.zipcode || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), zipcode: e.target.value })} />
-                                            </div>
-                                        </div>
-                                    ) : contactInfo.permanentAddress ? (
-                                        <>
-                                            <p>{contactInfo.permanentAddress.street}</p>
-                                            <p>
-                                                {contactInfo.permanentAddress.city}, {contactInfo.permanentAddress.state} {contactInfo.permanentAddress.zipCode}
-                                            </p>
-                                            <p>{contactInfo.permanentAddress.country}</p>
-                                        </>
-                                    ) : (
-                                        <p className="text-muted-foreground">No permanent address on file</p>
-                                    )}
-                                </div>
+										<div className="text-sm">
+											{isEditing ? (
+												<div className="space-y-2 w-full">
+													<input
+														className="w-full border rounded-md p-2"
+														placeholder="Street"
+														value={mailingAddrEdit?.street_address_1 || ""}
+														onChange={(e) =>
+															setMailingAddrEdit({
+																...(mailingAddrEdit || {}),
+																street_address_1: e.target.value,
+															})
+														}
+													/>
+													<input
+														className="w-full border rounded-md p-2"
+														placeholder="Street 2"
+														value={mailingAddrEdit?.street_address_2 || ""}
+														onChange={(e) =>
+															setMailingAddrEdit({
+																...(mailingAddrEdit || {}),
+																street_address_2: e.target.value,
+															})
+														}
+													/>
+													<div className="grid grid-cols-3 gap-2">
+														<input
+															className="border rounded-md p-2"
+															placeholder="City"
+															value={mailingAddrEdit?.city || ""}
+															onChange={(e) =>
+																setMailingAddrEdit({
+																	...(mailingAddrEdit || {}),
+																	city: e.target.value,
+																})
+															}
+														/>
+														<input
+															className="border rounded-md p-2"
+															placeholder="State"
+															value={mailingAddrEdit?.us_states || ""}
+															onChange={(e) =>
+																setMailingAddrEdit({
+																	...(mailingAddrEdit || {}),
+																	us_states: e.target.value,
+																})
+															}
+														/>
+														<input
+															className="border rounded-md p-2"
+															placeholder="Zip"
+															value={mailingAddrEdit?.zipcode || ""}
+															onChange={(e) =>
+																setMailingAddrEdit({
+																	...(mailingAddrEdit || {}),
+																	zipcode: e.target.value,
+																})
+															}
+														/>
+													</div>
+												</div>
+											) : contactInfo.permanentAddress ? (
+												<>
+													<p>{contactInfo.permanentAddress.street}</p>
+													<p>
+														{contactInfo.permanentAddress.city},{" "}
+														{contactInfo.permanentAddress.state}{" "}
+														{contactInfo.permanentAddress.zipCode}
+													</p>
+													<p>{contactInfo.permanentAddress.country}</p>
+												</>
+											) : (
+												<p className="text-muted-foreground">
+													No permanent address on file
+												</p>
+											)}
+										</div>
 									</div>
 								</div>
 							</CardContent>
@@ -664,10 +1008,23 @@ const securityInfo = {
 													onClick={async () => {
 														if (contact.id) {
 															try {
-																await fetch(`${API_BASE}/users/emergency-contacts/delete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contact_id: contact.id }) });
+																await fetch(
+																	`${API_BASE}/users/emergency-contacts/delete`,
+																	{
+																		method: "POST",
+																		headers: {
+																			"Content-Type": "application/json",
+																		},
+																		body: JSON.stringify({
+																			contact_id: contact.id,
+																		}),
+																	}
+																);
 															} catch {}
 														}
-														setEmergencyContacts((prev) => prev.filter((_, i) => i !== index));
+														setEmergencyContacts((prev) =>
+															prev.filter((_, i) => i !== index)
+														);
 													}}
 												>
 													Delete
@@ -678,15 +1035,36 @@ const securityInfo = {
 											<div>
 												<label className="text-sm font-medium">Name</label>
 												{isEditing ? (
-													<input className="w-full border rounded-md p-2" value={contact.name || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], name: e.target.value }; setEmergencyContacts(u);} } />
+													<input
+														className="w-full border rounded-md p-2"
+														value={contact.name || ""}
+														onChange={(e) => {
+															const u = [...emergencyContacts];
+															u[index] = { ...u[index], name: e.target.value };
+															setEmergencyContacts(u);
+														}}
+													/>
 												) : (
 													<p className="text-lg">{contact.name}</p>
 												)}
 											</div>
 											<div>
-												<label className="text-sm font-medium">Relationship</label>
+												<label className="text-sm font-medium">
+													Relationship
+												</label>
 												{isEditing ? (
-													<input className="w-full border rounded-md p-2" value={contact.relationship || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], relationship: e.target.value }; setEmergencyContacts(u);} } />
+													<input
+														className="w-full border rounded-md p-2"
+														value={contact.relationship || ""}
+														onChange={(e) => {
+															const u = [...emergencyContacts];
+															u[index] = {
+																...u[index],
+																relationship: e.target.value,
+															};
+															setEmergencyContacts(u);
+														}}
+													/>
 												) : (
 													<p className="text-lg">{contact.relationship}</p>
 												)}
@@ -694,7 +1072,15 @@ const securityInfo = {
 											<div>
 												<label className="text-sm font-medium">Phone</label>
 												{isEditing ? (
-													<input className="w-full border rounded-md p-2" value={contact.phone || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], phone: e.target.value }; setEmergencyContacts(u);} } />
+													<input
+														className="w-full border rounded-md p-2"
+														value={contact.phone || ""}
+														onChange={(e) => {
+															const u = [...emergencyContacts];
+															u[index] = { ...u[index], phone: e.target.value };
+															setEmergencyContacts(u);
+														}}
+													/>
 												) : (
 													<p className="text-lg">{contact.phone}</p>
 												)}
@@ -702,7 +1088,15 @@ const securityInfo = {
 											<div>
 												<label className="text-sm font-medium">Email</label>
 												{isEditing ? (
-													<input className="w-full border rounded-md p-2" value={contact.email || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], email: e.target.value }; setEmergencyContacts(u);} } />
+													<input
+														className="w-full border rounded-md p-2"
+														value={contact.email || ""}
+														onChange={(e) => {
+															const u = [...emergencyContacts];
+															u[index] = { ...u[index], email: e.target.value };
+															setEmergencyContacts(u);
+														}}
+													/>
 												) : (
 													<p className="text-lg">{contact.email}</p>
 												)}
@@ -711,23 +1105,103 @@ const securityInfo = {
 												<label className="text-sm font-medium">Address</label>
 												{isEditing ? (
 													<div className="space-y-2">
-														<input className="w-full border rounded-md p-2" placeholder="Street" value={contact.street_address_1 || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], street_address_1: e.target.value }; setEmergencyContacts(u);} } />
-														<input className="w-full border rounded-md p-2" placeholder="Street 2" value={contact.street_address_2 || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], street_address_2: e.target.value }; setEmergencyContacts(u);} } />
+														<input
+															className="w-full border rounded-md p-2"
+															placeholder="Street"
+															value={contact.street_address_1 || ""}
+															onChange={(e) => {
+																const u = [...emergencyContacts];
+																u[index] = {
+																	...u[index],
+																	street_address_1: e.target.value,
+																};
+																setEmergencyContacts(u);
+															}}
+														/>
+														<input
+															className="w-full border rounded-md p-2"
+															placeholder="Street 2"
+															value={contact.street_address_2 || ""}
+															onChange={(e) => {
+																const u = [...emergencyContacts];
+																u[index] = {
+																	...u[index],
+																	street_address_2: e.target.value,
+																};
+																setEmergencyContacts(u);
+															}}
+														/>
 														<div className="grid grid-cols-3 gap-2">
-															<input className="border rounded-md p-2" placeholder="City" value={contact.city || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], city: e.target.value }; setEmergencyContacts(u);} } />
-															<input className="border rounded-md p-2" placeholder="State" value={contact.us_states || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], us_states: e.target.value }; setEmergencyContacts(u);} } />
-															<input className="border rounded-md p-2" placeholder="Zip" value={contact.zipcode || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], zipcode: e.target.value }; setEmergencyContacts(u);} } />
+															<input
+																className="border rounded-md p-2"
+																placeholder="City"
+																value={contact.city || ""}
+																onChange={(e) => {
+																	const u = [...emergencyContacts];
+																	u[index] = {
+																		...u[index],
+																		city: e.target.value,
+																	};
+																	setEmergencyContacts(u);
+																}}
+															/>
+															<input
+																className="border rounded-md p-2"
+																placeholder="State"
+																value={contact.us_states || ""}
+																onChange={(e) => {
+																	const u = [...emergencyContacts];
+																	u[index] = {
+																		...u[index],
+																		us_states: e.target.value,
+																	};
+																	setEmergencyContacts(u);
+																}}
+															/>
+															<input
+																className="border rounded-md p-2"
+																placeholder="Zip"
+																value={contact.zipcode || ""}
+																onChange={(e) => {
+																	const u = [...emergencyContacts];
+																	u[index] = {
+																		...u[index],
+																		zipcode: e.target.value,
+																	};
+																	setEmergencyContacts(u);
+																}}
+															/>
 														</div>
 													</div>
 												) : (
-													<p className="text-sm text-muted-foreground">{[contact.street_address_1, contact.street_address_2, contact.city, contact.us_states, contact.zipcode].filter(Boolean).join(", ")}</p>
+													<p className="text-sm text-muted-foreground">
+														{[
+															contact.street_address_1,
+															contact.street_address_2,
+															contact.city,
+															contact.us_states,
+															contact.zipcode,
+														]
+															.filter(Boolean)
+															.join(", ")}
+													</p>
 												)}
 											</div>
 										</div>
 									</div>
 								))}
 								{isEditing ? (
-									<button className="text-sm border rounded px-3 py-1" onClick={() => setEmergencyContacts([...emergencyContacts, { name: "", relationship: "", phone: "", email: "" }])}>Add Contact</button>
+									<button
+										className="text-sm border rounded px-3 py-1"
+										onClick={() =>
+											setEmergencyContacts([
+												...emergencyContacts,
+												{ name: "", relationship: "", phone: "", email: "" },
+											])
+										}
+									>
+										Add Contact
+									</button>
 								) : null}
 							</div>
 						</CardContent>
@@ -752,7 +1226,16 @@ const securityInfo = {
 										</p>
 									</div>
 									{isEditing ? (
-										<input type="checkbox" checked={!!privacySettings.ferpaDirectory} onChange={(e) => setPreferences({ ...preferences, ferpaDirectory: e.target.checked })} />
+										<input
+											type="checkbox"
+											checked={!!privacySettings.ferpaDirectory}
+											onChange={(e) =>
+												setPreferences({
+													...preferences,
+													ferpaDirectory: e.target.checked,
+												})
+											}
+										/>
 									) : (
 										<Badge
 											className={
@@ -761,7 +1244,9 @@ const securityInfo = {
 													: "bg-red-100 text-red-800"
 											}
 										>
-											{privacySettings.ferpaDirectory ? "Allowed" : "Restricted"}
+											{privacySettings.ferpaDirectory
+												? "Allowed"
+												: "Restricted"}
 										</Badge>
 									)}
 								</div>
@@ -773,7 +1258,16 @@ const securityInfo = {
 										</p>
 									</div>
 									{isEditing ? (
-										<input type="checkbox" checked={!!privacySettings.photoRelease} onChange={(e) => setPreferences({ ...preferences, photoRelease: e.target.checked })} />
+										<input
+											type="checkbox"
+											checked={!!privacySettings.photoRelease}
+											onChange={(e) =>
+												setPreferences({
+													...preferences,
+													photoRelease: e.target.checked,
+												})
+											}
+										/>
 									) : (
 										<Badge
 											className={
@@ -794,7 +1288,16 @@ const securityInfo = {
 										</p>
 									</div>
 									{isEditing ? (
-										<select className="border rounded-md p-2" value={preferences.ferpa_compliance} onChange={(e) => setPreferences({ ...preferences, ferpa_compliance: e.target.value })}>
+										<select
+											className="border rounded-md p-2"
+											value={preferences.ferpa_compliance}
+											onChange={(e) =>
+												setPreferences({
+													...preferences,
+													ferpa_compliance: e.target.value,
+												})
+											}
+										>
 											<option value="PUBLIC">PUBLIC</option>
 											<option value="DIRECTORY">DIRECTORY</option>
 											<option value="RESTRICTED">RESTRICTED</option>
@@ -829,7 +1332,16 @@ const securityInfo = {
 										</p>
 									</div>
 									{isEditing ? (
-										<input type="checkbox" checked={!!privacySettings.contactByPhone} onChange={(e) => setPreferences({ ...preferences, contactByPhone: e.target.checked })} />
+										<input
+											type="checkbox"
+											checked={!!privacySettings.contactByPhone}
+											onChange={(e) =>
+												setPreferences({
+													...preferences,
+													contactByPhone: e.target.checked,
+												})
+											}
+										/>
 									) : (
 										<Badge
 											className={
@@ -850,7 +1362,16 @@ const securityInfo = {
 										</p>
 									</div>
 									{isEditing ? (
-										<input type="checkbox" checked={!!privacySettings.contactByEmail} onChange={(e) => setPreferences({ ...preferences, contactByEmail: e.target.checked })} />
+										<input
+											type="checkbox"
+											checked={!!privacySettings.contactByEmail}
+											onChange={(e) =>
+												setPreferences({
+													...preferences,
+													contactByEmail: e.target.checked,
+												})
+											}
+										/>
 									) : (
 										<Badge
 											className={
@@ -871,7 +1392,16 @@ const securityInfo = {
 										</p>
 									</div>
 									{isEditing ? (
-										<input type="checkbox" checked={!!privacySettings.contactByMail} onChange={(e) => setPreferences({ ...preferences, contactByMail: e.target.checked })} />
+										<input
+											type="checkbox"
+											checked={!!privacySettings.contactByMail}
+											onChange={(e) =>
+												setPreferences({
+													...preferences,
+													contactByMail: e.target.checked,
+												})
+											}
+										/>
 									) : (
 										<Badge
 											className={
@@ -960,4 +1490,3 @@ const securityInfo = {
 		</div>
 	);
 }
-

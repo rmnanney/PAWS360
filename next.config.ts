@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 // Backend base URL for proxying API requests in dev/prod.
 // Prefer NEXT_PUBLIC_API_BASE_URL if provided; fallback to local Spring Boot port.
-const backendBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+const backendBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8086';
 
 const nextConfig: NextConfig = {
   /* config options here */
