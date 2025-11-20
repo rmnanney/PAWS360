@@ -250,3 +250,4 @@ https://nextjs.org/docs/messages/module-not-found
  GET /courses 200 in 140ms
  GET /api/placeholder/64/64 404 in 87ms
  GET /homepage 200 in 60ms
+ GET /courses 200 in 44ms
