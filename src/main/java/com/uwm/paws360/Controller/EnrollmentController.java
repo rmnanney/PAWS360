@@ -241,13 +241,14 @@ public class EnrollmentController {
             if (totalSeats != null) {
                 String enrollmentCountQuery = 
                     "SELECT COUNT(*) FROM course_enrollments ce " +
-                    "JOIN course_sections cs ON ce.lecture_section_id = cs.section_id " +
-                    "WHERE cs.course_id = ? " +
-                    "AND cs.term = ? " +
+                    "WHERE ce.lecture_section_id IN ( " +
+                    "  SELECT section_id FROM course_sections " +
+                    "  WHERE course_id = ? " +
+                    ") " +
                     "AND ce.status = 'ENROLLED'";
                 
                 Integer currentEnrollment = jdbcTemplate.queryForObject(
-                    enrollmentCountQuery, Integer.class, courseId, term
+                    enrollmentCountQuery, Integer.class, courseId
                 );
                 
                 if (currentEnrollment != null && currentEnrollment >= totalSeats) {
@@ -290,32 +291,73 @@ public class EnrollmentController {
                 return validation;
             }
             
-            // Get the course section ID
-            String sectionQuery = 
-                "SELECT cs.section_id FROM course_sections cs " +
-                "JOIN courses c ON cs.course_id = c.course_id " +
-                "WHERE c.course_code = ? " +
-                "AND c.instructor = ? " +
-                "AND c.meeting_pattern = ? " +
+            // Get the course details from courses table
+            String courseQuery = 
+                "SELECT course_id, section, term FROM courses " +
+                "WHERE course_code = ? " +
+                "AND instructor = ? " +
+                "AND meeting_pattern = ? " +
                 "LIMIT 1";
             
-            List<Map<String, Object>> sectionResults = jdbcTemplate.queryForList(
-                sectionQuery, courseCode, instructor, meetingPattern
+            List<Map<String, Object>> courseResults = jdbcTemplate.queryForList(
+                courseQuery, courseCode, instructor, meetingPattern
             );
             
-            if (sectionResults.isEmpty()) {
+            if (courseResults.isEmpty()) {
                 response.put("success", false);
-                response.put("error", "Course section not found");
+                response.put("error", "Course not found in catalog");
                 return response;
             }
             
-            Long sectionId = ((Number) sectionResults.get(0).get("section_id")).longValue();
+            Map<String, Object> course = courseResults.get(0);
+            Integer courseId = (Integer) course.get("course_id");
+            String sectionCode = (String) course.get("section");
+            String term = (String) course.get("term");
+            
+            // Check if a course_section already exists for this course
+            String sectionCheckQuery = 
+                "SELECT section_id FROM course_sections " +
+                "WHERE course_id = ? AND section_code = ? AND term = ? LIMIT 1";
+            
+            List<Map<String, Object>> sectionResults = jdbcTemplate.queryForList(
+                sectionCheckQuery, courseId, sectionCode, term
+            );
+            
+            Long sectionId;
+            
+            if (sectionResults.isEmpty()) {
+                // Create a course_section entry for this course
+                String createSectionQuery = 
+                    "INSERT INTO course_sections " +
+                    "(course_id, section_code, term, academic_year, section_type, " +
+                    "auto_enroll_waitlist, consent_required, created_at, updated_at) " +
+                    "VALUES (?, ?, ?, 2025, 'LECTURE', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                    "RETURNING section_id";
+                
+                try {
+                    sectionId = jdbcTemplate.queryForObject(
+                        createSectionQuery, Long.class, courseId, sectionCode, term
+                    );
+                } catch (Exception e) {
+                    // If there's a unique constraint violation, try to find the section that was just created
+                    List<Map<String, Object>> retryResults = jdbcTemplate.queryForList(
+                        sectionCheckQuery, courseId, sectionCode, term
+                    );
+                    if (!retryResults.isEmpty()) {
+                        sectionId = ((Number) retryResults.get(0).get("section_id")).longValue();
+                    } else {
+                        throw e;
+                    }
+                }
+            } else {
+                sectionId = ((Number) sectionResults.get(0).get("section_id")).longValue();
+            }
             
             // Insert enrollment
             String insertQuery = 
                 "INSERT INTO course_enrollments " +
-                "(student_id, lecture_section_id, status, enrolled_at, updated_at) " +
-                "VALUES (?, ?, 'ENROLLED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
+                "(student_id, lecture_section_id, status, enrolled_at, updated_at, auto_enrolled_from_waitlist) " +
+                "VALUES (?, ?, 'ENROLLED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false)";
             
             jdbcTemplate.update(insertQuery, studentId, sectionId);
             
