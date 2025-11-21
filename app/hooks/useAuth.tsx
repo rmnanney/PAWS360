@@ -44,7 +44,10 @@ export default function useAuth() {
 		setAuthChecked(true);
 		setIsLoading(false);
 		localStorage.setItem("showAuthToast", "true");
-		router.push("/login");
+		// Avoid a redirect loop if the current page is already the login page
+		if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+			router.push("/login");
+		}
 		return false;
 	}, [router]);
 
