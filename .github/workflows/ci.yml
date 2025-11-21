@@ -30,8 +30,10 @@ jobs:
 
       - name: Build + Unit tests
         env:
-          SPRING_WEB_CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080
-        run: ./mvnw -q -DskipITs=false -DtrimStackTrace=false -Dlogging.level.org.springframework.security=DEBUG -Dlogging.level.org.springframework.web.cors=TRACE test
+          SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
+        run: |
+          ./mvnw -q -DskipITs=false -DtrimStackTrace=false -Dlogging.level.org.springframework.security=DEBUG \
+            -Dlogging.level.org.springframework.web.cors=TRACE test
 
       - name: Start docker-compose for CI
         run: docker compose -f docker-compose.ci.yml up -d --build
@@ -64,8 +66,10 @@ jobs:
 
       - name: Run integration tests
         env:
-          SPRING_WEB_CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080
-        run: ./mvnw -q -DskipITs=false -Dtest=*IntegrationTest -DtrimStackTrace=false -Dlogging.level.org.springframework.security=DEBUG -Dlogging.level.org.springframework.web.cors=TRACE test
+          SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
+        run: |
+          ./mvnw -q -DskipITs=false -Dtest=*IntegrationTest -DtrimStackTrace=false \
+            -Dlogging.level.org.springframework.security=DEBUG -Dlogging.level.org.springframework.web.cors=TRACE test
 
       - name: Diagnostic: dump CORS debug endpoint (for CI logs)
         run: |
@@ -99,6 +103,7 @@ jobs:
         run: |
           npm ci
           npm run install-browsers
+
       - name: Ensure wait-on installed for Playwright readiness checks
         working-directory: ./tests/ui
         run: npm install --no-audit wait-on
