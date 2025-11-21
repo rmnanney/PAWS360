@@ -127,6 +127,21 @@ video: 'retain-on-failure'
 ```bash
 BASE_URL=http://localhost:3000    # Frontend URL
 CI=true                          # CI environment flag
+CI_SKIP_WIP=true                 # (Optional) When set, skip WIP UI tests (SSO/Admin UI) in CI pipelines
+
+Example: To add this to GitHub Actions, include the environment variable in your `ci-cd.yml` step that runs Playwright.
+
+  env:
+    CI_SKIP_WIP: true
+
+You can also temporarily skip flaky API tests by setting `CI_SKIP_API=true` when running Playwright in CI; this is useful to get a green CI while the root cause is investigated.
+
+This project also includes a sample GitHub Actions workflow at `.github/workflows/ci-cd.yml` that sets this for you.
+
+# Notes:
+# - The `Jenkinsfile` in this repository sets `CI_SKIP_WIP=true` by default so Jenkins
+#   runs will skip unstable WIP tests. If you add GitHub Actions workflows in the future,
+#   add `CI_SKIP_WIP: true` to the steps that run Playwright to match this behavior.
 ```
 
 ## Test Data

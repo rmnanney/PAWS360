@@ -68,14 +68,18 @@ class UserServiceTest {
         List<AddressDTO> addresses = List.of(addressDTO);
 
         createUserDTO = new CreateUserDTO(
-            "John", 
-            "Middle", 
-            "Doe", 
-            LocalDate.of(1990, 1, 1), 
-            "john.doe@example.com", 
-            "password123", 
-            addresses, 
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, 
+            "John",
+            "Middle",
+            "Doe",
+            LocalDate.of(1990, 1, 1),
+            "000000001", // ssn
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            "john.doe@example.com",
+            "password123",
+            addresses,
+            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US,
             "555-0123",
             Status.ACTIVE,
             Role.STUDENT
@@ -131,6 +135,10 @@ class UserServiceTest {
 
         CreateUserDTO advisorDTO = new CreateUserDTO(
             "Jane", "M", "Smith", LocalDate.of(1985, 5, 15),
+            "000000002",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "jane.smith@example.com", "password123", 
             List.of(new AddressDTO(null, com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME, "456 Oak St", null, null, "Milwaukee", com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN, "53201")),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0456", Status.ACTIVE, Role.ADVISOR
@@ -171,6 +179,10 @@ class UserServiceTest {
 
         CreateUserDTO professorDTO = new CreateUserDTO(
             "Dr.", "A", "Johnson", LocalDate.of(1975, 3, 20),
+            "000000003",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "dr.johnson@example.com", "password123", 
             List.of(new AddressDTO(null, com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME, "789 University Ave", null, null, "Milwaukee", com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN, "53201")),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0789", Status.ACTIVE, Role.PROFESSOR
@@ -228,13 +240,17 @@ class UserServiceTest {
             "Mid",
             "Doe Jr.",
             LocalDate.of(1990, 2, 2),
+            "000000010",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "john.doe@example.com",
             "newpassword123",
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US,
             "555-9999"
         );
 
-        when(userRepository.findUsersByEmailLikeIgnoreCase("john.doe@example.com")).thenReturn(savedUser);
+        when(userRepository.findUsersByEmailIgnoreCase("john.doe@example.com")).thenReturn(savedUser);
         when(userRepository.save(any(Users.class))).thenReturn(savedUser);
 
         // Act
@@ -246,7 +262,7 @@ class UserServiceTest {
         assertEquals("Johnny", response.firstname());
         assertEquals("Doe Jr.", response.lastname());
 
-        verify(userRepository).findUsersByEmailLikeIgnoreCase("john.doe@example.com");
+        verify(userRepository).findUsersByEmailIgnoreCase("john.doe@example.com");
         verify(userRepository).save(savedUser);
     }
 
@@ -256,13 +272,17 @@ class UserServiceTest {
         EditUserRequestDTO editDTO = new EditUserRequestDTO(
             "Johnny", "Mid", "Doe Jr.",
             LocalDate.of(1990, 2, 2),
+            "000000011",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "nonexistent@example.com",
             "newpassword123",
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US,
             "555-9999"
         );
 
-        when(userRepository.findUsersByEmailLikeIgnoreCase("nonexistent@example.com")).thenReturn(null);
+        when(userRepository.findUsersByEmailIgnoreCase("nonexistent@example.com")).thenReturn(null);
 
         // Act
         UserResponseDTO response = userService.editUser(editDTO);
@@ -273,7 +293,7 @@ class UserServiceTest {
         assertNull(response.firstname());
         assertNull(response.lastname());
 
-        verify(userRepository).findUsersByEmailLikeIgnoreCase("nonexistent@example.com");
+        verify(userRepository).findUsersByEmailIgnoreCase("nonexistent@example.com");
         verify(userRepository, never()).save(any(Users.class));
     }
 
@@ -285,13 +305,17 @@ class UserServiceTest {
             "UpdatedMiddle",
             "UpdatedLast",
             LocalDate.of(1995, 5, 5),
+            "000000012",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "john.doe@example.com",
             "updatedpassword",
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.GB,
             "777-8888"
         );
 
-        when(userRepository.findUsersByEmailLikeIgnoreCase("john.doe@example.com")).thenReturn(savedUser);
+        when(userRepository.findUsersByEmailIgnoreCase("john.doe@example.com")).thenReturn(savedUser);
         when(userRepository.save(any(Users.class))).thenReturn(savedUser);
 
         // Act
@@ -315,6 +339,10 @@ class UserServiceTest {
 
         CreateUserDTO counselorDTO = new CreateUserDTO(
             "Sarah", "L", "Wilson", LocalDate.of(1980, 8, 10),
+            "000000004",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "sarah.wilson@example.com", "password123", 
             List.of(new AddressDTO(null, com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME, "321 Counseling St", null, null, "Milwaukee", com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN, "53201")),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0321", Status.ACTIVE, Role.COUNSELOR
@@ -351,6 +379,10 @@ class UserServiceTest {
 
         CreateUserDTO instructorDTO = new CreateUserDTO(
             "Mike", "T", "Brown", LocalDate.of(1982, 11, 25),
+            "000000005",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "mike.brown@example.com", "password123", 
             List.of(new AddressDTO(null, com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME, "654 Teaching Ave", null, null, "Milwaukee", com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN, "53201")),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0654", Status.ACTIVE, Role.INSTRUCTOR

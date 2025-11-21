@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
     org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
 })
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 class UserControllerTest {
 
@@ -56,13 +57,20 @@ class UserControllerTest {
 
         CreateUserDTO request = new CreateUserDTO(
             "John", "Middle", "Doe", LocalDate.of(1990, 1, 1),
+            "000000001",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "john.doe@example.com", "password123", List.of(address),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0123", Status.ACTIVE, Role.STUDENT
         );
 
         UserResponseDTO response = new UserResponseDTO(
-            1, "john.doe@example.com", "John", "Doe",
-            Role.STUDENT, Status.ACTIVE, LocalDate.of(1990, 1, 1),
+            1, "john.doe@example.com", "John", null, "Doe",
+            Role.STUDENT, com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            Status.ACTIVE, LocalDate.of(1990, 1, 1),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0123",
             List.of()
         );
@@ -110,13 +118,21 @@ class UserControllerTest {
 
         CreateUserDTO request = new CreateUserDTO(
             "Dr.", "Smith", "Johnson", LocalDate.of(1975, 3, 20),
+            "000000006",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "dr.johnson@example.com", "password123", List.of(professorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0789", Status.ACTIVE, Role.PROFESSOR
         );
 
         UserResponseDTO response = new UserResponseDTO(
-            2, "dr.johnson@example.com", "Dr.", "Johnson",
-            Role.PROFESSOR, Status.ACTIVE, LocalDate.of(1975, 3, 20),
+            2, "dr.johnson@example.com", "Dr.", null, "Johnson",
+            Role.PROFESSOR,
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            Status.ACTIVE, LocalDate.of(1975, 3, 20),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0789",
             List.of()
         );
@@ -136,13 +152,21 @@ class UserControllerTest {
         // Arrange
         EditUserRequestDTO request = new EditUserRequestDTO(
             "Johnny", "Mid", "Doe Jr.",
-            LocalDate.of(1990, 2, 2), "john.doe@example.com", "newpassword123",
+            LocalDate.of(1990, 2, 2),
+            "000000010",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            "john.doe@example.com", "newpassword123",
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-9999"
         );
 
         UserResponseDTO response = new UserResponseDTO(
-            1, "john.doe@example.com", "Johnny", "Doe Jr.",
-            Role.STUDENT, Status.ACTIVE, LocalDate.of(1990, 2, 2),
+            1, "john.doe@example.com", "Johnny", null, "Doe Jr.",
+            Role.STUDENT, com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            Status.ACTIVE, LocalDate.of(1990, 2, 2),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-9999",
             List.of()
         );
@@ -164,12 +188,19 @@ class UserControllerTest {
         // Arrange
         EditUserRequestDTO request = new EditUserRequestDTO(
             "Johnny", "Mid", "Doe Jr.",
-            LocalDate.of(1990, 2, 2), "nonexistent@example.com", "newpassword123",
+            LocalDate.of(1990, 2, 2),
+            "000000011",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            "nonexistent@example.com", "newpassword123",
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-9999"
         );
 
         UserResponseDTO response = new UserResponseDTO(
-            -1, null, null, null, null, null, null, null, null, null
+            -1, null, null, null, null,
+            null, null, null, null, null,
+            null, null, null, List.of()
         );
 
         when(userService.editUser(any(EditUserRequestDTO.class))).thenReturn(response);
@@ -210,13 +241,20 @@ class UserControllerTest {
 
         CreateUserDTO request = new CreateUserDTO(
             "Jane", "Advisor", "Smith", LocalDate.of(1985, 5, 15),
+            "000000002",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "jane.smith@example.com", "password123", List.of(advisorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0456", Status.ACTIVE, Role.ADVISOR
         );
 
         UserResponseDTO response = new UserResponseDTO(
-            3, "jane.smith@example.com", "Jane", "Smith",
-            Role.ADVISOR, Status.ACTIVE, LocalDate.of(1985, 5, 15),
+            3, "jane.smith@example.com", "Jane", null, "Smith",
+            Role.ADVISOR, com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            Status.ACTIVE, LocalDate.of(1985, 5, 15),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0456",
             List.of()
         );
@@ -247,13 +285,20 @@ class UserControllerTest {
 
         CreateUserDTO request = new CreateUserDTO(
             "Sarah", "Counselor", "Wilson", LocalDate.of(1980, 8, 10),
+            "000000003",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "sarah.wilson@example.com", "password123", List.of(counselorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0321", Status.ACTIVE, Role.COUNSELOR
         );
 
         UserResponseDTO response = new UserResponseDTO(
-            4, "sarah.wilson@example.com", "Sarah", "Wilson",
-            Role.COUNSELOR, Status.ACTIVE, LocalDate.of(1980, 8, 10),
+            4, "sarah.wilson@example.com", "Sarah", null, "Wilson",
+            Role.COUNSELOR, com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            Status.ACTIVE, LocalDate.of(1980, 8, 10),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0321",
             List.of()
         );
@@ -284,13 +329,20 @@ class UserControllerTest {
 
         CreateUserDTO request = new CreateUserDTO(
             "Mike", "Mentor", "Johnson", LocalDate.of(1982, 11, 25),
+            "000000004",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "mike.johnson@example.com", "password123", List.of(mentorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0654", Status.ACTIVE, Role.MENTOR
         );
 
         UserResponseDTO response = new UserResponseDTO(
-            5, "mike.johnson@example.com", "Mike", "Johnson",
-            Role.MENTOR, Status.ACTIVE, LocalDate.of(1982, 11, 25),
+              5, "mike.johnson@example.com", "Mike", null, "Johnson",
+              Role.MENTOR, com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+              com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+              com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            Status.ACTIVE, LocalDate.of(1982, 11, 25),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0654",
             List.of()
         );
@@ -321,16 +373,24 @@ class UserControllerTest {
 
         CreateUserDTO request = new CreateUserDTO(
             "Prof", "Instructor", "Davis", LocalDate.of(1978, 7, 12),
-            "prof.davis@example.com", "password123", List.of(instructorAddressDTO),
+                "000000005",
+                com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+                "prof.davis@example.com", "password123", List.of(instructorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0987", Status.ACTIVE, Role.INSTRUCTOR
         );
 
         UserResponseDTO response = new UserResponseDTO(
-            6, "prof.davis@example.com", "Prof", "Davis",
-            Role.INSTRUCTOR, Status.ACTIVE, LocalDate.of(1978, 7, 12),
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0987",
-            List.of()
-        );
+                6, "prof.davis@example.com", "Prof", null, "Davis",
+                Role.INSTRUCTOR,
+                com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+                Status.ACTIVE, LocalDate.of(1978, 7, 12),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0987",
+                List.of()
+            );
 
         when(userService.createUser(any(CreateUserDTO.class))).thenReturn(response);
 
@@ -357,17 +417,25 @@ class UserControllerTest {
         );
 
         CreateUserDTO request = new CreateUserDTO(
-            "Dr", "Faculty", "Wilson", LocalDate.of(1970, 1, 5),
-            "dr.wilson@example.com", "password123", List.of(facultyAddressDTO),
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0147", Status.ACTIVE, Role.FACULTY
-        );
+                "Dr", "Faculty", "Wilson", LocalDate.of(1970, 1, 5),
+                "000000007",
+                com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+                "dr.wilson@example.com", "password123", List.of(facultyAddressDTO),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0147", Status.ACTIVE, Role.FACULTY
+            );
 
         UserResponseDTO response = new UserResponseDTO(
-            7, "dr.wilson@example.com", "Dr", "Wilson",
-            Role.FACULTY, Status.ACTIVE, LocalDate.of(1970, 1, 5),
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0147",
-            List.of()
-        );
+                7, "dr.wilson@example.com", "Dr", null, "Wilson",
+                Role.FACULTY,
+                com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+                Status.ACTIVE, LocalDate.of(1970, 1, 5),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0147",
+                List.of()
+            );
 
         when(userService.createUser(any(CreateUserDTO.class))).thenReturn(response);
 
@@ -394,17 +462,25 @@ class UserControllerTest {
         );
 
         CreateUserDTO request = new CreateUserDTO(
-            "Alex", "TA", "Brown", LocalDate.of(1995, 9, 18),
-            "alex.brown@example.com", "password123", List.of(taAddressDTO),
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0258", Status.ACTIVE, Role.TA
-        );
+                "Alex", "TA", "Brown", LocalDate.of(1995, 9, 18),
+                "000000008",
+                com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+                "alex.brown@example.com", "password123", List.of(taAddressDTO),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0258", Status.ACTIVE, Role.TA
+            );
 
         UserResponseDTO response = new UserResponseDTO(
-            8, "alex.brown@example.com", "Alex", "Brown",
-            Role.TA, Status.ACTIVE, LocalDate.of(1995, 9, 18),
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0258",
-            List.of()
-        );
+                8, "alex.brown@example.com", "Alex", null, "Brown",
+                Role.TA,
+                com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+                Status.ACTIVE, LocalDate.of(1995, 9, 18),
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0258",
+                List.of()
+            );
 
         when(userService.createUser(any(CreateUserDTO.class))).thenReturn(response);
 
@@ -429,10 +505,15 @@ class UserControllerTest {
     void editUser_ServiceReturnsNull_ReturnsInternalServerError() throws Exception {
         // Arrange
         EditUserRequestDTO request = new EditUserRequestDTO(
-            "Johnny", "Mid", "Doe Jr.",
-            LocalDate.of(1990, 2, 2), "john.doe@example.com", "newpassword123",
-            com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-9999"
-        );
+                "Johnny", "Mid", "Doe Jr.",
+                LocalDate.of(1990, 2, 2),
+                "000000010",
+                com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
+                com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+                "john.doe@example.com", "newpassword123",
+                com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-9999"
+            );
 
         when(userService.editUser(any(EditUserRequestDTO.class))).thenReturn(null);
 

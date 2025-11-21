@@ -10,12 +10,14 @@
     "test:ui": "playwright test --ui",
     "test:sso": "playwright test sso-authentication.spec.ts",
     "report": "playwright show-report",
-    "install-browsers": "playwright install chromium"
+    "install-browsers": "playwright install chromium",
+    "wait-for-next": "wait-on -t 120000 http://localhost:3000"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "wait-on": "^7.2.0"
   },
   "engines": {
     "node": ">=18.0.0"
