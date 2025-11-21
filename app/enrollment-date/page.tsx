@@ -39,8 +39,8 @@ type EnrollmentWindow = {
 	term: string;
 	opensAt: string;
 	closesAt: string;
-	priority: string;
-	note: string;
+	priority?: string | null;
+	note?: string | null;
 };
 
 type CourseSection = {
@@ -113,6 +113,7 @@ function formatMeetingDays(days?: string[] | null) {
 }
 
 function formatWindow(window: EnrollmentWindow) {
+	if (!window.opensAt || !window.closesAt) return "Dates not set";
 	const formatter = new Intl.DateTimeFormat("en-US", {
 		month: "short",
 		day: "numeric",
@@ -172,33 +173,7 @@ export default function EnrollmentDatePage() {
 	const [planner, setPlanner] = React.useState<PlannerItem[]>([]);
 	const [enrolling, setEnrolling] = React.useState<number | null>(null);
 	const [dropping, setDropping] = React.useState<number | null>(null);
-
-	const enrollmentWindows: EnrollmentWindow[] = React.useMemo(
-		() => [
-			{
-				term: "Spring 2026",
-				opensAt: "2025-12-02T08:00:00-06:00",
-				closesAt: "2025-12-16T23:59:00-06:00",
-				priority: "Current Seniors & Honors",
-				note: "Register early to lock your seat; tuition is due based on the fee schedule.",
-			},
-			{
-				term: "Spring 2026",
-				opensAt: "2025-12-04T08:00:00-06:00",
-				closesAt: "2025-12-20T23:59:00-06:00",
-				priority: "Juniors & Sophomores",
-				note: "Prerequisites and holds will be enforced at checkout.",
-			},
-			{
-				term: "Spring 2026",
-				opensAt: "2025-12-06T08:00:00-06:00",
-				closesAt: "2026-01-11T23:59:00-06:00",
-				priority: "All Students",
-				note: "Open enrollment; waitlists auto-promote when space frees up.",
-			},
-		],
-		[]
-	);
+	const [enrollmentWindows, setEnrollmentWindows] = React.useState<EnrollmentWindow[]>([]);
 
 	React.useEffect(() => {
 		try {
@@ -253,6 +228,31 @@ export default function EnrollmentDatePage() {
 		};
 		load();
 	}, [API_BASE, toast]);
+
+	React.useEffect(() => {
+		const loadWindows = async () => {
+			try {
+				const res = await fetch(`${API_BASE}/api/enrollment/windows`);
+				if (res.ok) {
+					const data = await res.json();
+					if (Array.isArray(data)) {
+						setEnrollmentWindows(
+							data.map((w: any) => ({
+								term: w.term,
+								opensAt: w.opensAt,
+								closesAt: w.closesAt,
+								priority: w.priority,
+								note: w.note,
+							}))
+						);
+					}
+				}
+			} catch {
+				// optional endpoint; ignore if missing
+			}
+		};
+		loadWindows();
+	}, [API_BASE]);
 
 	const refreshEnrollments = React.useCallback(
 		async (id?: number | null) => {
@@ -385,9 +385,10 @@ export default function EnrollmentDatePage() {
 
 	const upcomingWindow = React.useMemo(() => {
 		const now = Date.now();
-		return enrollmentWindows.find(
-			(w) => new Date(w.closesAt).getTime() > now
-		);
+		return enrollmentWindows.find((w) => {
+			if (!w.opensAt || !w.closesAt) return false;
+			return new Date(w.closesAt).getTime() > now;
+		});
 	}, [enrollmentWindows]);
 
 	const addToPlanner = (sectionId: number) => {
@@ -503,9 +504,13 @@ export default function EnrollmentDatePage() {
 	const heroCards = [
 		{
 			title: "Next window",
-			value: upcomingWindow ? formatWindow(upcomingWindow) : "All windows closed",
+			value: upcomingWindow
+				? formatWindow(upcomingWindow)
+				: "Windows not published",
 			icon: CalendarClock,
-			description: upcomingWindow?.priority || "Add courses to your planner",
+			description:
+				upcomingWindow?.priority ||
+				"Check back later or contact the registrar",
 		},
 		{
 			title: "Enrolled this term",
@@ -601,32 +606,44 @@ export default function EnrollmentDatePage() {
 							</CardDescription>
 						</CardHeader>
 						<CardContent className={styles.windowGrid}>
+							{enrollmentWindows.length === 0 && (
+								<p className="text-sm text-muted-foreground">
+									Enrollment windows are not published yet. Watch your UWM email for
+									opening times.
+								</p>
+							)}
 							{enrollmentWindows.map((window, idx) => {
 								const now = Date.now();
-								const opens = new Date(window.opensAt).getTime();
-								const closes = new Date(window.closesAt).getTime();
-								const isOpen = now >= opens && now < closes;
-								const isFuture = now < opens;
+								const opens = window.opensAt ? new Date(window.opensAt).getTime() : 0;
+								const closes = window.closesAt ? new Date(window.closesAt).getTime() : 0;
+								const isOpen = window.opensAt && window.closesAt ? now >= opens && now < closes : false;
+								const isFuture = window.opensAt ? now < opens : false;
 								return (
 									<div key={idx} className={styles.windowCard}>
 										<div className={styles.windowHeader}>
 											<div>
 												<p className={styles.windowTerm}>{window.term}</p>
-												<p className={styles.windowDate}>{formatWindow(window)}</p>
+												{window.opensAt && window.closesAt && (
+													<p className={styles.windowDate}>{formatWindow(window)}</p>
+												)}
 											</div>
 											<Badge variant={isOpen ? "secondary" : "outline"}>
 												{isOpen ? "Open now" : isFuture ? "Upcoming" : "Closed"}
 											</Badge>
 										</div>
 										<div className={styles.windowBody}>
-											<div className={styles.windowRow}>
-												<Clock className="h-4 w-4 text-muted-foreground" />
-												<span>{window.priority}</span>
-											</div>
-											<div className={styles.windowRow}>
-												<AlertCircle className="h-4 w-4 text-muted-foreground" />
-												<span>{window.note}</span>
-											</div>
+											{window.priority && (
+												<div className={styles.windowRow}>
+													<Clock className="h-4 w-4 text-muted-foreground" />
+													<span>{window.priority}</span>
+												</div>
+											)}
+											{window.note && (
+												<div className={styles.windowRow}>
+													<AlertCircle className="h-4 w-4 text-muted-foreground" />
+													<span>{window.note}</span>
+												</div>
+											)}
 										</div>
 									</div>
 								);
