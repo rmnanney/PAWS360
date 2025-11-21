@@ -171,6 +171,7 @@ jobs:
         with:
           name: playwright-report
           path: tests/ui/playwright-report
+          retention-days: 3
 
       - name: Upload Playwright diagnostics
         if: always()
@@ -179,6 +180,7 @@ jobs:
         with:
           name: playwright-diagnostics
           path: tests/ui/playwright-report/diagnostics
+          retention-days: 3
 
       - name: Stop docker-compose
         if: always()
