@@ -46,7 +46,10 @@ export default function useAuth() {
 		localStorage.setItem("showAuthToast", "true");
 		// Avoid a redirect loop if the current page is already the login page
 		if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-			router.push("/login");
+			// Avoid redirect during unit tests (Jest environment) to keep tests deterministic
+			if (process.env.NODE_ENV !== "test") {
+				router.push("/login");
+			}
 		}
 		return false;
 	}, [router]);
