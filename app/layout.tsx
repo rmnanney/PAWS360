@@ -66,12 +66,26 @@ export default function RootLayout({
 	};
 
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				<title>University of Wisconsin, Milwaukee</title>
 				<meta
 					name="description"
 					content="University of Wisconsin, Milwaukee Student Portal"
+				/>
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `
+							(function() {
+								const theme = localStorage.getItem('theme');
+								const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+								const initialTheme = theme || (prefersDark ? 'dark' : 'light');
+								if (initialTheme === 'dark') {
+									document.documentElement.classList.add('dark');
+								}
+							})();
+						`,
+					}}
 				/>
 			</head>
 			<body className="font-body antialiased">
