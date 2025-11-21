@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/paws360_dev}
+    username: ${SPRING_DATASOURCE_USERNAME:paws360}
+    password: ${SPRING_DATASOURCE_PASSWORD:paws360_dev_password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    database: postgresql
+  redis:
+    host: redis
+    port: 6379
+    password: ${REDIS_PASSWORD:paws360_redis_password}
+  application:
+    name: PAWS360
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# Management endpoints for Docker environment
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,env,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+logging:
+  level:
+    org.springframework: INFO
+    com.uwm.paws360: DEBUG
