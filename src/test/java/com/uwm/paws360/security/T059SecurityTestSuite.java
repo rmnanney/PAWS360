@@ -67,6 +67,8 @@ class T059SecurityTestSuite {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+        registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
     }
 
     @LocalServerPort
@@ -80,6 +82,9 @@ class T059SecurityTestSuite {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private com.uwm.paws360.JPARepository.User.AuthenticationSessionRepository authenticationSessionRepository;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     // Test data
@@ -90,6 +95,8 @@ class T059SecurityTestSuite {
         baseUrl = "http://localhost:" + port;
         
         // Clean up existing test data
+        // Delete sessions first to avoid foreign key violations when deleting users
+        authenticationSessionRepository.deleteAll();
         userRepository.deleteAll();
         setupTestData();
     }

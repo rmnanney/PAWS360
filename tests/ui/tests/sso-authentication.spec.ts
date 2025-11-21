@@ -13,7 +13,11 @@ import path from 'path';
 
 // Marking SSO E2E tests as work in progress. These are flaky in CI; skip
 // until we stabilize the backend/session handling so tests pass consistently.
-test.describe.skip('SSO Authentication End-to-End Tests', () => {
+// Make SSO tests skip only when CI runs with the `CI_SKIP_WIP` flag set.
+const _wipSkip = (process.env.CI_SKIP_WIP === 'true');
+const describeMaybe = _wipSkip ? test.describe.skip : test.describe;
+
+describeMaybe('SSO Authentication End-to-End Tests', () => {
   
   // Test data - matching the seed data
   const validCredentials = {

@@ -2,7 +2,11 @@ import { test, expect } from '@playwright/test';
 
 // AdminLTE UI tests are flaky in CI; skip them for now and re-enable when UI + backend
 // session flow stabilizes. These tests are not required for CI baseline at the moment.
-test.describe.skip('PAWS360 AdminLTE Dashboard', () => {
+// Make AdminLTE tests skip only when CI runs with the `CI_SKIP_WIP` flag set.
+const _wipSkipDashboard = (process.env.CI_SKIP_WIP === 'true');
+const describeMaybeDashboard = _wipSkipDashboard ? test.describe.skip : test.describe;
+
+describeMaybeDashboard('PAWS360 AdminLTE Dashboard', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the dashboard
     await page.goto('/');

@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
     org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
 })
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 class UserLoginControllerTest {
 

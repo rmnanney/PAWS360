@@ -56,6 +56,10 @@ public class StudentRepositoryTest {
         user.setEmail("john.doe@student.example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(2000, 1, 1));
+        user.setSocialsecurity("000000051");
+        user.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.STUDENT);
         user.setStatus(Status.ACTIVE);
@@ -87,6 +91,10 @@ public class StudentRepositoryTest {
         user1.setEmail("student1@example.com");
         user1.setPassword("password");
         user1.setDob(LocalDate.of(2000, 1, 1));
+        user1.setSocialsecurity("000000052");
+        user1.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user1.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user1.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user1.setRole(Role.STUDENT);
         user1.setStatus(Status.ACTIVE);
@@ -106,6 +114,10 @@ public class StudentRepositoryTest {
         user2.setEmail("student2@example.com");
         user2.setPassword("password");
         user2.setDob(LocalDate.of(2000, 1, 1));
+        user2.setSocialsecurity("000000053");
+        user2.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user2.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user2.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user2.setRole(Role.STUDENT);
         user2.setStatus(Status.ACTIVE);
@@ -135,6 +147,10 @@ public class StudentRepositoryTest {
         user.setEmail("delete.test@student.example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(2000, 1, 1));
+        user.setSocialsecurity("000000054");
+        user.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.STUDENT);
         user.setStatus(Status.ACTIVE);

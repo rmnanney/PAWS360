@@ -55,6 +55,8 @@ class T057SSoIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+        registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
     }
 
     @LocalServerPort
@@ -359,7 +361,24 @@ class T057SSoIntegrationTest {
             HttpEntity<UserLoginRequestDTO> requestEntity = new HttpEntity<>(loginRequest, headers);
 
             // Act & Assert CORS handling
-            try {
+                        try {
+                                // Emulate browser preflight for cross-origin POST with JSON
+                                HttpHeaders preflightHeaders = new HttpHeaders();
+                                preflightHeaders.set("Origin", "http://localhost:3000");
+                                preflightHeaders.setAccessControlRequestMethod(HttpMethod.POST);
+                                preflightHeaders.setAccessControlRequestHeaders(List.of("content-type"));
+
+                                ResponseEntity<String> pre = restTemplate.exchange(
+                                                baseUrl + "/auth/login",
+                                                HttpMethod.OPTIONS,
+                                                new HttpEntity<>(preflightHeaders),
+                                                String.class
+                                );
+                                // Preflight should succeed with CORS headers set by WebConfig/CorsConfigurationSource
+                                assertThat(pre.getStatusCode()).isEqualTo(HttpStatus.OK);
+                                assertThat(pre.getHeaders().getAccessControlAllowOrigin()).isEqualTo("http://localhost:3000");
+                                assertThat(pre.getHeaders().getAccessControlAllowMethods()).contains(HttpMethod.POST);
+                                assertThat(pre.getHeaders().getFirst("Access-Control-Allow-Credentials")).isEqualTo("true");
                 ResponseEntity<UserLoginResponseDTO> response = restTemplate.exchange(
                         baseUrl + "/auth/login",
                         HttpMethod.POST,
