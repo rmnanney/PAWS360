@@ -1,12 +1,12 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/paws360_dev
-    username: paws360
-    password: paws360_dev_password
+    url: jdbc:postgresql://localhost:5432/paws
+    username: postgres
+    password: root
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     defer-datasource-initialization: true
     show-sql: true
     properties:
