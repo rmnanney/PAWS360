@@ -27,6 +27,10 @@ export default function CourseSearchPage() {
     const [results, setResults] = React.useState<CourseResult[]>([]);
     const [selectedCourse, setSelectedCourse] = React.useState<CourseResult | null>(null);
 
+    // Helper to create unique key for each course section
+    const getCourseKey = (course: CourseResult) => 
+        `${course.course_code}-${course.instructor || 'TBD'}-${course.meeting_pattern || 'TBD'}`;
+
     const doSearch = (e?: React.FormEvent) => {
         e?.preventDefault();
         setLoading(true);
@@ -59,7 +63,7 @@ export default function CourseSearchPage() {
             const cart: CourseResult[] = existingCart ? JSON.parse(existingCart) : [];
             
             // Check if already in cart
-            const alreadyExists = cart.some(c => c.course_code === selectedCourse.course_code);
+            const alreadyExists = cart.some(c => getCourseKey(c) === getCourseKey(selectedCourse));
             if (alreadyExists) {
                 toast({ variant: "destructive", title: "Already in cart", description: `${selectedCourse.course_code} is already in your enrollment cart.` });
                 return;
@@ -153,7 +157,7 @@ export default function CourseSearchPage() {
                             <div 
                                 key={idx} 
                                 className={`${cardStyles.scheduleClass} cursor-pointer transition-all ${
-                                    selectedCourse?.course_code === c.course_code 
+                                    selectedCourse && getCourseKey(selectedCourse) === getCourseKey(c)
                                         ? 'ring-2 ring-primary bg-primary/10' 
                                         : 'hover:bg-secondary/70'
                                 }`}

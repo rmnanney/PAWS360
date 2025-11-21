@@ -37,7 +37,14 @@ export default function CoursesPage() {
 }
 
 function CurrentlyEnrolledCard() {
-    const [items, setItems] = React.useState<Array<{ time: string; course: string; title: string; room: string }>>([]);
+    const [items, setItems] = React.useState<Array<{ 
+        course: string; 
+        title: string; 
+        meeting_pattern: string;
+        instructor: string;
+        credits: number;
+        room: string;
+    }>>([]);
     const { toast } = require("@/hooks/useToast");
     const { API_BASE } = require("@/lib/api");
 
@@ -49,13 +56,15 @@ function CurrentlyEnrolledCard() {
                 const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
                 const sidData = await sidRes.json();
                 if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) return;
-                const res = await fetch(`${API_BASE}/api/course-search/student/${sidData.student_id}/today-schedule`);
+                const res = await fetch(`${API_BASE}/api/course-search/student/${sidData.student_id}/all-enrolled`);
                 if (!res.ok) return;
                 const data = await res.json();
                 const mapped = (data || []).map((d: any) => ({
-                    time: d.start_time ? new Date(`1970-01-01T${d.start_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "",
                     course: d.course_code,
                     title: d.title,
+                    meeting_pattern: d.meeting_pattern || "TBD",
+                    instructor: d.instructor || "TBD",
+                    credits: d.credits || 0,
                     room: d.room || "TBD",
                 }));
                 setItems(mapped);
@@ -79,33 +88,37 @@ function CurrentlyEnrolledCard() {
                         <div className={cardStyles.scheduleClassInfo}>
                             <div className={cardStyles.scheduleClassTime}>
                                 <Clock className="h-4 w-4" />
-                                <span>{classItem.time}</span>
                             </div>
                             <div>
                                 <p className="font-medium text-card-foreground">{classItem.course}</p>
                                 <p className="text-sm text-muted-foreground">{classItem.title}</p>
+                                <div className="text-xs text-muted-foreground mt-1">
+                                    {classItem.meeting_pattern && <div>Schedule: {classItem.meeting_pattern}</div>}
+                                    {classItem.instructor && <div>Instructor: {classItem.instructor}</div>}
+                                </div>
                             </div>
                         </div>
-                        <div className={cardStyles.scheduleClassRoom}>{classItem.room}</div>
+                        <div className="text-sm text-muted-foreground">
+                            <div>{classItem.room}</div>
+                            <div>{classItem.credits} cr</div>
+                        </div>
                     </div>
                 ))}
                 {items.length === 0 && (
-                    <div className="text-sm text-muted-foreground">No classes today.</div>
+                    <div className="text-sm text-muted-foreground">No enrolled classes.</div>
                 )}
-            </div>
-
-            <div className={cardStyles.scheduleViewFull}>
-                <button className={cardStyles.scheduleViewButton}>View Full Schedule →</button>
             </div>
         </div>
     );
 }
 
 function EnrollmentCart() {
+    const router = useRouter();
     const [cartItems, setCartItems] = React.useState<Array<{
         course_code: string;
         title: string;
         meeting_pattern: string;
+        instructor: string;
         credits: number;
     }>>([]);
 
@@ -127,10 +140,13 @@ function EnrollmentCart() {
         return () => window.removeEventListener('storage', loadCart);
     }, []);
 
-    const removeFromCart = (courseCode: string) => {
+    const removeFromCart = (courseCode: string, instructor: string, meetingPattern: string) => {
         try {
             const cartKey = "enrollment_cart";
-            const filtered = cartItems.filter(item => item.course_code !== courseCode);
+            const getCourseKey = (item: any) => 
+                `${item.course_code}-${item.instructor || 'TBD'}-${item.meeting_pattern || 'TBD'}`;
+            const targetKey = `${courseCode}-${instructor || 'TBD'}-${meetingPattern || 'TBD'}`;
+            const filtered = cartItems.filter(item => getCourseKey(item) !== targetKey);
             localStorage.setItem(cartKey, JSON.stringify(filtered));
             setCartItems(filtered);
         } catch (err) {
@@ -173,12 +189,15 @@ function EnrollmentCart() {
                                     {item.meeting_pattern && (
                                         <p className="text-xs text-muted-foreground">{item.meeting_pattern}</p>
                                     )}
+                                    {item.instructor && (
+                                        <p className="text-xs text-muted-foreground">{item.instructor}</p>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className={cardStyles.scheduleClassRoom}>{item.credits} cr</div>
                                 <button
-                                    onClick={() => removeFromCart(item.course_code)}
+                                    onClick={() => removeFromCart(item.course_code, item.instructor, item.meeting_pattern)}
                                     className="text-xs text-destructive hover:underline"
                                 >
                                     Remove
@@ -190,7 +209,13 @@ function EnrollmentCart() {
             </div>
 
             <div className={cardStyles.scheduleViewFull}>
-                <button className={cardStyles.scheduleViewButton}>Proceed to Enrollment →</button>
+                <button 
+                    className={cardStyles.scheduleViewButton}
+                    onClick={() => router.push('/courses/enrollment')}
+                    disabled={cartItems.length === 0}
+                >
+                    Proceed to Enrollment →
+                </button>
             </div>
         </div>
     );
