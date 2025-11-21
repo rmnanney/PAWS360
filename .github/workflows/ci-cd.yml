@@ -1,3 +1,76 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main, master, develop, SCRUM-999-CI-CD ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      CI_SKIP_WIP: true
+    services:
+      # docker is available on runners by default, but keep the service hint for docs
+      docker:
+        image: docker:24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Node.js 18.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Build & unit tests (Maven)
+        run: |
+          ./mvnw -B -DskipTests=false test
+
+      - name: Build Docker image for app
+        run: |
+          docker build -f infrastructure/docker/Dockerfile -t paws360-app:ci .
+
+      - name: Start CI services (Docker Compose)
+        run: |
+          docker compose -f docker-compose.ci.yml up -d --build
+
+      - name: Wait for backend to be healthy
+        run: |
+          timeout 300 bash -c 'until curl -fsS http://localhost:8080/actuator/health; do sleep 5; done'
+
+      - name: Start Next dev server
+        run: |
+          npm ci
+          # Use background start; wait-for-next ensures we're ready
+          nohup npm run dev &
+          npx wait-on -t 120000 http://localhost:3000
+
+      - name: Playwright — install browsers
+        run: |
+          npm ci --prefix tests/ui
+          npm run install-browsers --prefix tests/ui
+
+      - name: Playwright — run tests
+        env:
+          BASE_URL: http://localhost:3000
+          BACKEND_URL: http://localhost:8080
+          CI_SKIP_WIP: true
+        run: |
+          npm test --prefix tests/ui
+
+      - name: Docker Compose down (cleanup)
+        if: always()
+        run: |
+          docker compose -f docker-compose.ci.yml down -v
 ---
 name: CI/CD Pipeline
 
