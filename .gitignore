@@ -19,6 +19,7 @@ target/
 *.iml
 *.ipr
 *.yml
+!.github/workflows/*.yml
 
 ### NetBeans ###
 /nbproject/private/
