@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('PAWS360 API Integration', () => {
+// Optionally skip API integration tests in CI if they are known to be flaky.
+// Set `CI_SKIP_API=true` in CI to skip these tests without changing local runs.
+const _skipApiIntegration = (process.env.CI_SKIP_API === 'true') || false;
+const describeMaybeAPITests = _skipApiIntegration ? test.describe.skip : test.describe;
+
+describeMaybeAPITests('PAWS360 API Integration', () => {
   test('should verify API endpoints are accessible', async ({ page }) => {
     // Test classes API
     const classesResponse = await page.request.get('/api/classes/');

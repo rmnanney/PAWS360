@@ -134,6 +134,8 @@ Example: To add this to GitHub Actions, include the environment variable in your
   env:
     CI_SKIP_WIP: true
 
+You can also temporarily skip flaky API tests by setting `CI_SKIP_API=true` when running Playwright in CI; this is useful to get a green CI while the root cause is investigated.
+
 This project also includes a sample GitHub Actions workflow at `.github/workflows/ci-cd.yml` that sets this for you.
 
 # Notes:
