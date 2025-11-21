@@ -127,6 +127,7 @@ video: 'retain-on-failure'
 ```bash
 BASE_URL=http://localhost:3000    # Frontend URL
 CI=true                          # CI environment flag
+CI_SKIP_WIP=true                 # (Optional) When set, skip WIP UI tests (SSO/Admin UI) in CI pipelines
 ```
 
 ## Test Data

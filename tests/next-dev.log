@@ -1032,3 +1032,464 @@ Error: connect ECONNREFUSED 127.0.0.1:8086
   address: '127.0.0.1',
   port: 8086
 }
+ GET /login 200 in 40ms
+ GET /login 200 in 31ms
+ GET /login 200 in 28ms
+ GET /login 200 in 23ms
+ GET /login 200 in 20ms
+Failed to proxy http://localhost:8086/auth/login Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+ GET /login 200 in 40ms
+ GET /login 200 in 31ms
+ GET /login 200 in 30ms
+ GET /login 200 in 29ms
+ GET /login 200 in 24ms
+Failed to proxy http://localhost:8086/auth/login Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Failed to proxy http://localhost:8086/api/nonexistent Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Failed to proxy http://localhost:8086/api/classes Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+ GET / 307 in 216ms
+ GET / 307 in 216ms
+ GET / 307 in 212ms
+ GET / 307 in 224ms
+ GET / 307 in 337ms
+ GET / 307 in 346ms
+ GET / 307 in 343ms
+ GET / 307 in 333ms
+ GET / 307 in 332ms
+ GET / 307 in 328ms
+ GET /login 200 in 383ms
+ GET /login 200 in 382ms
+ GET /login 200 in 394ms
+ GET /login 200 in 397ms
+ GET /login 200 in 675ms
+ GET /login 200 in 667ms
+ GET /login 200 in 650ms
+ GET /login 200 in 667ms
+ GET /login 200 in 677ms
+ GET /login 200 in 673ms
+ GET /login 200 in 800ms
+ GET /login 200 in 795ms
+ GET /login 200 in 791ms
+ GET / 307 in 841ms
+ GET /login 200 in 799ms
+ GET / 307 in 836ms
+ GET /login 200 in 585ms
+ GET /login 200 in 664ms
+ GET /login 200 in 677ms
+ GET /login 200 in 762ms
+ GET /login 200 in 717ms
+ GET /login 200 in 678ms
+ GET /login 200 in 764ms
+ GET /login 200 in 582ms
+ GET /login 200 in 639ms
+ GET /login 200 in 620ms
+ GET /login 200 in 744ms
+ GET /login 200 in 676ms
+ GET /login 200 in 804ms
+ GET /login 200 in 937ms
+ GET /login 200 in 876ms
+ GET /login 200 in 866ms
+ GET /login 200 in 896ms
+ GET /login 200 in 748ms
+ GET /login 200 in 852ms
+ GET /login 200 in 841ms
+ GET /login 200 in 751ms
+ GET /login 200 in 746ms
+ GET /login 200 in 639ms
+ GET /login 200 in 636ms
+ GET /login 200 in 618ms
+ GET /login 200 in 555ms
+ GET /login 200 in 597ms
+ GET /login 200 in 604ms
+ GET /login 200 in 592ms
+ GET /login 200 in 580ms
+ GET /login 200 in 542ms
+ GET /login 200 in 530ms
+ GET /login 200 in 576ms
+ GET /login 200 in 511ms
+ GET /login 200 in 485ms
+ GET /login 200 in 498ms
+ GET /login 200 in 456ms
+ GET /login 200 in 444ms
+ GET /login 200 in 429ms
+ GET /login 200 in 432ms
+ GET /login 200 in 433ms
+ GET /login 200 in 367ms
+ GET /login 200 in 242ms
+ GET /login 200 in 229ms
+ GET /login 200 in 121ms
+ GET /login 200 in 115ms
+ GET / 307 in 148ms
+ GET /login 200 in 267ms
+ GET /login 200 in 141ms
+ GET / 307 in 254ms
+ GET /login 200 in 269ms
+ GET /login 200 in 272ms
+ GET /login 200 in 325ms
+ GET /login 200 in 66ms
+ GET /login 200 in 163ms
+ GET /login 200 in 135ms
+ GET /login 200 in 115ms
+ GET /login 200 in 61ms
+ GET / 307 in 194ms
+ GET /login 200 in 161ms
+ GET /login 200 in 94ms
+ GET /login 200 in 96ms
+ GET /login 200 in 68ms
+ GET /login 200 in 73ms
+ GET / 307 in 183ms
+ GET /login 200 in 238ms
+ GET /login 200 in 81ms
+ GET /login 200 in 125ms
+ GET /login 200 in 93ms
+ GET /login 200 in 61ms
+ GET / 307 in 169ms
+ GET / 307 in 184ms
+ GET / 307 in 179ms
+ GET / 307 in 188ms
+ GET / 307 in 284ms
+ GET / 307 in 294ms
+ GET /login 200 in 297ms
+ GET / 307 in 294ms
+ GET / 307 in 252ms
+ GET /login 200 in 261ms
+ GET /login 200 in 264ms
+ GET /login 200 in 389ms
+ GET /login 200 in 454ms
+ GET /login 200 in 453ms
+ GET /login 200 in 444ms
+ GET /login 200 in 441ms
+ GET /login 200 in 576ms
+ GET /login 200 in 617ms
+ GET /login 200 in 643ms
+ GET / 307 in 522ms
+ GET / 307 in 538ms
+ GET /login 200 in 532ms
+ GET /login 200 in 571ms
+ GET /login 200 in 577ms
+ GET /login 200 in 593ms
+ GET /login 200 in 576ms
+ GET /login 200 in 557ms
+ GET /login 200 in 491ms
+ GET /login 200 in 446ms
+ GET /login 200 in 455ms
+ GET /login 200 in 468ms
+ GET /login 200 in 563ms
+ GET /login 200 in 578ms
+ GET /login 200 in 584ms
+ GET /login 200 in 603ms
+ GET /login 200 in 622ms
+ GET /login 200 in 622ms
+ GET /login 200 in 624ms
+ GET /login 200 in 662ms
+ GET /login 200 in 515ms
+ GET /login 200 in 512ms
+ GET /login 200 in 537ms
+ GET /login 200 in 521ms
+ GET /login 200 in 528ms
+ GET /login 200 in 549ms
+ GET /login 200 in 521ms
+ GET /login 200 in 489ms
+ GET /login 200 in 483ms
+ GET /login 200 in 445ms
+ GET /login 200 in 325ms
+ GET /login 200 in 329ms
+ GET /login 200 in 320ms
+ GET /login 200 in 313ms
+ GET /login 200 in 301ms
+ GET /login 200 in 315ms
+ GET /login 200 in 274ms
+ GET /login 200 in 156ms
+ GET /login 200 in 144ms
+ GET /login 200 in 118ms
+ GET /login 200 in 115ms
+ GET / 307 in 163ms
+ GET /login 200 in 81ms
+ GET /login 200 in 63ms
+ GET /login 200 in 98ms
+ GET /login 200 in 77ms
+ GET /login 200 in 80ms
+ GET / 307 in 144ms
+ GET /login 200 in 166ms
+ GET /login 200 in 45ms
+ GET /login 200 in 69ms
+ GET /login 200 in 68ms
+ GET /login 200 in 62ms
+ GET /login 200 in 102ms
+ GET /homepage 200 in 215ms
+ GET /login 200 in 319ms
+ GET /homepage 200 in 358ms
+ GET /login 200 in 334ms
+ GET /homepage 200 in 520ms
+ GET /login 200 in 560ms
+ GET /login 200 in 619ms
+ GET /homepage 200 in 650ms
+ GET /login 200 in 500ms
+ GET /login 200 in 499ms
+ GET /login 200 in 513ms
+ GET /login 200 in 520ms
+ GET /login 200 in 454ms
+Failed to proxy http://localhost:8086/auth/login Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+ GET /login 200 in 473ms
+ GET /login 200 in 415ms
+ GET /login 200 in 442ms
+ GET /login 200 in 356ms
+ GET /login 200 in 552ms
+ GET /login 200 in 551ms
+ GET /login 200 in 483ms
+ GET /login 200 in 604ms
+ GET /login 200 in 591ms
+ GET /login 200 in 570ms
+ GET /login 200 in 541ms
+ GET /login 200 in 324ms
+ GET /login 200 in 326ms
+ GET /login 200 in 346ms
+ GET /login 200 in 351ms
+ GET /homepage 200 in 398ms
+ GET /login 200 in 389ms
+Failed to proxy http://localhost:8086/auth/login Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+ GET /login 200 in 365ms
+ GET /login 200 in 364ms
+ GET /login 200 in 367ms
+ GET /login 200 in 365ms
+ GET /homepage 200 in 473ms
+ GET /login 200 in 553ms
+ GET /login 200 in 525ms
+ GET /login 200 in 565ms
+ GET /login 200 in 534ms
+ GET /login 200 in 520ms
+ GET /login 200 in 230ms
+ GET /login 200 in 177ms
+ GET /login 200 in 330ms
+ GET /login 200 in 293ms
+ GET /login 200 in 323ms
+ GET /login 200 in 241ms
+ GET /login 200 in 342ms
+Failed to proxy http://localhost:8086/auth/login Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+ GET /login 200 in 349ms
+ GET /login 200 in 368ms
+ GET /login 200 in 332ms
+ GET /login 200 in 289ms
+ GET /homepage 200 in 321ms
+ GET /login 200 in 305ms
+ GET /login 200 in 303ms
+ GET /login 200 in 323ms
+ GET /login 200 in 316ms
+Failed to proxy http://localhost:8086/auth/login Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+ GET /login 200 in 312ms
+ GET /login 200 in 288ms
+ GET /login 200 in 271ms
+ GET /login 200 in 79ms
+ GET /login 200 in 148ms
+ GET /login 200 in 150ms
+ GET /login 200 in 148ms
+ GET /login 200 in 96ms
+ GET /login 200 in 91ms
+ GET /login 200 in 93ms
+ GET /login 200 in 69ms
+ GET /login 200 in 65ms
+ GET /login 200 in 68ms
+ GET /login 200 in 53ms
+ GET /login 200 in 52ms
+ GET /login 200 in 33ms
+ GET /login 200 in 35ms
+ GET /homepage 200 in 61ms
+ GET /login 200 in 35ms
+ GET /login 200 in 38ms
+ GET /login 200 in 32ms
+ GET /login 200 in 31ms
+ GET /login 200 in 35ms
+ GET /login 200 in 33ms
+ GET /login 200 in 43ms
+ GET /login 200 in 28ms
+ GET /login 200 in 32ms
+ GET /login 200 in 24ms
+ GET /login 200 in 22ms
+Failed to proxy http://localhost:8086/auth/login Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+ GET /login 200 in 38ms
+ GET /login 200 in 26ms
+ GET /login 200 in 30ms
+ GET /login 200 in 23ms
+ GET /login 200 in 23ms
+Failed to proxy http://localhost:8086/auth/login Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Failed to proxy http://localhost:8086/api/classes Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Failed to proxy http://localhost:8086/api/nonexistent Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
+Error: connect ECONNREFUSED 127.0.0.1:8086
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8086) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 8086
+}
