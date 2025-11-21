@@ -234,7 +234,7 @@ function EnrollmentCart() {
 					onClick={() => router.push("/courses/enrollment")}
 					disabled={cartItems.length === 0}
 				>
-					Proceed to Enrollment ->
+					{"Proceed to Enrollment ->"}
 				</button>
 			</div>
 		</div>

@@ -54,13 +54,15 @@ public class CourseEnrollmentService {
         CourseSection labSection = null;
         List<CourseSection> labOptions = courseSectionRepository.findByParentSection(lectureSection);
         if (!labOptions.isEmpty()) {
-            if (request.labSectionId() == null) {
-                throw new IllegalArgumentException("Lab selection is required for this course");
-            }
-            labSection = courseSectionRepository.findById(request.labSectionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Lab section not found for id " + request.labSectionId()));
-            if (labSection.getSectionType() != SectionType.LAB || labSection.getParentSection() == null || !labSection.getParentSection().getId().equals(lectureSection.getId())) {
-                throw new IllegalArgumentException("Selected lab section does not belong to the chosen lecture");
+            if (request.labSectionId() != null) {
+                labSection = courseSectionRepository.findById(request.labSectionId())
+                        .orElseThrow(() -> new EntityNotFoundException("Lab section not found for id " + request.labSectionId()));
+                if (labSection.getSectionType() != SectionType.LAB || labSection.getParentSection() == null || !labSection.getParentSection().getId().equals(lectureSection.getId())) {
+                    throw new IllegalArgumentException("Selected lab section does not belong to the chosen lecture");
+                }
+            } else {
+                // When a lab is available but not explicitly selected, pick the first lab with capacity
+                labSection = labOptions.stream().filter(this::hasCapacity).findFirst().orElse(null);
             }
         } else if (request.labSectionId() != null) {
             throw new IllegalArgumentException("Lecture does not have lab options but lab section id was provided");
