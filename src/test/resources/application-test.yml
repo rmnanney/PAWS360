@@ -3,25 +3,32 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/test_db
-    username: postgres
-    password: test_password
-    driver-class-name: org.postgresql.Driver
+    # Use H2 for unit/integration tests to avoid dependence on local Postgres
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
     
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
     show-sql: false
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.H2Dialect
+    # Use a test-only SQL seed file to avoid running production Postgres-specific SQL
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:test-data.sql
     
   redis:
     host: localhost
     port: 6379
     timeout: 2000ms
-    
+
   web:
     cors:
-      allowed-origins: "http://localhost:3000,http://localhost:8080"
+      allowed-origins: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
       allowed-methods: "*"
       allowed-headers: "*"
       allow-credentials: true

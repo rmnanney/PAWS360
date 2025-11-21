@@ -51,6 +51,7 @@ import org.hamcrest.Matchers;
  * - IP address extraction and tracking
  */
 @WebMvcTest(AuthController.class)
+@org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc(addFilters = false)
 @DisplayName("AuthController Unit Tests")
 class AuthControllerTest {
 

@@ -56,6 +56,10 @@ public class AdvisorRepositoryTest {
         user.setEmail("advisor.test@example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(1990, 1, 1));
+        user.setSocialsecurity("000000021");
+        user.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
         Address address = createTestAddress();
         address.setUser(user);
         user.getAddresses().add(address);
@@ -87,6 +91,7 @@ public class AdvisorRepositoryTest {
         user1.setEmail("advisor1@example.com");
         user1.setPassword("password");
         user1.setDob(LocalDate.of(1990, 1, 1));
+        user1.setSocialsecurity("000000022");
         Address address1 = createTestAddress();
         address1.setUser(user1);
         user1.getAddresses().add(address1);
@@ -106,6 +111,7 @@ public class AdvisorRepositoryTest {
         user2.setEmail("advisor2@example.com");
         user2.setPassword("password");
         user2.setDob(LocalDate.of(1990, 1, 1));
+        user2.setSocialsecurity("000000023");
         Address address2 = createTestAddress();
         address2.setUser(user2);
         user2.getAddresses().add(address2);
@@ -135,6 +141,7 @@ public class AdvisorRepositoryTest {
         user.setEmail("delete.advisor@example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(1990, 1, 1));
+        user.setSocialsecurity("000000024");
         Address address = createTestAddress();
         address.setUser(user);
         user.getAddresses().add(address);

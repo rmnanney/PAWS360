@@ -4,17 +4,27 @@ services:
   # Main PAWS360 Application for CI/CD testing
   paws360-app:
     build:
-      context: ../..
-      dockerfile: ./infrastructure/docker/Dockerfile
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
     container_name: paws360-app-ci
     ports:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=test
       - SERVER_PORT=8080
-      - DATABASE_URL=jdbc:postgresql://postgres:5432/paws360_test
-      - DATABASE_USERNAME=paws360
-      - DATABASE_PASSWORD=test_password
+      # Ensure tests and CI front-end requests are allowed by CORS in CI runs
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080
+      # Enable more detailed cors/security logging in CI for diagnostics
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_CORS=TRACE
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/paws360_test
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_WEB_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=paws360
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+      - SPRING_TASK_SCHEDULING_ENABLED=false
+      - SPRING_DATASOURCE_USERNAME=paws360
+      - SPRING_DATASOURCE_PASSWORD=test_password
       - REDIS_URL=redis://redis:6379
       - REDIS_PASSWORD=test_redis_password
       - JWT_SECRET=test_jwt_secret_key_for_ci_cd
@@ -45,8 +55,8 @@ services:
       - "5433:5432"
     volumes:
       - postgres_ci_data:/var/lib/postgresql/data
-      - ../../database/paws360_database_schema_docs.md:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ../../database/paws360_seed_data.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./database/test_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/test_seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
     networks:
       - ci-network
     healthcheck:

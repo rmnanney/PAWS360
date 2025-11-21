@@ -25,7 +25,9 @@ test.describe('CORS preflight', () => {
 
     expect(allowOrigin).toBeDefined();
     // Spring may echo specific origin
-    expect([origin, '*']).toContain(allowOrigin);
+    // Accept exact origin, 127.0.0.1 variant, or wildcard
+    const altOrigin = origin.replace('localhost', '127.0.0.1');
+    expect([origin, altOrigin, '*']).toContain(allowOrigin);
     expect(allowMethods?.toUpperCase()).toContain('POST');
     expect(["true", "TRUE"]).toContain((allowCreds || '').toLowerCase());
   });
@@ -47,7 +49,8 @@ test.describe('CORS preflight', () => {
 
     expect(allowOrigin).toBeDefined();
     // Spring may echo specific origin
-    expect([origin, '*']).toContain(allowOrigin);
+    const altOrigin2 = origin.replace('localhost', '127.0.0.1');
+    expect([origin, altOrigin2, '*']).toContain(allowOrigin);
     expect(allowMethods?.toUpperCase()).toContain('POST');
     expect(["true", "TRUE"]).toContain((allowCreds || '').toLowerCase());
   });

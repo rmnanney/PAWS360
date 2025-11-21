@@ -18,7 +18,7 @@ public class Users {
 /*------------------------- Fields -------------------------*/
     @Id
     @Column(name = "user_id", unique = true, updatable = false)
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(nullable = false, length = 100)
@@ -373,6 +373,16 @@ public class Users {
 
     public void setSession_token(String session_token) {
         this.session_token = session_token;
+    }
+
+    // Backwards-compatible camelCase accessors used by Spring Data derived query names
+    // eg. findBySessionToken -> matches getSessionToken()
+    public String getSessionToken() {
+        return this.session_token;
+    }
+
+    public void setSessionToken(String sessionToken) {
+        this.session_token = sessionToken;
     }
 
     public void setSession_expiration(LocalDateTime session_expiration) {

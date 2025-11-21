@@ -33,6 +33,10 @@ public class UserRepositoryTest {
         user1.setEmail("john.doe@example.com");
         user1.setPassword("password123");
         user1.setDob(LocalDate.of(1990, 1, 1));
+        user1.setSocialsecurity("000000101");
+        user1.setEthnicity(Ethnicity.OTHER);
+        user1.setGender(Gender.OTHER);
+        user1.setNationality(Nationality.UNITED_STATES);
         address1.setUser(user1);
         user1.getAddresses().add(address1);
         user1.setStatus(Status.ACTIVE);
@@ -46,6 +50,10 @@ public class UserRepositoryTest {
         user2.setEmail("johnny.smith@example.com");
         user2.setPassword("password123");
         user2.setDob(LocalDate.of(1990, 1, 1));
+        user2.setSocialsecurity("000000102");
+        user2.setEthnicity(Ethnicity.OTHER);
+        user2.setGender(Gender.OTHER);
+        user2.setNationality(Nationality.UNITED_STATES);
         address2.setUser(user2);
         user2.getAddresses().add(address2);
         user2.setStatus(Status.ACTIVE);
@@ -59,6 +67,7 @@ public class UserRepositoryTest {
         user3.setEmail("jane.doe@example.com");
         user3.setPassword("password123");
         user3.setDob(LocalDate.of(1990, 1, 1));
+        user3.setSocialsecurity("000000103");
         address3.setUser(user3);
         user3.getAddresses().add(address3);
         user3.setStatus(Status.ACTIVE);
@@ -83,6 +92,11 @@ public class UserRepositoryTest {
         user.setEmail("JOHN.DOE@EXAMPLE.COM");
         user.setPassword("password123");
         user.setDob(LocalDate.of(1990, 1, 1));
+        user.setSocialsecurity("000000106");
+        user.setSocialsecurity("000000103");
+        user.setEthnicity(Ethnicity.OTHER);
+        user.setGender(Gender.OTHER);
+        user.setNationality(Nationality.UNITED_STATES);
         address.setUser(user);
         user.getAddresses().add(address);
         user.setStatus(Status.ACTIVE);
@@ -116,6 +130,7 @@ public class UserRepositoryTest {
         user.setEmail("test.user@example.com");
         user.setPassword("password123");
         user.setDob(LocalDate.of(1990, 1, 1));
+        user.setSocialsecurity("000000107");
         address.setUser(user);
         user.getAddresses().add(address);
         user.setStatus(Status.ACTIVE);
@@ -143,6 +158,10 @@ public class UserRepositoryTest {
         user1.setEmail("user1@example.com");
         user1.setPassword("password123");
         user1.setDob(LocalDate.of(1990, 1, 1));
+        user1.setSocialsecurity("000000104");
+        user1.setEthnicity(Ethnicity.OTHER);
+        user1.setGender(Gender.OTHER);
+        user1.setNationality(Nationality.UNITED_STATES);
         address1.setUser(user1);
         user1.getAddresses().add(address1);
         user1.setStatus(Status.ACTIVE);
@@ -156,6 +175,10 @@ public class UserRepositoryTest {
         user2.setEmail("user2@example.com");
         user2.setPassword("password123");
         user2.setDob(LocalDate.of(1990, 1, 1));
+        user2.setSocialsecurity("000000105");
+        user2.setEthnicity(Ethnicity.OTHER);
+        user2.setGender(Gender.OTHER);
+        user2.setNationality(Nationality.UNITED_STATES);
         address2.setUser(user2);
         user2.getAddresses().add(address2);
         user2.setStatus(Status.ACTIVE);

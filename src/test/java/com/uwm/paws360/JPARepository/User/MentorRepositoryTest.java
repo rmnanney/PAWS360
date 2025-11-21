@@ -56,6 +56,10 @@ public class MentorRepositoryTest {
         user.setEmail("mentor.test@example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(1982, 1, 1));
+        user.setSocialsecurity("000000041");
+        user.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.MENTOR);
         user.setStatus(Status.ACTIVE);
@@ -87,6 +91,10 @@ public class MentorRepositoryTest {
         user1.setEmail("mentor1@example.com");
         user1.setPassword("password");
         user1.setDob(LocalDate.of(1982, 1, 1));
+        user1.setSocialsecurity("000000042");
+        user1.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user1.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user1.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
         user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user1.setRole(Role.MENTOR);
         user1.setStatus(Status.ACTIVE);
@@ -105,6 +113,10 @@ public class MentorRepositoryTest {
         user2.setEmail("mentor2@example.com");
         user2.setPassword("password");
         user2.setDob(LocalDate.of(1982, 1, 1));
+        user2.setSocialsecurity("000000043");
+        user2.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user2.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user2.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
         user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user2.setRole(Role.MENTOR);
         user2.setStatus(Status.ACTIVE);
@@ -133,6 +145,10 @@ public class MentorRepositoryTest {
         user.setEmail("delete.mentor@example.com");
         user.setPassword("password");
         user.setDob(LocalDate.of(1982, 1, 1));
+        user.setSocialsecurity("000000044");
+        user.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
         user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
         user.setRole(Role.MENTOR);
         user.setStatus(Status.ACTIVE);

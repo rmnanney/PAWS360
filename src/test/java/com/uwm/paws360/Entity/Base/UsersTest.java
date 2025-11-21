@@ -47,7 +47,11 @@ class UsersTest {
 
         // When
         Users user = new Users(firstname, middlename, lastname, dob, email, password,
-                              countryCode, phone, status, role);
+                      countryCode, phone, status, role,
+                      "000000999",
+                      com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+                      com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+                      com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
 
         // Then
         assertThat(user.getFirstname()).isEqualTo(firstname);

@@ -8,12 +8,14 @@ import com.uwm.paws360.Entity.EntityDomains.User.Status;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ActiveProfiles("test")
 @DataJpaTest(excludeAutoConfiguration = {
     org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
     org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
@@ -36,7 +38,11 @@ class UsersIntegrationTest {
             Country_Code.US,
             "1234567890",
             Status.ACTIVE,
-            Role.STUDENT
+            Role.STUDENT,
+            "000000009",
+            com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
+            com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
+            com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER
         );
 
         Address address = new Address();
