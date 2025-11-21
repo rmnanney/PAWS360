@@ -119,8 +119,8 @@ export function ScheduleCard() {
                 if (!res.ok) return;
                 const data = await res.json();
                 const mapped = (data || []).map((d: any) => ({
-                    time: d.startTime ? new Date(`1970-01-01T${d.startTime}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "",
-                    course: d.courseCode,
+                    time: d.start_time ? new Date(`1970-01-01T${d.start_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "",
+                    course: d.course_code,
                     title: d.title,
                     room: d.room || "TBD",
                 }));

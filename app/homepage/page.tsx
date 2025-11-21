@@ -113,7 +113,7 @@ export default function Homepage() {
 						title="Class Search"
 						icon={Search}
 						description="Search course catalog and class schedules"
-						onClick={() => handleCardClick("Class Search/Catalog")}
+						onClick={() => router.push("/courses")}
 					/>
 					<HomepageCard
 						title="Quick Links"
