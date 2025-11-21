@@ -113,10 +113,12 @@ function CurrentlyEnrolledCard() {
 }
 
 function EnrollmentCart() {
+    const router = useRouter();
     const [cartItems, setCartItems] = React.useState<Array<{
         course_code: string;
         title: string;
         meeting_pattern: string;
+        instructor: string;
         credits: number;
     }>>([]);
 
@@ -138,10 +140,13 @@ function EnrollmentCart() {
         return () => window.removeEventListener('storage', loadCart);
     }, []);
 
-    const removeFromCart = (courseCode: string) => {
+    const removeFromCart = (courseCode: string, instructor: string, meetingPattern: string) => {
         try {
             const cartKey = "enrollment_cart";
-            const filtered = cartItems.filter(item => item.course_code !== courseCode);
+            const getCourseKey = (item: any) => 
+                `${item.course_code}-${item.instructor || 'TBD'}-${item.meeting_pattern || 'TBD'}`;
+            const targetKey = `${courseCode}-${instructor || 'TBD'}-${meetingPattern || 'TBD'}`;
+            const filtered = cartItems.filter(item => getCourseKey(item) !== targetKey);
             localStorage.setItem(cartKey, JSON.stringify(filtered));
             setCartItems(filtered);
         } catch (err) {
@@ -184,12 +189,15 @@ function EnrollmentCart() {
                                     {item.meeting_pattern && (
                                         <p className="text-xs text-muted-foreground">{item.meeting_pattern}</p>
                                     )}
+                                    {item.instructor && (
+                                        <p className="text-xs text-muted-foreground">{item.instructor}</p>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className={cardStyles.scheduleClassRoom}>{item.credits} cr</div>
                                 <button
-                                    onClick={() => removeFromCart(item.course_code)}
+                                    onClick={() => removeFromCart(item.course_code, item.instructor, item.meeting_pattern)}
                                     className="text-xs text-destructive hover:underline"
                                 >
                                     Remove
@@ -201,7 +209,13 @@ function EnrollmentCart() {
             </div>
 
             <div className={cardStyles.scheduleViewFull}>
-                <button className={cardStyles.scheduleViewButton}>Proceed to Enrollment →</button>
+                <button 
+                    className={cardStyles.scheduleViewButton}
+                    onClick={() => router.push('/courses/enrollment')}
+                    disabled={cartItems.length === 0}
+                >
+                    Proceed to Enrollment →
+                </button>
             </div>
         </div>
     );
