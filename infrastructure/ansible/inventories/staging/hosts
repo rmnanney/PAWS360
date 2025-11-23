@@ -37,18 +37,19 @@ saml_keystore_password=dev_keystore_pass
 admin_default_password=admin123
 
 [webservers]
-localhost ansible_connection=local
+dell-r640-01 ansible_host=192.168.0.51
 
 [databases]
-localhost ansible_connection=local
+dell-r640-01 ansible_host=192.168.0.51
 
 [etcd]
-localhost ansible_connection=local
+dell-r640-01 ansible_host=192.168.0.51
 
 [redis]
-localhost ansible_connection=local
+dell-r640-01 ansible_host=192.168.0.51
 
 [loadbalancers]
-localhost ansible_connection=local
+dell-r640-01 ansible_host=192.168.0.51
 
 [monitoring]
+dell-r640-01 ansible_host=192.168.0.51
