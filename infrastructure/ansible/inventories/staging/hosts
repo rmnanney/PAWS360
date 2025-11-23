@@ -45,11 +45,16 @@ grafana_enabled=true
 metrics_retention=30d
 
 [webservers]
-web-staging-01.university.edu ansible_host=10.0.1.10
-web-staging-02.university.edu ansible_host=10.0.1.11
+web-staging-01.university.edu ansible_host=192.168.0.101
+web-staging-02.university.edu ansible_host=192.168.0.102
 
 [databases]
-db-staging-01.university.edu ansible_host=10.0.2.10
+db-staging-01.university.edu ansible_host=192.168.0.110
+
+[etcd]
+etcd-staging-01.university.edu ansible_host=192.168.0.111
+etcd-staging-02.university.edu ansible_host=192.168.0.112
+etcd-staging-03.university.edu ansible_host=192.168.0.113
 
 [loadbalancers] 
 lb-staging-01.university.edu ansible_host=10.0.0.10
@@ -58,4 +63,6 @@ lb-staging-01.university.edu ansible_host=10.0.0.10
 mon-staging-01.university.edu ansible_host=10.0.3.10
 
 [redis]
-redis-staging-01.university.edu ansible_host=10.0.2.20
+redis-staging-01.university.edu ansible_host=192.168.0.140
+redis-staging-02.university.edu ansible_host=192.168.0.141
+redis-staging-03.university.edu ansible_host=192.168.0.142
