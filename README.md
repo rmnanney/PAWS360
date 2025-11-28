@@ -2,7 +2,43 @@
 
 This README section contains the minimal, copy/paste steps to get PAWS360 running locally with the Student Frontend included.
 
-## Quick start — 3 commands
+## 🚀 Quick Start (Automated)
+
+**New!** Use the automated quickstart script for a complete HA environment setup:
+
+```bash
+# One-command setup with full validation
+./docs/quickstart.sh
+```
+
+The script will:
+- ✓ Validate prerequisites (Docker, memory, ports)
+- ✓ Pull all required images
+- ✓ Start the full HA stack (PostgreSQL cluster, Redis Sentinel, etc.)
+- ✓ Run health checks
+- ✓ Display access URLs
+
+**Options:**
+```bash
+./docs/quickstart.sh --lite      # Minimal setup (single PostgreSQL, no HA)
+./docs/quickstart.sh --skip-pull # Skip image pulling (faster if cached)
+./docs/quickstart.sh --clean     # Fresh start, remove existing volumes
+./docs/quickstart.sh --help      # Show all options
+```
+
+**Access URLs (after setup):**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080
+- Health Check: http://localhost:8080/actuator/health
+
+📚 **Documentation:**
+- [Developer Onboarding Checklist](docs/local-development/onboarding-checklist.md)
+- [Makefile Target Reference](docs/reference/makefile-targets.md)
+- [HA Architecture Guide](docs/architecture/ha-stack.md)
+
+---
+
+## Quick start — 3 commands (Legacy)
 
 1) Prepare the environment (Ansible helper)
 
@@ -65,6 +101,8 @@ psql -h localhost -p 5432 -U paws360 -d paws360_dev -c "SELECT 1;" || echo "Data
 - **Spring Boot Services**: Auth, Data, and Analytics services require compiled JAR files in `infrastructure/docker/services/` to start properly.
 - **First-time Setup**: You may need to install `docker-compose-plugin` for modern Docker Compose support: `sudo apt install docker-compose-plugin`
 - If you see a Docker permission/daemon error, run `docker info` and ensure your user can access the Docker daemon or use `sudo`.
+
+NOTE: The repository's SSO end-to-end test artifacts (Playwright) have been retired due to maintenance and CI flakiness. See `docs/SSO-RETIREMENT.md` for details on how these tests were handled and how to temporarily re-enable them if necessary.
 
 ## Postman collection
 - Import `PAWS360_Admin_API.postman_collection.json` from the repo root to exercise APIs. Set `base_url` to `http://localhost:8080` (or the service port you want to target).
