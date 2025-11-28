@@ -47,3 +47,7 @@ management:
   endpoint:
     health:
       show-details: always
+  info:
+    git:
+      enabled: false
+# Prevent tests from invoking system git (common in CI where git isn't available or repository is shallow)

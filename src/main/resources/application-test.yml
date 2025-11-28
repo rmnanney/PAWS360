@@ -44,6 +44,10 @@ management:
       enabled: true
     readinessState:
       enabled: true
+  info:
+    git:
+      enabled: false
+# Disable git info lookup in test profile (prevents calling /usr/bin/git during tests in CI)
 
 logging:
   level:

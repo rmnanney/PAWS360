@@ -6,6 +6,27 @@ const backendBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:80
 
 const nextConfig: NextConfig = {
   /* config options here */
+  
+  // Hot Module Replacement (HMR) configuration for rapid development
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      // Enable HMR with fast refresh for sub-3s hot-reload
+      config.watchOptions = {
+        poll: 300, // Poll every 300ms for file changes (Docker volume compatibility)
+        aggregateTimeout: 200, // Wait 200ms after change before rebuilding
+      };
+    }
+    return config;
+  },
+  
+  // Enable experimental features for faster development
+  experimental: {
+    // Turbopack support for faster builds (Next.js 14+)
+    // turbo: {
+    //   enabled: true,
+    // },
+  },
+  
   typescript: {
     ignoreBuildErrors: true,
   },

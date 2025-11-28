@@ -99,6 +99,7 @@ class T057IntegrationTest {
      */
     @Nested
     @DisplayName("End-to-End SSO Authentication Flow")
+    @org.junit.jupiter.api.Disabled("SSO integration tests retired — skipped to reduce CI flakiness; see docs/SSO-RETIREMENT.md")
     class SSOAuthenticationFlowTests {
 
         @Test

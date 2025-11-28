@@ -1,4 +1,7 @@
 ---
+- src: community.general
+  version: "*"
+---
 # Ansible Galaxy Requirements
 # External roles and collections for AdminLTE deployment
 

@@ -1,11 +1,385 @@
 # PAWS360 Development Makefile
+# Feature: 001-local-dev-parity
+# Production-parity local development environment with full HA stack
 
-.PHONY: help test-local test-quick clean logs dev auth-test db-status build performance-test
+.PHONY: help dev-setup dev-up dev-down dev-restart dev-reset health wait-healthy logs test-failover
+.PHONY: dev-rebuild-backend dev-rebuild-frontend dev-seed dev-pause dev-resume dev-up-fast
+.PHONY: validate-system test-local test-quick clean auth-test db-status build performance-test
+
+# ===== Environment Configuration =====
+COMPOSE_FILE := docker-compose.yml
+ENV_FILE := .env.local
+HEALTH_CHECK_SCRIPT := scripts/health-check.sh
+VALIDATE_PLATFORM := scripts/validate-platform.sh
+VALIDATE_RESOURCES := scripts/validate-resources.sh
+VALIDATE_PORTS := scripts/validate-ports.sh
+DOCKER_COMPOSE := docker compose
 
 help: ## Show this help message
 	@echo "PAWS360 Development Commands"
 	@echo "============================"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "Production-Parity HA Stack:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "Legacy Commands (from previous setup):"
+	@echo "  test-local           Run full local E2E tests"
+	@echo "  test-quick           Quick authentication test"
+
+# ===== System Validation =====
+
+validate-system: ## Validate platform, resources, and ports
+	@echo "🔍 Validating system requirements..."
+	@$(VALIDATE_PLATFORM)
+	@$(VALIDATE_RESOURCES)
+	@$(VALIDATE_PORTS)
+	@echo "✅ System validation complete"
+
+# ===== Environment Lifecycle Management =====
+
+dev-setup: validate-system ## Initial setup: validate system, pull images, initialize cluster
+	@echo "🚀 Setting up local development environment..."
+	@if [ ! -f $(ENV_FILE) ]; then \
+		echo "Creating .env.local from template..."; \
+		cp .env.local.template $(ENV_FILE); \
+		echo "⚠️  Please review and update passwords in .env.local"; \
+	fi
+	@echo "Pulling Docker images..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) pull 2>/dev/null || echo "Some images will be built locally"
+	@echo "Building custom images..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build
+	@echo "✅ Setup complete. Run 'make dev-up' to start the environment"
+
+dev-up: ## Start full HA stack (etcd, Patroni, Redis Sentinel, apps)
+	@echo "🚀 Starting production-parity local development environment..."
+	@echo "This will start:"
+	@echo "  - 3-node etcd cluster"
+	@echo "  - 3-node Patroni/PostgreSQL cluster"
+	@echo "  - Redis master + 2 replicas + 3 Sentinels"
+	@echo "  - Application services (if configured)"
+	@echo ""
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d
+	@echo ""
+	@echo "⏳ Waiting for services to become healthy..."
+	@sleep 5
+	@$(MAKE) -f $(MAKEFILE_LIST) wait-healthy
+	@echo ""
+	@echo "✅ Environment is ready!"
+	@echo ""
+	@echo "Access points:"
+	@echo "  PostgreSQL (leader):  localhost:5432"
+	@echo "  Patroni API:          http://localhost:8008"
+	@echo "  Redis:                localhost:6379"
+	@echo "  Redis Sentinel:       localhost:26379"
+	@echo "  etcd:                 localhost:2379"
+	@echo ""
+	@echo "Health check: make health"
+	@echo "View logs:    make logs"
+	@echo "Test failover: make test-failover"
+
+dev-down: ## Stop environment (preserve data volumes)
+	@echo "🛑 Stopping development environment..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down
+	@echo "✅ Environment stopped (data volumes preserved)"
+	@echo "To start again: make dev-up"
+	@echo "To reset all data: make dev-reset"
+
+dev-restart: ## Restart environment with health validation
+	@echo "🔄 Restarting development environment..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) restart
+	@echo "⏳ Waiting for services to become healthy..."
+	@sleep 5
+	@$(MAKE) -f $(MAKEFILE_LIST) wait-healthy
+	@echo "✅ Environment restarted"
+
+dev-reset: ## DESTRUCTIVE: Stop environment, delete all data volumes, clean rebuild
+	@echo "💾 Creating automatic backup before reset..."
+	@$(MAKE) -f $(MAKEFILE_LIST) dev-backup || true
+	@echo "⚠️  WARNING: This will DELETE ALL DATA in the local environment!"
+	@echo "Press Ctrl+C to cancel, or wait 5 seconds to continue..."
+	@sleep 5
+	@echo "🧹 Stopping and removing containers..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down -v
+	@echo "🗑️  Removing volumes..."
+	@docker volume rm $$(docker volume ls -q | grep paws360) 2>/dev/null || true
+	@echo "🏗️  Rebuilding images..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build --no-cache
+	@echo "✅ Environment reset complete"
+	@echo "Run 'make dev-up' to start fresh"
+
+# ===== Health Checks =====
+
+health: ## Check health of all infrastructure services (human-readable)
+	@echo "🏥 Health Check Report"
+	@echo "======================"
+	@$(HEALTH_CHECK_SCRIPT)
+
+wait-healthy: ## Block until all services are healthy (with timeout)
+	@echo "⏳ Waiting for all services to become healthy..."
+	@timeout 300 sh -c 'until $(HEALTH_CHECK_SCRIPT) --json | grep -q "\"healthy\": 1"; do \
+		echo "  Still waiting..."; \
+		sleep 5; \
+	done' || (echo "❌ Timeout waiting for healthy services" && exit 1)
+	@echo "✅ All services are healthy"
+
+logs: ## Follow logs from all services (Ctrl+C to stop)
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) logs -f --tail=50 --timestamps
+
+# ===== Incremental Rebuilds =====
+
+dev-rebuild-backend: ## Rebuild backend service only (fast incremental rebuild)
+	@echo "🔨 Rebuilding backend service..."
+	@START=$$(date +%s); \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build backend && \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d backend && \
+	END=$$(date +%s); \
+	ELAPSED=$$((END - START)); \
+	echo "✅ Backend rebuilt in $${ELAPSED}s (target: ≤30s)"
+
+dev-rebuild-frontend: ## Rebuild frontend service only (fast incremental rebuild)
+	@echo "🔨 Rebuilding frontend service..."
+	@START=$$(date +%s); \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build frontend && \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d frontend && \
+	END=$$(date +%s); \
+	ELAPSED=$$((END - START)); \
+	echo "✅ Frontend rebuilt in $${ELAPSED}s (target: ≤30s)"
+
+# ===== Database Management =====
+
+dev-seed: ## Seed database with sample data
+	@echo "🌱 Seeding database with sample data..."
+	@docker exec paws360-patroni1 psql -U postgres -d paws360_dev -f /docker-entrypoint-initdb.d/local-dev-data.sql 2>/dev/null || \
+	echo "⚠️  Seed file not found. Create database/seeds/local-dev-data.sql"
+	@echo "✅ Database seeded"
+
+# ===== Backup & Disaster Recovery =====
+
+dev-backup: ## Create timestamped database backup
+	@echo "💾 Creating database backup..."
+	@mkdir -p backups
+	@TIMESTAMP=$$(date +%Y%m%d_%H%M%S); \
+	docker exec paws360-patroni1 pg_dumpall -U postgres > backups/backup_$${TIMESTAMP}.sql && \
+	echo "✅ Backup saved: backups/backup_$${TIMESTAMP}.sql" && \
+	echo "Cleaning old backups (keeping last 10)..." && \
+	ls -t backups/backup_*.sql | tail -n +11 | xargs -r rm && \
+	echo "✅ Backup complete"
+
+dev-restore: ## Restore database from backup (interactive selection)
+	@echo "📂 Available backups:"
+	@ls -lht backups/backup_*.sql 2>/dev/null | head -n 10 || (echo "No backups found" && exit 1)
+	@echo ""
+	@read -p "Enter backup filename (or press Ctrl+C to cancel): " BACKUP_FILE; \
+	if [ ! -f "backups/$$BACKUP_FILE" ]; then \
+		echo "❌ Backup file not found: backups/$$BACKUP_FILE"; \
+		exit 1; \
+	fi; \
+	echo "⚠️  WARNING: This will OVERWRITE the current database!"; \
+	read -p "Type 'yes' to confirm: " CONFIRM; \
+	if [ "$$CONFIRM" != "yes" ]; then \
+		echo "❌ Restore cancelled"; \
+		exit 1; \
+	fi; \
+	echo "🛑 Stopping applications..."; \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) stop backend frontend || true; \
+	echo "📥 Restoring from backup..."; \
+	cat backups/$$BACKUP_FILE | docker exec -i paws360-patroni1 psql -U postgres && \
+	echo "✅ Database restored" && \
+	echo "🚀 Restarting applications..."; \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) start backend frontend || true
+
+dev-snapshot: ## Create offline volume backup (tar.gz)
+	@echo "📸 Creating volume snapshot..."
+	@mkdir -p backups/snapshots
+	@TIMESTAMP=$$(date +%Y%m%d_%H%M%S); \
+	echo "🛑 Stopping Patroni cluster..."; \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) stop patroni1 patroni2 patroni3; \
+	echo "💾 Creating snapshot..."; \
+	docker run --rm \
+		-v paws360-patroni1-data:/data:ro \
+		-v $$(pwd)/backups/snapshots:/backups \
+		alpine tar czf /backups/snapshot_patroni1_$${TIMESTAMP}.tar.gz -C /data . && \
+	docker run --rm \
+		-v paws360-patroni2-data:/data:ro \
+		-v $$(pwd)/backups/snapshots:/backups \
+		alpine tar czf /backups/snapshot_patroni2_$${TIMESTAMP}.tar.gz -C /data . && \
+	docker run --rm \
+		-v paws360-patroni3-data:/data:ro \
+		-v $$(pwd)/backups/snapshots:/backups \
+		alpine tar czf /backups/snapshot_patroni3_$${TIMESTAMP}.tar.gz -C /data . && \
+	echo "✅ Snapshots created in backups/snapshots/"; \
+	echo "🚀 Restarting Patroni cluster..."; \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) start patroni1 patroni2 patroni3
+
+dev-restore-snapshot: ## Restore volume from snapshot (DESTRUCTIVE - prompts for confirmation)
+	@echo "📂 Available snapshots:"
+	@ls -lht backups/snapshots/snapshot_*.tar.gz 2>/dev/null | head -n 10 || (echo "No snapshots found" && exit 1)
+	@echo ""
+	@read -p "Enter snapshot basename (e.g., snapshot_20231127_120000): " SNAPSHOT_BASE; \
+	echo "⚠️  WARNING: This will DESTROY all current data volumes!"; \
+	read -p "Type 'DESTROY' to confirm: " CONFIRM; \
+	if [ "$$CONFIRM" != "DESTROY" ]; then \
+		echo "❌ Restore cancelled"; \
+		exit 1; \
+	fi; \
+	echo "🛑 Stopping environment..."; \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down; \
+	echo "🗑️  Removing old volumes..."; \
+	docker volume rm paws360-patroni1-data paws360-patroni2-data paws360-patroni3-data || true; \
+	docker volume create paws360-patroni1-data; \
+	docker volume create paws360-patroni2-data; \
+	docker volume create paws360-patroni3-data; \
+	echo "📥 Restoring snapshots..."; \
+	docker run --rm \
+		-v paws360-patroni1-data:/data \
+		-v $$(pwd)/backups/snapshots:/backups \
+		alpine tar xzf /backups/$${SNAPSHOT_BASE}_patroni1.tar.gz -C /data && \
+	docker run --rm \
+		-v paws360-patroni2-data:/data \
+		-v $$(pwd)/backups/snapshots:/backups \
+		alpine tar xzf /backups/$${SNAPSHOT_BASE}_patroni2.tar.gz -C /data && \
+	docker run --rm \
+		-v paws360-patroni3-data:/data \
+		-v $$(pwd)/backups/snapshots:/backups \
+		alpine tar xzf /backups/$${SNAPSHOT_BASE}_patroni3.tar.gz -C /data && \
+	echo "✅ Snapshots restored"; \
+	echo "🚀 Starting environment..."; \
+	$(MAKE) -f $(MAKEFILE_LIST) dev-up
+
+dev-seed-from-snapshot: ## Load sanitized production data (requires SANITIZED=1)
+	@if [ "$(SANITIZED)" != "1" ]; then \
+		echo "❌ ERROR: SANITIZED=1 flag is required"; \
+		echo ""; \
+		echo "This target loads production-derived data into development."; \
+		echo "You must confirm the data has been sanitized by setting SANITIZED=1."; \
+		echo ""; \
+		echo "Usage:"; \
+		echo "  SANITIZED=1 make dev-seed-from-snapshot"; \
+		echo ""; \
+		echo "See: docs/guides/data-privacy.md"; \
+		exit 1; \
+	fi
+	@echo "📂 Available sanitized snapshots:"
+	@ls -lht backups/sanitized/*.sql 2>/dev/null | head -n 10 || (echo "No sanitized snapshots found in backups/sanitized/" && exit 1)
+	@echo ""
+	@read -p "Enter sanitized snapshot filename (or press Ctrl+C to cancel): " SNAPSHOT_FILE; \
+	if [ ! -f "backups/sanitized/$$SNAPSHOT_FILE" ]; then \
+		echo "❌ Snapshot file not found: backups/sanitized/$$SNAPSHOT_FILE"; \
+		exit 1; \
+	fi; \
+	echo "⚠️  This will OVERWRITE the current database with sanitized production data!"; \
+	read -p "Type 'yes' to confirm: " CONFIRM; \
+	if [ "$$CONFIRM" != "yes" ]; then \
+		echo "❌ Restore cancelled"; \
+		exit 1; \
+	fi; \
+	echo "🛑 Stopping applications..."; \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) stop backend frontend || true; \
+	echo "📥 Loading sanitized snapshot..."; \
+	cat backups/sanitized/$$SNAPSHOT_FILE | docker exec -i paws360-patroni1 psql -U postgres -d paws360 && \
+	echo "✅ Sanitized data loaded successfully" && \
+	echo "📊 Verifying data..."; \
+	docker exec -i paws360-patroni1 psql -U postgres -d paws360 -c "SELECT 'students' AS table_name, COUNT(*) AS count FROM students UNION ALL SELECT 'courses', COUNT(*) FROM courses UNION ALL SELECT 'enrollments', COUNT(*) FROM enrollments;" && \
+	echo "🚀 Restarting applications..."; \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) start backend frontend || true; \
+	echo ""; \
+	echo "✅ Sanitized snapshot loaded successfully!"; \
+	echo "⚠️  Remember: This data is sanitized but still confidential"; \
+	echo "📖 See: backups/sanitized/$${SNAPSHOT_FILE%.sql}_INSTRUCTIONS.md"
+
+# ===== Failover Testing =====
+
+test-failover: ## Simulate Patroni leader failure and measure failover time
+	@echo "💾 Creating automatic backup before failover test..."
+	@$(MAKE) -f $(MAKEFILE_LIST) dev-backup || true
+	@echo "🧪 Simulating Patroni leader failover..."
+	@echo "1. Detecting current leader..."
+	@LEADER=$$(curl -sf http://localhost:8008/patroni 2>/dev/null | grep -o '"role":"master"' && echo "patroni1" || \
+	           curl -sf http://localhost:8009/patroni 2>/dev/null | grep -o '"role":"master"' && echo "patroni2" || \
+	           curl -sf http://localhost:8010/patroni 2>/dev/null | grep -o '"role":"master"' && echo "patroni3"); \
+	if [ -z "$$LEADER" ]; then \
+		echo "❌ No leader found"; \
+		exit 1; \
+	fi; \
+	echo "   Current leader: $$LEADER"; \
+	echo "2. Pausing leader container..."; \
+	START=$$(date +%s); \
+	docker pause paws360-$$LEADER; \
+	echo "3. Waiting for new leader election..."; \
+	timeout 90 sh -c 'until curl -sf http://localhost:8008/patroni 2>/dev/null | grep -q "role.*master" || \
+	                         curl -sf http://localhost:8009/patroni 2>/dev/null | grep -q "role.*master" || \
+	                         curl -sf http://localhost:8010/patroni 2>/dev/null | grep -q "role.*master"; do \
+		sleep 1; \
+	done' && \
+	END=$$(date +%s) && \
+	ELAPSED=$$((END - START)) && \
+	echo "4. Failover complete in $${ELAPSED}s (target: ≤60s)"; \
+	echo "5. Resuming paused container..."; \
+	docker unpause paws360-$$LEADER; \
+	echo "✅ Failover test complete"
+
+# ===== Chaos Engineering =====
+
+test-chaos: ## Run chaos engineering tests (opt-in, requires explicit scenario)
+	@echo "🌩️  Chaos Engineering Tests"
+	@echo "Available scenarios:"
+	@echo "  - network-partition    (Network split between nodes)"
+	@echo "  - packet-loss [%]      (Inject packet loss, default 20%)"
+	@echo "  - high-latency [ms]    (Add latency, default 100ms)"
+	@echo "  - container-kill [name] (Kill random/specific container)"
+	@echo "  - disk-io-stress       (Saturate disk I/O)"
+	@echo "  - cpu-throttle [%]     (Limit CPU, default 50%)"
+	@echo "  - memory-pressure      (Memory exhaustion)"
+	@echo ""
+	@echo "Usage: bash scripts/chaos-test.sh <scenario> [args]"
+	@echo ""
+	@echo "Example: bash scripts/chaos-test.sh packet-loss 30"
+	@echo "         CHAOS_DURATION=120 bash scripts/chaos-test.sh container-kill patroni2"
+
+test-chaos-quick: ## Run quick chaos test suite (network partition + container kill)
+	@echo "🌩️  Running quick chaos test suite..."
+	@echo ""
+	@echo "Test 1/2: Network partition (30s)"
+	@CHAOS_DURATION=30 bash scripts/chaos-test.sh network-partition
+	@echo ""
+	@echo "Test 2/2: Container kill (random)"
+	@bash scripts/chaos-test.sh container-kill
+	@echo ""
+	@echo "✅ Quick chaos tests complete"
+
+test-zero-data-loss: ## Validate zero data loss during failover (deterministic test)
+	@echo "🧪 Running deterministic failover test with data validation..."
+	@bash scripts/deterministic-failover-test.sh
+
+# ===== Fast Development Mode =====
+
+dev-pause: ## Pause all containers to free resources (90% RAM savings)
+	@echo "⏸️  Pausing all containers..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) pause
+	@echo "✅ Environment paused (RAM released)"
+	@echo "Resume with: make dev-resume"
+
+dev-resume: ## Resume paused containers (sub-5s restart)
+	@echo "▶️  Resuming containers..."
+	@START=$$(date +%s); \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) unpause && \
+	END=$$(date +%s); \
+	ELAPSED=$$((END - START)); \
+	echo "✅ Environment resumed in $${ELAPSED}s (target: ≤5s)"
+
+dev-up-fast: ## Start fast mode (single instances, no HA - for rapid iteration)
+	@echo "🚀 Starting FAST MODE (single instances, no HA)"
+	@echo "⚠️  This mode skips:"
+	@echo "  - etcd cluster (uses single etcd)"
+	@echo "  - Patroni replicas (single PostgreSQL)"
+	@echo "  - Redis replicas (single Redis)"
+	@echo "  - Redis Sentinels"
+	@echo ""
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d etcd1 patroni1 redis-master
+	@echo "✅ Fast mode started (≈50% faster startup)"
+
+# ===== Legacy Commands (backward compatibility) =====
+
 
 test-local: ## Run full local E2E tests (mirrors CI exactly)
 	@echo "🧪 Running local E2E tests..."
@@ -19,14 +393,14 @@ dev: ## Start development environment
 	@echo "🚀 Starting development environment..."
 	@echo "Backend: http://localhost:8081"
 	@echo "Frontend: http://localhost:3000"
-	@docker compose -f infrastructure/docker/docker-compose.test.yml up -d postgres redis app
+	@$(DOCKER_COMPOSE) -f infrastructure/docker/docker-compose.test.yml up -d postgres redis app
 	@echo "Waiting for backend..."
 	@sleep 10
 	@NEXT_PUBLIC_API_BASE_URL=http://localhost:8081 npm run dev
 
 clean: ## Clean up all containers and processes
 	@echo "🧹 Cleaning up..."
-	@docker compose -f infrastructure/docker/docker-compose.test.yml down -v 2>/dev/null || true
+	@$(DOCKER_COMPOSE) -f infrastructure/docker/docker-compose.test.yml down -v 2>/dev/null || true
 	@pkill -f "npm run dev" 2>/dev/null || true
 	@pkill -f "next dev" 2>/dev/null || true
 	@rm -f /tmp/next-dev.log /tmp/backend.log
@@ -68,3 +442,185 @@ build: ## Build backend JAR
 performance-test: ## Run T058 performance tests specifically  
 	@echo "⚡ Running T058 performance tests..."
 	@mvn test -Dtest=T058SpringBootPerformanceTest -DfailIfNoTests=false -q
+
+# ===== Local CI/CD Testing (User Story 2) =====
+
+test-ci-local: ## Run full CI/CD pipeline locally using act
+	@echo "🔄 Running local CI/CD pipeline..."
+	@if ! command -v act >/dev/null 2>&1; then \
+		echo "❌ Error: 'act' is not installed"; \
+		echo "Install: https://github.com/nektos/act"; \
+		echo "  Ubuntu/Debian: curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash"; \
+		echo "  macOS: brew install act"; \
+		exit 1; \
+	fi
+	@act -j validate-environment -j test-infrastructure
+
+test-ci-job: ## Run specific CI job (usage: make test-ci-job JOB=validate-environment)
+	@if [ -z "$(JOB)" ]; then \
+		echo "❌ Error: JOB parameter required"; \
+		echo "Usage: make test-ci-job JOB=<job-name>"; \
+		echo ""; \
+		echo "Available jobs:"; \
+		act -l | tail -n +2; \
+		exit 1; \
+	fi
+	@echo "🔄 Running CI job: $(JOB)"
+	@act -j $(JOB)
+
+test-ci-syntax: ## Validate GitHub Actions workflow syntax (dry-run)
+	@echo "🔍 Validating workflow syntax..."
+	@act --dryrun
+	@echo "✅ Workflow syntax is valid"
+
+validate-ci-parity: ## Verify local and remote CI use identical versions
+	@echo "🔍 Validating CI/remote parity..."
+	@bash scripts/validate-ci-parity.sh
+
+# ===== Rapid Development Iteration (User Story 3) =====
+
+dev-pause: ## Pause all containers to free 90% resources
+	@echo "⏸️  Pausing development environment..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) pause
+	@echo "✅ Environment paused (containers stopped but state preserved)"
+	@echo "💡 Resume with: make dev-resume"
+
+dev-resume: ## Resume paused containers for sub-5s restart
+	@echo "▶️  Resuming development environment..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) unpause
+	@echo "⏳ Waiting for services to become healthy..."
+	@sleep 2
+	@$(HEALTH_CHECK_SCRIPT) --human || true
+	@echo "✅ Environment resumed"
+
+dev-up-fast: ## Start core services only (single Postgres, single Redis, apps - skip HA replicas)
+	@echo "🚀 Starting fast development mode (core services only)..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d etcd1 patroni1 redis-master backend frontend
+	@echo "⏳ Waiting for core services to become healthy..."
+	@sleep 5
+	@$(HEALTH_CHECK_SCRIPT) --human || true
+	@echo "✅ Fast mode started (HA replicas skipped for faster startup)"
+
+dev-migrate: ## Execute database migrations on Patroni cluster
+	@echo "💾 Creating automatic backup before migration..."
+	@$(MAKE) -f $(MAKEFILE_LIST) dev-backup || true
+	@echo "🗄️  Running database migrations..."
+	@bash scripts/run-migrations.sh
+	@echo "✅ Migrations complete"
+
+dev-shell-db: ## Open PostgreSQL shell on leader node
+	@echo "🐘 Opening PostgreSQL shell..."
+	@bash scripts/psql-shell.sh
+
+dev-flush-cache: ## Flush Redis cache (requires confirmation)
+	@echo "🗑️  Flushing Redis cache..."
+	@bash scripts/flush-cache.sh
+
+dev-logs: ## Attach to service logs (usage: make dev-logs SERVICE=backend)
+	@if [ -z "$(SERVICE)" ]; then \
+		echo "📋 Available services:"; \
+		$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) ps --services; \
+		echo ""; \
+		echo "Usage: make dev-logs SERVICE=<service-name>"; \
+		exit 1; \
+	fi
+	@bash scripts/attach-logs.sh $(SERVICE)
+
+benchmark-startup: ## Measure startup times (cold, warm, fast mode, pause/resume)
+	@echo "⚡ Running startup performance benchmarks..."
+	@bash tests/performance/benchmark_startup.sh
+
+benchmark-failover: ## Measure Patroni/Redis failover times
+	@echo "⚡ Running failover performance benchmarks..."
+	@bash tests/performance/benchmark_failover.sh
+
+# ===== Environment Consistency Validation (User Story 4) =====
+
+diff-staging: ## Compare local configuration against staging environment
+	@echo "🔍 Comparing local vs staging configuration..."
+	@bash scripts/config-diff.sh staging
+
+diff-production: ## Compare local configuration against production environment
+	@echo "🔍 Comparing local vs production configuration..."
+	@bash scripts/config-diff.sh production
+
+validate-parity: ## Validate local environment parity with staging and production
+	@echo "🔍 Validating environment parity..."
+	@echo ""
+	@echo "📊 Staging Comparison:"
+	@echo "======================"
+	@bash scripts/config-diff.sh staging || STAGING_EXIT=$$?; \
+	echo ""; \
+	echo "📊 Production Comparison:"; \
+	echo "========================="; \
+	bash scripts/config-diff.sh production || PROD_EXIT=$$?; \
+	echo ""; \
+	if [ "$$STAGING_EXIT" = "2" ] || [ "$$PROD_EXIT" = "2" ]; then \
+		echo "❌ CRITICAL differences found - deployment blocked"; \
+		exit 2; \
+	elif [ "$$STAGING_EXIT" = "1" ] || [ "$$PROD_EXIT" = "1" ]; then \
+		echo "⚠️  Non-critical differences found - review recommended"; \
+		exit 1; \
+	else \
+		echo "✅ Environment parity validated"; \
+		exit 0; \
+	fi
+
+# ===== Troubleshooting and Debugging (User Story 5) =====
+
+inspect-cluster: ## Inspect cluster status (etcd, Patroni, Redis)
+	@echo "🔍 Inspecting cluster status..."
+	@bash scripts/inspect-cluster.sh --all
+
+inspect-etcd: ## Inspect etcd cluster only
+	@bash scripts/inspect-cluster.sh --etcd
+
+inspect-patroni: ## Inspect Patroni cluster only
+	@bash scripts/inspect-cluster.sh --patroni
+
+inspect-redis: ## Inspect Redis Sentinel only
+	@bash scripts/inspect-cluster.sh --redis
+
+aggregate-logs: ## Aggregate logs from all services (usage: make aggregate-logs SERVICE=backend)
+	@bash scripts/aggregate-logs.sh $(SERVICE) --tail=100 --since=10m
+
+debug-backend: ## Start backend with remote debugging enabled (JDWP port 5005)
+	@echo "🐛 Starting backend with remote debugging..."
+	@echo "Attach debugger to localhost:5005"
+	@JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d backend
+	@echo "✅ Backend started with debugging enabled"
+
+debug-frontend: ## Start frontend with Node.js inspector enabled (port 9229)
+	@echo "🐛 Starting frontend with Node.js inspector..."
+	@echo "Attach debugger to localhost:9229"
+	@NODE_OPTIONS="--inspect=0.0.0.0:9229" \
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d frontend
+	@echo "✅ Frontend started with debugging enabled"
+
+observability-up: ## Start observability stack (Prometheus, Grafana, Jaeger)
+	@echo "📊 Starting observability stack..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) -f docker-compose.auxiliary.yml --profile observability up -d
+	@echo ""
+	@echo "✅ Observability stack started:"
+	@echo "  Prometheus: http://localhost:9090"
+	@echo "  Grafana:    http://localhost:3001 (admin/admin)"
+	@echo "  Jaeger:     http://localhost:16686"
+
+observability-down: ## Stop observability stack
+	@echo "🛑 Stopping observability stack..."
+	@$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) -f docker-compose.auxiliary.yml --profile observability down
+
+# ===== Security & Image Scanning =====
+
+image-scan: ## Scan all custom images for vulnerabilities with Trivy
+	@echo "🔍 Scanning PAWS360 custom images for vulnerabilities..."
+	@bash scripts/scan-images.sh
+
+image-scan-json: ## Scan images and generate JSON reports
+	@echo "🔍 Scanning images and generating JSON reports..."
+	@bash scripts/scan-images.sh --json
+
+image-scan-critical: ## Scan images for CRITICAL vulnerabilities only
+	@echo "🔍 Scanning for CRITICAL vulnerabilities..."
+	@bash scripts/scan-images.sh --severity CRITICAL

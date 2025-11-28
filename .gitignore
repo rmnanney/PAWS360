@@ -55,3 +55,10 @@ services/*.jar
 # Ignore docker-generated frontend artifacts if present
 frontend/node_modules/
 frontend/package-lock.json
+
+# Local development environment (001-local-dev-parity)
+.env.local
+docker-compose.override.yml
+.dev-running
+backups/
+snapshots/

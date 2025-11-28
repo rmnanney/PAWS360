@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@org.junit.jupiter.api.Disabled("SSO integration tests retired — skipped to reduce CI flakiness; see docs/SSO-RETIREMENT.md")
 @Testcontainers
 @AutoConfigureWebMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

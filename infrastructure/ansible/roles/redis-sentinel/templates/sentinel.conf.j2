@@ -1,0 +1,7 @@
+port {{ sentinel_port }}
+sentinel monitor {{ sentinel_monitor_master_name }} 127.0.0.1 6379 {{ sentinel_quorum }}
+sentinel down-after-milliseconds {{ sentinel_down_after_milliseconds }}
+sentinel failover-timeout {{ sentinel_failover_timeout }}
+{% if redis_password %}
+sentinel auth-pass {{ sentinel_monitor_master_name }} {{ redis_password }}
+{% endif %}

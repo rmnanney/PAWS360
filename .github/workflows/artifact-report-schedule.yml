@@ -1,0 +1,83 @@
+name: Artifact report (daily)
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # daily at 08:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  daily-artifact-report:
+    name: Daily artifact report
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    env:
+      ARTIFACT_COUNT_THRESHOLD: 30
+      ARTIFACT_SIZE_THRESHOLD_BYTES: 500000000
+      API_RATE_LIMIT_PCT_THRESHOLD: 20
+      ACTIONS_MINUTES_THRESHOLD: 5000
+    steps:
+      - name: Inventory repo artifacts
+        id: artifact_inventory
+        run: |
+          set -euxo pipefail
+
+          REPO="${{ github.repository }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          PAGE=1
+          PER_PAGE=100
+          TOTAL_COUNT=0
+          TOTAL_BYTES=0
+          ITEMS_JSON="[]"
+
+          while :; do
+            resp=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $TOKEN" "https://api.github.com/repos/$REPO/actions/artifacts?per_page=$PER_PAGE&page=$PAGE")
+            page_count=$(echo "$resp" | jq '.artifacts | length')
+            if [ "$page_count" -eq 0 ]; then
+              break
+            fi
+            items=$(echo "$resp" | jq '.artifacts')
+            ITEMS_JSON=$(echo "$ITEMS_JSON + $items" | jq -c 'reduce .[] as $i (.; . + [$i])')
+            page_total_bytes=$(echo "$items" | jq '[.[].size_in_bytes] | add // 0')
+            page_total_count=$(echo "$items" | jq 'length')
+            TOTAL_BYTES=$((TOTAL_BYTES + page_total_bytes))
+            TOTAL_COUNT=$((TOTAL_COUNT + page_total_count))
+
+            PAGE=$((PAGE + 1))
+          done
+
+          jq -n --arg repo "$REPO" --argjson count "$TOTAL_COUNT" --argjson bytes "$TOTAL_BYTES" --arg items "$ITEMS_JSON" '{repo: $repo, total_count: $count, total_bytes: $bytes, artifacts: ($items|fromjson)}' > artifact-summary.json || true
+
+      - name: Actions rate limit & usage check
+        run: |
+          set -euxo pipefail
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+          OWNER="${{ github.repository_owner }}"
+
+          # Rate limit
+          resp=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit)
+          core_limit=$(echo "$resp" | jq -r '.resources.core.limit')
+          core_remaining=$(echo "$resp" | jq -r '.resources.core.remaining')
+          pct_remain=0
+          if [ "$core_limit" -gt 0 ]; then
+            pct_remain=$(awk "BEGIN{printf \"%.0f\", ($core_remaining / $core_limit) * 100}") || true
+          fi
+          echo "Rate limit remaining: ${core_remaining}/${core_limit} (${pct_remain}%)"
+
+          # Repo usage
+          repo_usage=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO/actions/usage" || true)
+          if [ -n "$(echo $repo_usage | jq -r 'select(.total_minutes_used != null or .billable != null)')" ]; then
+            total_minutes=$(echo "$repo_usage" | jq -r '.total_minutes_used // (.billable.total_seconds // 0) / 60 // 0' 2>/dev/null || echo 0)
+            echo "Repo actions minutes used: $total_minutes"
+          else
+            echo "Repo actions usage not available or requires additional permissions"
+          fi
+
+      - name: Upload artifact inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-summary-daily
+          path: artifact-summary.json
+          retention-days: 14
