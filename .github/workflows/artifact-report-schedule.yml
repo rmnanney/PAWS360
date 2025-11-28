@@ -1,8 +1,9 @@
+---
 name: Artifact report (daily)
 
 on:
   schedule:
-    - cron: '0 8 * * *' # daily at 08:00 UTC
+    - cron: '0 8 * * *'  # daily at 08:00 UTC
   workflow_dispatch: {}
 
 jobs:

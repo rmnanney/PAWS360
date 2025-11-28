@@ -1,5 +1,3 @@
-version: '3.9'
-
 # Production-Parity Local Development Environment
 # Feature: 001-local-dev-parity
 # Full HA stack: etcd cluster, Patroni/PostgreSQL HA, Redis Sentinel

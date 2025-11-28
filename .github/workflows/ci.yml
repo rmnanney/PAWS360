@@ -1,3 +1,4 @@
+---
 name: CI
 
 on:
@@ -824,34 +825,55 @@ jobs:
               echo "Checking $host..." || true
               SSH_USER="${{ secrets.PRODUCTION_SSH_USER }}"
               SSH_USER=${SSH_USER:-admin}
-              ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${SSH_USER}@${host}" 'curl -fsS http://localhost/actuator/health || echo FAILED'
+              ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa \
+                "${SSH_USER}@${host}" \
+                'curl -fsS http://localhost/actuator/health || echo FAILED'
             done || true
 
         - name: Notify Slack (production success)
           if: ${{ success() }}
-            run: |
-              if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
-                payload=$(jq -n --arg txt "Production deploy succeeded for ${GITHUB_REPOSITORY} (run: ${GITHUB_RUN_NUMBER})" '{text: $txt}')
-                curl -s -X POST -H 'Content-type: application/json' --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
-              else
-                echo "No SLACK_WEBHOOK configured; skipping slack notification"
-              fi
+          run: |
+            if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+              payload=$(jq -n \
+                --arg txt "Production deploy succeeded for ${GITHUB_REPOSITORY} \
+                  (run: ${GITHUB_RUN_NUMBER})" \
+                '{text: $txt}')
+              curl -s -X POST -H 'Content-type: application/json' \
+                --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
+            else
+              echo "No SLACK_WEBHOOK configured; skipping slack notification"
+            fi
 
         - name: Notify Slack (production failure)
           if: ${{ failure() }}
-            run: |
-              if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
-                payload=$(jq -n --arg txt "Production deploy FAILED for ${GITHUB_REPOSITORY} (run: ${GITHUB_RUN_NUMBER}) — see $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{text: $txt}')
-                curl -s -X POST -H 'Content-type: application/json' --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
-              else
-                echo "No SLACK_WEBHOOK configured; skipping slack notification"
-              fi
+          run: |
+            if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+              payload=$(jq -n \
+                --arg txt "Production deploy FAILED for ${GITHUB_REPOSITORY} \
+                  (run: ${GITHUB_RUN_NUMBER}) — see \
+                  $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                '{text: $txt}')
+              curl -s -X POST -H 'Content-type: application/json' \
+                --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
+            else
+              echo "No SLACK_WEBHOOK configured; skipping slack notification"
+            fi
 
         - name: Create GitHub Issue on failure
           if: ${{ failure() }}
-            uses: actions/github-script@v6
-            with:
-              script: |
-                const title = `Production deploy failed — run ${process.env.GITHUB_RUN_NUMBER}`;
-                const body = `Production deploy failed in run [${process.env.GITHUB_RUN_NUMBER}](${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}).\n\nSee logs for details.`;
-                await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body });
+          uses: actions/github-script@v6
+          with:
+            script: |
+              const title = `Production deploy failed — run \
+                ${process.env.GITHUB_RUN_NUMBER}`;
+              const body = `Production deploy failed in run \
+                [${process.env.GITHUB_RUN_NUMBER}]\
+                (${process.env.GITHUB_SERVER_URL}/\
+                ${context.repo.owner}/${context.repo.repo}/actions/runs/\
+                ${process.env.GITHUB_RUN_ID}).\n\nSee logs for details.`;
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body
+              });
