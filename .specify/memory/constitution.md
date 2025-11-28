@@ -1,12 +1,43 @@
-# CollectiveContexts Infrastructure Constitution
+<!--
+SYNC IMPACT REPORT - Version 12.1.0 (2025-11-27)
+================================================================
+Version Change: 12.0 → 12.1.0 (PATCH)
 
-**Version**: 12.0 | **Ratified**: 2025-10-12 | **Last Amended**: 2025-11-01
+Modified Sections:
+- Preamble: Updated project name from "CollectiveContexts Infrastructure" to "PAWS360"
+- Governance: Updated Last Amended date to 2025-11-27
+- Amendments: Added v12.1.0 entry
+
+Added Sections: None
+
+Removed Sections: None
+
+Templates Requiring Updates:
+✅ .specify/templates/plan-template.md - Reviewed, constitution check section is generic
+✅ .specify/templates/spec-template.md - Reviewed, no constitution-specific references
+✅ .specify/templates/tasks-template.md - Reviewed, no constitution-specific references
+✅ .specify/templates/checklist-template.md - Not reviewed (not required)
+✅ .specify/templates/agent-file-template.md - Not reviewed (not required)
+
+Follow-up TODOs: None
+
+Rationale for PATCH Version:
+This is a PATCH increment because it only corrects project metadata (name) and
+updates the amendment date. No principles were added, removed, or materially
+changed. All governance rules remain identical. This is a non-semantic refinement
+aligning the constitution with the actual project name (PAWS360).
+================================================================
+-->
+
+# PAWS360 Constitution
+
+**Version**: 12.1.0 | **Ratified**: 2025-10-12 | **Last Amended**: 2025-11-27
 
 ---
 
 ## Preamble
 
-This constitution establishes the foundational principles and practices that govern all infrastructure, development, and operational activities. These principles are non-negotiable and must be followed by all team members, AI agents, and automated systems.
+This constitution establishes the foundational principles and practices that govern all infrastructure, development, and operational activities for the PAWS360 project. These principles are non-negotiable and must be followed by all team members, AI agents, and automated systems.
 
 ---
 
@@ -626,7 +657,7 @@ All team members are responsible for ensuring compliance with this constitution.
 - AI agent sessions without documented session files will be flagged for review
 - Context staleness will be tracked as technical debt in JIRA
 
-**Version**: 12.0 | **Ratified**: 2025-10-12 | **Last Amended**: 2025-11-01 | **Amendments**:
+**Version**: 12.1.0 | **Ratified**: 2025-10-12 | **Last Amended**: 2025-11-27 | **Amendments**:
 - v2.0 (2025-10-16): Added GPT-Specific Context Management (Article II)
 - v3.0 (2025-10-17): Added Synchronous JIRA Updates, Retrospective Requirements, Agentic Signaling (Article IIa)
 - v4.0 (2025-10-18): Added Comprehensive JIRA Ticket Creation Requirements (Article IX)
@@ -634,7 +665,8 @@ All team members are responsible for ensuring compliance with this constitution.
 - v6.0 (2025-10-18): Added JIRA as Source of Truth mandate and Agile User Story Grooming requirements (Article I)
 - v7.0 (2025-10-18): Added GPT-Context.md Attachment Requirement mandate (Article I)
 - v8.0 (2025-10-18): Added Truth, Integrity, and Partnership mandate (Article X)
-- v9.0 (2025-19): Added Constitutional Enforcement and Collective Learning mandate (Article XI)
+- v9.0 (2025-10-19): Added Constitutional Enforcement and Collective Learning mandate (Article XI)
 - v10.0 (2025-10-19): Added Monitoring Discovery and Integration mandate (Article VIIa) - requires all infrastructure work to evaluate monitoring stack inclusion
 - v11.0 (2025-11-01): Added Retrospectives on Constitutional Failure mandate (Article XII) - requires mandatory retrospectives for any constitutional violation
 - v12.0 (2025-11-01): Added Proactive Constitutional Compliance and Fail-Fast Detection mandate (Article XIII) - requires continuous compliance monitoring with fail-fast detection
+- v12.1.0 (2025-11-27): Corrected project name to PAWS360 in preamble and title

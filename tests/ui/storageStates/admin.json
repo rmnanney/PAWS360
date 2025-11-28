@@ -1,12 +1,22 @@
 {
-  "cookies": [],
+  "cookies": [
+    {
+      "name": "PAWS360_SESSION",
+      "value": "ERyp6xrARb5u23IWYpWPHwhk7X68XUiX",
+      "domain": "localhost",
+      "path": "/",
+      "httpOnly": true,
+      "sameSite": "Lax",
+      "secure": false
+    }
+  ],
   "origins": [
     {
       "origin": "http://localhost:3000",
       "localStorage": [
         {
-          "name": "showAuthToast",
-          "value": "true"
+          "name": "authToken",
+          "value": "ERyp6xrARb5u23IWYpWPHwhk7X68XUiX"
         }
       ]
     }

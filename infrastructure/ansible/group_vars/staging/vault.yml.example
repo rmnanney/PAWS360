@@ -1,0 +1,12 @@
+---
+# Example vault secrets for the staging inventory
+# Copy to infrastructure/ansible/group_vars/staging/vault.yml and encrypt with ansible-vault
+
+# etcd auth
+etcd_root_password: "REPLACE_WITH_STRONG_SECRET"
+
+# Redis ACL / master password
+redis_password: "REPLACE_WITH_STRONG_SECRET"
+
+# Proxmox credentials used by terraform/proxmox module (use CI & secrets in real pipelines)
+pm_password: "REPLACE_WITH_STRONG_SECRET"

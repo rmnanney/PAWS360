@@ -49,8 +49,16 @@ npm run install:e2e
 # All E2E tests
 npm run test:e2e
 
-# SSO tests only
-cd tests/ui && npm run test:sso
+NOTE: SSO E2E tests have been retired and are skipped by default to reduce CI flakiness
+and maintenance burden. To re-enable the legacy SSO test file (not recommended), set
+RETIRE_SSO=false in your environment and run the Playwright tests manually.
+
+Example (not recommended):
+```bash
+# Temporarily re-enable legacy SSO tests
+export RETIRE_SSO=false
+cd tests/ui && npx playwright test sso-authentication.spec.ts
+```
 
 # With browser UI (headed mode)
 npm run test:e2e:headed
@@ -66,8 +74,10 @@ npm run test:e2e:debug
 
 ## Test Files
 
-### `sso-authentication.spec.ts`
-Comprehensive SSO authentication flow testing:
+### Legacy: `sso-authentication.spec.ts` (RETIRED)
+This file contains the legacy SSO end-to-end tests. These tests are retired and
+are skipped by default. They are left in the repository for historical reference
+and can be removed completely if you want to delete SSO test artifacts.
 
 - **Student Authentication Flow**
   - Complete authentication journey

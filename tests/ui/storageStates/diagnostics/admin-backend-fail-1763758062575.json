@@ -1,0 +1,11 @@
+{
+  "status": 500,
+  "headers": {
+    "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
+    "content-type": "application/json",
+    "transfer-encoding": "chunked",
+    "date": "Fri, 21 Nov 2025 20:47:42 GMT",
+    "connection": "close"
+  },
+  "body": "{\"path\":\"/login\",\"error\":\"Database error\",\"message\":\"A database operation failed. Please try again later.\",\"timestamp\":\"2025-11-21T20:47:42.572115728\",\"status\":500}"
+}

@@ -1,0 +1,51 @@
+# speckit-style specification for a stage VM on Proxmox
+# Replace values below for your cluster
+
+name: paws360-stage
+environment: staging
+provider: proxmox
+cluster: proxmox-cluster-1
+node_selector:
+  - node: pve-node-1
+
+resources:
+  cpu: 4            # vCPUs
+  memory: 8192      # MB
+  disk: 40G         # root disk size
+
+network:
+  interface: vmbr0
+  ip: 10.0.50.10
+  gateway: 10.0.50.1
+  nameservers:
+    - 8.8.8.8
+    - 1.1.1.1
+
+storage:
+  pool: local-lvm
+  ssh_keys:
+    - ssh-rsa AAAA... replace-with-your-key
+
+template:
+  image: ubuntu-22.04-cloudimg
+  cloud_init:
+    user: ubuntu
+    password_secret: "vault://paws360/stage/ssh_password"
+
+services:
+  - type: docker-compose
+    path: /opt/paws360
+    content: |
+      version: '3'
+      services:
+        paws360:
+          image: paws360:latest
+          restart: unless-stopped
+          environment:
+            - SPRING_PROFILES_ACTIVE=stage
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://paws-postgres:5432/paws360
+          ports:
+            - "8080:8080"
+
+notes:
+  - "This spec takes a base cloud image (Ubuntu) and prepares a VM sized for stage tests."

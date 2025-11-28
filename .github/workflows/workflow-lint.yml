@@ -1,0 +1,23 @@
+name: Workflow lint
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  super-lint:
+    name: Super-Linter (validate GitHub workflows)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Super-Linter (workflows only)
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_WORKFLOWS_ONLY: true
+          VALIDATE_YAML: true
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

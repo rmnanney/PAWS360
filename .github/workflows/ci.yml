@@ -5,6 +5,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch: {}
 
 jobs:
   cleanup-artifacts:
@@ -50,10 +51,191 @@ jobs:
             }
             core.info(`Artifact cleanup completed. Deleted ${deleted} artifacts older than ${cutoffDays} days.`);
 
+  artifact-report:
+    name: Artifact storage — report & annotations
+    runs-on: ubuntu-latest
+    needs: cleanup-artifacts
+    permissions:
+      actions: read
+      contents: read
+    env:
+      # Defaults you can tweak: count threshold and byte-size threshold
+      ARTIFACT_COUNT_THRESHOLD: 30
+      ARTIFACT_SIZE_THRESHOLD_BYTES: 500000000 # 500 MB
+      # GitHub API rate-limit usage threshold percent (warn if remaining % < this)
+      API_RATE_LIMIT_PCT_THRESHOLD: 20
+      # Threshold for Actions minutes used (warn when used minutes exceed this)
+      ACTIONS_MINUTES_THRESHOLD: 5000
+    steps:
+      - name: Inventory repo artifacts
+        id: artifact_inventory
+        run: |
+          set -euxo pipefail
+
+          REPO="${{ github.repository }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          PAGE=1
+          PER_PAGE=100
+          TOTAL_COUNT=0
+          TOTAL_BYTES=0
+          ITEMS_JSON="[]"
+
+          while :; do
+            resp=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $TOKEN" "https://api.github.com/repos/$REPO/actions/artifacts?per_page=$PER_PAGE&page=$PAGE")
+            page_count=$(echo "$resp" | jq '.artifacts | length')
+            if [ "$page_count" -eq 0 ]; then
+              break
+            fi
+            items=$(echo "$resp" | jq '.artifacts')
+            ITEMS_JSON=$(echo "$ITEMS_JSON + $items" | jq -c 'reduce .[] as $i (.; . + [$i])')
+            page_total_bytes=$(echo "$items" | jq '[.[].size_in_bytes] | add // 0')
+            page_total_count=$(echo "$items" | jq 'length')
+            TOTAL_BYTES=$((TOTAL_BYTES + page_total_bytes))
+            TOTAL_COUNT=$((TOTAL_COUNT + page_total_count))
+
+            PAGE=$((PAGE + 1))
+          done
+
+          jq -n \
+            --arg repo "$REPO" \
+            --argjson count "$TOTAL_COUNT" \
+            --argjson bytes "$TOTAL_BYTES" \
+            --arg items "$ITEMS_JSON" \
+            '{repo: $repo, total_count: $count, total_bytes: $bytes, artifacts: ($items|fromjson)}' > artifact-summary.json || true
+
+          echo "artifact_summary_path=artifact-summary.json" >> "$GITHUB_OUTPUT"
+
+      - name: Generate human-readable summary & annotate
+        id: annotate
+        run: |
+          set -euxo pipefail
+
+          summary_file=artifact-summary.json
+          if [ ! -f "$summary_file" ]; then
+            echo "No artifact-summary found; nothing to report" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
+          total_count=$(jq -r '.total_count' $summary_file)
+          total_bytes=$(jq -r '.total_bytes' $summary_file)
+
+          # human readable function
+          hr() {
+            awk 'function human(x){s="B,K,M,G,T";i=1;while(x>1024 && i<5){x/=1024;i++}printf("%.2f%s",x,substr(s,i,1))} {print human($1)}' <<< "$1"
+          }
+
+          threshold_count=${ARTIFACT_COUNT_THRESHOLD}
+          threshold_bytes=${ARTIFACT_SIZE_THRESHOLD_BYTES}
+
+          pct_bytes=0
+          if [ "$threshold_bytes" -gt 0 ]; then
+            pct_bytes=$(awk "BEGIN{printf \"%.0f\", ($total_bytes / $threshold_bytes) * 100}") || true
+          fi
+
+          echo "## Artifact storage summary for ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Total artifacts: $total_count (threshold: $threshold_count)" >> $GITHUB_STEP_SUMMARY
+          echo "- Total size: $total_bytes bytes (threshold: $threshold_bytes bytes) — $pct_bytes% of threshold" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Emit a concise annotation tiered by severity
+          if [ "$total_bytes" -ge "$threshold_bytes" ] || [ "$total_count" -ge "$threshold_count" ]; then
+            # emit an attention-grabbing warning annotation on the workflow run
+            echo "::warning title=Artifact Storage Alert::Repository artifacts exceed configured threshold — count=${total_count} size=${total_bytes} bytes (${pct_bytes}% of ${threshold_bytes})" || true
+          else
+            echo "::notice title=Artifact Storage OK::Artifacts count=${total_count}, size=$(hr $total_bytes) (${pct_bytes}% of threshold)" || true
+          fi
+
+      - name: Check GitHub API rate limits
+        id: rate_limit
+        run: |
+          set -euxo pipefail
+
+          # ensure jq is available
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y && sudo apt-get install -y jq
+          fi
+
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          repo="${{ github.repository }}"
+
+          resp=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit)
+          core_limit=$(echo "$resp" | jq -r '.resources.core.limit')
+          core_remaining=$(echo "$resp" | jq -r '.resources.core.remaining')
+
+          pct_remain=0
+          if [ "$core_limit" -gt 0 ]; then
+             pct_remain=$(awk "BEGIN{printf \"%.0f\", ($core_remaining / $core_limit) * 100}") || true
+          fi
+
+          echo "- GitHub API core rate limit: ${core_remaining}/${core_limit} remaining (${pct_remain}% of allowance)" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$pct_remain" -lt "${API_RATE_LIMIT_PCT_THRESHOLD}" ]; then
+            echo "::warning title=GitHub API rate-limit low::Core API remaining ${core_remaining}/${core_limit} (${pct_remain}%) — below threshold ${API_RATE_LIMIT_PCT_THRESHOLD}%" || true
+          else
+            echo "::notice title=GitHub API rate-limit OK::Remaining ${core_remaining}/${core_limit} (${pct_remain}%)" || true
+          fi
+
+      - name: Collect Actions usage & storage metrics
+        id: actions_usage
+        run: |
+          set -euxo pipefail
+
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+          OWNER="${{ github.repository_owner }}"
+
+          # Try repository-level actions usage (may require permissions)
+          echo "Attempting to fetch repository Actions usage..."
+          repo_usage=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO/actions/usage" || true)
+          repo_code=$(echo "$repo_usage" | jq -r 'if .message then .message else "OK" end')
+
+          if [ "$repo_code" != "OK" ]; then
+            echo "Could not fetch repo actions usage: $repo_code" >> $GITHUB_STEP_SUMMARY
+          else
+            # Report top-level fields if present
+            total_minutes=$(echo "$repo_usage" | jq -r '.total_minutes_used // .billable.total_minutes // .total_minutes_used // 0') || true
+            if [ -n "$total_minutes" ]; then
+              echo "- Actions minutes used (repo): $total_minutes" >> $GITHUB_STEP_SUMMARY
+            fi
+            # Report OS breakdown if available
+            echo "$repo_usage" | jq -r '.billable // {}' | jq -r 'to_entries[]? | "  - \\(.key): \\(.value)"' >> $GITHUB_STEP_SUMMARY || true
+          fi
+
+          # Try org-level usage if owner looks like an org
+          echo "Attempting to fetch organization Actions usage (if available)..." >> $GITHUB_STEP_SUMMARY
+          org_usage=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/orgs/$OWNER/actions/usage" || true)
+          org_code=$(echo "$org_usage" | jq -r 'if .message then .message else "OK" end')
+          if [ "$org_code" = "OK" ]; then
+            org_minutes=$(echo "$org_usage" | jq -r '.viewers // .total_minutes_used // 0') || true
+            echo "- Actions usage (org):" >> $GITHUB_STEP_SUMMARY
+            echo "$org_usage" | jq -r 'to_entries[]? | "  - \\(.key): \\(.value|tostring)"' >> $GITHUB_STEP_SUMMARY || true
+          else
+            echo "- Org actions usage not available: $org_code" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Convert to numeric minutes if we found total_minutes and compare against threshold
+          if [ -n "$total_minutes" ] && [ "$total_minutes" -gt 0 ]; then
+            threshold=${ACTIONS_MINUTES_THRESHOLD}
+            if [ "$total_minutes" -ge "$threshold" ]; then
+              echo "::warning title=Actions minutes high::Repository Actions minutes used $total_minutes >= threshold $threshold" || true
+            else
+              echo "::notice title=Actions minutes OK::Used $total_minutes minutes (< threshold $threshold)" || true
+            fi
+          fi
+
+      - name: Upload artifact inventory (report)
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-summary
+          path: artifact-summary.json
+          retention-days: 7
+
+
   backend-build:
     name: Backend — build (no tests)
     runs-on: ubuntu-latest
-    needs: cleanup-artifacts
+    # Run after pre-flight (cleanup + artifact-report)
+    needs: artifact-report
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -391,3 +573,285 @@ jobs:
       - name: Stop Next dev server
         if: always()
         run: pgrep -f 'next dev' && pkill -f 'next dev' || true
+
+  build-and-push-images:
+    name: Build & push images (staging)
+    runs-on: ubuntu-latest
+    needs: ui-e2e
+    if: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      backend_image: ${{ steps.build.outputs.backend_image }}
+      frontend_image: ${{ steps.build.outputs.frontend_image }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU and buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        # prefer a GHCR_PAT (repo/org secret) if available, otherwise fall back to GITHUB_TOKEN
+        run: |
+          set -eu
+          if [ -n "${{ secrets.GHCR_PAT }}" ]; then
+            echo "Using GHCR_PAT to authenticate to ghcr.io"
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          else
+            echo "Falling back to GITHUB_TOKEN to authenticate to ghcr.io"
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          fi
+
+      - name: Build backend and frontend images
+        id: build
+        run: |
+          set -euxo pipefail
+          OWNER_REPO="${{ github.repository }}"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
+          BACKEND_TAG=ghcr.io/${OWNER_REPO}:backend-staging-${SHORT_SHA}
+          FRONTEND_TAG=ghcr.io/${OWNER_REPO}:frontend-staging-${SHORT_SHA}
+
+          # Backend image
+          docker build -f infrastructure/docker/Dockerfile -t "$BACKEND_TAG" .
+          docker tag "$BACKEND_TAG" ghcr.io/${OWNER_REPO}:backend-staging-latest || true
+          docker push "$BACKEND_TAG"
+          docker push ghcr.io/${OWNER_REPO}:backend-staging-latest || true
+
+          # Frontend image
+          docker build -f infrastructure/docker/frontend.Dockerfile -t "$FRONTEND_TAG" ./infrastructure/docker
+          docker tag "$FRONTEND_TAG" ghcr.io/${OWNER_REPO}:frontend-staging-latest || true
+          docker push "$FRONTEND_TAG"
+          docker push ghcr.io/${OWNER_REPO}:frontend-staging-latest || true
+
+          echo "backend_image=$BACKEND_TAG" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=$FRONTEND_TAG" >> "$GITHUB_OUTPUT"
+
+  build-and-push-images-production:
+    name: Build & push images (production)
+    runs-on: ubuntu-latest
+    needs: ui-e2e
+    if: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      backend_image_prod: ${{ steps.build.outputs.backend_image_prod }}
+      frontend_image_prod: ${{ steps.build.outputs.frontend_image_prod }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU and buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry (GHCR) — production
+        run: |
+          set -eu
+          if [ -n "${{ secrets.GHCR_PAT }}" ]; then
+            echo "Using GHCR_PAT to authenticate to ghcr.io"
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          else
+            echo "Falling back to GITHUB_TOKEN to authenticate to ghcr.io"
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          fi
+
+      - name: Build backend and frontend images (production)
+        id: build
+        run: |
+          set -euxo pipefail
+          OWNER_REPO="${{ github.repository }}"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
+          BACKEND_TAG=ghcr.io/${OWNER_REPO}:backend-prod-${SHORT_SHA}
+          FRONTEND_TAG=ghcr.io/${OWNER_REPO}:frontend-prod-${SHORT_SHA}
+
+          # Backend image
+          docker build -f infrastructure/docker/Dockerfile -t "$BACKEND_TAG" .
+          docker tag "$BACKEND_TAG" ghcr.io/${OWNER_REPO}:backend-prod-latest || true
+          docker push "$BACKEND_TAG"
+          docker push ghcr.io/${OWNER_REPO}:backend-prod-latest || true
+
+          # Frontend image
+          docker build -f infrastructure/docker/frontend.Dockerfile -t "$FRONTEND_TAG" ./infrastructure/docker
+          docker tag "$FRONTEND_TAG" ghcr.io/${OWNER_REPO}:frontend-prod-latest || true
+          docker push "$FRONTEND_TAG"
+          docker push ghcr.io/${OWNER_REPO}:frontend-prod-latest || true
+
+          echo "backend_image_prod=$BACKEND_TAG" >> "$GITHUB_OUTPUT"
+          echo "frontend_image_prod=$FRONTEND_TAG" >> "$GITHUB_OUTPUT"
+
+  deploy-to-stage:
+    name: Deploy to staging (Ansible)
+    environment: staging
+    runs-on: ubuntu-latest
+    needs: build-and-push-images
+    if: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+    # Do not expose secrets at the job-level; step-level run-time checks will gate real deploy.
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python and install Ansible
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible==8.8.0
+
+      - name: Prepare SSH (use secrets.STAGING_SSH_PRIVATE_KEY)
+        run: |
+          set -euxo pipefail
+          # read secret at runtime to avoid job-level compile-time references
+          if [ -z "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" ]; then
+            echo "No STAGING_SSH_PRIVATE_KEY provided — skipping SSH setup";
+            exit 0;
+          fi
+          mkdir -p ~/.ssh
+          echo "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # Add webservers from inventory to known_hosts (explicit path to avoid job-level env)
+          awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/staging/hosts | while read -r host; do
+            ssh-keyscan -H "$host" >> ~/.ssh/known_hosts || true
+          done || true
+
+      - name: Ansible dry-run (check) via deploy.sh
+        working-directory: infrastructure/ansible
+        run: |
+          set -euxo pipefail
+          BACKEND_IMAGE="${{ needs.build-and-push-images.outputs.backend_image }}"
+          FRONTEND_IMAGE="${{ needs.build-and-push-images.outputs.frontend_image }}"
+          echo "Running deploy.sh in check mode (no changes) against staging inventory"
+          ./deploy.sh deploy staging "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
+
+      - name: Run deploy to staging (real deployment)
+        if: ${{ github.event_name != 'pull_request' }}
+        working-directory: infrastructure/ansible
+        # evaluate deploy toggle at runtime so secret availability doesn't cause compile-time errors
+        run: |
+          set -euxo pipefail
+          if [ "${{ secrets.AUTO_DEPLOY_TO_STAGE }}" != "true" ]; then
+            echo "AUTO_DEPLOY_TO_STAGE not set to 'true' — skipping real deploy (check-mode only run earlier)"
+            exit 0
+          fi
+          BACKEND_IMAGE="${{ needs.build-and-push-images.outputs.backend_image }}"
+          FRONTEND_IMAGE="${{ needs.build-and-push-images.outputs.frontend_image }}"
+          echo "AUTO_DEPLOY_TO_STAGE=true — deploying to staging using deploy.sh"
+          # use deploy.sh so CI mirrors local pipeline; pipe 'y' to accept interactive prompt non-interactively
+          printf 'y\n' | ./deploy.sh deploy staging "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
+
+      - name: Post-deploy health check
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          set -euxo pipefail
+          echo "Running simple HTTP healthchecks against staging hosts (inventory)"
+          awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/staging/hosts | while read -r host; do
+            echo "Checking $host..." || true
+            SSH_USER="${{ secrets.STAGING_SSH_USER }}"
+            SSH_USER=${SSH_USER:-admin}
+            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${SSH_USER}@${host}" 'curl -fsS http://localhost/actuator/health || echo FAILED'
+          done || true
+
+  deploy-to-production:
+    name: Deploy to production (Ansible)
+    environment: production
+    runs-on: ubuntu-latest
+    needs: build-and-push-images-production
+    if: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+    steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4
+
+        - name: Setup Python and install Ansible
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.11'
+
+        - name: Install Ansible
+          run: |
+            python -m pip install --upgrade pip
+            pip install ansible==8.8.0
+
+        - name: Prepare SSH for production (read secret at runtime)
+          run: |
+            set -euxo pipefail
+            if [ -z "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" ]; then
+              echo "No PRODUCTION_SSH_PRIVATE_KEY provided — skipping SSH setup";
+              exit 0;
+            fi
+            mkdir -p ~/.ssh
+            echo "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/production/hosts | while read -r host; do
+              ssh-keyscan -H "$host" >> ~/.ssh/known_hosts || true
+            done || true
+
+        - name: Ansible dry-run (check) via deploy.sh — production
+          working-directory: infrastructure/ansible
+          run: |
+            set -euxo pipefail
+            BACKEND_IMAGE="${{ needs.build-and-push-images-production.outputs.backend_image_prod }}"
+            FRONTEND_IMAGE="${{ needs.build-and-push-images-production.outputs.frontend_image_prod }}"
+            echo "Running deploy.sh in check mode (no changes) against production inventory"
+            ./deploy.sh deploy production "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
+
+        - name: Run deploy to production (real deployment)
+          # evaluate deploy toggle at runtime: this avoids compile-time secret usage and keeps PRs safe
+          run: |
+            set -euxo pipefail
+            if [ "${{ secrets.AUTO_DEPLOY_TO_PRODUCTION }}" != "true" ]; then
+              echo "AUTO_DEPLOY_TO_PRODUCTION is not 'true' — skipping real production deploy"
+              exit 0
+            fi
+            BACKEND_IMAGE="${{ needs.build-and-push-images-production.outputs.backend_image_prod }}"
+            FRONTEND_IMAGE="${{ needs.build-and-push-images-production.outputs.frontend_image_prod }}"
+            echo "AUTO_DEPLOY_TO_PRODUCTION=true — deploying to production via deploy.sh"
+            printf 'y\n' | ./deploy.sh deploy production "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
+
+        - name: Post-deploy production health check
+          if: ${{ github.event_name != 'pull_request' }}
+          run: |
+            set -euxo pipefail
+            echo "Running simple HTTP healthchecks against production hosts"
+            awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/production/hosts | while read -r host; do
+              echo "Checking $host..." || true
+              SSH_USER="${{ secrets.PRODUCTION_SSH_USER }}"
+              SSH_USER=${SSH_USER:-admin}
+              ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${SSH_USER}@${host}" 'curl -fsS http://localhost/actuator/health || echo FAILED'
+            done || true
+
+        - name: Notify Slack (production success)
+          if: ${{ success() }}
+            run: |
+              if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+                payload=$(jq -n --arg txt "Production deploy succeeded for ${GITHUB_REPOSITORY} (run: ${GITHUB_RUN_NUMBER})" '{text: $txt}')
+                curl -s -X POST -H 'Content-type: application/json' --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
+              else
+                echo "No SLACK_WEBHOOK configured; skipping slack notification"
+              fi
+
+        - name: Notify Slack (production failure)
+          if: ${{ failure() }}
+            run: |
+              if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+                payload=$(jq -n --arg txt "Production deploy FAILED for ${GITHUB_REPOSITORY} (run: ${GITHUB_RUN_NUMBER}) — see $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{text: $txt}')
+                curl -s -X POST -H 'Content-type: application/json' --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
+              else
+                echo "No SLACK_WEBHOOK configured; skipping slack notification"
+              fi
+
+        - name: Create GitHub Issue on failure
+          if: ${{ failure() }}
+            uses: actions/github-script@v6
+            with:
+              script: |
+                const title = `Production deploy failed — run ${process.env.GITHUB_RUN_NUMBER}`;
+                const body = `Production deploy failed in run [${process.env.GITHUB_RUN_NUMBER}](${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}).\n\nSee logs for details.`;
+                await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body });
