@@ -380,6 +380,163 @@ Ready to proceed to Phase 1: Design & Contracts.
 
 ---
 
+### 9. Rapid Agentic Debugging Workflows
+
+**Objective**: Minimize MTTR by enabling fast local reproduction, targeted CI reruns, rich logs, and quick instrumentation toggles without bloating minutes or developer friction.
+
+**Core Toolkit**:
+- `make` shortcuts: `make debug-ci`, `make debug-job JOB=<name>`, `make debug-fast` (lint+unit only)
+- `act` for selective GitHub Actions emulation: `act -W .github/workflows/<file>.yml -j <job>` (use cautiously; slower than native Docker Compose but good for logic)
+- GitHub Actions debugging:
+  - Enable step debug logs: set repository or workflow secret `ACTIONS_STEP_DEBUG=true` for a run
+  - Use `debug()` logging: `echo "::debug::message"`
+  - Group logs: `echo "::group::Section"` / `echo "::endgroup::"`
+  - Mask secrets: `echo "::add-mask::$SECRET"`
+  - Timings: `time` shell builtin; record `$(date +%s)` checkpoints
+- SSH into runner: `actions/setup-ssh` is deprecated; use `mxschmitt/action-tmate@v3` gated by `workflow_dispatch` + `allowDebugSSH: true`
+
+**Recommended Patterns**:
+- Add a dedicated debug workflow (`.github/workflows/debug.yml`) triggered by `workflow_dispatch` with inputs:
+  - `job`: select which job to run
+  - `paths`: optional path filter override
+  - `stepDebug`: boolean to enable `ACTIONS_STEP_DEBUG`
+- Instrument composite actions and scripts with `DEBUG` env to toggle verbose mode.
+- Emit artifacts on failure: `logs/*.txt`, `coverage`, `junit.xml`, `workdir snapshot` (limited size) to speed diagnosis.
+- Minimize matrix scope during debugging: allow `matrix: [small]` via inputs to run only key variants.
+- Use conditional requests and pagination for API-driven dashboards to keep debug runs light:
+  - `If-None-Match` with ETag; `If-Modified-Since` with `Last-Modified`
+  - Paginate via `Link` headers; cap pages for debug runs (e.g., last 50 runs)
+
+**Concrete Snippets**:
+```yaml
+# .github/workflows/debug.yml
+name: Debug CI
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Job to run
+        required: true
+        type: choice
+        options: [build, test, lint]
+      stepDebug:
+        description: Enable step-level debug logs
+        required: false
+        type: boolean
+
+jobs:
+  run-selected:
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_STEP_DEBUG: ${{ inputs.stepDebug }}
+      DEBUG: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Selective execution
+        run: |
+          case "${{ inputs.job }}" in
+            build) make ci-quick ;;
+            test) ./scripts/local-ci/test-all.sh ;;
+            lint) npm run lint ;;
+          esac
+      - name: Upload debug artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-artifacts
+          path: |
+            logs/**
+            coverage/**
+            **/junit.xml
+          if-no-files-found: ignore
+```
+
+```makefile
+# Makefile additions
+debug-ci: ## Run fast local CI with verbose logs
+	DEBUG=1 ./scripts/local-ci/pre-push-checks.sh || true
+
+debug-job: ## Run a specific job locally (JOB=build|test|lint)
+	@[ -z "$(JOB)" ] && echo "Specify JOB" && exit 1 || true
+	case "$(JOB)" in \
+	  build) make ci-quick ;; \
+	  test) ./scripts/local-ci/test-all.sh ;; \
+	  lint) npm run lint ;; \
+	  *) echo "Unknown JOB: $(JOB)" ;; \
+	 esac
+```
+
+**Failure-First Diagnostics**:
+- On CI failure, auto-rerun the exact job with `workflow_dispatch` using the same commit SHA and `stepDebug=true`.
+- Include `--stacktrace`/`--info` for Maven and `--verbose` for npm/yarn in debug mode.
+- Capture environment diffs: print `java -version`, `node -v`, `npm -v`, `mvn -v`, `docker version` at start when `DEBUG=1`.
+
+**Governance**:
+- Gate `tmate` sessions to maintainers only; auto-timeout after 20 minutes.
+- Limit artifact sizes; prune old debug artifacts via retention settings.
+
+---
+
+### 10. Final Optimization Sweep (Focused Changes)
+
+**Goal**: Apply low-risk, high-impact optimizations to meet success criteria (30-40% fewer runs; sub-5-minute local pipeline; cache hit-rate improvements) and strengthen operability.
+
+**Actions**:
+- Path filters: ensure inclusion of `Dockerfile`, `mvnw`, `pom.xml`, `package.json`, `next.config.ts`, workflow files; ignore `docs/**`, `**/*.md` except `README.md` if critical.
+- Concurrency: set per-branch groups with `cancel-in-progress: true` for build/test; keep deploy workflows without cancel.
+- Cache tuning:
+  - Separate keys per ecosystem: `maven-${{ hashFiles('**/pom.xml') }}`, `npm-${{ hashFiles('**/package-lock.json') }}`
+  - Add `restore-keys` for OS-only fallback.
+  - Log cache result: `steps.cache.outputs.cache-hit` to measure.
+- Fail-fast strategy:
+  - Use `needs` to order jobs; run smoke tests first.
+  - `continue-on-error: true` only for non-critical metrics collection.
+- Test selection:
+  - Introduce `changed-paths` step to detect impacted modules; run partial tests if only frontend changes.
+  - For Maven, use `-Dtest=*Changed*` patterns or Surefire includes based on git diff.
+- Observability:
+  - Emit `metrics.json` with durations per step; publish to Pages.
+  - Tag runs with `run_id`/`trace_id` echoed in logs for cross-correlation.
+- Rate-limit safety for API calls:
+  - Use `gh api` with `--paginate --limit 2` for debug; cache ETag in `./memory/gh-etags/`.
+  - Backoff on `403` with `Retry-After` if present.
+
+**Sample Cache Split**:
+```yaml
+- name: Cache Maven
+  uses: actions/cache@v4
+  with:
+    path: ~/.m2/repository
+    key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+    restore-keys: |
+      maven-${{ runner.os }}-
+
+- name: Cache npm
+  uses: actions/cache@v4
+  with:
+    path: ~/.npm
+    key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+    restore-keys: |
+      npm-${{ runner.os }}-
+```
+
+**Operational Checklists**:
+- [ ] Add `.github/workflows/debug.yml` with inputs and artifacts
+- [ ] Add Make targets `debug-ci`, `debug-job`
+- [ ] Instrument scripts with `DEBUG` env toggles
+- [ ] Split caches per ecosystem; log hit/miss
+- [ ] Ensure path filters cover all build-critical files
+- [ ] Add lightweight `changed-paths` logic (git diff) for partial tests
+- [ ] Gate SSH debug sessions and set retention limits
+- [ ] Add ETag caching for dashboard API fetches
+
+**Acceptance Alignment**:
+- Reduced redundant runs via filters + concurrency
+- Faster local loop via `make` targets and selective jobs
+- Improved cache hit rates and visibility
+- Clear, actionable debug path for failures
+---
+
 ### Additional Research: GitHub Pages updates & API rate limits
 
 **Problem**: GitHub Pages dashboard is updated via scheduled Actions. We need to avoid API rate-limit problems and ensure efficient, reliable updates.
