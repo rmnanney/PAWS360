@@ -17,10 +17,10 @@ echo "⏳ Waiting for backend (port 8091)..."
 timeout 300 bash -c \
   'until curl -f http://localhost:8091/actuator/health; do sleep 5; done'
 
-# Wait for frontend (exactly like CI)  
-echo "⏳ Waiting for frontend (port 8095)..."
+# Wait for frontend readiness path (match CI's /healthz)
+echo "⏳ Waiting for frontend (port 8095) readiness (/healthz)..."
 timeout 300 bash -c \
-  'until curl -f http://localhost:8095; do sleep 5; done'
+  'until curl -f http://localhost:8095/healthz; do sleep 5; done'
 
 echo "✅ Both services are responding!"
 echo "🔍 Backend: http://localhost:8091/actuator/health"
