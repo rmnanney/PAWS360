@@ -204,6 +204,11 @@ ci-local:
 	make coverage
 	@echo "Local CI pipeline complete!"
 
+# convenience wrapper alias
+push:
+	@echo "Using push wrapper; pass same args as git push e.g. 'make push origin HEAD'
+	bash .github/hooks/git-push-wrapper $(ARGS) || true
+
 # Performance testing
 performance:
 	@echo "Running performance tests..."

@@ -71,15 +71,23 @@ npx serve .
 
 ### Bypass Pre-Push Validation (Emergency Only)
 
-```bash
-# Use Git's --no-verify flag
-git push --no-verify origin <branch>
+Preferred method: use the supported wrapper which logs a short justification remotely via `gh`.
 
-# Interactive prompt will ask for justification
-# Enter reason and press Enter
+```bash
+# Interactive wrapper — recommended
+bash .github/hooks/git-push-wrapper --bypass origin <branch>
+
+# The wrapper prompts for a non-secret justification and will attempt to create a GitHub Issue labeled `bypass-audit`.
 ```
 
-**Warning**: All bypasses are logged for audit. Use only for genuine emergencies.
+Alternative (not recommended):
+
+```bash
+# Use Git's --no-verify flag (hooks are skipped)
+git push --no-verify origin <branch>
+```
+
+**Warning**: Prefer the wrapper — `--no-verify` bypasses hooks and will be detected by the cloud-side audit job which may create an audit issue. Use bypass only for genuine emergencies.
 
 ### Check Current Quota Usage
 
@@ -304,7 +312,7 @@ gh api /repos/OWNER/REPO/actions/billing/usage
 
 1. **Monitor quota weekly**: Review dashboard and adjust practices
 2. **Respond to alerts**: Address 80% threshold warnings proactively
-3. **Review bypasses monthly**: Check `.git/push-bypass.log` for patterns
+3. **Review bypasses monthly**: Review `bypass-audit` issues created in the repository (label `bypass-audit`) for patterns
 4. **Optimize workflows**: Identify expensive jobs, optimize or defer
 
 ### For CI/CD Maintainers
