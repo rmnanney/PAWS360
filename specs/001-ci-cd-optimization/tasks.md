@@ -220,6 +220,9 @@ Implementation Tasks
 - [ ] T076 Infrastructure impact analysis doc `infrastructure/ci-cd-impact-analysis.md` for Pages, tokens, branch protection
 - [ ] T077 Add `docs/ci-cd/runbook.md` for on-call debugging (tmate, reruns, artifacts)
 - [ ] T078 Create `specs/001-ci-cd-optimization/checklists/requirements.md` pass/fail audit referencing SC-001..SC-012
+- [ ] T079 [P] Add VS Code tasks configuration `.vscode/tasks.json` for ci-local, ci-quick, debug-ci targets
+- [ ] T080 [P] Add IntelliJ run configurations `.idea/runConfigurations/` for local CI and debug targets
+- [ ] T081 Add cloud-side audit job in `.github/workflows/ci-cd.yml` to detect unrecorded bypasses (FR-023)
 
 Verification (Reusable)
 - Constitutional cron updates session timestamp.

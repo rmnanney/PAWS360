@@ -118,33 +118,7 @@ As a system administrator, I want scheduled CI/CD jobs (nightly builds, security
 2. **Given** a scheduled job overlaps with active development, **When** the workflow evaluates priorities, **Then** development workflows take precedence and scheduled jobs defer
 3. **Given** scheduled jobs need extended execution time, **When** they run during weekends, **Then** resource limits are relaxed while maintaining budget controls
 
-
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-
 ---
-
-### User Story 3 - [Brief Title] (Priority: P3)
-
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-
----
-
-[Add more user stories as needed, each with an assigned priority]
 
 ### Edge Cases
 
@@ -171,7 +145,7 @@ As a system administrator, I want scheduled CI/CD jobs (nightly builds, security
 
 **Local Validation Infrastructure**
 - **FR-001**: System MUST execute pre-push validation hooks that run compilation, unit tests, and linting on developer machines before code reaches remote repository; hooks installed automatically via git clone template and verified/reinstalled on every build
-- **FR-002**: Pre-push hooks MUST complete within 2 minutes for typical changesets (<100 files modified)
+- **FR-002**: Pre-push hooks MUST complete within 2 minutes for typical changesets (<100 files modified) on reference hardware (8-core CPU, 16 GB RAM, SSD storage)
 - **FR-003**: System MUST provide an supported push wrapper/alias that runs pre-push validations and, if bypassing is requested, prompts the developer for a required justification and records the bypass remotely (e.g., GitHub issue via `gh`). Because `git push --no-verify` skips hooks entirely and cannot be intercepted locally, the wrapper is the recommended mechanism; cloud CI must also implement an audit job to detect unrecorded bypasses and create audit issues when detected
 - **FR-004**: Local CI execution MUST replicate cloud pipeline behavior including all quality gates (tests, linting, security scanning)
 
@@ -221,7 +195,7 @@ As a system administrator, I want scheduled CI/CD jobs (nightly builds, security
 ### Measurable Outcomes
 
 **Resource Efficiency**
-- **SC-001**: Reduce cloud CI/CD minute consumption by 40% compared to baseline (from ~1,000 min/month to ~600 min/month)
+- **SC-001**: Reduce cloud CI/CD minute consumption by 40% compared to November 2025 baseline (~1,000 min/month), measured over a rolling 7-day window, targeting ~600 min/month
 - **SC-002**: Maintain monthly GitHub Actions usage below 75% of quota (1,500/2,000 minutes) under normal development load
 - **SC-003**: Execute 70% of validation runs locally, reserving cloud resources for PR validation and deployment
 

@@ -205,7 +205,7 @@ triggered → (acknowledged → resolved) | auto_resolved
 **Validation Rules**:
 - `justification` cannot be empty
 - `developer_email` must match git config user.email
-- All bypasses logged to `.git/push-bypass.log` and synced to repository
+- All bypasses logged via GitHub Issues (label: `bypass-audit`); no local file storage
 
 **Reporting**:
 - Monthly bypass count per developer
@@ -244,15 +244,11 @@ BypassAuditLog [standalone]
 - Updated hourly via scheduled workflow
 - Includes: ResourceQuota, aggregated ValidationResult stats, QuotaAlerts
 
-**Git Repository** (audit logs):
-- BypassAuditLog stored in `.git/push-bypass.log` (local)
-- Periodically synced to remote via commit or API
-- Retention: 1 year (required for compliance)
-
-**GitHub Issues** (alert tracking):
-- QuotaAlert entities represented as GitHub issues
-- Tagged with "quota-alert" label
-- Auto-close when usage drops below threshold
+**GitHub Issues** (audit & alert tracking):
+- BypassAuditLog entries created as GitHub Issues with label `bypass-audit`
+- QuotaAlert entities represented as GitHub Issues with label `quota-alert`
+- Auto-close quota alerts when usage drops below threshold
+- Retention: Indefinite (GitHub issues persist); supports compliance and monthly reporting
 
 ---
 
@@ -260,9 +256,9 @@ BypassAuditLog [standalone]
 
 - **WorkflowExecution**: 90 days via GitHub API, longer via GitHub Pages JSON snapshots
 - **ValidationResult**: 30 days (local logs), 90 days (cloud workflow logs)
-- **CacheEntry**: 7 days (GitHub Actions default), or until invalidated
+- **CacheEntry**: 7 days (GitHub Actions default), or until hash-based invalidation (whichever first)
 - **QuotaAlert**: Indefinite (GitHub issues persist)
-- **BypassAuditLog**: 1 year minimum
+- **BypassAuditLog**: Indefinite (GitHub issues persist); supports 1-year compliance requirement
 
 ---
 
