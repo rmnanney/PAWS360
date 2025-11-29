@@ -154,6 +154,7 @@ jobs:
           printf '{"maven_cache_hit":"%s","npm_cache_hit":"%s"}' "${{ steps.cache-maven.outcome }}" "${{ steps.cache-npm.outcome }}" > cache-metrics.json || true
 
       - name: Upload artifacts
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         if: success()
         with:
@@ -163,6 +164,7 @@ jobs:
             .next/
           retention-days: 7
       - name: Upload cache metrics
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         if: always()
         with:
