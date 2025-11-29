@@ -101,7 +101,7 @@ jobs:
       - name: Commit updated metrics
         if: steps.defer_check.outputs.deferred != 'true'
         run: |
-          git config user.name "github-actions[bot]" 
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add monitoring/ci-cd-dashboard/data/metrics.json
           git commit -m "ci: update ci-cd metrics.json (hourly)" || echo 'no changes'

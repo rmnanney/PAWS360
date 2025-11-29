@@ -104,14 +104,14 @@ jobs:
       - name: Build with Maven
         if: ${{ needs.changed-paths.outputs.has_backend == 'true' }}
         run: |
-          echo "::group::Maven build" 
+          echo "::group::Maven build"
           ./mvnw clean compile -B
           echo "::endgroup::"
 
       - name: Run backend tests
         if: ${{ needs.changed-paths.outputs.has_backend == 'true' }}
         run: |
-          echo "::group::Maven tests" 
+          echo "::group::Maven tests"
           ./mvnw test -B
           echo "::endgroup::"
 
