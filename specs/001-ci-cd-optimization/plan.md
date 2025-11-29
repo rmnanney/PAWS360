@@ -142,9 +142,10 @@ No constitutional violations requiring justification. All action items are stand
 2. GitHub Actions path filtering + concurrency groups
 3. Multi-layer caching strategy (Maven, npm, Docker)
 4. Docker Compose for local CI with Make targets
-5. GitHub Pages + GitHub API for zero-cost dashboard
-6. Interactive justification prompts for bypasses
-7. Advisory quota warnings via GitHub issues
+5. GitHub Pages + GitHub API for zero-cost dashboard (hourly updates, conditional requests)
+6. Supported push wrapper (recommended) + interactive justification prompting for bypasses; cloud-side audit jobs detect unrecorded bypasses
+7. Remote bypass audit logging via GitHub Issues (low-friction, searchable) and CI reconciliation
+8. Advisory quota warnings via GitHub issues (check every 6 hours)
 
 **All NEEDS CLARIFICATION items resolved**. Ready for Phase 1.
 
