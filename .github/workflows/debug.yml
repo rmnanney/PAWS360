@@ -39,4 +39,4 @@ jobs:
             logs/**
             coverage/**
           if-no-files-found: ignore
-          retention-days: 14
+          retention-days: 1

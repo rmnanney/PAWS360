@@ -63,7 +63,7 @@ jobs:
         with:
           name: run-metadata-${{ github.run_id }}
           path: run-metadata.json
-          retention-days: 7
+          retention-days: 1
 
       - name: Check usage via GitHub API
         if: steps.defer_check.outputs.deferred != 'true'

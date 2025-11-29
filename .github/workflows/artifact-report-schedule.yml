@@ -91,7 +91,7 @@ jobs:
         with:
           name: artifact-summary-daily
           path: artifact-summary.json
-          retention-days: 14
+          retention-days: 1
 
       - name: Cleanup artifacts (if thresholds exceeded)
         id: cleanup

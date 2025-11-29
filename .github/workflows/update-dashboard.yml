@@ -69,7 +69,7 @@ jobs:
         with:
           name: run-metadata-${{ github.run_id }}
           path: run-metadata.json
-          retention-days: 7
+          retention-days: 1
 
       - name: Fetch recent runs
         if: steps.defer_check.outputs.deferred != 'true'

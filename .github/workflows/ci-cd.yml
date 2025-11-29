@@ -162,7 +162,7 @@ jobs:
           path: |
             target/*.jar
             .next/
-          retention-days: 7
+          retention-days: 1
       - name: Upload cache metrics
         continue-on-error: true
         uses: actions/upload-artifact@v4
@@ -170,7 +170,7 @@ jobs:
         with:
           name: cache-metrics.json
           path: cache-metrics.json
-          retention-days: 7
+          retention-days: 1
 
   docker-build:
     name: Docker Build

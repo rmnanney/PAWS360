@@ -156,7 +156,7 @@ jobs:
           path: |
             tests/**/*.log
             tests/**/*.xml
-          retention-days: 7
+          retention-days: 1
 
       - name: Cleanup
         if: always()
@@ -198,7 +198,7 @@ jobs:
         with:
           name: security-scan-results
           path: security/scan-results/*.json
-          retention-days: 7
+          retention-days: 1
 
       - name: Fail on CRITICAL vulnerabilities
         run: |

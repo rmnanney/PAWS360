@@ -234,7 +234,7 @@ jobs:
         with:
           name: artifact-summary
           path: artifact-summary.json
-          retention-days: 7
+          retention-days: 1
 
 
   backend-build:
@@ -437,8 +437,14 @@ jobs:
       - name: Wait for frontend
         run: |
           # Wait up to 2 minutes for frontend
-          # Allow a longer warmup period for the Next dev server in CI (5 mins)
-          npx wait-on -t 300000 http://localhost:3000 || (tail -n 200 next-dev.log && exit 1)
+          # Allow a longer warmup period for the frontend in CI (10 mins) — using static export + simple static server
+          # Expose the timeout value for easier debugging
+          FRONTEND_WAIT_TIMEOUT_MS=600000
+          echo "FRONTEND_WAIT_TIMEOUT_MS=$FRONTEND_WAIT_TIMEOUT_MS"
+          # Build a deterministic static export and serve from `out` (more predictable than `next dev` in CI)
+          npm run build || (echo "ERROR: build failed" && tail -n 200 .next/logs/* || true) && npx next export -o out || (echo "ERROR: export failed" && tail -n 200 next-dev.log || true)
+          nohup npx serve -s out -l 3000 > next-static.log 2>&1 &
+          npx wait-on -t $FRONTEND_WAIT_TIMEOUT_MS http://localhost:3000 || (tail -n 200 next-static.log && exit 1)
 
       - name: Smoke HTTP checks
         run: |
@@ -478,7 +484,7 @@ jobs:
           path: |
             next-dev.log
             smoke-docker-logs.txt
-          retention-days: 7
+          retention-days: 1
 
       - name: Stop smoke infra
         if: always()
@@ -525,8 +531,8 @@ jobs:
           npm ci
           bash ./scripts/kill-next-port.sh || true
           nohup npm run dev > next-dev.log 2>&1 &
-          # E2E test runner should wait longer for the frontend to become ready in CI
-          (cd tests/ui && npx wait-on -t 300000 http://localhost:3000)
+          # E2E test runner should wait up to 10 minutes for the frontend to become ready in CI
+          (cd tests/ui && npx wait-on -t 600000 http://localhost:3000)
           for i in {1..60}; do
             if curl -f http://localhost:3000/ >/dev/null 2>&1; then
               echo "Frontend ready"
@@ -570,7 +576,7 @@ jobs:
         with:
           name: playwright-report
           path: tests/ui/playwright-report
-          retention-days: 3
+          retention-days: 1
 
       - name: Upload Playwright diagnostics
         if: always()
@@ -579,7 +585,7 @@ jobs:
         with:
           name: playwright-diagnostics
           path: tests/ui/playwright-report/diagnostics
-          retention-days: 3
+          retention-days: 1
 
       - name: Stop docker-compose
         if: always()

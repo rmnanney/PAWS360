@@ -35,7 +35,7 @@ jobs:
         with:
           name: tfplan-out
           path: infrastructure/proxmox/terraform-module/tfplan-out
-          retention-days: 7
+          retention-days: 1
 
   apply:
     name: Terraform Apply (gated)
