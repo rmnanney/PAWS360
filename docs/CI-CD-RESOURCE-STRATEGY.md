@@ -333,6 +333,12 @@ deploy-*-check.yml:
    - Git hooks for pre-push validation
    - Catch issues early
 
+### Security note (GITHUB_TOKEN & `gh`)
+
+- When workflows or local tools invoke the GitHub API, prefer `GITHUB_TOKEN` in Actions for ephemeral auth and `gh` CLI for developer-local commands.
+- Limit `GITHUB_TOKEN` permissions (use `permissions:` on workflows) and avoid broad PAT usage in scripts. Document each workflow's required scopes.
+- The `git-push-wrapper` will use `gh issue create` for bypass audit logging — developers must authorize `gh` locally; request minimal `repo` scope only.
+
 ### ❌ DON'T
 
 1. **Don't run HA tests on every push**
