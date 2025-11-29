@@ -229,51 +229,58 @@ fs.writeFileSync('data/metrics.json', JSON.stringify(metrics));
 
 ---
 
-### 7. Pre-Push Bypass Mechanism with Justification
+### 7. Pre-Push Bypass Mechanism: reality check and recommended approach
 
-**Decision**: Detect `--no-verify` flag and trigger interactive prompt for justification
+**Finding**: Git's `--no-verify` flag bypasses Git hooks entirely — the hook is not executed and therefore cannot prompt for justification or log bypasses. This is a hard constraint of Git and cannot be worked around from inside a skipped hook.
+
+**Decision / Recommended approach**:
+- Provide a supported developer workflow: install a `push` wrapper script (or git alias) and pre-push hook for normal flows. The wrapper is the recommended way to push. It runs validations, and if the developer needs to bypass, it prompts for justification and records the bypass remotely via API (e.g., create a GitHub issue or call a dedicated logging endpoint).
+- Accept that some developers may still use `git push --no-verify`. To handle those cases, implement a cloud-side "bypass audit" check as part of the initial CI workflow: if the push appears to have bypassed the local validation (no evidence of justification recorded remotely), the CI will (a) create a bypass audit GitHub issue, and (b) optionally mark the run with an audit warning for maintainers.
 
 **Rationale**:
-- Aligns with clarification: "Git's built-in --no-verify flag, but then require interactive prompt asking for justification"
-- Leverages standard Git mechanism developers already know
-- Interactive prompt ensures accountability without blocking emergencies
-- Justification logged for audit (FR-022)
+- You cannot intercept `--no-verify` from inside a hook because the hook is skipped. A push wrapper (recommended) can implement the interactive prompt and remote logging reliably.
+- Combining a local wrapper + server-side auditing yields the best trade-off between developer ergonomics and auditability.
 
-**Implementation Approach**:
+**Implementation approach — wrapper (recommended)**:
 ```bash
-#!/bin/bash
-# .github/hooks/pre-push
+# installable helper (e.g. .github/hooks/git-push-wrapper)
+#!/usr/bin/env bash
+# Run validations first
+./scripts/local-ci/pre-push-checks.sh || {
+  echo "Pre-push checks failed; aborting push."
+  exit 1
+}
 
-# Check if invoked with --no-verify (Git doesn't pass this to hook, so detect via parent process)
-if git config --get core.hooksPath > /dev/null 2>&1; then
-    # Running normally
-    run_validations
+# If user chooses to bypass, prompt for justification
+if [[ "$*" == *"--bypass"* ]]; then
+  read -p "Bypass justification (required): " REASON
+  if [ -z "$REASON" ]; then
+    echo "Justification required. Aborting."
+    exit 1
+  fi
+  # Create an audit issue via gh (requires GH auth)
+  gh issue create --title "Bypass: ${GIT_COMMIT:-unknown}" --body "User: $(git config user.email)\nReason: $REASON\nCommit: $(git rev-parse --short HEAD)" --label bypass-audit || true
+  # proceed with push
+  git push "${@//--bypass/}"
 else
-    # Bypass detected - require justification
-    echo "⚠️  Pre-push validation bypassed. Please provide justification:"
-    read -p "Reason: " REASON
-    
-    if [ -z "$REASON" ]; then
-        echo "❌ Justification required. Push aborted."
-        exit 1
-    fi
-    
-    # Log bypass
-    echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | $(git config user.email) | BYPASS | $REASON" >> .git/push-bypass.log
-    echo "⚠️  Bypass logged. Proceeding..."
+  git push "$@"
 fi
 ```
 
-**Alternatives Considered**:
-- **No bypass option**: Rejected - blocks legitimate emergencies
-- **Environment variable**: Rejected - less discoverable than --no-verify
-- **Silent bypass**: Rejected - violates accountability requirement
+**Implementation approach — cloud-side audit (fallback)**:
+- Add a small CI job at the earliest point in push/PR pipelines which:
+  - Re-runs quick validations and checks for a corresponding audit record (e.g., existing issue or push metadata)
+  - If validations are missing/skip and no audit record present, automatically create a bypass audit GitHub issue and tag maintainers
+  - This CI audit job should not be the only enforcement mechanism; it supports accountability and traceability
 
-**Best Practices**:
-- Log bypass attempts with timestamp, user, and justification
-- Sync bypass log to remote repository (via commit or API)
-- Alert team leads on bypass events (via GitHub issue)
-- Include bypass audit in monthly reports
+**Alternatives considered**:
+- Require server-side pre-receive hooks (not possible on GitHub with hosted repos)
+- Store bypass logs as repo commits (not preferred — adds noise & potential leaks)
+
+**Best practices**:
+- Recommend developers use the provided wrapper or alias (documented in quickstart and setup)
+- Use `gh` in wrapper for remote audit creation to avoid committing logs to repo
+- Cloud CI audit job must be fast (quick checks only) and not consume large minutes; its purpose is accountability and traceability
 
 ---
 
@@ -339,3 +346,125 @@ All clarifications and unknowns have been resolved through research. Key decisio
 6. **Quota Management**: Advisory warnings via GitHub issues
 
 Ready to proceed to Phase 1: Design & Contracts.
+
+---
+
+### Additional Research: Remote synchronization of bypass audit logs
+
+**Problem**: Local `.git/push-bypass.log` provides a local audit trail but is not visible to maintainers unless pushed. We need a reliable, secure, and privacy-aware method to make bypass records visible and traceable centrally.
+
+**Options evaluated**:
+
+- **Create a GitHub issue per bypass** (via `gh` from wrapper)
+  - Pros: Immediate visibility, searchable, traceable, doesn't modify repo history
+  - Cons: Requires `gh` authentication on developer machine (and minimal permissions)
+
+- **Append to a maintained audit file in a protected branch and push**
+  - Pros: Centralized file, simple to query
+  - Cons: Commits add noise, potential conflict, sensitive content may be stored in repo
+
+- **Repository dispatch / webhook to centralized service**
+  - Pros: Secure, can centralize, supports richer retention and analytics
+  - Cons: Requires a hosted endpoint and secrets management — extra infra
+
+- **Create an artifact in Actions / push metadata to Checks API**
+  - Pros: Good traceability in GitHub UI, no persistent repo noise
+  - Cons: Requires push-time CI to create artifacts; does not help when hook is skipped entirely
+
+**Recommendation**: Use GitHub Issues for remote audit logging created by the push wrapper (via `gh issue create`). This is low-friction, transparent to maintainers, and avoids storing potentially sensitive text in the code repository. If a hosted audit service is available, the wrapper may call that instead (future enhancement). The cloud-side audit job will also create an issue when it detects an unrecorded bypass.
+
+**Implementation notes**:
+- Local wrapper uses `gh issue create --label bypass-audit` with a short, non-sensitive justification and metadata (user, commit id, timestamp). Avoid including secrets or large diffs in the issue body.
+- Cloud CI audit job checks for issue existence for the commit (or for recent bypass-audit issues referencing the commit). If missing, it creates one.
+- Security: require developers to authorize `gh` (or use GitHub Apps) with minimal `repo` scope. Document this flow in `quickstart.md` and onboarding.
+
+---
+
+### Additional Research: GitHub Pages updates & API rate limits
+
+**Problem**: GitHub Pages dashboard is updated via scheduled Actions. We need to avoid API rate-limit problems and ensure efficient, reliable updates.
+
+**GitHub API limits & guidance**:
+- REST API (authenticated via GITHUB_TOKEN): ~5,000 requests/hour per token — enough for hourly dashboard updates if batched carefully
+- GraphQL API: point-based rate limiting (more complex) — avoid for scheduled high-volume polling
+- Best practice: batch requests, use pagination efficiently, and leverage conditional requests (ETag / If-Modified-Since) to minimize traffic
+
+**Update & deployment options**:
+- **Scheduled Actions** that fetch aggregated data and push pre-computed JSON to the `monitoring/ci-cd-dashboard/data/metrics.json` file, then deploy to GitHub Pages via `peaceiris/actions-gh-pages` or `JamesIves/github-pages-deploy-action`.
+- **Push artifacts only when changed**: Compute a hash of generated `metrics.json` and skip pushing/deploying if identical (avoids unnecessary commits and Pages builds).
+- **Cache API responses**: Store raw API responses in the workflow cache or as artifacts for short-term reuse when regenerating derived metrics.
+
+**Suggested workflow pattern**:
+1. Scheduled workflow runs hourly.
+2. Use a single authenticated REST call to list workflow runs and fetch necessary run-level details (use `per_page=100` with pagination). Prefer summarized fields to avoid heavy payloads.
+3. Use ETag-based conditional requests where possible and early-abort if unchanged.
+4. Build `metrics.json` locally in the runner.
+5. Compare hash with existing `data/metrics.json` in the `gh-pages` branch (or previous commit) — if identical, no deploy.
+6. If changed, deploy using `actions-gh-pages` to update the Pages site.
+
+**Alternatives considered**:
+- Push to a backend (requires hosting) — rejected for cost/maintenance reasons
+- Create artifacts in Actions and expose them — less visual, poor UX
+
+**Security & credentials**:
+- Use the built-in `GITHUB_TOKEN` in Actions when possible (scoped, rotates) for both API calls and publishing to GitHub Pages. If extra privileges are required (e.g., for private repos), use a PAT with minimal scope stored in repository secrets.
+
+**Best practices**:
+- Keep polling frequency reasonable (hourly is a good default)
+- Use conditional requests and hashing to limit unnecessary updates
+- Monitor action logs for API failures and implement exponential backoff on rate limit errors
+
+---
+
+### Additional Research: Self-hosted runners vs local execution
+
+**Problem**: We want to lower GitHub Actions minute consumption while keeping reliable, repeatable builds for scheduled and integration tests.
+
+**Options evaluated**:
+
+- **Local developer machines (Docker/Podman)**
+  - Pros: Instant feedback, no cloud minutes, suitable for pre-push and local CI
+  - Cons: Inconsistent environments, developers' machines vary in capability and OS
+
+- **Self-hosted runners (dedicated build hosts)**
+  - Pros: Fixed hardware, consistent environment, can be scheduled for heavy workloads, reduce GitHub-hosted minutes
+  - Cons: Maintenance burden, security (secrets on host), network access, potential for drift without config management
+
+- **Managed cloud instances (ephemeral CI runners)**
+  - Pros: Predictable environment, autoscaling possible, easier maintenance via IaC
+  - Cons: Hosting cost, more infra complexity vs native hosted runners
+
+**Recommendation**:
+- Use self-hosted runners for heavy, scheduled workloads where local developer machines are insufficient (e.g., HA integration tests, long-running image builds). Keep these runners under infrastructure-as-code management (Ansible/Terraform) and restrict secret access via short-lived credentials.
+- Continue to use local Docker/Compose for developer validation and GitHub-hosted runners for PR validation/pay-per-use when needed. Combine self-hosted runners and cached builds to reduce GitHub minutes.
+
+**Security & operational notes**:
+- Lockdown self-hosted hosts with least-privilege, restrict which workflows can run on them via `runs-on: [self-hosted, linux, large]` labels, and rotate secrets regularly.
+- Ensure all self-hosted runners have monitoring and are included in the project's observability plan.
+- Prefer ephemeral runners for build jobs that need special capacity to reduce long-lived host exposure.
+
+---
+
+### Additional Research: GITHUB_TOKEN, `gh` authentication, and security practices
+
+**Problem**: The solution requires both local client actions (developers creating audit issues using `gh`) and GitHub Actions workflows using `GITHUB_TOKEN` — we must ensure minimal, secure usage patterns and avoid leaking secrets.
+
+**Auth options & scopes**:
+- **GITHUB_TOKEN (Actions)**: Automatically provided in Actions, rotates per run, has repository-scoped permissions. Good for in-workflow API calls (listing workflow runs, posting artifacts, creating issues) in most cases.
+- **PAT (Personal Access Token)**: Required for local `gh` CLI when the developer runs the push wrapper. For a private repo, `repo` scope is required; for public repo, `public_repo` may be sufficient. Use minimal scopes and require auth through `gh auth login`.
+- **GitHub App / OIDC**: Where possible, prefer GitHub Apps or OIDC-based workload identity instead of long-lived PATs. Apps provide finer-grained permissions.
+
+**Recommendations for wrapper + workflows**:
+- Local wrapper should use `gh` client with developer's own credentials (document signup and minimal scopes). Don't store PATs in the repo.
+- Actions workflows should prefer built-in `GITHUB_TOKEN` for API calls. If extra scope required (e.g., to publish pages for private repo), use repository secrets with a scoped PAT and audit access.
+- Avoid writing secrets to logs or storing them in repo files. Use Actions secrets for runner/service tokens.
+
+**Handling secret exposure risk when creating audit records**:
+- Keep issue bodies minimal and avoid including sensitive details. Store only user email, commit ID, timestamp, and short justification.
+- For higher compliance needs, send bypass events to an internal secure logging service (future enhancement), not GitHub issues.
+
+**Operational guidelines**:
+- Require `gh auth` during onboarding and document how to check `gh auth status`.
+- Use a central policy for rotating PATs and auditing who has `repo` scopes.
+- Use CI to detect anomalous behavior (multiple bypasses by same developer) and escalate.
+

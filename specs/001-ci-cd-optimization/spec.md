@@ -16,7 +16,7 @@ This feature optimizes the PAWS360 CI/CD pipeline to operate efficiently within 
 - Q: How should team leads receive quota threshold alerts when 80% consumption is reached? → A: GitHub repository issue auto-created
 - Q: Where should the resource monitoring dashboard be hosted and accessed? → A: GitHub Pages static site in the repository
 - Q: How should pre-push validation hooks be installed on developer machines? → A: Automatic via git clone template and verified at every build and fixed/installed as needed
-- Q: What mechanism should developers use to bypass pre-push validation hooks for urgent fixes? → A: Git's built-in `--no-verify` flag, but then require interactive prompt asking for justification; also just interactive prompt is acceptable
+- Q: What mechanism should developers use to bypass pre-push validation hooks for urgent fixes? → A: Provide a supported `git push` wrapper / alias that prompts for interactive justification and records the bypass via GitHub API; if `--no-verify` is used directly (hooks skipped), cloud-side audit will detect and create a bypass audit issue
 - Q: How should the quota reservation mechanism enforce the 30% limit for scheduled jobs? → A: Advisory warning (jobs run but alert if over budget)
 
 **Business Value:**
@@ -52,7 +52,7 @@ As a developer, I want my code automatically validated on my local machine befor
 
 1. **Given** I have uncommitted changes with compilation errors, **When** I attempt to push to remote, **Then** the pre-push hook detects the build failure and prevents the push with clear error output
 2. **Given** I have committed changes that pass all local checks, **When** I push to remote, **Then** the push proceeds immediately without interruption
-3. **Given** I need to bypass local validation for urgent fixes, **When** I use `git push --no-verify` or trigger bypass, **Then** an interactive prompt requires justification input, which is logged, before allowing the push to proceed with a warning message
+3. **Given** I need to bypass local validation for urgent fixes, **When** I use the supported `git push` wrapper/alias with the bypass option, **Then** an interactive prompt requires a justification which is recorded remotely (e.g., issue via `gh`) and the wrapper performs the push; if `--no-verify` is used and no justification exists, cloud CI will create an audit issue and tag maintainers
 
 ---
 
@@ -172,7 +172,7 @@ As a system administrator, I want scheduled CI/CD jobs (nightly builds, security
 **Local Validation Infrastructure**
 - **FR-001**: System MUST execute pre-push validation hooks that run compilation, unit tests, and linting on developer machines before code reaches remote repository; hooks installed automatically via git clone template and verified/reinstalled on every build
 - **FR-002**: Pre-push hooks MUST complete within 2 minutes for typical changesets (<100 files modified)
-- **FR-003**: System MUST provide bypass mechanism for pre-push hooks using Git's `--no-verify` flag or direct invocation; in both cases, an interactive prompt MUST require developer to provide justification for the bypass
+- **FR-003**: System MUST provide an supported push wrapper/alias that runs pre-push validations and, if bypassing is requested, prompts the developer for a required justification and records the bypass remotely (e.g., GitHub issue via `gh`). Because `git push --no-verify` skips hooks entirely and cannot be intercepted locally, the wrapper is the recommended mechanism; cloud CI must also implement an audit job to detect unrecorded bypasses and create audit issues when detected
 - **FR-004**: Local CI execution MUST replicate cloud pipeline behavior including all quality gates (tests, linting, security scanning)
 
 **Cloud Workflow Optimization**
@@ -201,7 +201,8 @@ As a system administrator, I want scheduled CI/CD jobs (nightly builds, security
 
 **Quality Assurance**
 - **FR-021**: Local and cloud validation MUST execute identical test suites to prevent environment-specific failures
-- **FR-022**: System MUST maintain audit log of all validation bypasses including developer identity, timestamp, and justification provided via interactive prompt
+- **FR-022**: System MUST maintain an audit log of all validation bypasses including developer identity, timestamp, and justification provided via interactive prompt or recorded remotely (issue/metadata)
+- **FR-023**: Cloud CI SHALL run a lightweight audit check on push/PR pipelines to detect pushes that skipped local validation without a recorded justification; when detected, the CI SHALL create a bypass audit GitHub issue containing commit id and author, and tag maintainers for follow-up
 
 ### Key Entities *(include if feature involves data)*
 
