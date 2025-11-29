@@ -202,6 +202,10 @@ jobs:
             echo "$repo_usage" | jq -r '.billable // {}' | jq -r 'to_entries[]? | "  - \\(.key): \\(.value)"' >> $GITHUB_STEP_SUMMARY || true
           fi
 
+          # Ensure defensive defaults so unset variables can't break the script
+          total_minutes=0
+          org_minutes=0
+
           # Try org-level usage if owner looks like an org
           echo "Attempting to fetch organization Actions usage (if available)..." >> $GITHUB_STEP_SUMMARY
           org_usage=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/orgs/$OWNER/actions/usage" || true)
