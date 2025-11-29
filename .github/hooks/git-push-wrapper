@@ -13,7 +13,11 @@ if [[ "$*" == *"--bypass"* ]]; then
 
   # Create audit issue via gh (best-effort)
   if command -v gh >/dev/null 2>&1; then
-    gh issue create --title "Bypass: $(git rev-parse --short HEAD)" --body "User: $(git config user.email)\nReason: $JUSTIFICATION\nCommit: $(git rev-parse --short HEAD)" --label bypass-audit || true
+    if gh auth status >/dev/null 2>&1; then
+      gh issue create --title "Bypass: $(git rev-parse --short HEAD)" --body "User: $(git config user.email)\nReason: $JUSTIFICATION\nCommit: $(git rev-parse --short HEAD)" --label bypass-audit || true
+    else
+      echo "gh auth not configured. Please run 'gh auth login' to enable remote bypass audit logging."
+    fi
   else
     echo "gh CLI not installed; please run 'gh auth login' and retry to record bypass audits"
   fi
