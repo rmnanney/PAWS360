@@ -64,10 +64,12 @@ jobs:
           EOF
 
       - name: Upload run metadata
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: run-metadata-${{ github.run_id }}
           path: run-metadata.json
+          retention-days: 7
 
       - name: Fetch recent runs
         if: steps.defer_check.outputs.deferred != 'true'

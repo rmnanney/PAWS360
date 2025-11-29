@@ -30,10 +30,12 @@ jobs:
           terraform plan -input=false -out=tfplan-out
 
       - name: Upload plan
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: tfplan-out
           path: infrastructure/proxmox/terraform-module/tfplan-out
+          retention-days: 7
 
   apply:
     name: Terraform Apply (gated)

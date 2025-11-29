@@ -149,12 +149,14 @@ jobs:
 
       - name: Upload test results
         if: ${{ !env.ACT && always() }}
+        continue-on-error: true
         uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: |
             tests/**/*.log
             tests/**/*.xml
+          retention-days: 7
 
       - name: Cleanup
         if: always()
@@ -191,10 +193,12 @@ jobs:
 
       - name: Upload scan results
         if: ${{ !env.ACT && always() }}
+        continue-on-error: true
         uses: actions/upload-artifact@v3
         with:
           name: security-scan-results
           path: security/scan-results/*.json
+          retention-days: 7
 
       - name: Fail on CRITICAL vulnerabilities
         run: |

@@ -464,6 +464,7 @@ jobs:
 
       - name: Upload smoke diagnostics
         if: failure()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: smoke-diagnostics

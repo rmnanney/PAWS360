@@ -31,6 +31,7 @@ jobs:
           esac
       - name: Upload debug artifacts
         if: failure()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: debug-artifacts
@@ -38,3 +39,4 @@ jobs:
             logs/**
             coverage/**
           if-no-files-found: ignore
+          retention-days: 14

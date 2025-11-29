@@ -35,7 +35,7 @@ Configuration & thresholds
 
 Scheduled cleanup
 -----------------
-There is also a separate scheduled workflow `.github/workflows/artifact-cleanup.yml` that runs weekly (removes artifacts older than 7 days). The in-CI cleanup (3-day cutoff) plus the weekly job complement each other to help manage storage.
+There is a scheduled workflow `.github/workflows/artifact-report-schedule.yml` that runs daily (03:00 UTC) and performs two things: it uploads a compact inventory (artifact-summary.json) and will, when configured thresholds are exceeded, delete older artifacts using a conservative policy (default: delete artifacts older than 14 days until counts/sizes come under thresholds). The CI pre-flight cleanup (`cleanup-artifacts` in `.github/workflows/ci.yml`) still runs on CI (3-day cutoff) for immediate relief.
 
 Notes & caveats
 --------------
