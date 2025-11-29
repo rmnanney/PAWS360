@@ -1,9 +1,14 @@
+---
 name: Artifact cleanup
+
+permissions:
+  actions: write
+  contents: read
 
 on:
   schedule:
-    # run weekly to prune old artifacts and keep repo artifact usage under control
-    - cron: '0 3 * * 0' # Sunday 03:00 UTC
+    #  run weekly to prune old artifacts and keep repo artifact usage under control
+    - cron: '0 3 * * 0'  #  Sunday 03:00 UTC
   workflow_dispatch: {}
 
 jobs:

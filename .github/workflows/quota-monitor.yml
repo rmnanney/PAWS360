@@ -1,0 +1,95 @@
+name: Quota Monitor
+
+permissions:
+  actions: read
+  issues: write
+
+on:
+  schedule:
+    # Run within off-peak windows by default — run at 02:00, 04:00 and 06:00 UTC
+    - cron: '0 2,4,6 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-quota:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for active development (defer if activity detected)
+        id: defer_check
+        run: |
+          set -euo pipefail
+          WINDOW_MIN=30
+          REPO="${{ github.repository }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          DEFAULT_BRANCH=$(bash ./scripts/lib/gh-api-with-backoff.sh "/repos/$REPO" | jq -r '.default_branch')
+          cutoff=$(date -u -d "-${WINDOW_MIN} minutes" +%Y-%m-%dT%H:%M:%SZ)
+          recent_count=$(bash ./scripts/lib/gh-api-with-backoff.sh "/repos/$REPO/commits?sha=$DEFAULT_BRANCH&per_page=10" | jq --arg cutoff "$cutoff" '[.[] | select(.commit.committer.date >= $cutoff)] | length')
+          echo "recent_count=$recent_count" >> $GITHUB_OUTPUT
+          if [ "$recent_count" -gt 0 ]; then
+            echo "deferred=true" >> $GITHUB_OUTPUT
+            echo "Active development detected (commits in last ${WINDOW_MIN}min). Deferring quota-monitor run.";
+          else
+            echo "deferred=false" >> $GITHUB_OUTPUT
+          fi
+          # Is it weekend? (1..7 = Mon..Sun) - consider 6 & 7 as weekend
+          dow=$(date -u +%u)
+          is_weekend=false
+          if [ "$dow" -eq 6 ] || [ "$dow" -eq 7 ]; then
+            is_weekend=true
+          fi
+          echo "is_weekend=${is_weekend}" >> $GITHUB_OUTPUT
+
+      - name: Record run metadata
+        run: |
+          cat > run-metadata.json <<'EOF'
+          {
+            "run_id": "${{ github.run_id }}",
+            "run_number": "${{ github.run_number }}",
+            "trigger": "${{ github.event_name }}",
+            "deferred": "${{ steps.defer_check.outputs.deferred }}",
+            "is_weekend": "${{ steps.defer_check.outputs.is_weekend }}",
+            "workflow": "${{ github.workflow }}"
+          }
+          EOF
+
+      - name: Upload run metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-metadata-${{ github.run_id }}
+          path: run-metadata.json
+
+      - name: Check usage via GitHub API
+        if: steps.defer_check.outputs.deferred != 'true'
+        id: usage
+        run: |
+          raw=$(bash ./scripts/lib/gh-api-with-backoff.sh "/repos/${{ github.repository }}/actions/billing/usage" || echo '{}')
+          USAGE=$(echo "$raw" | jq -r '.total_minutes_used // 0')
+          echo "usage=$USAGE" >> $GITHUB_OUTPUT
+
+      - name: Evaluate thresholds and create issue if needed
+        if: always() && steps.defer_check.outputs.deferred != 'true'
+        run: |
+          USAGE=${{ steps.usage.outputs.usage }}
+          QUOTA=2000
+          PCT=$((USAGE * 100 / QUOTA))
+          # Default thresholds
+          ADVISORY=80
+          CRITICAL=90
+          if [ "${{ steps.defer_check.outputs.is_weekend }}" = 'true' ]; then
+            ADVISORY=90
+            CRITICAL=95
+            echo "Weekend profile active: relaxed thresholds (advisory=${ADVISORY}%, critical=${CRITICAL}%)"
+          fi
+          echo "Usage is ${USAGE} (${PCT}%)"
+          if [ $PCT -ge $CRITICAL ]; then
+            gh issue create --title "CRITICAL CI/CD Quota Alert: ${PCT}% used" --body "Current usage: ${USAGE}/${QUOTA} minutes\nAction required: pause scheduled jobs and investigate." --label quota-alert --assignee @ZackHawkins || true
+          elif [ $PCT -ge $ADVISORY ]; then
+            gh issue create --title "⚠️ CI/CD Quota Alert: ${PCT}% used" --body "Current usage: ${USAGE}/${QUOTA} minutes\nAdvisory: please review scheduled jobs" --label quota-alert || true
+          else
+            echo "Under threshold ($PCT%)."
+          fi

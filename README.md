@@ -35,6 +35,7 @@ The script will:
 - [Developer Onboarding Checklist](docs/local-development/onboarding-checklist.md)
 - [Makefile Target Reference](docs/reference/makefile-targets.md)
 - [HA Architecture Guide](docs/architecture/ha-stack.md)
+- [CI/CD Dashboard (monitoring)](monitoring/ci-cd-dashboard/README.md) → Live CI/CD metrics and historical trends (published to GitHub Pages when enabled)
 
 ---
 
@@ -136,6 +137,7 @@ PAWS360/
 | **🚀 Start Everything** | `./scripts/setup/paws360-services.sh start` | Launch all services |
 | **🧪 Run All Tests** | `./scripts/testing/exhaustive-test-suite.sh` | Validate everything works |
 | **🔧 Setup Local Dev** | `cd infrastructure/ansible && ./dev-helper.sh deploy-local-dev` | Complete environment setup |
+| **✍️ Enforce commit message format** | `git config --local commit.template .gitmessage && make setup-hooks` | Use the commit template and install repo hooks (commit-msg enforces JIRA key) |
 | **📊 Test APIs** | Import `PAWS360_Admin_API.postman_collection.json` | Test all endpoints |
 | **🗄️ Database Access** | Check `database/` folder | SQL scripts & docs |
 | **🎓 Run Student Frontend** | `cd frontend && npm run dev` | Next.js student app (port 9002) |
@@ -225,6 +227,7 @@ PAWS360/
 ### **👥 Team Help:**
 - **Slack/Teams** → Ask questions
 - **Code Reviews** → Get feedback on changes
+ - **Commit message policy** → Use `.gitmessage` as the template and run `make setup-hooks` to install the `commit-msg` hook which enforces a JIRA key (e.g., SCRUM-84) in the commit message.
 - **Mentor** → Find someone to pair with
 
 ---

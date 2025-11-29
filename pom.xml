@@ -166,6 +166,8 @@
                 <version>3.2.5</version>
                 <configuration>
                     <argLine>@{argLine} -Dspring.profiles.active=test</argLine>
+                    <forkedProcessExitTimeoutInSeconds>60</forkedProcessExitTimeoutInSeconds>
+                    <forkedProcessTimeoutInSeconds>0</forkedProcessTimeoutInSeconds>
                 </configuration>
             </plugin>
         </plugins>

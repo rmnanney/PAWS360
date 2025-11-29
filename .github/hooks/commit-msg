@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Commit-msg hook: ensure commit message contains a JIRA ticket reference (e.g., SCRUM-84)
+msg_file="$1"
+if [ -z "$msg_file" ]; then
+  echo "No commit message file provided" >&2
+  exit 1
+fi
+msg=$(cat "$msg_file")
+
+if grep -Eq '(SCRUM|JIRA)-[0-9]+' <<< "$msg"; then
+  exit 0
+else
+  echo "Error: Commit message must include a JIRA key (e.g. SCRUM-84) in the message." >&2
+  echo "Please update your commit message using the template .gitmessage or include the JIRA key." >&2
+  exit 1
+fi

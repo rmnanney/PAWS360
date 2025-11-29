@@ -1,3 +1,4 @@
+---
 name: CI
 
 on:
@@ -59,9 +60,9 @@ jobs:
       actions: read
       contents: read
     env:
-      # Defaults you can tweak: count threshold and byte-size threshold
+      #  Defaults you can tweak: count threshold and byte-size threshold
       ARTIFACT_COUNT_THRESHOLD: 30
-      ARTIFACT_SIZE_THRESHOLD_BYTES: 500000000 # 500 MB
+      ARTIFACT_SIZE_THRESHOLD_BYTES: 500000000  # 500 MB
       # GitHub API rate-limit usage threshold percent (warn if remaining % < this)
       API_RATE_LIMIT_PCT_THRESHOLD: 20
       # Threshold for Actions minutes used (warn when used minutes exceed this)
@@ -766,21 +767,21 @@ jobs:
     permissions:
       contents: read
     steps:
-        - name: Checkout repo
-          uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-        - name: Setup Python and install Ansible
-          uses: actions/setup-python@v4
-          with:
-            python-version: '3.11'
+      - name: Setup Python and install Ansible
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-        - name: Install Ansible
-          run: |
+      - name: Install Ansible
+        run: |
             python -m pip install --upgrade pip
             pip install ansible==8.8.0
 
-        - name: Prepare SSH for production (read secret at runtime)
-          run: |
+      - name: Prepare SSH for production (read secret at runtime)
+        run: |
             set -euxo pipefail
             if [ -z "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" ]; then
               echo "No PRODUCTION_SSH_PRIVATE_KEY provided — skipping SSH setup";
@@ -793,18 +794,18 @@ jobs:
               ssh-keyscan -H "$host" >> ~/.ssh/known_hosts || true
             done || true
 
-        - name: Ansible dry-run (check) via deploy.sh — production
-          working-directory: infrastructure/ansible
-          run: |
+      - name: Ansible dry-run (check) via deploy.sh — production
+        working-directory: infrastructure/ansible
+        run: |
             set -euxo pipefail
             BACKEND_IMAGE="${{ needs.build-and-push-images-production.outputs.backend_image_prod }}"
             FRONTEND_IMAGE="${{ needs.build-and-push-images-production.outputs.frontend_image_prod }}"
             echo "Running deploy.sh in check mode (no changes) against production inventory"
             ./deploy.sh deploy production "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
 
-        - name: Run deploy to production (real deployment)
-          # evaluate deploy toggle at runtime: this avoids compile-time secret usage and keeps PRs safe
-          run: |
+      - name: Run deploy to production (real deployment)
+        # evaluate deploy toggle at runtime: this avoids compile-time secret usage and keeps PRs safe
+        run: |
             set -euxo pipefail
             if [ "${{ secrets.AUTO_DEPLOY_TO_PRODUCTION }}" != "true" ]; then
               echo "AUTO_DEPLOY_TO_PRODUCTION is not 'true' — skipping real production deploy"
@@ -815,43 +816,64 @@ jobs:
             echo "AUTO_DEPLOY_TO_PRODUCTION=true — deploying to production via deploy.sh"
             printf 'y\n' | ./deploy.sh deploy production "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
 
-        - name: Post-deploy production health check
-          if: ${{ github.event_name != 'pull_request' }}
-          run: |
+      - name: Post-deploy production health check
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
             set -euxo pipefail
             echo "Running simple HTTP healthchecks against production hosts"
             awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/production/hosts | while read -r host; do
               echo "Checking $host..." || true
               SSH_USER="${{ secrets.PRODUCTION_SSH_USER }}"
               SSH_USER=${SSH_USER:-admin}
-              ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${SSH_USER}@${host}" 'curl -fsS http://localhost/actuator/health || echo FAILED'
+              ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa \
+                "${SSH_USER}@${host}" \
+                'curl -fsS http://localhost/actuator/health || echo FAILED'
             done || true
 
-        - name: Notify Slack (production success)
-          if: ${{ success() }}
-            run: |
-              if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
-                payload=$(jq -n --arg txt "Production deploy succeeded for ${GITHUB_REPOSITORY} (run: ${GITHUB_RUN_NUMBER})" '{text: $txt}')
-                curl -s -X POST -H 'Content-type: application/json' --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
-              else
-                echo "No SLACK_WEBHOOK configured; skipping slack notification"
-              fi
+      - name: Notify Slack (production success)
+        if: ${{ success() }}
+        run: |
+            if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+              payload=$(jq -n \
+                --arg txt "Production deploy succeeded for ${GITHUB_REPOSITORY} \
+                  (run: ${GITHUB_RUN_NUMBER})" \
+                '{text: $txt}')
+              curl -s -X POST -H 'Content-type: application/json' \
+                --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
+            else
+              echo "No SLACK_WEBHOOK configured; skipping slack notification"
+            fi
 
-        - name: Notify Slack (production failure)
-          if: ${{ failure() }}
-            run: |
-              if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
-                payload=$(jq -n --arg txt "Production deploy FAILED for ${GITHUB_REPOSITORY} (run: ${GITHUB_RUN_NUMBER}) — see $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{text: $txt}')
-                curl -s -X POST -H 'Content-type: application/json' --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
-              else
-                echo "No SLACK_WEBHOOK configured; skipping slack notification"
-              fi
+      - name: Notify Slack (production failure)
+        if: ${{ failure() }}
+        run: |
+            if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+              payload=$(jq -n \
+                --arg txt "Production deploy FAILED for ${GITHUB_REPOSITORY} \
+                  (run: ${GITHUB_RUN_NUMBER}) — see \
+                  $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                '{text: $txt}')
+              curl -s -X POST -H 'Content-type: application/json' \
+                --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
+            else
+              echo "No SLACK_WEBHOOK configured; skipping slack notification"
+            fi
 
-        - name: Create GitHub Issue on failure
-          if: ${{ failure() }}
-            uses: actions/github-script@v6
-            with:
-              script: |
-                const title = `Production deploy failed — run ${process.env.GITHUB_RUN_NUMBER}`;
-                const body = `Production deploy failed in run [${process.env.GITHUB_RUN_NUMBER}](${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}).\n\nSee logs for details.`;
-                await github.rest.issues.create({ owner: context.repo.owner, repo: context.repo.repo, title, body });
+      - name: Create GitHub Issue on failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+              const title = `Production deploy failed — run \
+                ${process.env.GITHUB_RUN_NUMBER}`;
+              const body = `Production deploy failed in run \
+                [${process.env.GITHUB_RUN_NUMBER}]\
+                (${process.env.GITHUB_SERVER_URL}/\
+                ${context.repo.owner}/${context.repo.repo}/actions/runs/\
+                ${process.env.GITHUB_RUN_ID}).\n\nSee logs for details.`;
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body
+              });
