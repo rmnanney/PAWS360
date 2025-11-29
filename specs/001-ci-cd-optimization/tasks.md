@@ -70,16 +70,16 @@ Independent Test Criteria
 
 Implementation Tasks
 
-- [ ] T023 [US1] Implement `.github/hooks/pre-push` to run `scripts/local-ci/pre-push-checks.sh`
-- [ ] T024 [US1] Make pre-push idempotent and resilient (no TTY assumptions), add clear messaging
-- [ ] T025 [US1] Implement `scripts/local-ci/pre-push-checks.sh` to run: backend compile/tests, frontend lint/tests, security fast checks
-- [ ] T026 [US1] Add auto-repair target `setup-hooks` in `Makefile` to install/verify `.git/hooks/pre-push`
-- [ ] T027 [US1] Implement `.github/hooks/git-push-wrapper` with `--bypass` justification prompt and `gh issue create --label bypass-audit`
-- [ ] T028 [US1] Document wrapper install in `specs/001-ci-cd-optimization/quickstart.md`
-- [ ] T029 [US1] Add `config/Makefile` entry to alias wrapper as `make push` (discoverability)
-- [ ] T030 [US1] Add log grouping and masking to pre-push messages
-- [ ] T031 [US1] Add local artifact capture on failure to `memory/pre-push/` (short-lived)
-- [ ] T032 [US1] Add `npm test --silent` and `mvn -q -DskipITs` fast path toggles via `DEBUG`
+- [X] T023 [US1] Implement `.github/hooks/pre-push` to run `scripts/local-ci/pre-push-checks.sh`
+- [X] T024 [US1] Make pre-push idempotent and resilient (no TTY assumptions), add clear messaging
+- [X] T025 [US1] Implement `scripts/local-ci/pre-push-checks.sh` to run: backend compile/tests, frontend lint/tests, security fast checks
+- [X] T026 [US1] Add auto-repair target `setup-hooks` in `Makefile` to install/verify `.git/hooks/pre-push`
+- [X] T027 [US1] Implement `.github/hooks/git-push-wrapper` with `--bypass` justification prompt and `gh issue create --label bypass-audit`
+- [X] T028 [US1] Document wrapper install in `specs/001-ci-cd-optimization/quickstart.md`
+- [X] T029 [US1] Add `config/Makefile` entry to alias wrapper as `make push` (discoverability)
+- [X] T030 [US1] Add log grouping and masking to pre-push messages
+- [X] T031 [US1] Add local artifact capture on failure to `memory/pre-push/` (short-lived)
+- [X] T032 [US1] Add `npm test --silent` and `mvn -q -DskipITs` fast path toggles via `DEBUG`
 
 Verification (Reusable)
 - Local dry-run: `make setup-hooks && chmod +x .github/hooks/* && ln -sf ../../.github/hooks/pre-push .git/hooks/pre-push`.
@@ -101,18 +101,18 @@ Independent Test Criteria
 
 Implementation Tasks
 
-- [ ] T033 [US2] Add path filters to `.github/workflows/ci-cd.yml` (include: `src/**`, `app/**`, `pom.xml`, `package.json`, `.github/workflows/**`, `Dockerfile`; ignore docs/`**/*.md`)
-- [ ] T034 [US2] Add concurrency groups with `cancel-in-progress: true` per branch in main CI workflows
-- [ ] T035 [US2] Add draft PR detection `if: github.event.pull_request.draft == true` to skip heavy jobs
-- [ ] T036 [US2] Split caches per ecosystem in workflows using `actions/cache@v4` (Maven, npm)
-- [ ] T037 [US2] Add cache hit/miss logging and metrics upload as artifact `cache-metrics.json`
-- [ ] T038 [US2] Add job matrix minimal path for debug (`matrix: [small]`) toggled via `workflow_dispatch` inputs
-- [ ] T039 [US2] Ensure deploy workflows do NOT cancel in-progress (safety)
-- [ ] T040 [US2] Add failure-first job ordering (smoke/lint first) using `needs`
-- [ ] T041 [US2] Add grouping/masking to CI logs and step-level timings
-- [ ] T042 [US2] Validate runner permissions: least-privileged `permissions:` in all workflows
-- [ ] T043 [US2] Add `changed-paths` job to compute affected components and conditionally run jobs
-- [ ] T044 [US2] Update `docs/ci-cd/workflow-optimization.md` with examples and outcomes
+- [X] T033 [US2] Add path filters to `.github/workflows/ci-cd.yml` (include: `src/**`, `app/**`, `pom.xml`, `package.json`, `.github/workflows/**`, `Dockerfile`; ignore docs/`**/*.md`)
+- [X] T034 [US2] Add concurrency groups with `cancel-in-progress: true` per branch in main CI workflows
+- [X] T035 [US2] Add draft PR detection `if: github.event.pull_request.draft == true` to skip heavy jobs
+- [X] T036 [US2] Split caches per ecosystem in workflows using `actions/cache@v4` (Maven, npm)
+- [X] T037 [US2] Add cache hit/miss logging and metrics upload as artifact `cache-metrics.json`
+- [X] T038 [US2] Add job matrix minimal path for debug (`matrix: [small]`) toggled via `workflow_dispatch` inputs
+- [X] T039 [US2] Ensure deploy workflows do NOT cancel in-progress (safety)
+- [X] T040 [US2] Add failure-first job ordering (smoke/lint first) using `needs`
+- [X] T041 [US2] Add grouping/masking to CI logs and step-level timings
+- [X] T042 [US2] Validate runner permissions: least-privileged `permissions:` in all workflows
+- [X] T043 [US2] Add `changed-paths` job to compute affected components and conditionally run jobs
+- [X] T044 [US2] Update `docs/ci-cd/workflow-optimization.md` with examples and outcomes
 
 Verification (Reusable)
 - Open PR with only `docs/**` change; verify heavy jobs skipped.

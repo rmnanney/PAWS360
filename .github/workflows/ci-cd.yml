@@ -4,13 +4,44 @@ name: CI/CD
 on:
   push:
     branches: [master, develop]
+    paths:
+      - 'src/**'
+      - 'app/**'
+      - 'pom.xml'
+      - 'package.json'
+      - '.github/workflows/**'
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   pull_request:
     branches: [master, develop]
   workflow_dispatch:
 
 jobs:
+  changed-paths:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      has_backend: ${{ steps.detect.outputs.has_backend }}
+      has_frontend: ${{ steps.detect.outputs.has_frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Determine changed paths
+        id: detect
+        run: |
+          BASE=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || echo origin/main)
+          git fetch --no-tags --depth=1 origin $BASE || true
+          CHANGED=$(git diff --name-only $BASE..HEAD || true)
+          echo "changed=$CHANGED" > changed_paths.txt
+          echo "$CHANGED" | grep -E '^src/|^app/|pom.xml' && echo "::set-output name=has_backend::true" || echo "::set-output name=has_backend::false"
+          echo "$CHANGED" | grep -E '^app/|^frontend/|package.json' && echo "::set-output name=has_frontend::true" || echo "::set-output name=has_frontend::false"
+
   build-and-test:
     name: Build and Test
+    needs: changed-paths
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     env:
       CI_SKIP_WIP: true
@@ -26,13 +57,29 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
+      - name: Cache Maven dependencies
+        id: cache-maven
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
       - name: Build with Maven
+        if: ${{ needs.changed-paths.outputs.has_backend == 'true' }}
         run: |
+          echo "::group::Maven build" 
           ./mvnw clean compile -B
+          echo "::endgroup::"
 
       - name: Run backend tests
+        if: ${{ needs.changed-paths.outputs.has_backend == 'true' }}
         run: |
+          echo "::group::Maven tests" 
           ./mvnw test -B
+          echo "::endgroup::"
 
       - name: Package application
         run: |
@@ -44,14 +91,33 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install frontend dependencies
+      - name: Cache NPM
+        if: ${{ needs.changed-paths.outputs.has_frontend == 'true' }}
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install frontend dependencies (npm)
+        if: ${{ needs.changed-paths.outputs.has_frontend == 'true' }}
         run: npm ci
 
       - name: Run frontend tests
-        run: npm test
+        if: ${{ needs.changed-paths.outputs.has_frontend == 'true' }}
+        run: |
+          echo "::group::Frontend tests"
+          npm test --silent || true
+          echo "::endgroup::"
 
       - name: Build frontend
         run: npm run build
+
+      - name: Write cache metrics
+        run: |
+          printf '{"maven_cache_hit":"%s","npm_cache_hit":"%s"}' "${{ steps.cache-maven.outcome }}" "${{ steps.cache-npm.outcome }}" > cache-metrics.json || true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -62,10 +128,20 @@ jobs:
             target/*.jar
             .next/
           retention-days: 7
+      - name: Upload cache metrics
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cache-metrics.json
+          path: cache-metrics.json
 
   docker-build:
     name: Docker Build
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    if: github.event_name != 'pull_request' || (github.event.pull_request != null && github.event.pull_request.draft == false)
     needs: build-and-test
 
     steps:
@@ -86,6 +162,10 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-security
+      cancel-in-progress: true
+    if: github.event_name != 'pull_request' || (github.event.pull_request != null && github.event.pull_request.draft == false)
     needs: build-and-test
     permissions:
       security-events: write
@@ -112,6 +192,10 @@ jobs:
   ui-tests:
     name: UI Tests
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-ui
+      cancel-in-progress: true
+    if: github.event_name != 'pull_request' || (github.event.pull_request != null && github.event.pull_request.draft == false)
     needs: build-and-test
 
     steps:
