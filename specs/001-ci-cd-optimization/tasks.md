@@ -134,14 +134,14 @@ Independent Test Criteria
 
 Implementation Tasks
 
-- [ ] T045 [US3] Implement `Makefile` targets: `ci-local`, `ci-quick`, `ci-full`
-- [ ] T046 [US3] Use `docker-compose -f docker-compose.ci.yml run --rm ci-tests` in `ci-local`
-- [ ] T047 [US3] Wire component filters to `scripts/local-ci/test-all.sh` (backend-only, frontend-only)
-- [ ] T048 [US3] Mount source as volume; avoid copy to speed startup
-- [ ] T049 [US3] Add result summary to stdout and write `memory/ci-local/summary.json`
-- [ ] T050 [US3] Align tool versions with cloud (java/node/npm/maven) and print versions when `DEBUG=1`
-- [ ] T051 [US3] Update `docs/ci-cd/local-testing.md` with examples and timing guidance
-- [ ] T052 [US3] Add parity check script `scripts/local-ci/verify-parity.sh` (compare local vs last cloud run results)
+- [X] T045 [US3] Implement `Makefile` targets: `ci-local`, `ci-quick`, `ci-full`
+- [X] T046 [US3] Use `docker-compose -f docker-compose.ci.yml run --rm ci-tests` in `ci-local`
+- [X] T047 [US3] Wire component filters to `scripts/local-ci/test-all.sh` (backend-only, frontend-only)
+- [X] T048 [US3] Mount source as volume; avoid copy to speed startup
+- [X] T049 [US3] Add result summary to stdout and write `memory/ci-local/summary.json`
+- [X] T050 [US3] Align tool versions with cloud (java/node/npm/maven) and print versions when `DEBUG=1`
+- [X] T051 [US3] Update `docs/ci-cd/local-testing.md` with examples and timing guidance
+- [X] T052 [US3] Add parity check script `scripts/local-ci/verify-parity.sh` (compare local vs last cloud run results)
 
 Verification (Reusable)
 - Time `make ci-local`; confirm <5 minutes on reference.

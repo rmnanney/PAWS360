@@ -197,11 +197,8 @@ dev-setup: setup docker-build
 	@echo "Run 'make test' to run tests"
 
 ci-local:
-	@echo "Running local CI pipeline..."
-	make quality
-	make test
-	make docker-test
-	make coverage
+	@echo "Running local CI pipeline (docker-compose.ci.yml)..."
+	@docker-compose -f docker-compose.ci.yml up --build --abort-on-container-exit --exit-code-from paws360-app paws360-app || ( docker-compose -f docker-compose.ci.yml logs --tail=200; exit 1 )
 	@echo "Local CI pipeline complete!"
 
 # convenience wrapper alias
