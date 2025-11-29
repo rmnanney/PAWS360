@@ -14,18 +14,18 @@ Scope: Prerequisites, constitutional artifacts, JIRA mapping, repo structure sca
 
 Implementation Tasks
 
-- [ ] T001 Create `specs/001-ci-cd-optimization/tasks.md` baseline (this file) and link in `plan.md`
-- [ ] T002 Add constitutional session scaffold in `contexts/sessions/current-session.yml`
-- [ ] T003 Create SCRUM-84 `gpt-context.md` at `specs/001-ci-cd-optimization/gpt-context.md` with goals, scope, constraints
-- [ ] T004 Create monitoring integration doc `contexts/infrastructure/monitoring-stack.md` (CI/CD metrics section)
-- [ ] T005 Ensure `.github/workflows/` exists and is tracked; audit existing YAML for ownership and permissions
-- [ ] T006 Create hooks folder `.github/hooks/README.md` with installation notes and governance
-- [ ] T007 Create local CI folder `scripts/local-ci/README.md` with usage overview
-- [ ] T008 Extend root `Makefile` with placeholders for ci targets (to be filled next phases)
-- [ ] T009 Validate GitHub Pages configuration in repo settings and document outcome in `monitoring/ci-cd-dashboard/README.md`
-- [ ] T010 Add CODEOWNERS review for workflows in `.github/CODEOWNERS` (if missing, create)
-- [ ] T011 Add SECURITY permissions note in `docs/CI-CD-RESOURCE-STRATEGY.md` (GITHUB_TOKEN scopes, gh auth)
-- [ ] T012 Add retro log `specs/001-ci-cd-optimization/checklists/retrospectives.md`
+- [X] T001 Create `specs/001-ci-cd-optimization/tasks.md` baseline (this file) and link in `plan.md`
+- [X] T002 Add constitutional session scaffold in `contexts/sessions/current-session.yml`
+- [X] T003 Create SCRUM-84 `gpt-context.md` at `specs/001-ci-cd-optimization/gpt-context.md` with goals, scope, constraints
+- [X] T004 Create monitoring integration doc `contexts/infrastructure/monitoring-stack.md` (CI/CD metrics section)
+- [X] T005 Ensure `.github/workflows/` exists and is tracked; audit existing YAML for ownership and permissions
+- [X] T006 Create hooks folder `.github/hooks/README.md` with installation notes and governance
+- [X] T007 Create local CI folder `scripts/local-ci/README.md` with usage overview
+- [X] T008 Extend root `Makefile` with placeholders for ci targets (to be filled next phases)
+- [X] T009 Validate GitHub Pages configuration in repo settings and document outcome in `monitoring/ci-cd-dashboard/README.md`
+- [X] T010 Add CODEOWNERS review for workflows in `.github/CODEOWNERS` (if missing, create)
+- [X] T011 Add SECURITY permissions note in `docs/CI-CD-RESOURCE-STRATEGY.md` (GITHUB_TOKEN scopes, gh auth)
+- [X] T012 Add retro log `specs/001-ci-cd-optimization/checklists/retrospectives.md`
 
 Verification (Reusable)
 - Local: `ls` confirms paths exist; `yq`/`yamllint` passes on any placeholder workflows; `make -n` shows targets.
@@ -40,16 +40,16 @@ Scope: Baseline debugging workflow, debug targets, shared utilities, and constit
 
 Implementation Tasks
 
-- [ ] T013 Create `.github/workflows/debug.yml` workflow with `workflow_dispatch` inputs (job, stepDebug) and artifact upload
-- [ ] T014 Add Make targets in `Makefile`: `debug-ci`, `debug-job`, wiring `DEBUG=1`
-- [ ] T015 Add `scripts/local-ci/pre-push-checks.sh` (stub) with `DEBUG` toggles and clear exit codes
-- [ ] T016 Add `scripts/local-ci/test-all.sh` (stub) to run full tests locally
-- [ ] T017 Add `scripts/local-ci/build-images.sh` (stub) and align with `docker-compose.ci.yml`
-- [ ] T018 Add `scripts/local-ci/changed-paths.sh` to detect impacted components via `git diff`
-- [ ] T019 Add `.github/hooks/pre-push` template file (stub)
-- [ ] T020 Add `.github/hooks/git-push-wrapper` helper (stub) with `--bypass` option (will integrate in US1)
-- [ ] T021 Add `docs/ci-cd/local-testing.md` capturing debug flow and targets
-- [ ] T022 Add `docs/ci-cd/workflow-optimization.md` baseline structure
+- [X] T013 Create `.github/workflows/debug.yml` workflow with `workflow_dispatch` inputs (job, stepDebug) and artifact upload
+- [X] T014 Add Make targets in `Makefile`: `debug-ci`, `debug-job`, wiring `DEBUG=1`
+- [X] T015 Add `scripts/local-ci/pre-push-checks.sh` (stub) with `DEBUG` toggles and clear exit codes
+- [X] T016 Add `scripts/local-ci/test-all.sh` (stub) to run full tests locally
+- [X] T017 Add `scripts/local-ci/build-images.sh` (stub) and align with `docker-compose.ci.yml`
+- [X] T018 Add `scripts/local-ci/changed-paths.sh` to detect impacted components via `git diff`
+- [X] T019 Add `.github/hooks/pre-push` template file (stub)
+- [X] T020 Add `.github/hooks/git-push-wrapper` helper (stub) with `--bypass` option (will integrate in US1)
+- [X] T021 Add `docs/ci-cd/local-testing.md` capturing debug flow and targets
+- [X] T022 Add `docs/ci-cd/workflow-optimization.md` baseline structure
 
 Verification (Reusable)
 - Run `act -l` lists `debug` workflow; `yamllint` passes on `.github/workflows/debug.yml`.
