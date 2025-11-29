@@ -9,6 +9,16 @@
 
 This feature optimizes the PAWS360 CI/CD pipeline to operate efficiently within GitHub Actions free tier constraints while maintaining development velocity and code quality. Current usage is at 50% of the monthly quota (1,000/2,000 minutes), with risk of quota exhaustion during peak development periods. The optimization implements a hybrid cloud/local execution strategy that reduces cloud resource consumption by 58% while improving build performance through intelligent caching and parallel execution.
 
+## Clarifications
+
+### Session 2025-11-28
+
+- Q: How should team leads receive quota threshold alerts when 80% consumption is reached? → A: GitHub repository issue auto-created
+- Q: Where should the resource monitoring dashboard be hosted and accessed? → A: GitHub Pages static site in the repository
+- Q: How should pre-push validation hooks be installed on developer machines? → A: Automatic via git clone template and verified at every build and fixed/installed as needed
+- Q: What mechanism should developers use to bypass pre-push validation hooks for urgent fixes? → A: Git's built-in `--no-verify` flag, but then require interactive prompt asking for justification; also just interactive prompt is acceptable
+- Q: How should the quota reservation mechanism enforce the 30% limit for scheduled jobs? → A: Advisory warning (jobs run but alert if over budget)
+
 **Business Value:**
 - **Cost Control**: Maintain free tier usage, avoid $0.008/minute overage charges
 - **Developer Velocity**: Faster feedback loops through local execution and optimized cloud workflows
@@ -42,7 +52,7 @@ As a developer, I want my code automatically validated on my local machine befor
 
 1. **Given** I have uncommitted changes with compilation errors, **When** I attempt to push to remote, **Then** the pre-push hook detects the build failure and prevents the push with clear error output
 2. **Given** I have committed changes that pass all local checks, **When** I push to remote, **Then** the push proceeds immediately without interruption
-3. **Given** I need to bypass local validation for urgent fixes, **When** I use the bypass flag, **Then** the push proceeds with a warning message
+3. **Given** I need to bypass local validation for urgent fixes, **When** I use `git push --no-verify` or trigger bypass, **Then** an interactive prompt requires justification input, which is logged, before allowing the push to proceed with a warning message
 
 ---
 
@@ -88,8 +98,8 @@ As a team lead, I want visibility into CI/CD resource consumption with alerts wh
 
 **Acceptance Scenarios**:
 
-1. **Given** we are approaching 80% of monthly quota, **When** the monitoring system evaluates usage, **Then** team leads receive an alert with current usage trends and recommendations
-2. **Given** I want to understand resource usage patterns, **When** I view the monitoring dashboard, **Then** I see breakdown by workflow type, timing trends, and cost projections
+1. **Given** we are approaching 80% of monthly quota, **When** the monitoring system evaluates usage, **Then** a GitHub issue is automatically created with "quota-alert" tag, assigned to team leads, containing current usage trends and recommendations
+2. **Given** I want to understand resource usage patterns, **When** I navigate to the GitHub Pages dashboard URL, **Then** I see breakdown by workflow type, timing trends, and cost projections
 3. **Given** a workflow consumes unexpectedly high resources, **When** execution completes, **Then** the system flags it as an anomaly with comparison to baseline metrics
 
 ---
@@ -160,9 +170,9 @@ As a system administrator, I want scheduled CI/CD jobs (nightly builds, security
 ### Functional Requirements
 
 **Local Validation Infrastructure**
-- **FR-001**: System MUST execute pre-push validation hooks that run compilation, unit tests, and linting on developer machines before code reaches remote repository
+- **FR-001**: System MUST execute pre-push validation hooks that run compilation, unit tests, and linting on developer machines before code reaches remote repository; hooks installed automatically via git clone template and verified/reinstalled on every build
 - **FR-002**: Pre-push hooks MUST complete within 2 minutes for typical changesets (<100 files modified)
-- **FR-003**: System MUST provide bypass mechanism for pre-push hooks requiring explicit developer acknowledgment
+- **FR-003**: System MUST provide bypass mechanism for pre-push hooks using Git's `--no-verify` flag or direct invocation; in both cases, an interactive prompt MUST require developer to provide justification for the bypass
 - **FR-004**: Local CI execution MUST replicate cloud pipeline behavior including all quality gates (tests, linting, security scanning)
 
 **Cloud Workflow Optimization**
@@ -174,13 +184,13 @@ As a system administrator, I want scheduled CI/CD jobs (nightly builds, security
 
 **Resource Monitoring & Control**
 - **FR-010**: System MUST track GitHub Actions minute consumption with daily granularity
-- **FR-011**: System MUST alert team leads when consumption exceeds 80% of monthly quota
-- **FR-012**: Monitoring dashboard MUST display resource usage breakdown by workflow type, branch, and time period
-- **FR-013**: System MUST implement quota reservation mechanism preventing scheduled jobs from consuming more than 30% of monthly allocation
+- **FR-011**: System MUST create a GitHub issue tagged with "quota-alert" when consumption exceeds 80% of monthly quota, assigned to team leads
+- **FR-012**: Monitoring dashboard MUST be hosted on GitHub Pages as a static site, displaying resource usage breakdown by workflow type, branch, and time period
+- **FR-013**: System MUST implement quota reservation mechanism that monitors scheduled job consumption; when scheduled jobs exceed 30% of monthly allocation, system generates advisory warnings but allows jobs to continue while alerting maintainers
 
 **Scheduled Job Management**
 - **FR-014**: Scheduled jobs MUST execute during configured time windows (default: 2-6 AM local time)
-- **FR-015**: System MUST defer scheduled jobs when quota usage exceeds thresholds
+- **FR-015**: System MUST generate warnings when scheduled jobs approach or exceed quota allocation thresholds
 - **FR-016**: Scheduled jobs MUST use batch processing mode to minimize resource consumption per execution
 
 **Developer Experience**
@@ -191,7 +201,7 @@ As a system administrator, I want scheduled CI/CD jobs (nightly builds, security
 
 **Quality Assurance**
 - **FR-021**: Local and cloud validation MUST execute identical test suites to prevent environment-specific failures
-- **FR-022**: System MUST maintain audit log of all validation bypasses including developer identity and justification
+- **FR-022**: System MUST maintain audit log of all validation bypasses including developer identity, timestamp, and justification provided via interactive prompt
 
 ### Key Entities *(include if feature involves data)*
 

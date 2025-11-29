@@ -1,0 +1,313 @@
+openapi: 3.0.3
+info:
+  title: GitHub Actions API Integration
+  description: API contract for CI/CD optimization monitoring dashboard
+  version: 1.0.0
+  contact:
+    name: PAWS360 DevOps Team
+
+servers:
+  - url: https://api.github.com
+    description: GitHub REST API v3
+
+security:
+  - githubToken: []
+
+paths:
+  /repos/{owner}/{repo}/actions/runs:
+    get:
+      summary: List workflow runs
+      description: Fetch workflow execution history for quota monitoring and metrics
+      operationId: listWorkflowRuns
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Repository owner (username or organization)
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Repository name
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 100
+          description: Results per page
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: created
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter by creation date (>=)
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [completed, action_required, cancelled, failure, neutral, skipped, stale, success, timed_out, in_progress, queued, requested, waiting]
+          description: Filter by workflow run status
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_count:
+                    type: integer
+                  workflow_runs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WorkflowRun'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /repos/{owner}/{repo}/actions/billing/usage:
+    get:
+      summary: Get GitHub Actions usage
+      description: Retrieve monthly minute consumption for quota tracking
+      operationId: getActionsUsage
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionsUsage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /repos/{owner}/{repo}/issues:
+    post:
+      summary: Create quota alert issue
+      description: Create GitHub issue when quota thresholds are exceeded
+      operationId: createQuotaAlert
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - body
+              properties:
+                title:
+                  type: string
+                  example: "⚠️ CI/CD Quota Alert: 82% Used"
+                body:
+                  type: string
+                  example: |
+                    **Current Usage**: 1,640 / 2,000 minutes (82%)
+                    **Projected End-of-Month**: 1,890 minutes (95%)
+                    
+                    **Recommendations**:
+                    - Defer non-critical scheduled jobs
+                    - Use local CI for development testing
+                    - Review workflow efficiency
+                labels:
+                  type: array
+                  items:
+                    type: string
+                  example: ["quota-alert", "priority:high"]
+                assignees:
+                  type: array
+                  items:
+                    type: string
+                  example: ["tech-lead"]
+      responses:
+        '201':
+          description: Issue created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  schemas:
+    WorkflowRun:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1234567890
+        name:
+          type: string
+          example: "CI/CD Pipeline"
+        head_branch:
+          type: string
+          example: "main"
+        head_sha:
+          type: string
+          example: "abc123def456"
+        run_number:
+          type: integer
+          example: 42
+        event:
+          type: string
+          enum: [push, pull_request, schedule, workflow_dispatch]
+          example: "push"
+        status:
+          type: string
+          enum: [queued, in_progress, completed, cancelled]
+          example: "completed"
+        conclusion:
+          type: string
+          enum: [action_required, cancelled, failure, neutral, success, skipped, stale, timed_out]
+          nullable: true
+          example: "success"
+        workflow_id:
+          type: integer
+          example: 123
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-11-28T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-11-28T10:15:00Z"
+        run_started_at:
+          type: string
+          format: date-time
+          example: "2025-11-28T10:01:00Z"
+        run_attempt:
+          type: integer
+          example: 1
+        actor:
+          type: object
+          properties:
+            login:
+              type: string
+              example: "developer123"
+        
+    ActionsUsage:
+      type: object
+      properties:
+        total_minutes_used:
+          type: integer
+          description: Total GitHub Actions minutes consumed in current billing cycle
+          example: 1640
+        total_paid_minutes_used:
+          type: integer
+          description: Paid minutes used (0 for free tier)
+          example: 0
+        included_minutes:
+          type: integer
+          description: Minutes included in plan
+          example: 2000
+        minutes_used_breakdown:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Breakdown by runner type (UBUNTU, WINDOWS, MACOS)
+          example:
+            UBUNTU: 1500
+            MACOS: 140
+
+    Issue:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        number:
+          type: integer
+        title:
+          type: string
+        state:
+          type: string
+          enum: [open, closed]
+        html_url:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+        labels:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Requires authentication"
+    
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Resource not accessible by integration"
+
+  securitySchemes:
+    githubToken:
+      type: http
+      scheme: bearer
+      description: |
+        GitHub Personal Access Token or GITHUB_TOKEN.
+        
+        Required scopes:
+        - `repo` (for private repositories)
+        - `workflow` (to access Actions data)
+        
+        In GitHub Actions workflows, use the automatic GITHUB_TOKEN:
+        ```yaml
+        - uses: actions/github-script@v7
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+        ```
