@@ -1,9 +1,14 @@
 ---
 name: Artifact report (daily)
 
+permissions:
+  actions: read
+  contents: read
+
 on:
   schedule:
-    - cron: '0 8 * * *'  # daily at 08:00 UTC
+    # Move daily artifact report to off-peak window (03:00 UTC)
+    - cron: '0 3 * * *'
   workflow_dispatch: {}
 
 jobs:
@@ -33,7 +38,7 @@ jobs:
           ITEMS_JSON="[]"
 
           while :; do
-            resp=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $TOKEN" "https://api.github.com/repos/$REPO/actions/artifacts?per_page=$PER_PAGE&page=$PAGE")
+            resp=$(bash ./scripts/lib/gh-api-with-backoff.sh "/repos/$REPO/actions/artifacts?per_page=$PER_PAGE&page=$PAGE")
             page_count=$(echo "$resp" | jq '.artifacts | length')
             if [ "$page_count" -eq 0 ]; then
               break
@@ -58,7 +63,7 @@ jobs:
           OWNER="${{ github.repository_owner }}"
 
           # Rate limit
-          resp=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit)
+          resp=$(bash ./scripts/lib/gh-api-with-backoff.sh "/rate_limit")
           core_limit=$(echo "$resp" | jq -r '.resources.core.limit')
           core_remaining=$(echo "$resp" | jq -r '.resources.core.remaining')
           pct_remain=0
@@ -68,7 +73,7 @@ jobs:
           echo "Rate limit remaining: ${core_remaining}/${core_limit} (${pct_remain}%)"
 
           # Repo usage
-          repo_usage=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO/actions/usage" || true)
+          repo_usage=$(bash ./scripts/lib/gh-api-with-backoff.sh "/repos/$REPO/actions/usage" || true)
           if [ -n "$(echo $repo_usage | jq -r 'select(.total_minutes_used != null or .billable != null)')" ]; then
             total_minutes=$(echo "$repo_usage" | jq -r '.total_minutes_used // (.billable.total_seconds // 0) / 60 // 0' 2>/dev/null || echo 0)
             echo "Repo actions minutes used: $total_minutes"

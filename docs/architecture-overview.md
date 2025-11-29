@@ -60,6 +60,7 @@ graph TB
         S --> T[Ansible<br/>Automation]
         S --> U[Prometheus<br/>Monitoring]
         S --> V[Grafana<br/>Visualization]
+        S --> W[CI/CD Dashboard<br/>(GitHub - monitoring/ci-cd-dashboard)]
     end
 
     subgraph "Development Layer"
@@ -190,6 +191,7 @@ graph LR
         M --> N[Docker Containers]
         N --> O[Production Environment]
         O --> P[Monitoring & Alerts]
+        P --> Q[CI/CD Dashboard]
     end
 
     style A fill:#e3f2fd
@@ -238,6 +240,12 @@ sequenceDiagram
     Code->>DB: Integrate with data layer
     DB-->>Code: Data persistence and retrieval
     Dev->>Test: Write and run comprehensive tests
+
+    ### CI/CD Monitoring & Dashboard
+
+    We've added a lightweight CI/CD dashboard at `monitoring/ci-cd-dashboard/` that aggregates GitHub Actions run metrics (success/failure counts, run duration, flaky detection) and presents them as a static site. The dashboard is updated on a scheduled workflow (`.github/workflows/update-dashboard.yml`) which fetches run data, computes aggregates (via `scripts/monitoring/calc-metrics.js`) and persists `metrics.json`. The dashboard may be published via GitHub Pages for easy organization-wide visibility.
+
+    Location: monitoring/ci-cd-dashboard/ (also available in repository tree and published to Pages when configured)
     Test-->>Dev: Code quality validation
     Dev->>Deploy: Automated deployment to environments
     Deploy-->>Dev: Production deployment with monitoring

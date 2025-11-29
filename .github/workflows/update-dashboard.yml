@@ -1,0 +1,108 @@
+name: Update Dashboard
+
+permissions:
+  contents: write  # required to commit and push updated metrics.json
+  actions: read    # read workflow runs
+  issues: write    # required to create advisory issues when thresholds exceeded
+
+on:
+  schedule:
+    # Run hourly during off-peak window (02:00 - 06:00 UTC) to reduce interference with development activity
+    - cron: '0 2-6 * * *'
+  workflow_dispatch:
+
+jobs:
+  build-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for active development (defer if activity detected)
+        id: defer_check
+        run: |
+          set -euo pipefail
+          WINDOW_MIN=30
+          REPO="${{ github.repository }}"
+          DEFAULT_BRANCH=$(bash ./scripts/lib/gh-api-with-backoff.sh "/repos/$REPO" | jq -r '.default_branch')
+          cutoff=$(date -u -d "-${WINDOW_MIN} minutes" +%Y-%m-%dT%H:%M:%SZ)
+          # Check recent commits to default branch
+          recent_count=$(bash ./scripts/lib/gh-api-with-backoff.sh "/repos/$REPO/commits?sha=$DEFAULT_BRANCH&per_page=10" | jq --arg cutoff "$cutoff" '[.[] | select(.commit.committer.date >= $cutoff)] | length')
+          echo "recent_count=$recent_count" >> $GITHUB_OUTPUT
+          if [ "$recent_count" -gt 0 ]; then
+            echo "deferred=true" >> $GITHUB_OUTPUT
+            echo "Active development detected (commits in last ${WINDOW_MIN}min). Deferring update-dashboard run.";
+          else
+            echo "deferred=false" >> $GITHUB_OUTPUT
+          fi
+          # Is it weekend? (1..7 = Mon..Sun) - consider 6 & 7 as weekend
+          dow=$(date -u +%u)
+          is_weekend=false
+          if [ "$dow" -eq 6 ] || [ "$dow" -eq 7 ]; then
+            is_weekend=true
+          fi
+          echo "is_weekend=${is_weekend}" >> $GITHUB_OUTPUT
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Record run metadata
+        run: |
+          cat > run-metadata.json <<'EOF'
+          {
+            "run_id": "${{ github.run_id }}",
+            "run_number": "${{ github.run_number }}",
+            "trigger": "${{ github.event_name }}",
+            "deferred": "${{ steps.defer_check.outputs.deferred }}",
+            "is_weekend": "${{ steps.defer_check.outputs.is_weekend }}",
+            "workflow": "${{ github.workflow }}"
+          }
+          EOF
+
+      - name: Upload run metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-metadata-${{ github.run_id }}
+          path: run-metadata.json
+
+      - name: Fetch recent runs
+        if: steps.defer_check.outputs.deferred != 'true'
+        run: |
+          bash ./scripts/lib/gh-api-with-backoff.sh "/repos/${{ github.repository }}/actions/runs?per_page=100" > runs.json
+
+      - name: Calculate metrics
+        if: steps.defer_check.outputs.deferred != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run calc-metrics
+        if: steps.defer_check.outputs.deferred != 'true'
+        run: |
+          node scripts/monitoring/calc-metrics.js runs.json monitoring/ci-cd-dashboard/data/metrics.json
+
+      - name: Check scheduled consumption vs advisory threshold
+        if: steps.defer_check.outputs.deferred != 'true'
+        run: |
+          set -euo pipefail
+          THRESHOLD=30
+          metrics=monitoring/ci-cd-dashboard/data/metrics.json
+          scheduled_pct=$(jq -r '.scheduled_percentage // 0' "$metrics")
+          echo "Scheduled consumption is ${scheduled_pct}% (threshold=${THRESHOLD}%)"
+          if [ "$scheduled_pct" -ge "$THRESHOLD" ]; then
+            echo "Scheduled jobs exceed advisory threshold (${scheduled_pct}% >= ${THRESHOLD}%). Creating advisory issue."
+            gh issue create --title "Advisory: Scheduled CI consumption high (${scheduled_pct}% of runs)" --body "Scheduled workflows account for ${scheduled_pct}% of CI runtime (threshold ${THRESHOLD}%). Consider rescheduling or deferring additional tasks to local/less-frequent windows." --label "quota-alert" || true
+          fi
+
+      - name: Commit updated metrics
+        if: steps.defer_check.outputs.deferred != 'true'
+        run: |
+          git config user.name "github-actions[bot]" 
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add monitoring/ci-cd-dashboard/data/metrics.json
+          git commit -m "ci: update ci-cd metrics.json (hourly)" || echo 'no changes'
+          git push

@@ -61,15 +61,25 @@
 
 ---
 
-## User Stories → JIRA Mapping
+## User Stories → JIRA Mapping (templates)
 
-| Story | Priority | JIRA Story | Status |
-|-------|----------|------------|--------|
-| US1 Local Pre-Push Validation | P1 | (to be created) | Not Started |
-| US2 Optimized Cloud Workflows | P1 | (to be created) | Not Started |
-| US3 Local CI Execution | P2 | (to be created) | Not Started |
-| US4 Resource Monitoring & Alerts | P2 | (to be created) | Not Started |
-| US5 Scheduled Job Optimization | P3 | (to be created) | Not Started |
+Create JIRA stories for the SCRUM-84 epic using these titles and acceptance criteria. After creation, paste the JIRA keys into this table so the repo remains JIRA-first and traceable.
+
+| Story | Priority | Suggested JIRA Title | Suggested Acceptance Criteria | JIRA Key |
+|-------|----------|----------------------|-------------------------------|---------|
+| US1 Local Pre-Push Validation | P1 | Local pre-push validation + bypass wrapper | Local pre-push installs & validates; wrapper with bypass sends audit issue | (create)
+| US2 Optimized Cloud Workflows | P1 | Cloud workflow path filters, concurrency & caches | Docs-only skip, concurrency, cache metrics, changed-paths detection | (create)
+| US3 Local CI Execution | P2 | Local CI runner + parity checks | `make ci-local` parity with cloud <5m, summary artifact generation | (create)
+| US4 Resource Monitoring & Alerts | P2 | CI/CD dashboard + quota monitor + anomalies | Hourly metrics, scheduled-run deferral, quota alerts >80% | (create)
+| US5 Scheduled Job Optimization | P3 | Scheduled window deferral + weekend profile | Off-peak windows, deferral logic, weekend thresholds, annotated runs | (create)
+
+How to create JIRA stories (example):
+
+1) Create the 5 user stories under SCRUM-84 (Epic) in your JIRA board.
+2) For each story, add sub-tasks matching the `tasks.md` TIDs (T001..T081) and link them to the story.
+3) Paste the resulting JIRA keys in the table above to satisfy Article I (JIRA-first) compliance.
+
+If you want the agent to create JIRA tickets automatically, provide API credentials/authorization and I can run a script to create them and update this file.
 
 ---
 

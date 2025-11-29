@@ -375,6 +375,25 @@ gh run list --limit 50 | awk '{sum+=$NF} END {print sum/60 " minutes"}'
 - Review expensive workflows monthly
 - Optimize outliers
 
+## Scheduled Jobs - Off-peak windows & deferral
+
+To reduce developer disruption and preserve CI minutes for active development, scheduled and cron-triggered workflows should default to an off-peak window. Our default recommendation is a conservative 02:00–06:00 local (UTC by default in GitHub Actions) window.
+
+Guidelines:
+- Default window: 02:00–06:00 (UTC) for scheduled workflows that run frequently (hourly/daily). This keeps heavy operations off typical working hours.
+- If a scheduled workflow is triggered and active development is detected (commits pushed to the default branch within the last 30 minutes), the workflow should defer its heavy work (skip expensive steps) and optionally reschedule itself or defer until next window. This is advisory — deferred runs should exit cleanly, produce a small run-metadata artifact (for visibility), and not create noise for developers.
+- Weekend profile: scheduled workflows may relax advisory thresholds on weekends (Saturday/Sunday) to allow longer or more extensive maintenance. For example, quota alert thresholds can be relaxed (e.g., advisory 90% / critical 95% on weekends).
+
+Implementation details:
+- Add a short early step to scheduled workflows to detect recent activity and compute `is_weekend` (UTC day-of-week). If activity is present, set `deferred=true` and skip heavier downstream steps.
+- Persist run-level metadata (e.g., `run-metadata-${GITHUB_RUN_ID}.json`) as an artifact to support auditing and dashboard visualization.
+- Ensure scheduled workflow cron windows are configurable (document in workflow header or repository variables) so organizations can adapt the window to their timezone.
+
+Examples (what we implemented):
+- `update-dashboard.yml` now runs hourly but restricted to `0 2-6 * * *` (02:00-06:00 UTC) and will defer updates when recent commits exist.
+- `quota-monitor.yml` runs within the off-peak window and supports relaxed weekend thresholds.
+
+
 ---
 
 ## Decision Matrix: GitHub vs Local

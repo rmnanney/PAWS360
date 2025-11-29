@@ -1,6 +1,10 @@
 ---
 name: Artifact cleanup
 
+permissions:
+  actions: write
+  contents: read
+
 on:
   schedule:
     # run weekly to prune old artifacts and keep repo artifact usage under control

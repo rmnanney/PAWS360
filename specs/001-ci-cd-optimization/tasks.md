@@ -162,16 +162,16 @@ Independent Test Criteria
 
 Implementation Tasks
 
-- [ ] T053 [US4] Scaffold `monitoring/ci-cd-dashboard/index.html` and `assets/` with Chart.js
-- [ ] T054 [US4] Add `monitoring/ci-cd-dashboard/data/metrics.json` placeholder and schema
-- [ ] T055 [US4] Create `.github/workflows/update-dashboard.yml` to fetch runs via GitHub API and update metrics.json (hourly)
-- [ ] T056 [US4] Implement ETag/If-Modified-Since caching and pagination caps in update workflow
-- [ ] T057 [US4] Add `.github/workflows/quota-monitor.yml` to create `quota-alert` issues at >80%
-- [ ] T058 [US4] Add anomaly flagging step comparing run duration vs baseline
-- [ ] T059 [US4] Publish Pages: document branch/path settings in `monitoring/ci-cd-dashboard/README.md`
-- [ ] T060 [US4] Add dashboard link to `README.md` and `docs/architecture-overview.md`
-- [ ] T061 [US4] Add `scripts/monitoring/calc-metrics.js` (Node) to compute aggregates offline
-- [ ] T062 [US4] Update contract `specs/001-ci-cd-optimization/contracts/github-api.yaml` with used endpoints
+- [X] T053 [US4] Scaffold `monitoring/ci-cd-dashboard/index.html` and `assets/` with Chart.js
+- [X] T054 [US4] Add `monitoring/ci-cd-dashboard/data/metrics.json` placeholder and schema
+- [X] T055 [US4] Create `.github/workflows/update-dashboard.yml` to fetch runs via GitHub API and update metrics.json (hourly)
+- [X] T056 [US4] Implement ETag/If-Modified-Since caching and pagination caps in update workflow
+- [X] T057 [US4] Add `.github/workflows/quota-monitor.yml` to create `quota-alert` issues at >80%
+- [X] T058 [US4] Add anomaly flagging step comparing run duration vs baseline
+- [X] T059 [US4] Publish Pages: document branch/path settings in `monitoring/ci-cd-dashboard/README.md`
+- [X] T060 [US4] Add dashboard link to `README.md` and `docs/architecture-overview.md`
+- [X] T061 [US4] Add `scripts/monitoring/calc-metrics.js` (Node) to compute aggregates offline
+- [X] T062 [US4] Update contract `specs/001-ci-cd-optimization/contracts/github-api.yaml` with used endpoints
 
 Verification (Reusable)
 - Manually trigger `update-dashboard` via `workflow_dispatch` and verify metrics.json updates.
@@ -191,12 +191,12 @@ Independent Test Criteria
 
 Implementation Tasks
 
-- [ ] T063 [US5] Configure cron windows in scheduled workflows (default 2–6 AM local) in relevant `.github/workflows/*.yml`
-- [ ] T064 [US5] Add advisory deferral logic using repository_dispatch or queued gates when active dev detected
-- [ ] T065 [US5] Add labels/annotations to runs indicating scheduled vs deferred
-- [ ] T066 [US5] Add weekend profile toggle to relax limits with explicit logging
-- [ ] T067 [US5] Update `docs/CI-CD-RESOURCE-STRATEGY.md` with scheduled job guidelines
-- [ ] T068 [US5] Add tests in `update-dashboard.yml` to track scheduled consumption vs 30% advisory
+- [X] T063 [US5] Configure cron windows in scheduled workflows (default 2–6 AM local) in relevant `.github/workflows/*.yml`
+- [X] T064 [US5] Add advisory deferral logic using repository_dispatch or queued gates when active dev detected
+- [X] T065 [US5] Add labels/annotations to runs indicating scheduled vs deferred
+- [X] T066 [US5] Add weekend profile toggle to relax limits with explicit logging
+- [X] T067 [US5] Update `docs/CI-CD-RESOURCE-STRATEGY.md` with scheduled job guidelines
+- [X] T068 [US5] Add tests in `update-dashboard.yml` to track scheduled consumption vs 30% advisory
 
 Verification (Reusable)
 - Confirm cron execution timing in Actions; simulate activity to trigger deferral path.
@@ -210,19 +210,19 @@ Scope: Security hardening, constitutional enforcement automation, JIRA sync, pos
 
 Implementation Tasks
 
-- [ ] T069 Harden workflow permissions (read-all; write only where needed) across `.github/workflows/*.yml`
-- [ ] T070 Add rate-limit backoff to scripts using `gh api` with `Retry-After` handling
-- [ ] T071 Add retrospective entries in `checklists/retrospectives.md` for completed tasks
-- [ ] T072 Add constitutional self-check cron (15 minutes) to update `contexts/sessions/current-session.yml`
-- [ ] T073 Create JIRA stories (US1–US5) and subtasks mirroring all TIDs; link in `gpt-context.md`
-- [ ] T074 Add commit message template `.gitmessage` with JIRA key enforcement and update `README.md`
-- [ ] T075 Post-deployment verification playbook in `docs/ci-cd/post-deployment-verification.md`
-- [ ] T076 Infrastructure impact analysis doc `infrastructure/ci-cd-impact-analysis.md` for Pages, tokens, branch protection
-- [ ] T077 Add `docs/ci-cd/runbook.md` for on-call debugging (tmate, reruns, artifacts)
-- [ ] T078 Create `specs/001-ci-cd-optimization/checklists/requirements.md` pass/fail audit referencing SC-001..SC-012
-- [ ] T079 [P] Add VS Code tasks configuration `.vscode/tasks.json` for ci-local, ci-quick, debug-ci targets
-- [ ] T080 [P] Add IntelliJ run configurations `.idea/runConfigurations/` for local CI and debug targets
-- [ ] T081 Add cloud-side audit job in `.github/workflows/ci-cd.yml` to detect unrecorded bypasses (FR-023)
+- [X] T069 Harden workflow permissions (read-all; write only where needed) across `.github/workflows/*.yml`
+- [X] T070 Add rate-limit backoff to scripts using `gh api` with `Retry-After` handling
+- [X] T071 Add retrospective entries in `checklists/retrospectives.md` for completed tasks
+- [X] T072 Add constitutional self-check cron (15 minutes) to update `contexts/sessions/current-session.yml`
+- [X] T073 Create JIRA stories (US1–US5) and subtasks mirroring all TIDs; link in `gpt-context.md`
+- [X] T074 Add commit message template `.gitmessage` with JIRA key enforcement and update `README.md`
+- [X] T075 Post-deployment verification playbook in `docs/ci-cd/post-deployment-verification.md`
+- [X] T076 Infrastructure impact analysis doc `infrastructure/ci-cd-impact-analysis.md` for Pages, tokens, branch protection
+- [X] T077 Add `docs/ci-cd/runbook.md` for on-call debugging (tmate, reruns, artifacts)
+- [X] T078 Create `specs/001-ci-cd-optimization/checklists/requirements.md` pass/fail audit referencing SC-001..SC-012
+- [X] T079 [P] Add VS Code tasks configuration `.vscode/tasks.json` for ci-local, ci-quick, debug-ci targets
+- [X] T080 [P] Add IntelliJ run configurations `.idea/runConfigurations/` for local CI and debug targets
+- [X] T081 Add cloud-side audit job in `.github/workflows/ci-cd.yml` to detect unrecorded bypasses (FR-023)
 
 Verification (Reusable)
 - Constitutional cron updates session timestamp.

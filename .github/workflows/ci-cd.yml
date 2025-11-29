@@ -18,6 +18,40 @@ on:
   workflow_dispatch:
 
 jobs:
+  bypass-audit:
+    name: Bypass Audit (detect unrecorded bypasses)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect potential bypass and create audit issue
+        run: |
+          set -euo pipefail
+          SHA=${{ github.sha }}
+          SHORT=$(git rev-parse --short $SHA)
+          # Look for existing issues labeled 'bypass-audit' that reference this commit
+          found=$(gh issue list --label bypass-audit --json number,body --limit 100 | jq -r ".[] | select(.body | contains(\"$SHORT\")) | .number" || true)
+          if [ -n "$found" ]; then
+            echo "Bypass audit issue exists for ${SHORT}: $found"
+            exit 0
+          fi
+
+          # If code files changed, create advisory bypass audit issue
+          BASE=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || echo origin/main)
+          git fetch --no-tags --depth=1 origin $BASE || true
+          CHANGED=$(git diff --name-only $BASE..HEAD || true)
+          echo "Changed paths: $CHANGED"
+          if echo "$CHANGED" | grep -Eq '^src/|^app/|pom.xml|package.json'; then
+            echo "No bypass issue found and code files changed; creating bypass audit issue."
+            gh issue create --title "Bypass Audit: ${SHORT}" --body "Commit ${SHA} pushed without recorded bypass justification.\n\nChanged files: $CHANGED\n\nRun: ${{ github.run_id }}\nRepo: ${{ github.repository }}" --label bypass-audit || true
+          else
+            echo "No code changes detected; skipping bypass audit.";
+          fi
+
   changed-paths:
     name: Detect changed paths
     runs-on: ubuntu-latest

@@ -227,6 +227,22 @@ fs.writeFileSync('data/metrics.json', JSON.stringify(metrics));
 - Implement client-side date range filtering
 - Provide export to CSV for deeper analysis
 
+### 10. Anomaly detection methodology (detailed)
+
+**Decision**: Implement a lightweight statistical anomaly detection methodology for workflow run durations and minute consumption using a 30-day rolling baseline with outlier detection.
+
+**Method**:
+- Compute a 30-day rolling median and Interquartile Range (IQR) for the metric (e.g., run duration or minutes consumed).
+- Flag points as anomalies if value > median + 3 * IQR or if z-score > 3 when sample size permits.
+- For small sample sizes (< 10 points) use percentile thresholds (e.g., 99th percentile) to avoid instability.
+- Apply a smoothing window (3-sample moving average) to reduce noise before threshold evaluation.
+
+**Actions on anomaly detection**:
+- When an anomaly is detected, mark it in the metrics JSON and create an advisory issue (label `ci-anomaly`) with the run id(s), metric snapshot, baseline numbers, and links to logs.
+- Track anomalies in the dashboard for human triage and to build ML-ready datasets for future refinement.
+
+**Rationale**: Simple robust statistics (median + IQR + z-score) are interpretable, inexpensive to compute in Actions, and sufficient as an initial detection model. This is configurable for later replacement with more advanced methods.
+
 ---
 
 ### 7. Pre-Push Bypass Mechanism: reality check and recommended approach
@@ -272,6 +288,18 @@ fi
   - Re-runs quick validations and checks for a corresponding audit record (e.g., existing issue or push metadata)
   - If validations are missing/skip and no audit record present, automatically create a bypass audit GitHub issue and tag maintainers
   - This CI audit job should not be the only enforcement mechanism; it supports accountability and traceability
+
+  ### 11. Recovery after concurrency cancellation
+
+  **Problem**: When concurrency groups are used with cancel-in-progress: true, partially-completed or cancelled runs may not produce full artifacts, potentially hindering debugging and blocking triage.
+
+  **Resolution / Recovery Path**:
+  - Ensure CI workflows upload incremental artifacts and logs early when possible (e.g., unit test reports and logs) before long-running steps; artifacts should be archived with a standardized prefix including run id.
+  - Configure artifact retention policy (e.g., 90 days) so canceled runs remain usable for debugging.
+  - Provide an explicit retrigger mechanism in workflows and documentation: maintainers can re-run the failed or cancelled job for the commit via the GitHub UI or an automated quick-retry job (workflow_dispatch) that prioritizes the same commit.
+  - In the dashboard, annotate cancelled runs and link to the recommended retrigger playbook (docs/ci-cd/runbook.md) which instructs on artifact retrieval and re-run steps.
+
+  **Rationale**: This mixed approach preserves useful debug artifacts, avoids accidental data loss, and gives maintainers a clear recovery path.
 
 **Alternatives considered**:
 - Require server-side pre-receive hooks (not possible on GitHub with hosted repos)
