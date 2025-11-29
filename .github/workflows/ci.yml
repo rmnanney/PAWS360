@@ -437,7 +437,8 @@ jobs:
       - name: Wait for frontend
         run: |
           # Wait up to 2 minutes for frontend
-          npx wait-on -t 120000 http://localhost:3000 || (tail -n 200 next-dev.log && exit 1)
+          # Allow a longer warmup period for the Next dev server in CI (5 mins)
+          npx wait-on -t 300000 http://localhost:3000 || (tail -n 200 next-dev.log && exit 1)
 
       - name: Smoke HTTP checks
         run: |
@@ -524,7 +525,8 @@ jobs:
           npm ci
           bash ./scripts/kill-next-port.sh || true
           nohup npm run dev > next-dev.log 2>&1 &
-          (cd tests/ui && npx wait-on -t 120000 http://localhost:3000)
+          # E2E test runner should wait longer for the frontend to become ready in CI
+          (cd tests/ui && npx wait-on -t 300000 http://localhost:3000)
           for i in {1..60}; do
             if curl -f http://localhost:3000/ >/dev/null 2>&1; then
               echo "Frontend ready"

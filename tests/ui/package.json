@@ -10,7 +10,7 @@
     "test:ui": "playwright test --ui",
     "report": "playwright show-report",
     "install-browsers": "playwright install chromium",
-    "wait-for-next": "wait-on -t 120000 http://localhost:3000"
+    "wait-for-next": "wait-on -t 300000 http://localhost:3000"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",
