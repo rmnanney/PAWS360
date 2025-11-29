@@ -437,7 +437,7 @@ jobs:
       - name: Wait for frontend
         run: |
           # Use a specific readiness URL to make the wait deterministic
-          FRONTEND_WAIT_TIMEOUT_MS=600000
+          FRONTEND_WAIT_TIMEOUT_MS=900000
           ATTEMPTS=5
           PER_ATTEMPT_MS=$((FRONTEND_WAIT_TIMEOUT_MS / ATTEMPTS))
           echo "FRONTEND_WAIT_TIMEOUT_MS=${FRONTEND_WAIT_TIMEOUT_MS} — ${ATTEMPTS} attempts of ${PER_ATTEMPT_MS}ms each"
@@ -554,7 +554,7 @@ jobs:
           nohup npm run dev > next-dev.log 2>&1 &
           # E2E test runner should wait up to 10 minutes for the frontend to become ready in CI
           # Use the deterministic readiness path (/healthz) instead of the site root
-          (cd tests/ui && npx wait-on -t 600000 http://localhost:3000/healthz)
+          (cd tests/ui && npx wait-on -t 900000 http://localhost:3000/healthz)
           for i in {1..60}; do
             if curl -f http://localhost:3000/healthz >/dev/null 2>&1; then
               echo "Frontend ready"
