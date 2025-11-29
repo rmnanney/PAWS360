@@ -414,16 +414,11 @@ jobs:
         run: |
           docker compose -f docker-compose.ci.yml up -d
 
-      - name: Start frontend (dev server) briefly
+      - name: Prepare frontend for smoke checks (no dev server)
         run: |
-          # Start Next.js dev server in background and capture logs
-            # Start the frontend dev server from the repository root where package.json lives.
-            if [ -f package.json ]; then
-              nohup npm run dev -- -p 3000 --hostname 0.0.0.0 > next-dev.log 2>&1 &
-            else
-              echo "ERROR: package.json not found in repo root; cannot start frontend dev server" >&2
-              exit 2
-            fi
+          # For the smoke checks we prefer a deterministic production build / export.
+          # Do not start the dev server here — the next step will either export+serve or start the built server
+          echo "Preparing frontend for deterministic smoke check (no dev server started in this step)"
 
       - name: Wait for backend
         run: |
@@ -442,10 +437,16 @@ jobs:
           PER_ATTEMPT_MS=$((FRONTEND_WAIT_TIMEOUT_MS / ATTEMPTS))
           echo "FRONTEND_WAIT_TIMEOUT_MS=${FRONTEND_WAIT_TIMEOUT_MS} — ${ATTEMPTS} attempts of ${PER_ATTEMPT_MS}ms each"
 
-          # Build/export a deterministic static site and serve from `out`
+          # Build a deterministic production build and try a static export.
           npm run build || (echo "ERROR: build failed" && tail -n 200 .next/logs/* || true)
-          npx next export -o out || (echo "ERROR: export failed" && tail -n 200 next-static.log || true)
-          nohup npx serve -s out -l 3000 > next-static.log 2>&1 &
+          if npx next export --outdir out 2>/dev/null; then
+            echo "Static export succeeded, serving from out/"
+            nohup npx serve -s out -l 3000 > next-static.log 2>&1 &
+          else
+            echo "Static export failed — falling back to 'next start' (production server)"
+            # start the production server from the built artifacts
+            nohup npx next start -p 3000 > next-static.log 2>&1 &
+          fi
 
           # Try wait-on against readiness path /healthz in multiple attempts with backoff to tolerate transient warmups
           for i in $(seq 1 $ATTEMPTS); do
