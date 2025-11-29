@@ -437,36 +437,15 @@ jobs:
           PER_ATTEMPT_MS=$((FRONTEND_WAIT_TIMEOUT_MS / ATTEMPTS))
           echo "FRONTEND_WAIT_TIMEOUT_MS=${FRONTEND_WAIT_TIMEOUT_MS} — ${ATTEMPTS} attempts of ${PER_ATTEMPT_MS}ms each"
 
-          # Build a deterministic production build and try a static export.
-          npm run build || (echo "ERROR: build failed" && tail -n 200 .next/logs/* || true)
-          if npx next export --outdir out 2>/dev/null; then
-            echo "Static export succeeded, serving from out/"
-            nohup npx serve -s out -l 3000 > next-static.log 2>&1 &
-          else
-            echo "Static export failed — falling back to 'next start' (production server)"
-            # start the production server from the built artifacts
-            nohup npx next start -p 3000 > next-static.log 2>&1 &
-          fi
+          # Build the production site and start the production server.
+          # Avoid static export in the smoke job (prerender errors are common); prefer `next start` which serves built assets.
+          npm run build || (echo "ERROR: build failed" && tail -n 200 .next/logs/* || true; exit 1)
 
-          # Try wait-on against readiness path /healthz in multiple attempts with backoff to tolerate transient warmups
-          for i in $(seq 1 $ATTEMPTS); do
-            echo "Attempt $i/$ATTEMPTS — waiting up to ${PER_ATTEMPT_MS}ms for http://localhost:3000/healthz"
-            if npx wait-on -t $PER_ATTEMPT_MS http://localhost:3000/healthz; then
-              echo "Frontend readiness confirmed"
-              READY=true
-              break
-            fi
-            echo "Attempt $i timed out; tailing last lines of logs (if any)"
-            tail -n 200 next-static.log || true
-            # Exponential-ish backoff between attempts
-            sleep $((i * 5))
-          done
+          # Start the production server and allow full timeout for it to become healthy
+          nohup npx next start -p 3000 > next-static.log 2>&1 &
 
-          if [ -z "$READY" ]; then
-            echo "Timed out waiting for frontend readiness at /healthz after ${FRONTEND_WAIT_TIMEOUT_MS}ms total";
-            tail -n 200 next-static.log || true
-            exit 1
-          fi
+          echo "Waiting up to ${FRONTEND_WAIT_TIMEOUT_MS}ms for http://localhost:3000/healthz"
+          npx wait-on -t $FRONTEND_WAIT_TIMEOUT_MS http://localhost:3000/healthz || (tail -n 200 next-static.log && echo "Timed out waiting for frontend readiness at /healthz after ${FRONTEND_WAIT_TIMEOUT_MS}ms" && exit 1)
 
       - name: Smoke HTTP checks
         run: |
