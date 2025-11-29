@@ -5,5 +5,5 @@ rules:
     max: 300
     level: warning
   document-start: disable
-  truthy: {level: warning}
+  truthy: disable
   trailing-spaces: {level: error}

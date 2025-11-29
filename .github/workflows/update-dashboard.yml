@@ -95,7 +95,10 @@ jobs:
           echo "Scheduled consumption is ${scheduled_pct}% (threshold=${THRESHOLD}%)"
           if [ "$scheduled_pct" -ge "$THRESHOLD" ]; then
             echo "Scheduled jobs exceed advisory threshold (${scheduled_pct}% >= ${THRESHOLD}%). Creating advisory issue."
-            gh issue create --title "Advisory: Scheduled CI consumption high (${scheduled_pct}% of runs)" --body "Scheduled workflows account for ${scheduled_pct}% of CI runtime (threshold ${THRESHOLD}%). Consider rescheduling or deferring additional tasks to local/less-frequent windows." --label "quota-alert" || true
+            # Create an advisory issue with a multi-line body using a temporary file to keep the workflow YAML tidy
+            # Create advisory issue body into a temporary file using printf for portability
+            printf '%s\n' "Scheduled workflows account for ${scheduled_pct}% of CI runtime (threshold ${THRESHOLD}%)." "" "Recommendation: consider rescheduling or deferring additional tasks to local or less-frequent windows to reduce scheduled consumption." > /tmp/issue_body.txt
+            gh issue create --title "Advisory: Scheduled CI consumption high (${scheduled_pct}% of runs)" --body-file /tmp/issue_body.txt --label "quota-alert" || true
           fi
 
       - name: Commit updated metrics

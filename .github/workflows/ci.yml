@@ -60,9 +60,9 @@ jobs:
       actions: read
       contents: read
     env:
-      # Defaults you can tweak: count threshold and byte-size threshold
+      #  Defaults you can tweak: count threshold and byte-size threshold
       ARTIFACT_COUNT_THRESHOLD: 30
-      ARTIFACT_SIZE_THRESHOLD_BYTES: 500000000 # 500 MB
+      ARTIFACT_SIZE_THRESHOLD_BYTES: 500000000  # 500 MB
       # GitHub API rate-limit usage threshold percent (warn if remaining % < this)
       API_RATE_LIMIT_PCT_THRESHOLD: 20
       # Threshold for Actions minutes used (warn when used minutes exceed this)
