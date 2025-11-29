@@ -417,7 +417,13 @@ jobs:
       - name: Start frontend (dev server) briefly
         run: |
           # Start Next.js dev server in background and capture logs
-          nohup npm --prefix ./app run dev -- -p 3000 --hostname 0.0.0.0 > next-dev.log 2>&1 &
+            # Start the frontend dev server from the repository root where package.json lives.
+            if [ -f package.json ]; then
+              nohup npm run dev -- -p 3000 --hostname 0.0.0.0 > next-dev.log 2>&1 &
+            else
+              echo "ERROR: package.json not found in repo root; cannot start frontend dev server" >&2
+              exit 2
+            fi
 
       - name: Wait for backend
         run: |
