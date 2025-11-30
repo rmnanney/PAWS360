@@ -549,7 +549,6 @@ jobs:
 
           # Always remove headers file as well (no leak left behind)
           rm -f "$login_headers_file" || true
-          fi
 
           # Check a few lightweight frontend paths to ensure routing works (use session cookie for auth)
           # Check /homepage first — root (/) intentionally redirects to /login and may not render expected content.
