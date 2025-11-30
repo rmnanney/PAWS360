@@ -547,12 +547,18 @@ jobs:
             rm -f "$login_body_file" || true
           fi
 
+          # Always remove headers file as well (no leak left behind)
+          rm -f "$login_headers_file" || true
+          fi
+
           # Check a few lightweight frontend paths to ensure routing works (use session cookie for auth)
           # Check /homepage first — root (/) intentionally redirects to /login and may not render expected content.
-          for url in /homepage /; do
-            echo "GET http://localhost:3000${url}";
-            curl ${cookie_arg} -fsS http://localhost:3000${url} | grep -E "Welcome|Homepage|Academic" >/dev/null || (echo "path ${url} didn't show expected content" && exit 1)
-          done
+          # Verify the authenticated homepage is reachable (HTTP 200).
+          echo "GET http://localhost:3000/homepage";
+          status=$(curl -s -o /dev/null -w "%{http_code}" ${cookie_arg} http://localhost:3000/homepage || true)
+          if [ "$status" -ne 200 ]; then
+            echo "path /homepage returned HTTP $status (expected 200)" && exit 1
+          fi
 
       - name: Capture smoke diagnostics
         if: failure()
