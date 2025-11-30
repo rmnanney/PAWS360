@@ -386,7 +386,8 @@ jobs:
 
           echo "Waiting up to ${MAX_WAIT_SECONDS}s for backend health at /actuator/health"
           START_TS=$(date +%s)
-          if timeout ${MAX_WAIT_SECONDS} bash -c 'until curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; do sleep ${POLL_INTERVAL}; done'; then
+          # Use double-quotes so the outer shell expands ${POLL_INTERVAL} and ${MAX_WAIT_SECONDS}
+          if timeout "${MAX_WAIT_SECONDS}" bash -c "until curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; do sleep ${POLL_INTERVAL}; done"; then
             END_TS=$(date +%s)
             ELAPSED=$((END_TS - START_TS))
             echo "Backend is healthy (took ${ELAPSED}s to become healthy)"
