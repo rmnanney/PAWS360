@@ -1,5 +1,9 @@
 "use client";
 
+// Avoid Next.js prerender-time client-router hook errors (useSearchParams) by
+// forcing dynamic rendering for this page.
+export const dynamic = 'force-dynamic';
+
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import s from "./styles.module.css";

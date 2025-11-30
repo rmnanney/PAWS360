@@ -1,5 +1,10 @@
 "use client";
 
+// Avoid Next.js prerender-time client-router hook errors (useSearchParams) by
+// forcing dynamic rendering for this page. We prefer dynamic behavior here so
+// build-time prerender (export) won't attempt to call client-only router hooks.
+export const dynamic = 'force-dynamic';
+
 import React from "react";
 import {
 	Card,
