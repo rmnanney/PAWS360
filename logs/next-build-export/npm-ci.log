@@ -2,4 +2,4 @@ npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memo
 npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
 
-added 857 packages in 26s
+added 857 packages in 14s

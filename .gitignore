@@ -57,6 +57,9 @@ services/*.jar
 frontend/node_modules/
 frontend/package-lock.json
 
+# Static export directory created by next export
+out/
+
 # Local development environment (001-local-dev-parity)
 .env.local
 docker-compose.override.yml
