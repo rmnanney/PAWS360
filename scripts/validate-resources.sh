@@ -10,8 +10,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Minimum requirements
-MIN_RAM_GB=16
+# Minimum requirements (allow override via MIN_RAM_GB env var)
+MIN_RAM_GB=${MIN_RAM_GB:-16}
 MIN_CPU_CORES=4
 MIN_DISK_GB=40
 
@@ -37,7 +37,12 @@ else
     echo -e "${RED}${TOTAL_RAM_GB}GB (${MIN_RAM_GB}GB required)${NC}"
     echo -e "${RED}✗ Insufficient RAM for full HA stack${NC}"
     echo -e "${YELLOW}Consider using dev-up-fast mode (single instances) or upgrading hardware${NC}"
-    exit 1
+    # Allow a non-fatal override for cases where CI uses smaller hosted runners
+    if [ "${ALLOW_LOW_RAM}" = "true" ] || [ "${ALLOW_LESS_RAM}" = "true" ]; then
+        echo -e "${YELLOW}Warning: ALLOW_LOW_RAM/ALLOW_LESS_RAM=true — continuing despite insufficient RAM${NC}"
+    else
+        exit 1
+    fi
 fi
 
 # Check CPU cores
