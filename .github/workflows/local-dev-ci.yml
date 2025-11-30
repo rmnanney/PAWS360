@@ -18,9 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       actions: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        # When this workflow is triggered from a pull_request, the PR's head commit
+        # may no longer be available (e.g., branch deleted / ref missing). To avoid
+        # failing the job during checkout, prefer the PR base branch when available
+        # and fall back to the event ref for non-PR runs.
+        with:
+          ref: ${{ github.event.pull_request.base.ref || github.ref }}
 
       - name: Ensure gh & jq
         run: |
