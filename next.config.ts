@@ -5,6 +5,11 @@ import type { NextConfig } from 'next';
 const backendBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8086';
 
 const nextConfig: NextConfig = {
+  // For Next 15+ static export behavior: ensure the build produces a full static
+  // export (out/) when desired. This mirrors older `next export` functionality.
+  // Configure carefully — when you enable this the app should be fully static
+  // compatible (no runtime server-only features on exported pages).
+  output: 'export',
   /* config options here */
   
   // Hot Module Replacement (HMR) configuration for rapid development
