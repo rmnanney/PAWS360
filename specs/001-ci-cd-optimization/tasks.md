@@ -87,6 +87,17 @@ Verification (Reusable)
 - Bypass path: wrapper prompts for justification; GH issue appears with label `bypass-audit` referencing `$(git rev-parse --short HEAD)`.
 - Time runs using `time` to ensure <2 min typical on reference machine.
 
+### New: Local Next build+export demo & CI guard
+
+- Added a local script to validate Next.js build and static export locally to catch prerender errors before pushing: `scripts/test-next-build-export.sh`.
+  - Run locally from repo root: `./scripts/test-next-build-export.sh` — it will run `npm ci`, `npm run build` and `npm run export` inside `app/` and write logs into `logs/next-build-export/`.
+  - The script exits non-zero on failure and prints tail of relevant logs for quick diagnostics.
+
+- Added an early CI guard job in the main CI workflow (`.github/workflows/ci.yml`) called `frontend-export-check` which runs the same script in CI for pull requests / pushes and uploads logs as an artifact when the check fails.
+  - This step is designed to fail early in CI when prerender errors (like missing Suspense wrappers for client-only hooks) occur, preventing long downstream runs from starting.
+
+Why: This pragmatic guard prevents the common
+
 ---
 
 ## Phase 4: User Story 2 — Optimized Cloud Workflows (Priority: P1)

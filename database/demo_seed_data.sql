@@ -1,6 +1,6 @@
 -- PAWS360 Demo Data for SSO Integration Testing
 -- Compatible with Spring Boot backend entities
--- BCrypt passwords for testing: password123
+-- BCrypt passwords for testing: password
 
 -- Insert demo admin user
 INSERT INTO users (firstname, lastname, dob, ssn, email, password, phone, status, role, 
@@ -111,9 +111,9 @@ WHERE u.role = 'STUDENT';
 
 -- Create sample demo accounts for easy testing
 -- Demo credentials:
--- Email: test.student@uwm.edu, Password: password123
--- Email: demo.student@uwm.edu, Password: password123  
--- Email: admin@uwm.edu, Password: password123
+-- Email: test.student@uwm.edu, Password: password
+-- Email: demo.student@uwm.edu, Password: password  
+-- Email: admin@uwm.edu, Password: password
 
 INSERT INTO users (firstname, lastname, dob, ssn, email, password, phone, status, role,
                   ethnicity, gender, nationality, country_code, preferred_name,

@@ -31,7 +31,7 @@ public class UserRepositoryTest {
         user1.setFirstname("John");
         user1.setLastname("Doe");
         user1.setEmail("john.doe@example.com");
-        user1.setPassword("password123");
+        user1.setPassword("password");
         user1.setDob(LocalDate.of(1990, 1, 1));
         user1.setSocialsecurity("000000101");
         user1.setEthnicity(Ethnicity.OTHER);
@@ -48,7 +48,7 @@ public class UserRepositoryTest {
         user2.setFirstname("Johnny");
         user2.setLastname("Smith");
         user2.setEmail("johnny.smith@example.com");
-        user2.setPassword("password123");
+        user2.setPassword("password");
         user2.setDob(LocalDate.of(1990, 1, 1));
         user2.setSocialsecurity("000000102");
         user2.setEthnicity(Ethnicity.OTHER);
@@ -65,7 +65,7 @@ public class UserRepositoryTest {
         user3.setFirstname("Jane");
         user3.setLastname("Doe");
         user3.setEmail("jane.doe@example.com");
-        user3.setPassword("password123");
+        user3.setPassword("password");
         user3.setDob(LocalDate.of(1990, 1, 1));
         user3.setSocialsecurity("000000103");
         address3.setUser(user3);
@@ -90,7 +90,7 @@ public class UserRepositoryTest {
         user.setFirstname("John");
         user.setLastname("Doe");
         user.setEmail("JOHN.DOE@EXAMPLE.COM");
-        user.setPassword("password123");
+        user.setPassword("password");
         user.setDob(LocalDate.of(1990, 1, 1));
         user.setSocialsecurity("000000106");
         user.setSocialsecurity("000000103");
@@ -128,7 +128,7 @@ public class UserRepositoryTest {
         user.setFirstname("Test");
         user.setLastname("User");
         user.setEmail("test.user@example.com");
-        user.setPassword("password123");
+        user.setPassword("password");
         user.setDob(LocalDate.of(1990, 1, 1));
         user.setSocialsecurity("000000107");
         address.setUser(user);
@@ -156,7 +156,7 @@ public class UserRepositoryTest {
         user1.setFirstname("User1");
         user1.setLastname("Test");
         user1.setEmail("user1@example.com");
-        user1.setPassword("password123");
+        user1.setPassword("password");
         user1.setDob(LocalDate.of(1990, 1, 1));
         user1.setSocialsecurity("000000104");
         user1.setEthnicity(Ethnicity.OTHER);
@@ -173,7 +173,7 @@ public class UserRepositoryTest {
         user2.setFirstname("User2");
         user2.setLastname("Test");
         user2.setEmail("user2@example.com");
-        user2.setPassword("password123");
+        user2.setPassword("password");
         user2.setDob(LocalDate.of(1990, 1, 1));
         user2.setSocialsecurity("000000105");
         user2.setEthnicity(Ethnicity.OTHER);

@@ -13,9 +13,28 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
 
 jobs:
+  cleanup-artifacts:
+    name: Prune artifacts (keep current + previous run)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure gh & jq
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y jq gh || true
+
+      - name: Prune artifacts (keep last 5 runs)
+        run: |
+          chmod +x ./scripts/lib/prune-artifacts-keep-last-2.sh || true
+          KEEP_LAST=5 ./scripts/lib/prune-artifacts-keep-last-2.sh
+
   validate-environment:
     name: Validate Environment
     runs-on: ubuntu-latest
+    needs: cleanup-artifacts
 
     steps:
       - name: Checkout code
@@ -148,7 +167,8 @@ jobs:
           bash scripts/health-check.sh --human || true
 
       - name: Upload test results
-        if: ${{ !env.ACT && always() }}
+        # Only archive test results if the job failed; avoid storing large test logs when CI succeeding
+        if: failure()
         continue-on-error: true
         uses: actions/upload-artifact@v3
         with:
@@ -192,7 +212,8 @@ jobs:
           bash scripts/scan-images.sh --json
 
       - name: Upload scan results
-        if: ${{ !env.ACT && always() }}
+        # Only preserve scan results when a failure occurs — otherwise skip saving larger scan files
+        if: failure()
         continue-on-error: true
         uses: actions/upload-artifact@v3
         with:

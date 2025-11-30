@@ -33,6 +33,7 @@ This guide provides comprehensive instructions for setting up, testing, and exec
 - PostgreSQL (or Docker)
 - Git
 
+All demo accounts use the password **`password`**
 ### One-Command Demo Launch
 ```bash
 # Complete demo environment startup
@@ -47,7 +48,7 @@ cd /home/ryan/repos/PAWS360
 ```
 
 ### Manual Setup (Alternative)
-```bash
+    Password: password
 # 1. Start database
 docker run -d \
   --name paws360-postgres \
@@ -56,7 +57,7 @@ docker run -d \
   -e POSTGRES_PASSWORD=paws360_password \
   -p 5432:5432 \
   -v ./database/enhanced_demo_seed_data.sql:/docker-entrypoint-initdb.d/01-seed.sql:ro \
-  postgres:15-alpine
+       -d '{"email":"john.smith@uwm.edu","password":"password"}'
 
 # 2. Start backend
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=demo
@@ -64,15 +65,15 @@ docker run -d \
 # 3. Start frontend (separate terminal)
 npm install && npm run dev
 ```
-
+    Password: password
 ## 🔑 Demo Credentials
 
-All demo accounts use the password **`password123`**
+All demo accounts use the password **`password`**
 
 | Role | Email | Description |
 |------|-------|-------------|
-| **Administrator** | `admin@uwm.edu` | Full system access, admin dashboard |
-| **Primary Student** | `john.smith@uwm.edu` | Computer Science student, main demo account |
+curl -X POST http://localhost:8081/auth/login \
+   -d '{"email":"john.smith@uwm.edu","password":"password"}'
 | **Demo Student** | `demo.student@uwm.edu` | Simple demo account for quick testing |
 | **Test Student** | `emily.johnson@uwm.edu` | Psychology student, secondary demo account |
 | **Professor** | `jane.professor@uwm.edu` | Faculty access for instructor features |
@@ -80,13 +81,13 @@ All demo accounts use the password **`password123`**
 ## 🎬 Demo Execution Flow
 
 ### Phase 1: Environment Validation (5 minutes)
-```bash
+   -d '{"email":"admin@uwm.edu","password":"password"}' | \
 # Quick validation
 ./scripts/validate-demo.sh --quick
 
 # Comprehensive validation
 ./scripts/validate-demo.sh --deep
-
+   -d '{"email":"john.smith@uwm.edu","password":"password"}' | \
 # Get validation in JSON format
 ./scripts/validate-demo.sh --json
 ```
@@ -99,8 +100,10 @@ All demo accounts use the password **`password123`**
 
 ### Phase 2: Student Portal Demonstration (10 minutes)
 
-1. **Navigate to Frontend**
-   ```
+   ```bash
+  # Test root URL during demo
+  curl -sS http://localhost:3000/ | sed -n '1,6p'
+  ```
    URL: http://localhost:3000
    Expected: Automatic redirect to /login
    ```
@@ -108,7 +111,7 @@ All demo accounts use the password **`password123`**
 2. **Student Authentication**
    ```
    Email: john.smith@uwm.edu
-   Password: password123
+   Password: password
    Expected: Redirect to /homepage with welcome message
    ```
 
@@ -123,7 +126,7 @@ All demo accounts use the password **`password123`**
    # Verify student data via API
    curl -X POST http://localhost:8081/auth/login \
      -H "Content-Type: application/json" \
-     -d '{"email":"john.smith@uwm.edu","password":"password123"}'
+   -d '{"email":"john.smith@uwm.edu","password":"password"}'
    ```
 
 ### Phase 3: Administrative Access (10 minutes)
@@ -131,7 +134,7 @@ All demo accounts use the password **`password123`**
 1. **Admin Authentication**
    ```
    Email: admin@uwm.edu
-   Password: password123
+   Password: password
    Expected: Admin dashboard access
    ```
 
@@ -242,7 +245,7 @@ curl http://localhost:8081/demo/validate
 
 # 4. Test fresh login
 curl -X POST http://localhost:8081/auth/login \
-  -d '{"email":"john.smith@uwm.edu","password":"password123"}'
+   -d '{"email":"john.smith@uwm.edu","password":"password"}'
 ```
 
 ### Test Scenario 3: Multi-User Concurrent Access
@@ -250,13 +253,13 @@ curl -X POST http://localhost:8081/auth/login \
 # 1. Login as admin
 ADMIN_TOKEN=$(curl -s -X POST http://localhost:8081/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@uwm.edu","password":"password123"}' | \
+   -d '{"email":"admin@uwm.edu","password":"password"}' | \
   grep -o '"token":"[^"]*' | cut -d'"' -f4)
 
 # 2. Login as student
 STUDENT_TOKEN=$(curl -s -X POST http://localhost:8081/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"john.smith@uwm.edu","password":"password123"}' | \
+   -d '{"email":"john.smith@uwm.edu","password":"password"}' | \
   grep -o '"token":"[^"]*' | cut -d'"' -f4)
 
 # 3. Verify concurrent access
@@ -304,8 +307,8 @@ docker restart paws360-postgres
 ```bash
 # Test login endpoint
 curl -v -X POST http://localhost:8081/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john.smith@uwm.edu","password":"password123"}'
+   -H "Content-Type: application/json" \
+   -d '{"email":"john.smith@uwm.edu","password":"password"}'
 
 # Check CORS settings
 curl -H "Origin: http://localhost:3000" \
@@ -410,7 +413,7 @@ docker ps | grep -E "(prometheus|grafana|alertmanager)"
 ## 🔐 Security Considerations
 
 ### Demo Environment Security
-- All demo passwords are consistent (`password123`)
+- All demo passwords are consistent (`password`)
 - No real user data in demo environment
 - Database is isolated and containerized
 - Session tokens have appropriate expiration

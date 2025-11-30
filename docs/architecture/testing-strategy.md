@@ -56,10 +56,10 @@ class UserServiceTest {
         // Given
         CreateUserRequest request = new CreateUserRequest(
             "john@example.com",
-            "password123",
+            "password",
             "John Doe"
         );
-        when(passwordEncoder.encode("password123"))
+        when(passwordEncoder.encode("password"))
             .thenReturn("encoded_password");
         when(userRepository.save(any(User.class)))
             .thenAnswer(inv -> {
@@ -74,7 +74,7 @@ class UserServiceTest {
         // Then
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getPassword()).isEqualTo("encoded_password");
-        verify(passwordEncoder).encode("password123");
+        verify(passwordEncoder).encode("password");
         verify(userRepository).save(any(User.class));
     }
 

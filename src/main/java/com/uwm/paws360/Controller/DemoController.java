@@ -290,11 +290,11 @@ public class DemoController {
             response.put("has_admin", status.getTotalAdministrators() > 0);
             response.put("has_students", status.getTotalStudents() > 0);
             
-            // Demo credentials note (password is always 'password123' for demo accounts)
-            response.put("note", "All demo accounts use password 'password123'");
+            // Demo credentials note (password is always 'password' for demo accounts)
+            response.put("note", "All demo accounts use password 'password'");
             response.put("test_credentials", Map.of(
-                "admin", "admin@uwm.edu / password123",
-                "student", "john.smith@uwm.edu / password123"
+                "admin", "admin@uwm.edu / password",
+                "student", "john.smith@uwm.edu / password"
             ));
             
             return ResponseEntity.ok(response);
@@ -347,7 +347,7 @@ public class DemoController {
         response.put("demo_requirements", Map.of(
             "database", "PostgreSQL with PAWS360 schema",
             "demo_accounts", "At least 1 admin and 1 student account",
-            "demo_password", "password123 for all demo accounts"
+            "demo_password", "password for all demo accounts"
         ));
         
         return ResponseEntity.ok(response);
