@@ -88,7 +88,7 @@ public class CourseSearchController {
     @GetMapping("/student/{studentId}/weekly-schedule")
     public List<Map<String, Object>> getWeeklySchedule(@PathVariable Integer studentId) {
         String sql = 
-            "SELECT DISTINCT " +
+            "SELECT " +
             "  c.course_code, " +
             "  c.title, " +
             "  cs.start_time, " +
