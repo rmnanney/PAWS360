@@ -18,6 +18,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        # When running as part of a pull request the HEAD ref can be deleted or
+        # unavailable which causes the checkout to fail; prefer the PR base
+        # branch when available (fallback to the event ref for non-PR runs).
+        with:
+          ref: ${{ github.event.pull_request.base.ref || github.ref }}
 
       - name: Prune artifacts (keep current + previous run)
         run: |
