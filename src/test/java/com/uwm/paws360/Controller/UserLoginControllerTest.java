@@ -41,7 +41,7 @@ class UserLoginControllerTest {
     @Test
     void login_SuccessfulLogin_ReturnsOkStatus() throws Exception {
         // Arrange
-        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
+        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             1, "user@example.com", "John", "Doe",
             Role.STUDENT, Status.ACTIVE, "sessionToken123", LocalDateTime.now().plusHours(1), "Login Successful"
@@ -82,7 +82,7 @@ class UserLoginControllerTest {
     @Test
     void login_AccountLocked_ReturnsLockedStatus() throws Exception {
         // Arrange
-        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
+        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             1, "user@example.com", "John", "Doe",
             Role.STUDENT, Status.ACTIVE, null, null, "Account Locked"
@@ -101,7 +101,7 @@ class UserLoginControllerTest {
     @Test
     void login_InactiveAccount_ReturnsUnauthorized() throws Exception {
         // Arrange
-        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
+        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password");
         UserLoginResponseDTO response = new UserLoginResponseDTO(
             1, "user@example.com", "John", "Doe",
             Role.STUDENT, Status.INACTIVE, null, null, "Account Is Not Active"
@@ -138,7 +138,7 @@ class UserLoginControllerTest {
     @Test
     void login_ServiceReturnsNull_ReturnsInternalServerError() throws Exception {
         // Arrange
-        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password123");
+        UserLoginRequestDTO request = new UserLoginRequestDTO("user@example.com", "password");
 
         when(loginService.login(any(UserLoginRequestDTO.class))).thenReturn(null);
 

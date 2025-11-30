@@ -71,7 +71,7 @@ class LoginServiceTest {
         lockedUser.setFirstname("Locked");
         lockedUser.setLastname("User");
         lockedUser.setEmail("locked.user@uwm.edu");
-        lockedUser.setPassword(passwordEncoder.encode("password123"));
+        lockedUser.setPassword(passwordEncoder.encode("password"));
         lockedUser.setRole(Role.STUDENT);
         lockedUser.setStatus(Status.ACTIVE);
         lockedUser.setAccount_locked(true);
@@ -83,7 +83,7 @@ class LoginServiceTest {
         inactiveUser.setFirstname("Inactive");
         inactiveUser.setLastname("User");
         inactiveUser.setEmail("inactive.user@uwm.edu");
-        inactiveUser.setPassword(passwordEncoder.encode("password123"));
+        inactiveUser.setPassword(passwordEncoder.encode("password"));
         inactiveUser.setRole(Role.STUDENT);
         inactiveUser.setStatus(Status.INACTIVE);
         inactiveUser.setAccount_locked(false);
@@ -247,7 +247,7 @@ class LoginServiceTest {
                 .thenReturn(inactiveUser);
 
             UserLoginRequestDTO inactiveLoginRequest = 
-                new UserLoginRequestDTO("inactive.user@uwm.edu", "password123");
+                new UserLoginRequestDTO("inactive.user@uwm.edu", "password");
 
             // When
             UserLoginResponseDTO response = loginService.login(inactiveLoginRequest);
@@ -271,7 +271,7 @@ class LoginServiceTest {
                 .thenReturn(lockedUser);
 
             UserLoginRequestDTO lockedLoginRequest = 
-                new UserLoginRequestDTO("locked.user@uwm.edu", "password123");
+                new UserLoginRequestDTO("locked.user@uwm.edu", "password");
 
             // When
             UserLoginResponseDTO response = loginService.login(lockedLoginRequest);

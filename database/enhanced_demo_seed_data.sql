@@ -1,7 +1,7 @@
 -- PAWS360 Enhanced Demo Data for Repeatable Demo Environment Setup
 -- Version: 2.0 - Enhanced for idempotency and reset functionality
 -- Compatible with Spring Boot backend entities and DemoDataService
--- BCrypt password for all demo accounts: password123
+-- BCrypt password for all demo accounts: password
 -- Hash: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
 
 -- =============================================================================
@@ -9,7 +9,7 @@
 -- =============================================================================
 -- This script can be run multiple times safely (idempotent)
 -- It creates a consistent baseline for demo environments
--- All demo accounts use the password 'password123'
+-- All demo accounts use the password 'password'
 
 BEGIN;
 
@@ -73,7 +73,7 @@ DELETE FROM users WHERE email LIKE '%@uwm.edu';
 -- =============================================================================
 
 -- Demo Administrator Account
--- Email: admin@uwm.edu | Password: password123 | Role: Administrator
+-- Email: admin@uwm.edu | Password: password | Role: Administrator
 INSERT INTO users (
     firstname, lastname, dob, ssn, email, password, phone, status, role,
     ethnicity, gender, nationality, country_code, preferred_name,
@@ -90,7 +90,7 @@ INSERT INTO users (
 );
 
 -- Primary Demo Student Account
--- Email: john.smith@uwm.edu | Password: password123 | Role: STUDENT
+-- Email: john.smith@uwm.edu | Password: password | Role: STUDENT
 INSERT INTO users (
     firstname, lastname, dob, ssn, email, password, phone, status, role,
     ethnicity, gender, nationality, country_code, preferred_name,
@@ -107,7 +107,7 @@ INSERT INTO users (
 );
 
 -- Secondary Demo Student Account
--- Email: emily.johnson@uwm.edu | Password: password123 | Role: STUDENT
+-- Email: emily.johnson@uwm.edu | Password: password | Role: STUDENT
 INSERT INTO users (
     firstname, lastname, dob, ssn, email, password, phone, status, role,
     ethnicity, gender, nationality, country_code, preferred_name,
@@ -165,7 +165,7 @@ INSERT INTO users (
 );
 
 -- Demo Professor Account
--- Email: jane.professor@uwm.edu | Password: password123 | Role: PROFESSOR
+-- Email: jane.professor@uwm.edu | Password: password | Role: PROFESSOR
 INSERT INTO users (
     firstname, lastname, dob, ssn, email, password, phone, status, role,
     ethnicity, gender, nationality, country_code, preferred_name,
@@ -359,7 +359,7 @@ COMMIT;
 
 SELECT 
     '=== DEMO ACCOUNTS SUMMARY ===' as info,
-    'All accounts use password: password123' as credentials;
+    'All accounts use password: password' as credentials;
 
 -- Display created demo accounts
 SELECT 
@@ -389,25 +389,25 @@ SELECT
 SELECT 
     'Administrator Login' as account_type,
     'admin@uwm.edu' as email,
-    'password123' as password,
+    'password' as password,
     'Full admin access to all modules' as description
 UNION ALL
 SELECT 
     'Primary Student Login' as account_type,
     'john.smith@uwm.edu' as email,
-    'password123' as password,
+    'password' as password,
     'Computer Science student for portal testing' as description
 UNION ALL
 SELECT 
     'Secondary Student Login' as account_type,
     'demo.student@uwm.edu' as email,
-    'password123' as password,
+    'password' as password,
     'Simple demo student account' as description
 UNION ALL
 SELECT 
     'Professor Login' as account_type,
     'jane.professor@uwm.edu' as email,
-    'password123' as password,
+    'password' as password,
     'Faculty access for instructor features' as description;
 
 -- =============================================================================

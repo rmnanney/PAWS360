@@ -1,7 +1,7 @@
 -- PAWS360 Enhanced Demo Data for Repeatable Demo Environment Setup
 -- Version: 2.2 - Fixed for paws360 schema compatibility and conflict handling
 -- Compatible with Spring Boot backend entities and DemoDataService
--- BCrypt password for all demo accounts: password123
+-- BCrypt password for all demo accounts: password
 -- Hash: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
 
 -- Set search path to use paws360 schema
@@ -293,7 +293,7 @@ COMMIT;
 -- SUCCESS MESSAGE
 -- =============================================================================
 SELECT 'Demo environment initialized successfully!' as status,
-       'All demo accounts use password: password123' as credentials,
+    'All demo accounts use password: password' as credentials,
        COUNT(*) as total_demo_users
 FROM paws360.users 
 WHERE email LIKE '%@uwm.edu';

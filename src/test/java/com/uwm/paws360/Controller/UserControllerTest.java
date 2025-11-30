@@ -61,7 +61,7 @@ class UserControllerTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "john.doe@example.com", "password123", List.of(address),
+            "john.doe@example.com", "password", List.of(address),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0123", Status.ACTIVE, Role.STUDENT
         );
 
@@ -122,7 +122,7 @@ class UserControllerTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "dr.johnson@example.com", "password123", List.of(professorAddressDTO),
+            "dr.johnson@example.com", "password", List.of(professorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0789", Status.ACTIVE, Role.PROFESSOR
         );
 
@@ -157,7 +157,7 @@ class UserControllerTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "john.doe@example.com", "newpassword123",
+            "john.doe@example.com", "newpassword",
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-9999"
         );
 
@@ -193,7 +193,7 @@ class UserControllerTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "nonexistent@example.com", "newpassword123",
+            "nonexistent@example.com", "newpassword",
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-9999"
         );
 
@@ -245,7 +245,7 @@ class UserControllerTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "jane.smith@example.com", "password123", List.of(advisorAddressDTO),
+            "jane.smith@example.com", "password", List.of(advisorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0456", Status.ACTIVE, Role.ADVISOR
         );
 
@@ -289,7 +289,7 @@ class UserControllerTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "sarah.wilson@example.com", "password123", List.of(counselorAddressDTO),
+            "sarah.wilson@example.com", "password", List.of(counselorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0321", Status.ACTIVE, Role.COUNSELOR
         );
 
@@ -333,7 +333,7 @@ class UserControllerTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "mike.johnson@example.com", "password123", List.of(mentorAddressDTO),
+            "mike.johnson@example.com", "password", List.of(mentorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0654", Status.ACTIVE, Role.MENTOR
         );
 
@@ -377,7 +377,7 @@ class UserControllerTest {
                 com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
                 com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
                 com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-                "prof.davis@example.com", "password123", List.of(instructorAddressDTO),
+                "prof.davis@example.com", "password", List.of(instructorAddressDTO),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0987", Status.ACTIVE, Role.INSTRUCTOR
         );
 
@@ -422,7 +422,7 @@ class UserControllerTest {
                 com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
                 com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
                 com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-                "dr.wilson@example.com", "password123", List.of(facultyAddressDTO),
+                "dr.wilson@example.com", "password", List.of(facultyAddressDTO),
                 com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0147", Status.ACTIVE, Role.FACULTY
             );
 
@@ -467,7 +467,7 @@ class UserControllerTest {
                 com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
                 com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
                 com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-                "alex.brown@example.com", "password123", List.of(taAddressDTO),
+                "alex.brown@example.com", "password", List.of(taAddressDTO),
                 com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0258", Status.ACTIVE, Role.TA
             );
 
@@ -511,7 +511,7 @@ class UserControllerTest {
                 com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
                 com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
                 com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-                "john.doe@example.com", "newpassword123",
+                "john.doe@example.com", "newpassword",
                 com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-9999"
             );
 
