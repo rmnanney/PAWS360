@@ -16,6 +16,9 @@ jobs:
       actions: write
       contents: read
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Prune artifacts (keep current + previous run)
         run: |
           set -euxo pipefail
