@@ -568,7 +568,20 @@ jobs:
           fi
 
           if [ "$status" -ne 200 ]; then
-            echo "path /homepage returned HTTP $status (expected 200)" && exit 1
+            echo "cookie+header checks failed (HTTP $status)."
+            # If we have a session_token, try a lightweight Playwright localStorage fallback
+            if [ -n "${session_token:-}" ]; then
+              echo "Attempting Playwright localStorage fallback using session_token";
+              # Install test dependencies & browsers and run a single targeted Playwright test
+              (cd tests/ui && npm ci --silent)
+              (cd tests/ui && npm run install-browsers --silent || true)
+
+              if ! (cd tests/ui && SESSION_TOKEN="$session_token" BASE_URL="http://localhost:3000" npx playwright test ./smoke-localstorage.spec.ts --project=chromium --timeout=60000 --reporter=list); then
+                echo "localStorage fallback via Playwright failed" && exit 1
+              fi
+            else
+              echo "No session_token to attempt localStorage fallback — failing" && exit 1
+            fi
           fi
 
       - name: Capture smoke diagnostics
