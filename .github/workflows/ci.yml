@@ -515,12 +515,14 @@ jobs:
           echo "POST /auth/login (demo student)";
           # Basic login POST - ensure backend responds; don't require persistence
           set -o pipefail
-          # Perform backend login and capture headers AND body so we can forward the session cookie
-          # or fall back to using session_token from the JSON body as PAWS360_SESSION for frontend checks.
+          # Perform a single backend login request and capture headers + body + HTTP status code
+          # so the cookie and JSON body come from the same response (avoid mismatched tokens).
+          login_headers_file="/tmp/login-headers.txt"
           login_body_file="/tmp/login-body.json"
-          resp_headers=$(curl -s -D - -o "$login_body_file" -X POST http://localhost:8080/auth/login -H 'Content-Type: application/json' -d '{"email":"demo.student@uwm.edu","password":"password"}') || true
-          # Separate status check for clarity
-          resp=$({ curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8080/auth/login -H 'Content-Type: application/json' -d '{"email":"demo.student@uwm.edu","password":"password"}' || true; })
+          # Write headers to a separate file, body to file, and capture http code into $resp
+          resp=$(curl -s -D "$login_headers_file" -o "$login_body_file" -w "%{http_code}" -X POST http://localhost:8080/auth/login -H 'Content-Type: application/json' -d '{"email":"demo.student@uwm.edu","password":"password"}' || true)
+          # Load headers string for parsing
+          resp_headers=$(cat "$login_headers_file" 2>/dev/null || true)
           echo "login status=$resp"
           if [ "$resp" -ne 200 ]; then
             echo "Login endpoint returned $resp"; exit 1
@@ -546,7 +548,8 @@ jobs:
           fi
 
           # Check a few lightweight frontend paths to ensure routing works (use session cookie for auth)
-          for url in / /homepage; do
+          # Check /homepage first — root (/) intentionally redirects to /login and may not render expected content.
+          for url in /homepage /; do
             echo "GET http://localhost:3000${url}";
             curl ${cookie_arg} -fsS http://localhost:3000${url} | grep -E "Welcome|Homepage|Academic" >/dev/null || (echo "path ${url} didn't show expected content" && exit 1)
           done
