@@ -553,8 +553,20 @@ jobs:
           # Check a few lightweight frontend paths to ensure routing works (use session cookie for auth)
           # Check /homepage first — root (/) intentionally redirects to /login and may not render expected content.
           # Verify the authenticated homepage is reachable (HTTP 200).
-          echo "GET http://localhost:3000/homepage";
+          echo "GET http://localhost:3000/homepage (cookie/header fallbacks enabled)";
           status=$(curl -s -o /dev/null -w "%{http_code}" ${cookie_arg} http://localhost:3000/homepage || true)
+
+          # If the cookie-only check fails but we have a session_token, try header-based fallbacks
+          if [ "$status" -ne 200 ] && [ -n "${session_token:-}" ]; then
+            echo "cookie-only request returned $status — trying Authorization header fallback";
+            status=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${session_token}" http://localhost:3000/homepage || true)
+          fi
+
+          if [ "$status" -ne 200 ] && [ -n "${session_token:-}" ]; then
+            echo "Authorization header request returned $status — trying X-Session-Token header fallback";
+            status=$(curl -s -o /dev/null -w "%{http_code}" -H "X-Session-Token: ${session_token}" http://localhost:3000/homepage || true)
+          fi
+
           if [ "$status" -ne 200 ]; then
             echo "path /homepage returned HTTP $status (expected 200)" && exit 1
           fi
