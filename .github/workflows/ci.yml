@@ -503,6 +503,7 @@ jobs:
               echo "Static export failed — giving up (primary server didn't become healthy either)" && exit 1
             fi
           fi
+          fi
 
       - name: Smoke HTTP checks
         run: |
