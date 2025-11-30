@@ -203,7 +203,7 @@ describe("T056: LoginForm Component Tests", () => {
 
 			// Fill form with valid credentials
 			await user.type(emailInput, "test@uwm.edu");
-			await user.type(passwordInput, "password123");
+			await user.type(passwordInput, "password");
 			
 			await user.click(submitButton);
 
@@ -217,7 +217,7 @@ describe("T056: LoginForm Component Tests", () => {
 					},
 					body: JSON.stringify({
 						email: "test@uwm.edu",
-						password: "password123",
+						password: "password",
 					}),
 					credentials: "include",
 				});
@@ -294,7 +294,7 @@ describe("T056: LoginForm Component Tests", () => {
 
 		// Fill form
 		await user.type(emailInput, "test@uwm.edu");
-		await user.type(passwordInput, "password123");
+		await user.type(passwordInput, "password");
 		
 		await user.click(submitButton);			// Verify network error toast
 			await waitFor(() => {
@@ -331,7 +331,7 @@ describe("T056: LoginForm Component Tests", () => {
 
 			// Complete successful login
 			await user.type(emailInput, "test@uwm.edu");
-			await user.type(passwordInput, "password123");
+			await user.type(passwordInput, "password");
 			await user.click(submitButton);
 
 			// Wait for navigation with timeout
@@ -394,7 +394,7 @@ describe("T056: LoginForm Component Tests", () => {
 
 			// Fill form
 			await user.type(emailInput, "test@uwm.edu");
-			await user.type(passwordInput, "password123");
+			await user.type(passwordInput, "password");
 
 			// Submit form and verify loading behavior
 			await user.click(submitButton);
@@ -434,7 +434,7 @@ describe("T056: LoginForm Component Tests", () => {
 
 			// Fill form and submit
 			await user.type(emailInput, "test@uwm.edu");
-			await user.type(passwordInput, "password123");
+			await user.type(passwordInput, "password");
 			await user.click(submitButton);
 
 		// Verify form submission
@@ -447,7 +447,7 @@ describe("T056: LoginForm Component Tests", () => {
 					},
 					body: JSON.stringify({
 						email: "test@uwm.edu",
-						password: "password123",
+						password: "password",
 					}),
 					credentials: "include",
 				});
@@ -470,7 +470,7 @@ describe("T056: LoginForm Component Tests", () => {
 			const submitButton = screen.getByRole("button", { name: /sign in/i });
 
 			const email = "test@uwm.edu";
-			const password = "password123";
+			const password = "password";
 
 			// Fill and submit form
 			await user.type(emailInput, email);
@@ -517,7 +517,7 @@ describe("T056: LoginForm Component Tests", () => {
 
 			// Fill and submit form
 			await user.type(emailInput, "test@uwm.edu");
-			await user.type(passwordInput, "password123");
+			await user.type(passwordInput, "password");
 			await user.click(submitButton);
 
 			// Should still handle gracefully
@@ -547,7 +547,7 @@ describe("T056: LoginForm Component Tests", () => {
 			const submitButton = screen.getByRole("button", { name: /sign in/i });
 
 			await user.type(emailInput, "test@uwm.edu");
-			await user.type(passwordInput, "password123");
+			await user.type(passwordInput, "password");
 			await user.click(submitButton);
 
 			// Should use fallback message
@@ -590,7 +590,7 @@ describe("T056: LoginForm Component Tests", () => {
 
 			// Fill form
 			await user.type(emailInput, "test@uwm.edu");
-			await user.type(passwordInput, "password123");
+			await user.type(passwordInput, "password");
 
 			// Submit multiple times rapidly using fireEvent for synchronous dispatch
 			fireEvent.click(submitButton);

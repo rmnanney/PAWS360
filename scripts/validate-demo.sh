@@ -40,7 +40,7 @@ DB_PORT="5434"
 ADMIN_EMAIL="admin@uwm.edu"
 STUDENT_EMAIL="john.smith@uwm.edu"
 DEMO_STUDENT_EMAIL="demo.student@uwm.edu"
-DEMO_PASSWORD="password123"
+DEMO_PASSWORD="password"
 
 # Validation results tracking
 declare -A validation_results

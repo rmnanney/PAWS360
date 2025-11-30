@@ -39,7 +39,7 @@ class UsersTest {
         String lastname = "Smith";
         LocalDate dob = LocalDate.of(1990, 1, 1);
         String email = "john.smith@example.com";
-        String password = "password123";
+        String password = "password";
         Country_Code countryCode = Country_Code.US;
         String phone = "123-456-7890";
         Status status = Status.ACTIVE;

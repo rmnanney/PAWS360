@@ -34,7 +34,7 @@ class UsersIntegrationTest {
             "Doe",
             LocalDate.of(1990, 1, 1),
             "john.doe@test.com",
-            "password123",
+            "password",
             Country_Code.US,
             "1234567890",
             Status.ACTIVE,

@@ -77,7 +77,7 @@ class UserServiceTest {
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "john.doe@example.com",
-            "password123",
+            "password",
             addresses,
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US,
             "555-0123",
@@ -91,7 +91,7 @@ class UserServiceTest {
         savedUser.setLastname("Doe");
         savedUser.setDob(LocalDate.of(1990, 1, 1));
         savedUser.setEmail("john.doe@example.com");
-        savedUser.setPassword("password123");
+        savedUser.setPassword("password");
         // Address is now handled via addresses list
         savedUser.setCountryCode(com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US);
         savedUser.setPhone("555-0123");
@@ -139,7 +139,7 @@ class UserServiceTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "jane.smith@example.com", "password123", 
+            "jane.smith@example.com", "password", 
             List.of(new AddressDTO(null, com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME, "456 Oak St", null, null, "Milwaukee", com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN, "53201")),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0456", Status.ACTIVE, Role.ADVISOR
         );
@@ -183,7 +183,7 @@ class UserServiceTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "dr.johnson@example.com", "password123", 
+            "dr.johnson@example.com", "password", 
             List.of(new AddressDTO(null, com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME, "789 University Ave", null, null, "Milwaukee", com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN, "53201")),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0789", Status.ACTIVE, Role.PROFESSOR
         );
@@ -245,7 +245,7 @@ class UserServiceTest {
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "john.doe@example.com",
-            "newpassword123",
+            "newpassword",
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US,
             "555-9999"
         );
@@ -277,7 +277,7 @@ class UserServiceTest {
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
             "nonexistent@example.com",
-            "newpassword123",
+            "newpassword",
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US,
             "555-9999"
         );
@@ -343,7 +343,7 @@ class UserServiceTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "sarah.wilson@example.com", "password123", 
+            "sarah.wilson@example.com", "password", 
             List.of(new AddressDTO(null, com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME, "321 Counseling St", null, null, "Milwaukee", com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN, "53201")),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0321", Status.ACTIVE, Role.COUNSELOR
         );
@@ -383,7 +383,7 @@ class UserServiceTest {
             com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER,
             com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES,
-            "mike.brown@example.com", "password123", 
+            "mike.brown@example.com", "password", 
             List.of(new AddressDTO(null, com.uwm.paws360.Entity.EntityDomains.User.Address_Type.HOME, "654 Teaching Ave", null, null, "Milwaukee", com.uwm.paws360.Entity.EntityDomains.User.US_States.WISCONSIN, "53201")),
             com.uwm.paws360.Entity.EntityDomains.User.Country_Code.US, "555-0654", Status.ACTIVE, Role.INSTRUCTOR
         );

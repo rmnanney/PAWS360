@@ -576,3 +576,107 @@ This generated password is for development use only. Your security configuration
 2025-11-29 18:43:47.147 [SpringApplicationShutdownHook] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2025-11-29 18:43:47.188 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2025-11-29 18:43:47.191 [SpringApplicationShutdownHook] INFO  [] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-11-29 21:09:33.235 [main] INFO  [] c.u.p.E.Base.UsersIntegrationTest - Starting UsersIntegrationTest using Java 21.0.9 with PID 1983961 (started by ryan in /home/ryan/repos/PAWS360)
+2025-11-29 21:09:33.237 [main] INFO  [] c.u.p.E.Base.UsersIntegrationTest - The following 1 profile is active: "test"
+2025-11-29 21:09:33.583 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-11-29 21:09:33.585 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-11-29 21:09:33.680 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 83 ms. Found 29 JPA repository interfaces.
+2025-11-29 21:09:33.744 [main] INFO  [] o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
+2025-11-29 21:09:33.822 [main] INFO  [] o.s.j.d.e.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:8c93c35a-96e0-4473-9f0f-b4488e8ad542;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2025-11-29 21:09:34.506 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-11-29 21:09:34.557 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-11-29 21:09:44.581 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-11-29 21:09:46.056 [main] INFO  [] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-11-29 21:09:48.511 [main] INFO  [] c.u.p.E.Base.UsersIntegrationTest - Started UsersIntegrationTest in 15.759 seconds (process running for 16.962)
+2025-11-29 21:09:54.477 [main] INFO  [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.uwm.paws360.JPARepository.User.UserRepositoryTest]: UserRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2025-11-29 21:09:54.553 [main] INFO  [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.uwm.paws360.Application for test class com.uwm.paws360.JPARepository.User.UserRepositoryTest
+2025-11-29 21:09:54.894 [main] INFO  [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.uwm.paws360.Controller.UserControllerTest]: UserControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2025-11-29 21:09:54.935 [main] INFO  [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.uwm.paws360.Application for test class com.uwm.paws360.Controller.UserControllerTest
+2025-11-29 21:09:54.948 [main] INFO  [] o.s.b.d.r.RestartApplicationListener - Restart disabled due to context in which it is running
+2025-11-29 21:09:55.056 [main] INFO  [] c.u.p.Controller.UserControllerTest - Starting UserControllerTest using Java 21.0.9 with PID 1983961 (started by ryan in /home/ryan/repos/PAWS360)
+2025-11-29 21:09:55.056 [main] INFO  [] c.u.p.Controller.UserControllerTest - The following 1 profile is active: "test"
+2025-11-29 21:09:55.848 [main] INFO  [] o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-11-29 21:09:56.257 [main] WARN  [] o.s.b.a.s.s.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 023e561a-620f-4a4a-9cb9-ffae9133d44e
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2025-11-29 21:09:56.406 [main] INFO  [] o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2025-11-29 21:09:56.407 [main] INFO  [] o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2025-11-29 21:09:56.408 [main] INFO  [] o.s.t.w.s.TestDispatcherServlet - Completed initialization in 1 ms
+2025-11-29 21:09:56.424 [main] INFO  [] c.u.p.Controller.UserControllerTest - Started UserControllerTest in 1.477 seconds (process running for 24.875)
+2025-11-29 21:09:56.523 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Malformed request on /users/edit from 127.0.0.1: Required request body is missing: public org.springframework.http.ResponseEntity<com.uwm.paws360.DTO.User.UserResponseDTO> com.uwm.paws360.Controller.UserController.editUser(com.uwm.paws360.DTO.User.EditUserRequestDTO)
+2025-11-29 21:09:56.868 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Validation error on /users/edit from 127.0.0.1: {password=must not be empty, ethnicity=must not be null, nationality=must not be null, gender=must not be null, dob=must not be null, countryCode=must not be null, email=must not be empty, ssn=must not be null}
+2025-11-29 21:09:56.881 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Validation error on /users/create from 127.0.0.1: {firstname=must not be empty, password=must not be empty, role=must not be null, nationality=must not be null, gender=must not be null, ethnicity=must not be null, dob=must not be null, countryCode=must not be null, email=must not be empty, lastname=must not be empty, status=must not be null, ssn=must not be null}
+2025-11-29 21:09:56.893 [main] INFO  [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.uwm.paws360.Controller.UserLoginControllerTest]: UserLoginControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2025-11-29 21:09:56.904 [main] INFO  [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.uwm.paws360.Application for test class com.uwm.paws360.Controller.UserLoginControllerTest
+2025-11-29 21:09:56.907 [main] INFO  [] o.s.b.d.r.RestartApplicationListener - Restart disabled due to context in which it is running
+2025-11-29 21:09:56.943 [main] INFO  [] c.u.p.C.UserLoginControllerTest - Starting UserLoginControllerTest using Java 21.0.9 with PID 1983961 (started by ryan in /home/ryan/repos/PAWS360)
+2025-11-29 21:09:56.943 [main] INFO  [] c.u.p.C.UserLoginControllerTest - The following 1 profile is active: "test"
+2025-11-29 21:09:57.156 [main] INFO  [] o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-11-29 21:09:57.204 [main] WARN  [] o.s.b.a.s.s.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 27eae4c7-7890-4b76-b073-5eb4f054e075
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2025-11-29 21:09:57.214 [main] INFO  [] o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2025-11-29 21:09:57.214 [main] INFO  [] o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2025-11-29 21:09:57.215 [main] INFO  [] o.s.t.w.s.TestDispatcherServlet - Completed initialization in 1 ms
+2025-11-29 21:09:57.219 [main] INFO  [] c.u.p.C.UserLoginControllerTest - Started UserLoginControllerTest in 0.312 seconds (process running for 25.67)
+2025-11-29 21:09:57.254 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Validation error on /login from 127.0.0.1: {password=must not be empty, email=must not be empty}
+2025-11-29 21:09:57.260 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Validation error on /login from 127.0.0.1: {password=must not be empty, email=must not be empty}
+2025-11-29 21:09:57.283 [SpringApplicationShutdownHook] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-11-29 21:10:07.459 [main] INFO  [] c.u.p.E.Base.UsersIntegrationTest - Starting UsersIntegrationTest using Java 21.0.9 with PID 1986886 (started by ryan in /home/ryan/repos/PAWS360)
+2025-11-29 21:10:07.461 [main] INFO  [] c.u.p.E.Base.UsersIntegrationTest - The following 1 profile is active: "test"
+2025-11-29 21:10:07.867 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-11-29 21:10:07.869 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-11-29 21:10:07.955 [main] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 77 ms. Found 29 JPA repository interfaces.
+2025-11-29 21:10:08.021 [main] INFO  [] o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
+2025-11-29 21:10:08.097 [main] INFO  [] o.s.j.d.e.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:02c0fcc3-717b-4ff6-9098-d92fc1383857;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+2025-11-29 21:10:08.694 [main] INFO  [] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-11-29 21:10:08.738 [main] WARN  [] org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-11-29 21:10:10.130 [main] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-11-29 21:10:10.427 [main] INFO  [] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-11-29 21:10:11.203 [main] INFO  [] c.u.p.E.Base.UsersIntegrationTest - Started UsersIntegrationTest in 4.234 seconds (process running for 5.434)
+2025-11-29 21:10:15.667 [main] INFO  [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.uwm.paws360.JPARepository.User.UserRepositoryTest]: UserRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2025-11-29 21:10:15.727 [main] INFO  [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.uwm.paws360.Application for test class com.uwm.paws360.JPARepository.User.UserRepositoryTest
+2025-11-29 21:10:16.000 [main] INFO  [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.uwm.paws360.Controller.UserControllerTest]: UserControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2025-11-29 21:10:16.033 [main] INFO  [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.uwm.paws360.Application for test class com.uwm.paws360.Controller.UserControllerTest
+2025-11-29 21:10:16.041 [main] INFO  [] o.s.b.d.r.RestartApplicationListener - Restart disabled due to context in which it is running
+2025-11-29 21:10:16.126 [main] INFO  [] c.u.p.Controller.UserControllerTest - Starting UserControllerTest using Java 21.0.9 with PID 1986886 (started by ryan in /home/ryan/repos/PAWS360)
+2025-11-29 21:10:16.127 [main] INFO  [] c.u.p.Controller.UserControllerTest - The following 1 profile is active: "test"
+2025-11-29 21:10:16.737 [main] INFO  [] o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-11-29 21:10:17.084 [main] WARN  [] o.s.b.a.s.s.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: fc395c97-fb17-482a-85f2-af6a75e34792
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2025-11-29 21:10:17.215 [main] INFO  [] o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2025-11-29 21:10:17.215 [main] INFO  [] o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2025-11-29 21:10:17.217 [main] INFO  [] o.s.t.w.s.TestDispatcherServlet - Completed initialization in 1 ms
+2025-11-29 21:10:17.233 [main] INFO  [] c.u.p.Controller.UserControllerTest - Started UserControllerTest in 1.193 seconds (process running for 11.464)
+2025-11-29 21:10:17.339 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Malformed request on /users/edit from 127.0.0.1: Required request body is missing: public org.springframework.http.ResponseEntity<com.uwm.paws360.DTO.User.UserResponseDTO> com.uwm.paws360.Controller.UserController.editUser(com.uwm.paws360.DTO.User.EditUserRequestDTO)
+2025-11-29 21:10:17.652 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Validation error on /users/edit from 127.0.0.1: {password=must not be empty, ethnicity=must not be null, nationality=must not be null, gender=must not be null, countryCode=must not be null, dob=must not be null, email=must not be empty, ssn=must not be null}
+2025-11-29 21:10:17.662 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Validation error on /users/create from 127.0.0.1: {firstname=must not be empty, password=must not be empty, role=must not be null, gender=must not be null, ethnicity=must not be null, nationality=must not be null, dob=must not be null, countryCode=must not be null, email=must not be empty, status=must not be null, lastname=must not be empty, ssn=must not be null}
+2025-11-29 21:10:17.674 [main] INFO  [] o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.uwm.paws360.Controller.UserLoginControllerTest]: UserLoginControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2025-11-29 21:10:17.681 [main] INFO  [] o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.uwm.paws360.Application for test class com.uwm.paws360.Controller.UserLoginControllerTest
+2025-11-29 21:10:17.684 [main] INFO  [] o.s.b.d.r.RestartApplicationListener - Restart disabled due to context in which it is running
+2025-11-29 21:10:17.715 [main] INFO  [] c.u.p.C.UserLoginControllerTest - Starting UserLoginControllerTest using Java 21.0.9 with PID 1986886 (started by ryan in /home/ryan/repos/PAWS360)
+2025-11-29 21:10:17.715 [main] INFO  [] c.u.p.C.UserLoginControllerTest - The following 1 profile is active: "test"
+2025-11-29 21:10:17.898 [main] INFO  [] o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-11-29 21:10:17.936 [main] WARN  [] o.s.b.a.s.s.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 7b406cc9-c085-4f5f-8ba4-238fa014cd4a
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2025-11-29 21:10:17.944 [main] INFO  [] o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2025-11-29 21:10:17.945 [main] INFO  [] o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2025-11-29 21:10:17.945 [main] INFO  [] o.s.t.w.s.TestDispatcherServlet - Completed initialization in 0 ms
+2025-11-29 21:10:17.949 [main] INFO  [] c.u.p.C.UserLoginControllerTest - Started UserLoginControllerTest in 0.265 seconds (process running for 12.18)
+2025-11-29 21:10:17.991 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Validation error on /login from 127.0.0.1: {password=must not be empty, email=must not be empty}
+2025-11-29 21:10:17.996 [main] WARN  [] c.u.p.config.GlobalExceptionHandler - Validation error on /login from 127.0.0.1: {password=must not be empty, email=must not be empty}
+2025-11-29 21:10:18.017 [SpringApplicationShutdownHook] INFO  [] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
