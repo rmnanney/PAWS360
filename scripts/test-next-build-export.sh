@@ -30,8 +30,17 @@ echo "Running static export (npm run export)"
 if ! npm run export > "$LOG_DIR/next-export.log" 2>&1; then
   echo "Next export failed — writing tail of logs (next-export.log)" >&2
   tail -n 400 "$LOG_DIR/next-export.log" >&2 || true
-  echo "Full log available at $LOG_DIR/next-export.log" >&2
-  exit 1
+
+  # Next 15+ has removed `next export` in favor of `output: 'export'` in next.config.
+  # In that case treat the absence of the export command as a non-fatal condition —
+  # the important check is the build (prerender) step which caught the errors we care about.
+  if grep -q "has been removed in favor of 'output: export'" "$LOG_DIR/next-export.log" 2>/dev/null; then
+    echo "Note: 'next export' removed on this Next.js version — skipping export step (ok)." >&2
+    echo "Full log available at $LOG_DIR/next-export.log" >&2
+  else
+    echo "Full log available at $LOG_DIR/next-export.log" >&2
+    exit 1
+  fi
 fi
 
 echo "Build+export succeeded — artifacts are in $APP_DIR/out (if applicable)"

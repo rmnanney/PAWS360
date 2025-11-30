@@ -2,7 +2,7 @@
   "cookies": [
     {
       "name": "PAWS360_SESSION",
-      "value": "HRC9eQS7jy9FnEBi1FOxr6NLDRT4Adon",
+      "value": "iVAU33N9wLySKO8qO6eOCjNNQtpv5roq",
       "domain": "localhost",
       "path": "/",
       "httpOnly": true,
@@ -16,7 +16,7 @@
       "localStorage": [
         {
           "name": "authToken",
-          "value": "HRC9eQS7jy9FnEBi1FOxr6NLDRT4Adon"
+          "value": "iVAU33N9wLySKO8qO6eOCjNNQtpv5roq"
         }
       ]
     }
