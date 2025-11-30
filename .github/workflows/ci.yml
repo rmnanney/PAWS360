@@ -214,6 +214,38 @@ jobs:
           path: artifact-summary.json
           retention-days: 1
 
+  # Quick guard: ensure frontend can both build and export (detect prerender errors early)
+  frontend-export-check:
+    name: Frontend — build + export check
+    runs-on: ubuntu-latest
+    needs: artifact-report
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run frontend build+export check (fast)
+        env:
+          CI: true
+        run: |
+          set -euxo pipefail
+          # The helper script runs npm ci, next build and next export and writes logs to logs/next-build-export
+          ./scripts/test-next-build-export.sh
+
+      - name: Upload frontend build+export logs (failure only)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-export-logs
+          path: logs/next-build-export
+          retention-days: 1
+
 
   backend-build:
     name: Backend — build (no tests)
