@@ -343,40 +343,6 @@ jobs:
             echo "Waiting for Postgres... ($i)"
           done
 
-      - name: Run integration tests
-        env:
-          SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
-        run: |
-          ./mvnw -q -DskipITs=false -DtrimStackTrace=false -Dlogging.level.org.springframework.security=DEBUG -Dlogging.level.org.springframework.web.cors=TRACE -Dtest=*IntegrationTest test
-
-      - name: Stop docker-compose
-        if: always()
-        run: docker compose -f docker-compose.ci.yml down -v || true
-
-      - name: Final cleanup (integration job)
-        if: always()
-        run: |
-          echo "Cleaning up integration build artifacts and runner storage"
-          rm -rf target || true
-          docker system prune -af || true
-
-      - name: Wait for postgres container
-        run: |
-          for i in {1..60}; do
-            if docker exec paws360-postgres-ci pg_isready -U paws360 -d paws360_test >/dev/null 2>&1; then
-              echo "Postgres is ready"
-              break
-            fi
-            sleep 2
-            echo "Waiting for Postgres... ($i)"
-          done
-
-      - name: "Diagnostic: list paws360 schema tables"
-        run: |
-          echo "Listing paws360 schema tables and row counts for diagnostics"
-          docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "\dt paws360.*" || true
-          docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "SELECT 'users_rows', count(*) FROM paws360.users;" || true
-
       - name: Wait for backend health (timeout + diagnostics)
         run: |
           set -euxo pipefail
@@ -407,13 +373,20 @@ jobs:
         env:
           SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
         run: |
-          ./mvnw -q -DskipITs=false -Dtest=*IntegrationTest -DtrimStackTrace=false \
-            -Dlogging.level.org.springframework.security=DEBUG -Dlogging.level.org.springframework.web.cors=TRACE test
+          ./mvnw -q -DskipITs=false -DtrimStackTrace=false -Dlogging.level.org.springframework.security=DEBUG -Dlogging.level.org.springframework.web.cors=TRACE -Dtest=*IntegrationTest test
 
       - name: "Diagnostic: dump CORS debug endpoint (for CI logs)"
+        if: failure()
         run: |
           echo "CORS debug endpoint for diagnostic purposes (CI only):"
           curl -f http://localhost:8080/__debug/cors || true
+
+      - name: "Diagnostic: list paws360 schema tables"
+        if: failure()
+        run: |
+          echo "Listing paws360 schema tables and row counts for diagnostics"
+          docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "\dt paws360.*" || true
+          docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "SELECT 'users_rows', count(*) FROM paws360.users;" || true
 
       - name: Capture Docker logs on failure
         if: failure()
@@ -422,6 +395,13 @@ jobs:
       - name: Stop docker-compose
         if: always()
         run: docker compose -f docker-compose.ci.yml down -v || true
+
+      - name: Final cleanup (integration job)
+        if: always()
+        run: |
+          echo "Cleaning up integration build artifacts and runner storage"
+          rm -rf target || true
+          docker system prune -af || true
 
   # A fast, fail-fast smoke check for UI E2E that verifies the frontend and
   # backend can start and respond. This prevents running long Playwright jobs
