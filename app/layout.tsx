@@ -48,6 +48,10 @@ export default function RootLayout({
 			router.push("/personal");
 		} else if (section === "resources") {
 			router.push("/resources");
+		} else if (section === "Class Search/Catalog") {
+			router.push("/courses");
+		} else if (section === "Quick Links") {
+			router.push("/quick-links");
 		} else if (section === "financial-aid") {
 			router.push("/finances/financial-aid");
 		} else if (section === "my-account") {
