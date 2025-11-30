@@ -515,8 +515,10 @@ jobs:
           echo "POST /auth/login (demo student)";
           # Basic login POST - ensure backend responds; don't require persistence
           set -o pipefail
-          # Perform backend login and capture headers so we can forward the session cookie
-          resp_headers=$(curl -s -D - -o /dev/null -X POST http://localhost:8080/auth/login -H 'Content-Type: application/json' -d '{"email":"demo.student@uwm.edu","password":"password"}') || true
+          # Perform backend login and capture headers AND body so we can forward the session cookie
+          # or fall back to using session_token from the JSON body as PAWS360_SESSION for frontend checks.
+          login_body_file="/tmp/login-body.json"
+          resp_headers=$(curl -s -D - -o "$login_body_file" -X POST http://localhost:8080/auth/login -H 'Content-Type: application/json' -d '{"email":"demo.student@uwm.edu","password":"password"}') || true
           # Separate status check for clarity
           resp=$({ curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8080/auth/login -H 'Content-Type: application/json' -d '{"email":"demo.student@uwm.edu","password":"password"}' || true; })
           echo "login status=$resp"
@@ -530,8 +532,17 @@ jobs:
             echo "Using session cookie for frontend checks";
             cookie_arg="-b $session_cookie"
           else
-            echo "No PAWS360_SESSION cookie found in login response — proceeding without an auth cookie";
-            cookie_arg=""
+            # Try to extract a session_token from the JSON response body and use that as a cookie
+            session_token=$(grep -oP '"session_token"\s*:\s*"\K[^"]+' "$login_body_file" || true)
+            if [ -n "$session_token" ]; then
+              echo "No Set-Cookie header found, but backend returned session_token — using it as PAWS360_SESSION for frontend checks";
+              cookie_arg="-b PAWS360_SESSION=$session_token"
+            else
+              echo "No PAWS360_SESSION cookie or session_token found in login response — proceeding without an auth cookie";
+              cookie_arg=""
+            fi
+            # cleanup temporary file
+            rm -f "$login_body_file" || true
           fi
 
           # Check a few lightweight frontend paths to ensure routing works (use session cookie for auth)
