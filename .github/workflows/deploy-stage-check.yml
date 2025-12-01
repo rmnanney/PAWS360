@@ -39,7 +39,7 @@ jobs:
           OWNER_REPO="${OWNER_REPO_LOWER}"
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
           FRONTEND_TAG=ghcr.io/${OWNER_REPO}:frontend-staging-${SHORT_SHA}
-          docker build -f infrastructure/docker/frontend.Dockerfile -t "${FRONTEND_TAG}" ./infrastructure/docker
+          docker build -f infrastructure/docker/frontend.Dockerfile -t "${FRONTEND_TAG}" .
           echo "frontend_image=${FRONTEND_TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Setup Python and install Ansible

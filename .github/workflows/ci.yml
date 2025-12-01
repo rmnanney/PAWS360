@@ -819,7 +819,8 @@ jobs:
           docker push ghcr.io/${OWNER_REPO}:backend-staging-latest || true
 
           # Frontend image
-          docker build -f infrastructure/docker/frontend.Dockerfile -t "$FRONTEND_TAG" ./infrastructure/docker
+          # Use the repository root as the build context so the Dockerfile can copy package.json/package-lock.json from the repo
+          docker build -f infrastructure/docker/frontend.Dockerfile -t "$FRONTEND_TAG" .
           docker tag "$FRONTEND_TAG" ghcr.io/${OWNER_REPO}:frontend-staging-latest || true
           docker push "$FRONTEND_TAG"
           docker push ghcr.io/${OWNER_REPO}:frontend-staging-latest || true
@@ -875,7 +876,8 @@ jobs:
           docker push ghcr.io/${OWNER_REPO}:backend-prod-latest || true
 
           # Frontend image
-          docker build -f infrastructure/docker/frontend.Dockerfile -t "$FRONTEND_TAG" ./infrastructure/docker
+          # Use repository root as the build context (frontend Dockerfile expects package.json at repo root)
+          docker build -f infrastructure/docker/frontend.Dockerfile -t "$FRONTEND_TAG" .
           docker tag "$FRONTEND_TAG" ghcr.io/${OWNER_REPO}:frontend-prod-latest || true
           docker push "$FRONTEND_TAG"
           docker push ghcr.io/${OWNER_REPO}:frontend-prod-latest || true
