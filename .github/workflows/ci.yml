@@ -74,7 +74,9 @@ jobs:
               break
             fi
             items=$(echo "$resp" | jq '.artifacts')
-            ITEMS_JSON=$(echo "$ITEMS_JSON + $items" | jq -c 'reduce .[] as $i (.; . + [$i])')
+            # Merge two JSON arrays safely (ITEMS_JSON and newly-fetched items)
+            # Use jq -s add to combine arrays even when one side is empty or both are arrays.
+            ITEMS_JSON=$(printf '%s\n%s\n' "$ITEMS_JSON" "$items" | jq -c 'add')
             page_total_bytes=$(echo "$items" | jq '[.[].size_in_bytes] | add // 0')
             page_total_count=$(echo "$items" | jq 'length')
             TOTAL_BYTES=$((TOTAL_BYTES + page_total_bytes))
