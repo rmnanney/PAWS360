@@ -906,7 +906,7 @@ jobs:
       - name: Install Ansible
         run: |
           python -m pip install --upgrade pip
-          pip install ansible==8.8.0
+          pip install ansible==8.7.0
 
       - name: Prepare SSH (use secrets.STAGING_SSH_PRIVATE_KEY)
         run: |
@@ -981,7 +981,7 @@ jobs:
       - name: Install Ansible
         run: |
             python -m pip install --upgrade pip
-            pip install ansible==8.8.0
+            pip install ansible==8.7.0
 
       - name: Prepare SSH for production (read secret at runtime)
         run: |
