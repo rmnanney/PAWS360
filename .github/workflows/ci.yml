@@ -901,7 +901,7 @@ jobs:
       - name: Setup Python and install Ansible
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install Ansible
         run: |
@@ -976,7 +976,7 @@ jobs:
       - name: Setup Python and install Ansible
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install Ansible
         run: |
