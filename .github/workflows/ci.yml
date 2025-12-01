@@ -803,6 +803,9 @@ jobs:
         run: |
           set -euxo pipefail
           OWNER_REPO="${{ github.repository }}"
+          # docker requires repository names in tags to be lowercase — normalize here
+          OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')
+          OWNER_REPO="${OWNER_REPO_LOWER}"
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
           BACKEND_TAG=ghcr.io/${OWNER_REPO}:backend-staging-${SHORT_SHA}
           FRONTEND_TAG=ghcr.io/${OWNER_REPO}:frontend-staging-${SHORT_SHA}
@@ -856,6 +859,9 @@ jobs:
         run: |
           set -euxo pipefail
           OWNER_REPO="${{ github.repository }}"
+          # docker requires repository names in tags to be lowercase — normalize here
+          OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')
+          OWNER_REPO="${OWNER_REPO_LOWER}"
           SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
           BACKEND_TAG=ghcr.io/${OWNER_REPO}:backend-prod-${SHORT_SHA}
           FRONTEND_TAG=ghcr.io/${OWNER_REPO}:frontend-prod-${SHORT_SHA}

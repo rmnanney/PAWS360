@@ -2,11 +2,15 @@
 name: Local Dev CI
 
 on:
-  push:
-    branches: ['**']
-  pull_request:
-    branches: [main, develop]
-  workflow_dispatch:
+  # This workflow runs heavy local-dev parity checks (HA stack, integration tests).
+  # These are resource-intensive and should not run on every PR or push against
+  # public hosted runners (they often have limited RAM). Switch to manual and
+  # scheduled runs instead — maintainers can manually trigger a full HA validation
+  # using the workflow_dispatch event or rely on nightly scheduled runs.
+  workflow_dispatch: {}
+  schedule:
+    # Daily run at 03:00 UTC (keep parity checks up-to-date without running on every PR)
+    - cron: '0 3 * * *'
 
 env:
   DOCKER_BUILDKIT: 1
@@ -22,12 +26,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        # When this workflow is triggered from a pull_request, the PR's head commit
-        # may no longer be available (e.g., branch deleted / ref missing). To avoid
-        # failing the job during checkout, prefer the PR base branch when available
-        # and fall back to the event ref for non-PR runs.
-        with:
-          ref: ${{ github.event.pull_request.base.ref || github.ref }}
+        # For scheduled/manual runs a standard checkout is sufficient
 
       - name: Ensure gh & jq
         run: |
@@ -132,22 +131,22 @@ jobs:
           bash scripts/health-check.sh --human
 
       - name: Run etcd cluster tests
-        if: ${{ !env.ACT }}
+        if: ${{ env.ACT != 'true' }}
         run: |
           bash tests/integration/test_etcd_cluster.sh
 
       - name: Run Patroni HA tests
-        if: ${{ !env.ACT }}
+        if: ${{ env.ACT != 'true' }}
         run: |
           bash tests/integration/test_patroni_ha.sh
 
       - name: Run Redis Sentinel tests
-        if: ${{ !env.ACT }}
+        if: ${{ env.ACT != 'true' }}
         run: |
           bash tests/integration/test_redis_sentinel.sh
 
       - name: Run full stack integration test
-        if: ${{ !env.ACT }}
+        if: ${{ env.ACT != 'true' }}
         run: |
           bash tests/integration/test_full_stack.sh
 
