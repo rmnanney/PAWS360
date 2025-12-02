@@ -1,0 +1,12 @@
+# Redis configuration (minimal)
+bind {{ redis_bind }}
+port {{ redis_port }}
+maxmemory {{ redis_maxmemory }}
+maxmemory-policy allkeys-lru
+appendonly {{ redis_appendonly | default('yes') }}
+
+{% if redis_password %}
+# Basic authentication / ACL
+requirepass {{ redis_password }}
+masterauth {{ redis_password }}
+{% endif %}

@@ -43,12 +43,19 @@
 	padding: 1.5rem; /* p-6 */
 	border: 1px solid hsl(var(--border));
 	background: hsl(var(--card));
-	transition: box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1); /* transition-shadow */
+	transition: all 0.2s ease;
 	cursor: pointer;
 }
 
 .homepageCard:hover {
-	box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* hover:shadow-md */
+	transform: translateY(-4px);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+	border-color: hsl(var(--primary));
+}
+
+/* Dark mode specific adjustments for homepage cards */
+.dark .homepageCard:hover {
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .homepageIcon {

@@ -130,7 +130,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 		{
 			title: "Quick Links",
 			icon: LucideLink,
-			onClick: () => onNavigate("Quick Links"),
+			onClick: () => onNavigate("quick-links"),
 		},
 	];
 

@@ -30,12 +30,6 @@
         <java.version>21</java.version>
     </properties>
     <dependencies>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -93,8 +87,25 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Spring Boot DevTools for automatic restart on code changes (development only) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -155,6 +166,8 @@
                 <version>3.2.5</version>
                 <configuration>
                     <argLine>@{argLine} -Dspring.profiles.active=test</argLine>
+                    <forkedProcessExitTimeoutInSeconds>60</forkedProcessExitTimeoutInSeconds>
+                    <forkedProcessTimeoutInSeconds>0</forkedProcessTimeoutInSeconds>
                 </configuration>
             </plugin>
         </plugins>

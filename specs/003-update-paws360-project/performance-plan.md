@@ -725,7 +725,7 @@ export default function() {
   // Test authentication flow
   let loginRes = http.post('https://paws360.university.edu/api/auth/login', {
     email: 'test@university.edu',
-    password: 'testpassword123'
+    password: 'testpassword'
   });
   
   check(loginRes, {

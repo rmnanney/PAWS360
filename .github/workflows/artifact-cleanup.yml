@@ -1,0 +1,47 @@
+---
+name: Artifact cleanup
+
+permissions:
+  actions: write
+  contents: read
+
+on:
+  schedule:
+    #  run weekly to prune old artifacts and keep repo artifact usage under control
+    - cron: '0 3 * * 0'  #  Sunday 03:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  prune-old-artifacts:
+    name: Prune old artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Prune artifacts older than 7 days
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const cutoffDays = 7;
+            const cutoff = new Date(Date.now() - cutoffDays * 24 * 60 * 60 * 1000);
+            core.info(`Deleting artifacts created before ${cutoff.toISOString()}`);
+
+            // list artifacts for the repository
+            const list = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const artifacts = list.data.artifacts || [];
+            let deleted = 0;
+            for (const a of artifacts) {
+              const created = new Date(a.created_at);
+              if (created < cutoff) {
+                core.info(`Deleting artifact id=${a.id} name=${a.name} created=${a.created_at} size=${a.size_in_bytes}`);
+                await github.rest.actions.deleteArtifact({ owner: context.repo.owner, repo: context.repo.repo, artifact_id: a.id });
+                deleted += 1;
+              }
+            }
+            core.info(`Cleanup completed. Deleted ${deleted} artifacts.`);

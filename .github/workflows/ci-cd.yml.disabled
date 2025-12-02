@@ -1,0 +1,5 @@
+DISABLED: Duplicate workflow from earlier iteration. This file is disabled because `ci.yml` is the canonical workflow.
+
+This copy is intentionally disabled to keep historical context — it should not be active in GitHub Actions.
+### Disabled workflow — moved to `.github/workflows/ci.yml` as canonical
+### This file was previously used for CI but has been disabled and is kept for historical context.

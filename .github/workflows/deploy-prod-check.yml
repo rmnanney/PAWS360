@@ -1,0 +1,64 @@
+---
+name: Deploy to production — dry-run (manual)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-dry-deploy-prod:
+    name: Build images + Ansible check (production dry-run)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU and buildx
+        uses: docker/setup-buildx-action@v2
+
+      - id: build-backend-prod
+        name: Build backend image only (no push)
+        run: |
+          set -euxo pipefail
+          OWNER_REPO="${{ github.repository }}"
+          # docker requires repository names in tags to be lowercase — normalize here
+          OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')
+          OWNER_REPO="${OWNER_REPO_LOWER}"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
+          BACKEND_TAG=ghcr.io/${OWNER_REPO}:backend-prod-${SHORT_SHA}
+          docker build -f infrastructure/docker/Dockerfile -t "${BACKEND_TAG}" .
+          echo "backend_image_prod=${BACKEND_TAG}" >> "$GITHUB_OUTPUT"
+
+      - id: build-frontend-prod
+        name: Build frontend image only (no push)
+        run: |
+          set -euxo pipefail
+          OWNER_REPO="${{ github.repository }}"
+          # docker requires repository names in tags to be lowercase — normalize here
+          OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')
+          OWNER_REPO="${OWNER_REPO_LOWER}"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
+          FRONTEND_TAG=ghcr.io/${OWNER_REPO}:frontend-prod-${SHORT_SHA}
+          docker build -f infrastructure/docker/frontend.Dockerfile -t "${FRONTEND_TAG}" .
+          echo "frontend_image_prod=${FRONTEND_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Python and install Ansible
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible==8.7.0
+
+      - name: Ansible dry-run (check) — production inventory
+        working-directory: infrastructure/ansible
+        run: |
+          set -euxo pipefail
+          BACKEND_IMAGE="${{ steps.build-backend-prod.outputs.backend_image_prod }}"
+          FRONTEND_IMAGE="${{ steps.build-frontend-prod.outputs.frontend_image_prod }}"
+          echo "Running ansible-playbook in check mode (no changes) against production inventory"
+          ansible-playbook -i inventories/production site.yml --check --extra-vars "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"

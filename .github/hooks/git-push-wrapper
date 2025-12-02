@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# git-push-wrapper: recommended wrapper around git push to support interactive bypass logging
+set -euo pipefail
+
+if [[ "$*" == *"--bypass"* ]]; then
+  # Collect justification
+  echo "You requested a bypass. Please enter a short justification (no secrets):"
+  read -r JUSTIFICATION
+  if [ -z "$JUSTIFICATION" ]; then
+    echo "Justification required; aborting."
+    exit 1
+  fi
+
+  # Create audit issue via gh (best-effort)
+  if command -v gh >/dev/null 2>&1; then
+    if gh auth status >/dev/null 2>&1; then
+      gh issue create --title "Bypass: $(git rev-parse --short HEAD)" --body "User: $(git config user.email)\nReason: $JUSTIFICATION\nCommit: $(git rev-parse --short HEAD)" --label bypass-audit || true
+    else
+      echo "gh auth not configured. Please run 'gh auth login' to enable remote bypass audit logging."
+    fi
+  else
+    echo "gh CLI not installed; please run 'gh auth login' and retry to record bypass audits"
+  fi
+
+  # Remove --bypass and push
+  ARGS=()
+  for a in "$@"; do
+    if [ "$a" != "--bypass" ]; then ARGS+=("$a"); fi
+  done
+  git push "${ARGS[@]}"
+else
+  git push "$@"
+fi

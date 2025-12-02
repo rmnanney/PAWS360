@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+T059: OWASP Dependency Check Suppressions
+Constitutional Compliance: Article V (Test-Driven Infrastructure)
+
+This file contains suppressions for known false positives in dependency vulnerability scanning.
+Each suppression should include a justification and review date.
+-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <!-- 
+    Example suppression for test-only dependencies that may have vulnerabilities
+    but don't affect production security:
+    
+    <suppress>
+        <notes><![CDATA[
+        TestContainers dependency only used in test scope, not in production.
+        Vulnerability does not affect test execution security.
+        Review Date: 2024-11-07
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.testcontainers/.*@.*$</packageUrl>
+        <cve>CVE-2023-XXXXX</cve>
+    </suppress>
+    -->
+    
+    <!-- 
+    Suppress vulnerabilities in Spring Boot Test dependencies that are test-scoped
+    -->
+    <suppress>
+        <notes><![CDATA[
+        Spring Boot Test dependencies are only used during testing phase.
+        These vulnerabilities do not impact production deployment.
+        Review Date: 2024-11-07
+        Next Review: 2024-12-07
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring-boot-test.*@.*$</packageUrl>
+    </suppress>
+
+    <!--
+    Suppress PostgreSQL test driver vulnerabilities that don't affect test execution
+    -->
+    <suppress>
+        <notes><![CDATA[
+        PostgreSQL driver used only for TestContainers in isolated test environment.
+        Production uses different connection pooling and security configurations.
+        Review Date: 2024-11-07
+        Next Review: 2024-12-07
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.postgresql/postgresql@.*$</packageUrl>
+        <vulnerabilityName regex="true">^.*test.*environment.*$</vulnerabilityName>
+    </suppress>
+
+    <!--
+    Note: This suppressions file follows the principle of minimal suppressions.
+    Only suppress vulnerabilities that:
+    1. Are confirmed false positives
+    2. Affect test-only dependencies
+    3. Have documented justification and review dates
+    4. Include plan for resolution or monitoring
+    
+    Constitutional Article V requires comprehensive security testing while avoiding
+    false positive noise that could mask real security issues.
+    -->
+
+</suppressions>

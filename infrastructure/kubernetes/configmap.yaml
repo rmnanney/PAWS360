@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: paws360-config
+  namespace: paws360
+  labels:
+    app: paws360
+    component: config
+data:
+  SERVER_PORT: "8080"
+  SPRING_PROFILES_ACTIVE: "docker"
+  LOGGING_LEVEL_ROOT: "INFO"
+  LOGGING_LEVEL_COM_UWM_PAWS360: "DEBUG"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://paws360-postgres:5432/paws360_prod"
+  SPRING_DATASOURCE_USERNAME: "paws360"
+  REDIS_URL: "redis://paws360-redis:6379"

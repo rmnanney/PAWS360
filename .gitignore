@@ -19,6 +19,8 @@ target/
 *.iml
 *.ipr
 *.yml
+!contexts/sessions/*.yml
+!.github/workflows/*.yml
 
 ### NetBeans ###
 /nbproject/private/
@@ -35,7 +37,7 @@ build/
 
 # React Router/NextJS
 .DS_Store
-/node_modules/
+/**/node_modules/
 /.react-router/
 /build/
 .next/
@@ -45,5 +47,22 @@ tsconfig.tsbuildinfo
 infrastructure/ansible/.ansible/
 infrastructure/ansible/ansible.log
 
-# Docker services JAR files (built during CI/CD)
+# Build artifacts - JAR files (built during CI/CD)
 infrastructure/docker/services/*.jar
+services/*.jar
+*.jar
+!**/mvn*
+
+# Ignore docker-generated frontend artifacts if present
+frontend/node_modules/
+frontend/package-lock.json
+
+# Static export directory created by next export
+out/
+
+# Local development environment (001-local-dev-parity)
+.env.local
+docker-compose.override.yml
+.dev-running
+backups/
+snapshots/

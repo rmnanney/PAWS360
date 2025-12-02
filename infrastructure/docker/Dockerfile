@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for PAWS360
-FROM maven:3.9.4-openjdk-21-slim AS build
+FROM maven:3.9-eclipse-temurin-21-alpine AS build
 
 # Set working directory
 WORKDIR /app
@@ -15,13 +15,13 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-alpine
 
 # Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 
-# Create non-root user
-RUN groupadd -r paws360 && useradd -r -g paws360 paws360
+# Create non-root user  
+RUN addgroup -S paws360 && adduser -S paws360 -G paws360
 
 # Set working directory
 WORKDIR /app

@@ -182,7 +182,7 @@ public class UserService {
 
     // Lookup: resolve Student.id by user email (returns -1 if not found or not a student)
     public int getStudentIdByEmail(String email) {
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        Users user = userRepository.findUsersByEmailIgnoreCase(email);
         if (user == null) return -1;
         return studentRepository.findByUser(user)
                 .map(Student::getId)
@@ -190,7 +190,7 @@ public class UserService {
     }
 
     public boolean deleteUser(DeleteUserRequestDTO deleteUserRequestDTO){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(deleteUserRequestDTO.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(deleteUserRequestDTO.email());
         if(user == null) return false;
         // Remove role records first to satisfy FK constraints
         advisorRepository.deleteByUser(user);
@@ -249,7 +249,7 @@ public class UserService {
     }
 
     public List<AddressDTO> listAddresses(ListAddressesRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return List.of();
         return toAddressDTOs(user.getAddresses());
     }
@@ -262,7 +262,7 @@ public class UserService {
 
     // Preferences
     public UserPreferencesResponseDTO getPreferences(String email){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        Users user = userRepository.findUsersByEmailIgnoreCase(email);
         if (user == null) return new UserPreferencesResponseDTO(
                 com.uwm.paws360.Entity.EntityDomains.Ferpa_Compliance.RESTRICTED,
                 false, false, true, true, false
@@ -278,7 +278,7 @@ public class UserService {
     }
 
     public UserPreferencesResponseDTO updatePreferences(UpdatePrivacyRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return getPreferences("non-existent");
         user.setFerpa_compliance(dto.ferpa_compliance());
         user.setFerpa_directory_opt_in(Boolean.TRUE.equals(dto.ferpaDirectory()));
@@ -291,7 +291,7 @@ public class UserService {
     }
 
     public boolean updateContactInfo(UpdateContactInfoRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return false;
         if (dto.phone() != null) {
             String p = dto.phone().trim();
@@ -366,13 +366,13 @@ public class UserService {
 
     // Emergency contacts
     public List<EmergencyContactDTO> listEmergencyContacts(String email){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        Users user = userRepository.findUsersByEmailIgnoreCase(email);
         if (user == null) return List.of();
         return emergencyContactRepository.findByUser(user).stream().map(this::toEmergencyDTO).toList();
     }
 
     public EmergencyContactDTO upsertEmergencyContact(UpsertEmergencyContactRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return null;
         EmergencyContact ec;
         if (dto.contact_id() != null){
@@ -455,7 +455,7 @@ public class UserService {
     }
 
     public SsnLast4ResponseDTO getSsnLast4(String email){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        Users user = userRepository.findUsersByEmailIgnoreCase(email);
         if (user == null || user.getSocialsecurity() == null) return new SsnLast4ResponseDTO("***-**-****", null);
         String ssn = user.getSocialsecurity();
         String last4 = ssn.length() >= 4 ? ssn.substring(ssn.length() - 4) : null;
@@ -464,7 +464,7 @@ public class UserService {
     }
 
     public List<Role> listRoles(ListRolesRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return List.of();
         List<Role> roles = new ArrayList<>();
         if (user.getRole() != null) roles.add(user.getRole());
@@ -481,7 +481,7 @@ public class UserService {
 
     // Role management
     public boolean assignRole(ModifyRoleRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return false;
         switch (dto.role()){
             case ADVISOR: {
@@ -524,7 +524,7 @@ public class UserService {
     }
 
     public boolean removeRole(ModifyRoleRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return false;
         switch (dto.role()){
             case ADVISOR: { advisorRepository.deleteByUser(user); break; }

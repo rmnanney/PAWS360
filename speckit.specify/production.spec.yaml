@@ -1,0 +1,51 @@
+# speckit-style specification for production VM(s) on Proxmox
+# Replace values with real cluster and storage values
+
+name: paws360-prod
+environment: production
+provider: proxmox
+cluster: proxmox-cluster-1
+node_selector:
+  - node: pve-node-2
+
+resources:
+  cpu: 8            # vCPUs
+  memory: 16384     # MB
+  disk: 120G        # root disk size
+
+network:
+  interface: vmbr0
+  ip: 10.0.50.20
+  gateway: 10.0.50.1
+  nameservers:
+    - 8.8.8.8
+    - 1.1.1.1
+
+storage:
+  pool: proxmox-storage-prod
+  ssh_keys:
+    - ssh-rsa AAAA... replace-with-your-key
+
+template:
+  image: ubuntu-22.04-cloudimg
+  cloud_init:
+    user: ubuntu
+    password_secret: "vault://paws360/prod/ssh_password"
+
+services:
+  - type: docker-compose
+    path: /opt/paws360
+    content: |
+      version: '3'
+      services:
+        paws360:
+          image: paws360:latest
+          restart: unless-stopped
+          environment:
+            - SPRING_PROFILES_ACTIVE=prod
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://paws-prod-postgres:5432/paws360
+          ports:
+            - "8080:8080"
+
+notes:
+  - "Production spec uses a larger VM and production storage. Use a vault or secret manager for passwords and keys."

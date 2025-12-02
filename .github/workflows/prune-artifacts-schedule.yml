@@ -1,0 +1,36 @@
+---
+name: Scheduled Artifact Prune
+
+# Purpose: run regularly to keep Actions artifact storage low by pruning older artifacts
+on:
+  schedule:
+    - cron: '0 3 * * *'  # daily at 03:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  prune-artifacts-nightly:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref || github.ref }}
+
+      - name: Run artifact prune (keep last 3 runs)
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euxo pipefail
+          # ensure gh and jq are present
+          if ! command -v gh >/dev/null 2>&1; then
+            sudo apt update -y && sudo apt install -y gh jq
+          fi
+
+          # Make script executable (script expects GITHUB_REPOSITORY context)
+          chmod +x ./scripts/lib/prune-artifacts-keep-last-2.sh || true
+
+          # KEEP_LAST=3 helps free storage by keeping fewer older artifacts
+          KEEP_LAST=3 ./scripts/lib/prune-artifacts-keep-last-2.sh || true

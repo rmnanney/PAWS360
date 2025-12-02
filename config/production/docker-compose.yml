@@ -1,0 +1,536 @@
+version: '3.9'
+
+# Production-Parity Local Development Environment
+# Feature: 001-local-dev-parity
+# Full HA stack: etcd cluster, Patroni/PostgreSQL HA, Redis Sentinel
+
+networks:
+  paws360-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  # etcd cluster data
+  etcd1-data:
+  etcd2-data:
+  etcd3-data:
+  
+  # Patroni/PostgreSQL data
+  patroni1-data:
+  patroni2-data:
+  patroni3-data:
+  
+  # Redis data
+  redis-data:
+  
+  # Application development volumes (for hot-reload)
+  frontend-node-modules:  # Preserve node_modules between restarts
+  frontend-next:  # Preserve Next.js build cache
+
+services:
+  # ===== etcd Cluster (DCS for Patroni) =====
+  
+  etcd1:
+    build:
+      context: ./infrastructure/etcd
+      dockerfile: Dockerfile
+    container_name: paws360-etcd1
+    hostname: etcd1
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.1.1
+    environment:
+      - ETCD_NAME=etcd1
+      - ETCD_DATA_DIR=/etcd-data
+      - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=${ETCD_INITIAL_CLUSTER_TOKEN:-paws360-etcd-cluster}
+      - ETCD_INITIAL_CLUSTER_STATE=${ETCD_INITIAL_CLUSTER_STATE:-new}
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd1:2380
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd1:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+    ports:
+      - "${ETCD_CLIENT_PORT:-2379}:2379"
+      - "${ETCD_PEER_PORT:-2380}:2380"
+    volumes:
+      - etcd1-data:/etcd-data
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  etcd2:
+    build:
+      context: ./infrastructure/etcd
+      dockerfile: Dockerfile
+    container_name: paws360-etcd2
+    hostname: etcd2
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.1.2
+    environment:
+      - ETCD_NAME=etcd2
+      - ETCD_DATA_DIR=/etcd-data
+      - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=${ETCD_INITIAL_CLUSTER_TOKEN:-paws360-etcd-cluster}
+      - ETCD_INITIAL_CLUSTER_STATE=${ETCD_INITIAL_CLUSTER_STATE:-new}
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd2:2380
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd2:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+    ports:
+      - "2479:2379"
+      - "2480:2380"
+    volumes:
+      - etcd2-data:/etcd-data
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  etcd3:
+    build:
+      context: ./infrastructure/etcd
+      dockerfile: Dockerfile
+    container_name: paws360-etcd3
+    hostname: etcd3
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.1.3
+    environment:
+      - ETCD_NAME=etcd3
+      - ETCD_DATA_DIR=/etcd-data
+      - ETCD_INITIAL_CLUSTER=etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=${ETCD_INITIAL_CLUSTER_TOKEN:-paws360-etcd-cluster}
+      - ETCD_INITIAL_CLUSTER_STATE=${ETCD_INITIAL_CLUSTER_STATE:-new}
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd3:2380
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd3:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+    ports:
+      - "2579:2379"
+      - "2580:2380"
+    volumes:
+      - etcd3-data:/etcd-data
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # ===== Patroni/PostgreSQL HA Cluster =====
+  
+  patroni1:
+    build:
+      context: ./infrastructure/patroni
+      dockerfile: Dockerfile
+    container_name: paws360-patroni1
+    hostname: patroni1
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.2.1
+    environment:
+      - PATRONI_NAME=patroni1
+      - PATRONI_SCOPE=${PATRONI_SCOPE:-paws360-cluster}
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=patroni1:8008
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=patroni1:5432
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-dev_password_change_me}
+      - ETCD_HOSTS=etcd1:2379,etcd2:2379,etcd3:2379
+    volumes:
+      - patroni1-data:/data/patroni
+    ports:
+      - "5432:5432"
+      - "8008:8008"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      etcd1:
+        condition: service_healthy
+      etcd2:
+        condition: service_healthy
+      etcd3:
+        condition: service_healthy
+    restart: unless-stopped
+
+  patroni2:
+    build:
+      context: ./infrastructure/patroni
+      dockerfile: Dockerfile
+    container_name: paws360-patroni2
+    hostname: patroni2
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.2.2
+    environment:
+      - PATRONI_NAME=patroni2
+      - PATRONI_SCOPE=${PATRONI_SCOPE:-paws360-cluster}
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=patroni2:8008
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=patroni2:5432
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-dev_password_change_me}
+      - ETCD_HOSTS=etcd1:2379,etcd2:2379,etcd3:2379
+    volumes:
+      - patroni2-data:/data/patroni
+    ports:
+      - "5433:5432"
+      - "8009:8008"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      etcd1:
+        condition: service_healthy
+      etcd2:
+        condition: service_healthy
+      etcd3:
+        condition: service_healthy
+      patroni1:
+        condition: service_started
+    restart: unless-stopped
+
+  patroni3:
+    build:
+      context: ./infrastructure/patroni
+      dockerfile: Dockerfile
+    container_name: paws360-patroni3
+    hostname: patroni3
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.2.3
+    environment:
+      - PATRONI_NAME=patroni3
+      - PATRONI_SCOPE=${PATRONI_SCOPE:-paws360-cluster}
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=patroni3:8008
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=patroni3:5432
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-dev_password_change_me}
+      - ETCD_HOSTS=etcd1:2379,etcd2:2379,etcd3:2379
+    volumes:
+      - patroni3-data:/data/patroni
+    ports:
+      - "5434:5432"
+      - "8010:8008"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      etcd1:
+        condition: service_healthy
+      etcd2:
+        condition: service_healthy
+      etcd3:
+        condition: service_healthy
+      patroni1:
+        condition: service_started
+    restart: unless-stopped
+
+  # ===== Redis Master + Replicas =====
+  
+  redis-master:
+    build:
+      context: ./infrastructure/redis
+      dockerfile: Dockerfile
+    container_name: paws360-redis-master
+    hostname: redis-master
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.3.1
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dev_redis_password_change_me}
+    volumes:
+      - redis-data:/data
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    command: >
+      redis-server
+      --bind 0.0.0.0
+      --port 6379
+      --requirepass ${REDIS_PASSWORD:-dev_redis_password_change_me}
+      --appendonly yes
+      --appendfilename appendonly.aof
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+
+  redis-replica1:
+    build:
+      context: ./infrastructure/redis
+      dockerfile: Dockerfile
+    container_name: paws360-redis-replica1
+    hostname: redis-replica1
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.3.2
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dev_redis_password_change_me}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    command: >
+      redis-server
+      --bind 0.0.0.0
+      --port 6379
+      --replicaof redis-master 6379
+      --masterauth ${REDIS_PASSWORD:-dev_redis_password_change_me}
+      --requirepass ${REDIS_PASSWORD:-dev_redis_password_change_me}
+      --replica-read-only yes
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis-replica2:
+    build:
+      context: ./infrastructure/redis
+      dockerfile: Dockerfile
+    container_name: paws360-redis-replica2
+    hostname: redis-replica2
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.3.3
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dev_redis_password_change_me}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    command: >
+      redis-server
+      --bind 0.0.0.0
+      --port 6379
+      --replicaof redis-master 6379
+      --masterauth ${REDIS_PASSWORD:-dev_redis_password_change_me}
+      --requirepass ${REDIS_PASSWORD:-dev_redis_password_change_me}
+      --replica-read-only yes
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ===== Redis Sentinel Cluster =====
+  
+  redis-sentinel1:
+    build:
+      context: ./infrastructure/redis
+      dockerfile: Dockerfile
+    container_name: paws360-redis-sentinel1
+    hostname: redis-sentinel1
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.3.11
+    environment:
+      - REDIS_MASTER_NAME=${REDIS_MASTER_NAME:-paws360-redis-master}
+      - REDIS_MASTER_HOST=172.28.3.1
+      - REDIS_MASTER_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dev_redis_password_change_me}
+      - REDIS_QUORUM=${REDIS_QUORUM:-2}
+      - REDIS_DOWN_AFTER=${REDIS_DOWN_AFTER:-5000}
+      - REDIS_FAILOVER_TIMEOUT=${REDIS_FAILOVER_TIMEOUT:-10000}
+    ports:
+      - "${SENTINEL1_PORT:-26379}:26379"
+    command: >
+      sh -c "
+      echo 'port 26379' > /tmp/sentinel.conf &&
+      echo 'bind 0.0.0.0' >> /tmp/sentinel.conf &&
+      echo 'sentinel monitor ${REDIS_MASTER_NAME:-paws360-redis-master} 172.28.3.1 6379 ${REDIS_QUORUM:-2}' >> /tmp/sentinel.conf &&
+      echo 'sentinel auth-pass ${REDIS_MASTER_NAME:-paws360-redis-master} ${REDIS_PASSWORD:-dev_redis_password_change_me}' >> /tmp/sentinel.conf &&
+      echo 'sentinel down-after-milliseconds ${REDIS_MASTER_NAME:-paws360-redis-master} ${REDIS_DOWN_AFTER:-5000}' >> /tmp/sentinel.conf &&
+      echo 'sentinel parallel-syncs ${REDIS_MASTER_NAME:-paws360-redis-master} 1' >> /tmp/sentinel.conf &&
+      echo 'sentinel failover-timeout ${REDIS_MASTER_NAME:-paws360-redis-master} ${REDIS_FAILOVER_TIMEOUT:-10000}' >> /tmp/sentinel.conf &&
+      redis-sentinel /tmp/sentinel.conf
+      "
+    depends_on:
+      redis-master:
+        condition: service_healthy
+      redis-replica1:
+        condition: service_healthy
+      redis-replica2:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis-sentinel2:
+    build:
+      context: ./infrastructure/redis
+      dockerfile: Dockerfile
+    container_name: paws360-redis-sentinel2
+    hostname: redis-sentinel2
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.3.12
+    environment:
+      - REDIS_MASTER_NAME=${REDIS_MASTER_NAME:-paws360-redis-master}
+      - REDIS_MASTER_HOST=172.28.3.1
+      - REDIS_MASTER_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dev_redis_password_change_me}
+      - REDIS_QUORUM=${REDIS_QUORUM:-2}
+      - REDIS_DOWN_AFTER=${REDIS_DOWN_AFTER:-5000}
+      - REDIS_FAILOVER_TIMEOUT=${REDIS_FAILOVER_TIMEOUT:-10000}
+    ports:
+      - "${SENTINEL2_PORT:-26380}:26379"
+    command: >
+      sh -c "
+      echo 'port 26379' > /tmp/sentinel.conf &&
+      echo 'bind 0.0.0.0' >> /tmp/sentinel.conf &&
+      echo 'sentinel monitor ${REDIS_MASTER_NAME:-paws360-redis-master} 172.28.3.1 6379 ${REDIS_QUORUM:-2}' >> /tmp/sentinel.conf &&
+      echo 'sentinel auth-pass ${REDIS_MASTER_NAME:-paws360-redis-master} ${REDIS_PASSWORD:-dev_redis_password_change_me}' >> /tmp/sentinel.conf &&
+      echo 'sentinel down-after-milliseconds ${REDIS_MASTER_NAME:-paws360-redis-master} ${REDIS_DOWN_AFTER:-5000}' >> /tmp/sentinel.conf &&
+      echo 'sentinel parallel-syncs ${REDIS_MASTER_NAME:-paws360-redis-master} 1' >> /tmp/sentinel.conf &&
+      echo 'sentinel failover-timeout ${REDIS_MASTER_NAME:-paws360-redis-master} ${REDIS_FAILOVER_TIMEOUT:-10000}' >> /tmp/sentinel.conf &&
+      redis-sentinel /tmp/sentinel.conf
+      "
+    depends_on:
+      redis-master:
+        condition: service_healthy
+      redis-replica1:
+        condition: service_healthy
+      redis-replica2:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis-sentinel3:
+    build:
+      context: ./infrastructure/redis
+      dockerfile: Dockerfile
+    container_name: paws360-redis-sentinel3
+    hostname: redis-sentinel3
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.3.13
+    environment:
+      - REDIS_MASTER_NAME=${REDIS_MASTER_NAME:-paws360-redis-master}
+      - REDIS_MASTER_HOST=172.28.3.1
+      - REDIS_MASTER_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dev_redis_password_change_me}
+      - REDIS_QUORUM=${REDIS_QUORUM:-2}
+      - REDIS_DOWN_AFTER=${REDIS_DOWN_AFTER:-5000}
+      - REDIS_FAILOVER_TIMEOUT=${REDIS_FAILOVER_TIMEOUT:-10000}
+    ports:
+      - "${SENTINEL3_PORT:-26381}:26379"
+    command: >
+      sh -c "
+      echo 'port 26379' > /tmp/sentinel.conf &&
+      echo 'bind 0.0.0.0' >> /tmp/sentinel.conf &&
+      echo 'sentinel monitor ${REDIS_MASTER_NAME:-paws360-redis-master} 172.28.3.1 6379 ${REDIS_QUORUM:-2}' >> /tmp/sentinel.conf &&
+      echo 'sentinel auth-pass ${REDIS_MASTER_NAME:-paws360-redis-master} ${REDIS_PASSWORD:-dev_redis_password_change_me}' >> /tmp/sentinel.conf &&
+      echo 'sentinel down-after-milliseconds ${REDIS_MASTER_NAME:-paws360-redis-master} ${REDIS_DOWN_AFTER:-5000}' >> /tmp/sentinel.conf &&
+      echo 'sentinel parallel-syncs ${REDIS_MASTER_NAME:-paws360-redis-master} 1' >> /tmp/sentinel.conf &&
+      echo 'sentinel failover-timeout ${REDIS_MASTER_NAME:-paws360-redis-master} ${REDIS_FAILOVER_TIMEOUT:-10000}' >> /tmp/sentinel.conf &&
+      redis-sentinel /tmp/sentinel.conf
+      "
+    depends_on:
+      redis-master:
+        condition: service_healthy
+      redis-replica1:
+        condition: service_healthy
+      redis-replica2:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ===== Application Services =====
+  
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development  # Multi-stage build: development stage with DevTools
+    container_name: paws360-backend
+    hostname: backend
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.4.1
+    environment:
+      - SPRING_PROFILES_ACTIVE=local,dev
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://patroni1:5432/paws360_dev
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-dev_password_change_me}
+      - SPRING_REDIS_HOST=redis-master
+      - SPRING_REDIS_PORT=6379
+      - SPRING_REDIS_PASSWORD=${REDIS_PASSWORD:-dev_redis_password_change_me}
+    ports:
+      - "8080:8080"
+      - "35729:35729"  # LiveReload port for Spring Boot DevTools
+    volumes:
+      # Mount source code for auto-reload (development mode only)
+      - ./src:/app/src:ro
+      - ./target:/app/target
+    depends_on:
+      patroni1:
+        condition: service_healthy
+      redis-master:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: development  # Multi-stage build: development stage with watch mode
+    container_name: paws360-frontend
+    hostname: frontend
+    networks:
+      paws360-internal:
+        ipv4_address: 172.28.4.2
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8080
+      - NEXT_PUBLIC_ENV=local
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true  # Enable polling for Docker volume compatibility
+      - CHOKIDAR_USEPOLLING=true  # Fallback for older Next.js versions
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot-reload (development mode only)
+      - ./app:/app/app:ro
+      - ./public:/app/public:ro
+      - ./next.config.ts:/app/next.config.ts:ro
+      - ./package.json:/app/package.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      # Preserve node_modules (don't mount to avoid permission issues)
+      - frontend-node-modules:/app/node_modules
+      - frontend-next:/app/.next
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s

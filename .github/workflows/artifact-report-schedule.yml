@@ -1,0 +1,168 @@
+---
+name: Artifact report (daily)
+
+permissions:
+  actions: write
+  contents: read
+
+on:
+  schedule:
+    # Move daily artifact report to off-peak window (03:00 UTC)
+    - cron: '0 3 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  daily-artifact-report:
+    name: Daily artifact report
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    env:
+      ARTIFACT_COUNT_THRESHOLD: 30
+      ARTIFACT_SIZE_THRESHOLD_BYTES: 500000000
+      API_RATE_LIMIT_PCT_THRESHOLD: 20
+      ACTIONS_MINUTES_THRESHOLD: 5000
+      # Only delete artifacts older than this many days when trying to reduce storage
+      ARTIFACT_MAX_AGE_DAYS: 14
+      # Safety cap to avoid accidentally mass-deleting; tune as required
+      ARTIFACT_MAX_DELETIONS_PER_RUN: 100
+    steps:
+      - name: Inventory repo artifacts
+        id: artifact_inventory
+        run: |
+          set -euxo pipefail
+
+          REPO="${{ github.repository }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          PAGE=1
+          PER_PAGE=100
+          TOTAL_COUNT=0
+          TOTAL_BYTES=0
+          ITEMS_JSON="[]"
+
+          while :; do
+            resp=$(bash ./scripts/lib/gh-api-with-backoff.sh "/repos/$REPO/actions/artifacts?per_page=$PER_PAGE&page=$PAGE")
+            page_count=$(echo "$resp" | jq '.artifacts | length')
+            if [ "$page_count" -eq 0 ]; then
+              break
+            fi
+            items=$(echo "$resp" | jq '.artifacts')
+            ITEMS_JSON=$(echo "$ITEMS_JSON + $items" | jq -c 'reduce .[] as $i (.; . + [$i])')
+            page_total_bytes=$(echo "$items" | jq '[.[].size_in_bytes] | add // 0')
+            page_total_count=$(echo "$items" | jq 'length')
+            TOTAL_BYTES=$((TOTAL_BYTES + page_total_bytes))
+            TOTAL_COUNT=$((TOTAL_COUNT + page_total_count))
+
+            PAGE=$((PAGE + 1))
+          done
+
+          jq -n --arg repo "$REPO" --argjson count "$TOTAL_COUNT" --argjson bytes "$TOTAL_BYTES" --arg items "$ITEMS_JSON" '{repo: $repo, total_count: $count, total_bytes: $bytes, artifacts: ($items|fromjson)}' > artifact-summary.json || true
+
+      - name: Actions rate limit & usage check
+        run: |
+          set -euxo pipefail
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+          OWNER="${{ github.repository_owner }}"
+
+          # Rate limit
+          resp=$(bash ./scripts/lib/gh-api-with-backoff.sh "/rate_limit")
+          core_limit=$(echo "$resp" | jq -r '.resources.core.limit')
+          core_remaining=$(echo "$resp" | jq -r '.resources.core.remaining')
+          pct_remain=0
+          if [ "$core_limit" -gt 0 ]; then
+            pct_remain=$(awk "BEGIN{printf \"%.0f\", ($core_remaining / $core_limit) * 100}") || true
+          fi
+          echo "Rate limit remaining: ${core_remaining}/${core_limit} (${pct_remain}%)"
+
+          # Repo usage
+          repo_usage=$(bash ./scripts/lib/gh-api-with-backoff.sh "/repos/$REPO/actions/usage" || true)
+          if [ -n "$(echo $repo_usage | jq -r 'select(.total_minutes_used != null or .billable != null)')" ]; then
+            total_minutes=$(echo "$repo_usage" | jq -r '.total_minutes_used // (.billable.total_seconds // 0) / 60 // 0' 2>/dev/null || echo 0)
+            echo "Repo actions minutes used: $total_minutes"
+          else
+            echo "Repo actions usage not available or requires additional permissions"
+          fi
+
+      - name: Upload artifact inventory
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-summary-daily
+          path: artifact-summary.json
+          retention-days: 1
+
+      - name: Cleanup artifacts (if thresholds exceeded)
+        id: cleanup
+        run: |
+          set -euxo pipefail
+
+          REPO="${{ github.repository }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+
+          THRESH_COUNT=${ARTIFACT_COUNT_THRESHOLD}
+          THRESH_BYTES=${ARTIFACT_SIZE_THRESHOLD_BYTES}
+          MAX_AGE_DAYS=${ARTIFACT_MAX_AGE_DAYS}
+          MAX_DELETE=${ARTIFACT_MAX_DELETIONS_PER_RUN}
+
+          # Read the summary file we just produced
+          summary=artifact-summary.json
+          if [ ! -f "$summary" ]; then
+            echo "No artifact summary available, nothing to clean." && exit 0
+          fi
+
+          total_count=$(jq -r '.total_count // 0' "$summary")
+          total_bytes=$(jq -r '.total_bytes // 0' "$summary")
+
+          echo "Artifacts total_count=${total_count} total_bytes=${total_bytes}"
+
+          if [ "$total_count" -le "$THRESH_COUNT" ] && [ "$total_bytes" -le "$THRESH_BYTES" ]; then
+            echo "Under configured artifact thresholds; skipping cleanup."
+            exit 0
+          fi
+
+          echo "Threshold exceeded. Will attempt cleanup: count threshold=${THRESH_COUNT}, size threshold=${THRESH_BYTES} bytes"
+
+          # Compute a cutoff timestamp for MAX_AGE_DAYS
+          cutoff_iso=$(date -u -d "-${MAX_AGE_DAYS} days" +"%Y-%m-%dT%H:%M:%SZ")
+
+          # Build candidate list: artifacts older than cutoff sorted by creation time oldest first
+          candidates=$(jq -c --arg cutoff "$cutoff_iso" '.artifacts | sort_by(.created_at) | map(select(.created_at < $cutoff))' "$summary")
+
+          # If no candidates by age, fall back to oldest artifacts (safest to use oldest first)
+          if [ "$(echo "$candidates" | jq 'length')" -eq 0 ]; then
+            candidates=$(jq -c '.artifacts | sort_by(.created_at)' "$summary")
+          fi
+
+          deletions=0
+          remaining_count=$total_count
+          remaining_bytes=$total_bytes
+
+          # Iterate over candidates and remove until we're below both thresholds or hit MAX_DELETE
+          echo "$candidates" | jq -c '.[]' | while read -r art; do
+            if [ "$deletions" -ge "$MAX_DELETE" ]; then
+              echo "Reached per-run deletion cap: $MAX_DELETE" && break
+            fi
+
+            art_id=$(echo "$art" | jq -r '.id')
+            art_name=$(echo "$art" | jq -r '.name')
+            art_size=$(echo "$art" | jq -r '.size_in_bytes')
+            art_created=$(echo "$art" | jq -r '.created_at')
+
+            echo "Deleting artifact id=$art_id name=$art_name size=$art_size created_at=$art_created"
+            # Use GH CLI delete endpoint (backoff is achieved via gh rate-limit behavior and retries)
+            gh api -X DELETE "/repos/$REPO/actions/artifacts/$art_id" || true
+
+            deletions=$((deletions + 1))
+            remaining_count=$((remaining_count - 1))
+            remaining_bytes=$((remaining_bytes - art_size))
+
+            echo "Post-delete remaining_count=$remaining_count remaining_bytes=$remaining_bytes"
+
+            if [ "$remaining_count" -le "$THRESH_COUNT" ] && [ "$remaining_bytes" -le "$THRESH_BYTES" ]; then
+              echo "Cleanup target reached; stopping deletions." && break
+            fi
+          done
+
+          echo "Cleanup completed. deleted_count=$deletions final_count=$remaining_count final_bytes=$remaining_bytes" || true
