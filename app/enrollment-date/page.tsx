@@ -231,11 +231,38 @@ export default function EnrollmentDatePage() {
 
 	React.useEffect(() => {
 		const loadWindows = async () => {
+			// Hardcoded enrollment windows for UWM
+			const hardcodedWindows: EnrollmentWindow[] = [
+				{
+					term: "Spring 2026",
+					opensAt: "2025-12-06T08:00:00-06:00",
+					closesAt: "2026-01-15T23:59:59-06:00",
+					priority: "Priority registration begins Dec 6, 2025 at 8:00 AM",
+					note: "Contact your advisor if you have questions about your enrollment window",
+				},
+				{
+					term: "Winter 2026",
+					opensAt: "2025-10-18T08:00:00-05:00",
+					closesAt: "2025-12-15T23:59:59-06:00",
+					priority: "Priority registration began Oct 18, 2025",
+					note: "Registration for Winter 2026 is now closed",
+				},
+				{
+					term: "Fall 2025",
+					opensAt: "2025-05-03T08:00:00-05:00",
+					closesAt: "2025-08-25T23:59:59-05:00",
+					priority: "Priority registration began May 3, 2025",
+					note: "Registration for Fall 2025 has ended",
+				},
+			];
+			setEnrollmentWindows(hardcodedWindows);
+
+			// Try to load from API as well (if available)
 			try {
 				const res = await fetch(`${API_BASE}/api/enrollment/windows`);
 				if (res.ok) {
 					const data = await res.json();
-					if (Array.isArray(data)) {
+					if (Array.isArray(data) && data.length > 0) {
 						setEnrollmentWindows(
 							data.map((w: any) => ({
 								term: w.term,
@@ -248,7 +275,7 @@ export default function EnrollmentDatePage() {
 					}
 				}
 			} catch {
-				// optional endpoint; ignore if missing
+				// optional endpoint; ignore if missing, use hardcoded data
 			}
 		};
 		loadWindows();
