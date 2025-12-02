@@ -909,11 +909,13 @@ jobs:
           pip install ansible==8.7.0
 
       - name: Prepare SSH (use secrets.STAGING_SSH_PRIVATE_KEY)
+        id: ssh-setup
         run: |
           set -euxo pipefail
           # read secret at runtime to avoid job-level compile-time references
           if [ -z "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" ]; then
             echo "No STAGING_SSH_PRIVATE_KEY provided — skipping SSH setup";
+            echo "ssh_configured=false" >> "$GITHUB_OUTPUT"
             exit 0;
           fi
           mkdir -p ~/.ssh
@@ -923,8 +925,10 @@ jobs:
           awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/staging/hosts | while read -r host; do
             ssh-keyscan -H "$host" >> ~/.ssh/known_hosts || true
           done || true
+          echo "ssh_configured=true" >> "$GITHUB_OUTPUT"
 
       - name: Ansible dry-run (check) via deploy.sh
+        if: steps.ssh-setup.outputs.ssh_configured == 'true'
         working-directory: infrastructure/ansible
         run: |
           set -euxo pipefail
@@ -934,7 +938,7 @@ jobs:
           ./deploy.sh deploy staging "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
 
       - name: Run deploy to staging (real deployment)
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' && steps.ssh-setup.outputs.ssh_configured == 'true' }}
         working-directory: infrastructure/ansible
         # evaluate deploy toggle at runtime so secret availability doesn't cause compile-time errors
         run: |
@@ -950,7 +954,7 @@ jobs:
           printf 'y\n' | ./deploy.sh deploy staging "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
 
       - name: Post-deploy health check
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' && steps.ssh-setup.outputs.ssh_configured == 'true' }}
         run: |
           set -euxo pipefail
           echo "Running simple HTTP healthchecks against staging hosts (inventory)"
@@ -984,10 +988,12 @@ jobs:
             pip install ansible==8.7.0
 
       - name: Prepare SSH for production (read secret at runtime)
+        id: ssh-setup-prod
         run: |
             set -euxo pipefail
             if [ -z "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" ]; then
               echo "No PRODUCTION_SSH_PRIVATE_KEY provided — skipping SSH setup";
+              echo "ssh_configured=false" >> "$GITHUB_OUTPUT"
               exit 0;
             fi
             mkdir -p ~/.ssh
@@ -996,8 +1002,10 @@ jobs:
             awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/production/hosts | while read -r host; do
               ssh-keyscan -H "$host" >> ~/.ssh/known_hosts || true
             done || true
+            echo "ssh_configured=true" >> "$GITHUB_OUTPUT"
 
       - name: Ansible dry-run (check) via deploy.sh — production
+        if: steps.ssh-setup-prod.outputs.ssh_configured == 'true'
         working-directory: infrastructure/ansible
         run: |
             set -euxo pipefail
@@ -1007,6 +1015,7 @@ jobs:
             ./deploy.sh deploy production "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
 
       - name: Run deploy to production (real deployment)
+        if: steps.ssh-setup-prod.outputs.ssh_configured == 'true'
         # evaluate deploy toggle at runtime: this avoids compile-time secret usage and keeps PRs safe
         run: |
             set -euxo pipefail
