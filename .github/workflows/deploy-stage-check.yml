@@ -52,11 +52,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install ansible==8.7.0
 
-      - name: Skip Ansible dry-run — staging (no SSH key)
-        if: ${{ secrets.STAGE_SSH_PRIVATE_KEY == '' }}
-        run: |
-          echo "STAGE_SSH_PRIVATE_KEY not set — skipping Ansible dry-run against staging inventory"
-
       - name: Ansible dry-run (check) — staging inventory
         if: ${{ secrets.STAGE_SSH_PRIVATE_KEY != '' }}
         working-directory: infrastructure/ansible

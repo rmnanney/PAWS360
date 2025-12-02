@@ -96,9 +96,18 @@ export function HomepageCard({
 }
 
 export function ScheduleCard() {
-    const [items, setItems] = React.useState<Array<{ time: string; course: string; title: string; room: string }>>([]);
+    const [weeklySchedule, setWeeklySchedule] = React.useState<Record<string, Array<{ time: string; course: string; title: string; room: string }>>>({});
     const { toast } = require("@/hooks/useToast");
     const { API_BASE } = require("@/lib/api");
+
+    const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+    const dayAbbr: Record<string, string> = {
+        'MONDAY': 'Mon',
+        'TUESDAY': 'Tue',
+        'WEDNESDAY': 'Wed',
+        'THURSDAY': 'Thu',
+        'FRIDAY': 'Fri',
+    };
 
     React.useEffect(() => {
         const load = async () => {
@@ -108,16 +117,27 @@ export function ScheduleCard() {
                 const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
                 const sidData = await sidRes.json();
                 if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) return;
-                const res = await fetch(`${API_BASE}/enrollments/student/${sidData.student_id}/today-schedule`);
+                const res = await fetch(`${API_BASE}/api/course-search/student/${sidData.student_id}/weekly-schedule`);
                 if (!res.ok) return;
                 const data = await res.json();
-                const mapped = (data || []).map((d: any) => ({
-                    time: d.startTime ? new Date(`1970-01-01T${d.startTime}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "",
-                    course: d.courseCode,
-                    title: d.title,
-                    room: d.room || "TBD",
-                }));
-                setItems(mapped);
+                
+                // Group classes by day
+                const grouped: Record<string, Array<{ time: string; course: string; title: string; room: string }>> = {};
+                days.forEach(day => { grouped[day] = []; });
+                
+                (data || []).forEach((d: any) => {
+                    const day = d.meeting_day?.toUpperCase();
+                    if (day && grouped[day]) {
+                        grouped[day].push({
+                            time: d.start_time ? new Date(`1970-01-01T${d.start_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "",
+                            course: d.course_code,
+                            title: d.title,
+                            room: d.room || "TBD",
+                        });
+                    }
+                });
+                
+                setWeeklySchedule(grouped);
             } catch (e: any) {
                 toast({ variant: "destructive", title: "Failed to load schedule", description: e?.message || "Try again later." });
             }
@@ -130,33 +150,41 @@ export function ScheduleCard() {
 			{/* Header with calendar icon and title */}
 			<div className={s.scheduleHeader}>
 				<Calendar className="h-6 w-6 text-primary" />
-				<h3 className={s.scheduleTitle}>Today's Schedule</h3>
+				<h3 className={s.scheduleTitle}>This Week's Schedule</h3>
 			</div>
 
-			{/* Schedule items list */}
-			<div className="space-y-3">
-				{items.map((classItem, index) => (
-					<div key={index} className={s.scheduleClass}>
-						<div className={s.scheduleClassInfo}>
-							<div className={s.scheduleClassTime}>
-								<Clock className="h-4 w-4" />
-								<span>{classItem.time}</span>
+			{/* Weekly schedule grid */}
+			<div className="space-y-4">
+				{days.map((day) => (
+					<div key={day} className="space-y-2">
+						<h4 className="font-semibold text-sm text-muted-foreground">{dayAbbr[day]}</h4>
+						{weeklySchedule[day]?.length > 0 ? (
+							<div className="space-y-2">
+								{weeklySchedule[day].map((classItem, index) => (
+									<div key={index} className={s.scheduleClass}>
+										<div className={s.scheduleClassInfo}>
+											<div className={s.scheduleClassTime}>
+												<Clock className="h-4 w-4" />
+												<span>{classItem.time}</span>
+											</div>
+											<div>
+												<p className="font-medium text-card-foreground text-sm">
+													{classItem.course}
+												</p>
+												<p className="text-xs text-muted-foreground">
+													{classItem.title}
+												</p>
+											</div>
+										</div>
+										<div className={s.scheduleClassRoom}>{classItem.room}</div>
+									</div>
+								))}
 							</div>
-							<div>
-								<p className="font-medium text-card-foreground">
-									{classItem.course}
-								</p>
-								<p className="text-sm text-muted-foreground">
-									{classItem.title}
-								</p>
-							</div>
-						</div>
-						<div className={s.scheduleClassRoom}>{classItem.room}</div>
+						) : (
+							<div className="text-xs text-muted-foreground ml-4">No classes</div>
+						)}
 					</div>
 				))}
-				{items.length === 0 && (
-					<div className="text-sm text-muted-foreground">No classes today.</div>
-				)}
 			</div>
 
 			{/* Footer with view full schedule link */}

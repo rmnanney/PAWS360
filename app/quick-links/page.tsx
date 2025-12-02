@@ -1,129 +1,95 @@
 "use client";
 
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "../components/Card/card";
-import {
-	GraduationCap,
-	FileText,
-	Calendar,
-	Mail,
-	MapPin,
-	HelpCircle,
-	User,
-} from "lucide-react";
-import { Button } from "../components/Button/button";
-import { useRouter } from "next/navigation";
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/Card/card";
+import { ExternalLink, MapPin, BookOpen, Calendar, AlertCircle } from "lucide-react";
+import { LucideIcon } from "lucide-react";
+import s from "./styles.module.css";
 
-const quickLinks = [
+// ========================================
+// CONFIGURATION: Add or edit links here
+// ========================================
+interface QuickLink {
+	title: string;
+	description: string;
+	url: string;
+	icon: LucideIcon;
+	category?: string;
+}
+
+const quickLinks: QuickLink[] = [
 	{
-		id: "graduation",
-		title: "Graduation Packages",
-		description: "Order your graduation regalia and packages",
-		icon: GraduationCap,
-		color: "bg-blue-500",
-	},
-	{
-		id: "forms",
-		title: "Student Forms",
-		description: "Access common forms and documents",
-		icon: FileText,
-		color: "bg-green-500",
-	},
-	{
-		id: "events",
-		title: "Campus Events",
-		description: "View upcoming university events",
-		icon: Calendar,
-		color: "bg-purple-500",
-	},
-	{
-		id: "personal",
-		title: "Personal Info",
-		description: "Access your personal information",
-		icon: User,
-		color: "bg-red-500",
-	},
-	{
-		id: "maps",
-		title: "Campus Maps",
-		description: "Navigate the campus with interactive maps",
+		title: "Campus Map",
+		description: "Interactive map of UWM campus buildings and facilities",
+		url: "https://apps.uwm.edu/map/",
 		icon: MapPin,
-		color: "bg-orange-500",
+		category: "Campus Resources",
 	},
 	{
-		id: "support",
-		title: "IT Support",
-		description: "Get help with technical issues",
-		icon: HelpCircle,
-		color: "bg-teal-500",
+		title: "Canvas",
+		description: "Access your course materials and assignments",
+		url: "https://uwm.edu/canvas/home/",
+		icon: BookOpen,
+		category: "Academic Tools",
+	},
+	{
+		title: "Academic Calendar",
+		description: "View semester schedules and academic calendars",
+		url: "https://uwm.edu/secu/resources/calendars-schedules/",
+		icon: Calendar,
+		category: "Academic Resources",
+	},
+	{
+		title: "Important Dates",
+		description: "Key dates and deadlines for registration and terms",
+		url: "https://uwm.edu/registrar/dates-deadlines/important-dates-by-term/",
+		icon: AlertCircle,
+		category: "Academic Resources",
 	},
 ];
 
-export function QuickLinksPage() {
-	const router = useRouter();
-
-	const handleLinkClick = (id: string) => {
-		if (id === "graduation") {
-			router.push("/quick-links/grad-package-purchase/graduation-form");
-		} else if (id === "forms") {
-			window.open("https://uwm.edu/registrar/forms-tools/", "_blank");
-		} else if (id === "events") {
-			router.push("/resources?tab=events");
-		} else if (id === "personal") {
-			router.push("/personal?tab=personal");
-		} else if (id === "maps") {
-			window.open("https://apps.uwm.edu/map/", "_blank");
-		} else if (id === "support") {
-			window.open("https://uwm.edu/information-technology/help/", "_blank");
-		}
+// ========================================
+// Component
+// ========================================
+export default function QuickLinksPage() {
+	const handleLinkClick = (url: string) => {
+		window.open(url, "_blank", "noopener,noreferrer");
 	};
 
 	return (
-		<div className="flex flex-1 flex-col space-y-6 p-4 md:p-8 pt-6">
-			<div className="mb-2">
-				<p className="text-muted-foreground">
-					Quick access to frequently used tools and resources.
+		<div className={s.container}>
+			<div className={s.header}>
+				<h1 className={s.title}>Quick Links</h1>
+				<p className={s.subtitle}>
+					Frequently accessed tools and resources for UWM students
 				</p>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-				{quickLinks.map((link) => {
-					const Icon = link.icon;
-					return (
-						<Card
-							key={link.id}
-							className="cursor-pointer hover:shadow-lg transition-shadow"
-							onClick={() => handleLinkClick(link.id)}
-						>
-							<CardHeader>
-								<div className="flex items-start gap-4">
-									<div className={`${link.color} p-3 rounded-lg`}>
-										<Icon className="w-6 h-6 text-white" />
-									</div>
-									<div className="flex-1">
-										<CardTitle>{link.title}</CardTitle>
-										<CardDescription className="mt-2">
-											{link.description}
-										</CardDescription>
-									</div>
+			<div className={s.grid}>
+				{quickLinks.map((link, index) => (
+					<Card
+						key={index}
+						className={s.linkCard}
+						onClick={() => handleLinkClick(link.url)}
+					>
+						<CardHeader>
+							<div className={s.cardHeader}>
+								<div className={s.iconWrapper}>
+									<link.icon className="h-6 w-6 text-primary" />
 								</div>
-							</CardHeader>
-							<CardContent>
-								<Button variant="outline" className="w-full">
-									Access
-								</Button>
-							</CardContent>
-						</Card>
-					);
-				})}
+								<ExternalLink className="h-4 w-4 text-muted-foreground" />
+							</div>
+							<CardTitle className={s.cardTitle}>{link.title}</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className={s.description}>{link.description}</p>
+							{link.category && (
+								<span className={s.category}>{link.category}</span>
+							)}
+						</CardContent>
+					</Card>
+				))}
 			</div>
 		</div>
 	);
 }
-
-export default QuickLinksPage;

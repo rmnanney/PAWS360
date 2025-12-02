@@ -54,11 +54,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install ansible==8.7.0
 
-      - name: Skip Ansible dry-run — production (no SSH key)
-        if: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY == '' }}
-        run: |
-          echo "PRODUCTION_SSH_PRIVATE_KEY not set — skipping Ansible dry-run against production inventory"
-
       - name: Ansible dry-run (check) — production inventory
         if: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY != '' }}
         working-directory: infrastructure/ansible

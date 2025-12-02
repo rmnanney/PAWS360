@@ -38,9 +38,9 @@
 	font-size: 0.75rem; /* text-xs */
 }
 
-/* Ensure sidebar has solid white background */
+/* Ensure sidebar has theme-aware background */
 .sidebarSolid {
-	background: white !important;
+	background: hsl(var(--sidebar)) !important;
 	z-index: 999; /* Ensure sidebar is below header but above content */
 }
 
