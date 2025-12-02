@@ -59,7 +59,7 @@ export default function Login() {
 	}
 
 	return (
-		<main style={{ position: "relative", minHeight: "100vh" }}>
+		<main style={{ position: "relative", minHeight: "100vh" }} className="light">
 			{bgImage && (
 				<img
 					src={bgImage.imageUrl}

@@ -12,7 +12,6 @@ import {
 	Search,
 	Calendar,
 	Home,
-	Settings,
 } from "lucide-react";
 
 import {
@@ -130,33 +129,55 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 		{
 			title: "Quick Links",
 			icon: LucideLink,
-			onClick: () => onNavigate("quick-links"),
+			onClick: () => onNavigate("Quick Links"),
 		},
 	];
 
 	const router = require("next/navigation").useRouter?.() || null;
 	const { toast } = require("../../hooks/useToast");
 
-	function handleLogout() {
-		const success = true; // Set to false to simulate failure
-		if (typeof window !== "undefined") {
-			localStorage.removeItem("authToken");
-		}
-		if (success) {
+	async function handleLogout() {
+		try {
+			// Call backend logout endpoint to invalidate session
+			const response = await fetch('/auth/logout', {
+				method: 'POST',
+				credentials: 'include', // Include cookies
+			});
+
+			// Clear all local storage and session storage
+			if (typeof window !== "undefined") {
+				localStorage.removeItem("authToken");
+				localStorage.removeItem("userEmail");
+				sessionStorage.removeItem("userEmail");
+				sessionStorage.removeItem("userFirstName");
+				sessionStorage.removeItem("userRole");
+				sessionStorage.clear();
+				localStorage.clear();
+			}
+
 			toast({
 				title: "Logging Out",
 				description: "You have been logged out successfully.",
 				duration: 1500,
 			});
+
 			setTimeout(() => {
-				router?.push?.("/");
+				router?.push?.("/login");
 			}, 1500);
-		} else {
+		} catch (error) {
+			// Even if backend fails, clear local session and redirect
+			if (typeof window !== "undefined") {
+				localStorage.clear();
+				sessionStorage.clear();
+			}
 			toast({
-				variant: "destructive",
-				title: "Logout Failed",
-				description: "There was a problem logging out. Please try again.",
+				title: "Logging Out",
+				description: "You have been logged out.",
+				duration: 1500,
 			});
+			setTimeout(() => {
+				router?.push?.("/login");
+			}, 1500);
 		}
 	}
 
@@ -273,14 +294,6 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 				</SidebarGroup>
 			</SidebarContent>
 			<SidebarFooter>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton onClick={() => onNavigate("Settings")}>
-							<Settings />
-							<span>Settings</span>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
 				<Button onClick={handleLogout}>Log Out</Button>
 			</SidebarFooter>
 		</Sidebar>
