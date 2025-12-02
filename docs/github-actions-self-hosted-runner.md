@@ -1,12 +1,13 @@
 # GitHub Actions Self-Hosted Runner Configuration
 
 **Date**: 2025-12-01  
-**Organization**: CollectiveContexts  
-**Repository**: PAWS360
+**Owner**: rmnanney  
+**Repository**: PAWS360  
+**Git URL**: git@github.com:rmnanney/PAWS360.git
 
 ## Summary
 
-All GitHub Actions workflows in PAWS360 have been configured to use the organization's self-hosted runner located on the same Proxmox cluster. This change improves build performance and reduces dependency on GitHub-hosted runners.
+All GitHub Actions workflows in PAWS360 have been configured to use a self-hosted runner on the Proxmox cluster. This change improves build performance and reduces dependency on GitHub-hosted runners.
 
 ## Changes Made
 
@@ -40,13 +41,61 @@ The workflows now expect a runner with the following labels:
 - `linux`
 - `x64`
 
-### Granting Repository Access
+## Runner Setup Instructions
 
-To enable the PAWS360 repository to use the organization runner:
+### Option 1: Register New Repository-Level Runner (Recommended)
 
-1. Go to: https://github.com/organizations/CollectiveContexts/settings/actions/hosted-runners
-2. Click on your runner
-3. Under "Repository access", add `PAWS360` to the allowed repositories
+This runner will be dedicated to the PAWS360 repository:
+
+```bash
+# On your Proxmox host/VM, create runner directory
+mkdir -p ~/actions-runner && cd ~/actions-runner
+
+# Download the latest runner package
+curl -o actions-runner-linux-x64-2.329.0.tar.gz -L \
+  https://github.com/actions/runner/releases/download/v2.329.0/actions-runner-linux-x64-2.329.0.tar.gz
+
+# Validate the hash (optional but recommended)
+echo "194f1e1e4bd02f80b7e9633fc546084d8d4e19f3928a324d512ea53430102e1d  actions-runner-linux-x64-2.329.0.tar.gz" | shasum -a 256 -c
+
+# Extract the installer
+tar xzf ./actions-runner-linux-x64-2.329.0.tar.gz
+
+# Configure the runner (interactive - will prompt for labels)
+./config.sh --url https://github.com/rmnanney/PAWS360 --token <YOUR_TOKEN>
+
+# When prompted for labels, add: linux,x64
+# This ensures workflows match: runs-on: [self-hosted, linux, x64]
+
+# Install as a service (recommended for auto-start)
+sudo ./svc.sh install
+sudo ./svc.sh start
+
+# Check status
+sudo ./svc.sh status
+```
+
+**Note**: The registration token shown in your setup expires quickly. Get a fresh token from:
+- Go to: https://github.com/rmnanney/PAWS360/settings/actions/runners/new
+- Copy the token from the `--token` parameter
+
+### Option 2: Use Existing Organization Runner
+
+If you prefer to use the CollectiveContexts organization runner:
+
+1. **Transfer repository to organization**:
+   - Go to: https://github.com/rmnanney/PAWS360/settings
+   - Scroll to "Danger Zone" → Transfer ownership
+   - Transfer to `CollectiveContexts` organization
+
+2. **Then grant runner access**:
+   - Go to: https://github.com/organizations/CollectiveContexts/settings/actions/hosted-runners
+   - Click your runner → "Repository access"
+   - Add `PAWS360` to allowed repositories
+
+**Pros/Cons**:
+- **Repository runner**: Simpler setup, dedicated to PAWS360, no organization permissions needed
+- **Organization runner**: Shared across multiple repos, requires repo transfer or org membership
 
 ### Verifying Runner Labels
 
@@ -95,6 +144,27 @@ runs-on: [self-hosted, proxmox, docker]
 
 ## Testing the Configuration
 
+### Get a Fresh Registration Token
+
+The token in your setup instructions expires quickly. To get a new one:
+
+1. Go to: https://github.com/rmnanney/PAWS360/settings/actions/runners/new
+2. Copy the token from the `./config.sh --url https://github.com/rmnanney/PAWS360 --token XXXXX` command
+
+### Verify Runner Registration
+
+Once configured and started:
+
+```bash
+# Check runner service status
+sudo ./svc.sh status
+
+# Or if running manually
+ps aux | grep Runner.Listener
+```
+
+### Test with a Simple Workflow
+
 1. **Trigger a simple workflow**:
    ```bash
    gh workflow run debug.yml -f job=test -f stepDebug=false
@@ -124,10 +194,26 @@ runs-on: [self-hosted, proxmox, docker]
 
 **Symptom**: Jobs stay queued, don't run  
 **Solutions**:
-1. Verify runner is online: Check organization runners page
-2. Check repository access: Ensure PAWS360 is in allowed repositories list
-3. Verify labels match: Check `runs-on` labels match runner labels
-4. Check runner capacity: Ensure runner isn't at max concurrent jobs
+1. **Verify runner is online**: 
+   - Check: https://github.com/rmnanney/PAWS360/settings/actions/runners
+   - Should show green "Idle" or "Active" status
+2. **Check labels match**: 
+   - Runner labels should include: `self-hosted`, `linux`, `x64`
+   - Workflow uses: `runs-on: [self-hosted, linux, x64]`
+3. **Verify runner service is running**:
+   ```bash
+   sudo ./svc.sh status
+   # Or check process
+   ps aux | grep Runner.Listener
+   ```
+4. **Check runner logs**:
+   ```bash
+   # If running as service
+   sudo journalctl -u actions.runner.rmnanney-PAWS360.* -f
+   
+   # If running manually
+   tail -f ~/actions-runner/_diag/*.log
+   ```
 
 ### Missing Dependencies
 
@@ -189,11 +275,12 @@ git push
 ## Monitoring
 
 ### Runner Health
-- Check runner status: https://github.com/organizations/CollectiveContexts/settings/actions/hosted-runners
+- Check runner status: https://github.com/rmnanney/PAWS360/settings/actions/runners
 - Monitor runner metrics via Proxmox
 - Set up alerts for runner offline events
 
 ### Job Performance
+- View workflow runs: https://github.com/rmnanney/PAWS360/actions
 - Compare job durations before/after migration
 - Monitor queue times
 - Track job success rates
@@ -206,21 +293,26 @@ git push
 
 ## Notes
 
+- **Repository Owner**: Changed from `ZackHawkins` to `rmnanney` - workflows updated accordingly
+- **Organization vs Repository Runner**: Using a repository-level runner (simpler than organization runner for single-repo use)
 - **Not Modified**: Third-party Ansible role workflows in `infrastructure/ansible/roles/*/.github/workflows/` were intentionally left using `ubuntu-latest` as they are upstream dependencies
 - **Environment Variables**: All existing environment variables and secrets work unchanged with self-hosted runners
 - **GitHub Contexts**: All GitHub Actions contexts (`github.*`, `env.*`, etc.) work identically on self-hosted runners
 
 ## Next Steps
 
-1. Grant repository access to the runner in organization settings
-2. Verify runner has all required software installed
-3. Test with a simple workflow (e.g., `constitutional-self-check.yml`)
-4. Monitor first few production runs
-5. Document any additional runner-specific configuration needed
-6. Set up runner monitoring and alerting
+1. **Set up the runner** using the instructions in "Runner Setup Instructions" section above
+2. **Get fresh token**: https://github.com/rmnanney/PAWS360/settings/actions/runners/new
+3. **Install as service**: Use `sudo ./svc.sh install && sudo ./svc.sh start` for auto-restart
+4. **Verify runner shows online**: Check https://github.com/rmnanney/PAWS360/settings/actions/runners
+5. **Test with a simple workflow**: `gh workflow run constitutional-self-check.yml`
+6. **Monitor first few production runs**
+7. **Install required software** on runner (Docker, Node.js, Java 21, etc.) as needed
+8. **Set up runner monitoring** and alerting
 
 ## Questions?
 
-- Check runner logs: SSH to runner host, view `/var/log/runner/`
+- Check runner status: https://github.com/rmnanney/PAWS360/settings/actions/runners
+- Check runner logs: `sudo journalctl -u actions.runner.* -f` (if service) or `~/actions-runner/_diag/*.log`
 - GitHub Actions docs: https://docs.github.com/en/actions
-- Organization admin: Contact CollectiveContexts org administrators
+- Runner installation docs: https://docs.github.com/en/actions/hosting-your-own-runners/adding-self-hosted-runners
