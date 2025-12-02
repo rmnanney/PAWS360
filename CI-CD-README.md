@@ -271,6 +271,8 @@ psql -h localhost -U paws360 -d paws360_staging -c "SELECT COUNT(*) FROM users;"
 
 ### Modifying CI/CD Pipeline
 1. Update `.github/workflows/ci-cd.yml`
+Note: The GitHub Actions workflow uses `CI_SKIP_WIP=true` for Playwright steps so UI WIP tests are not run by default in CI. Jenkins also sets this variable in the `Jenkinsfile`.
+Also, some API tests are known to be flaky in CI; set `CI_SKIP_API=true` in CI if you want to skip API integration tests temporarily.
 2. Test locally with `act`
 3. Ensure backward compatibility
 

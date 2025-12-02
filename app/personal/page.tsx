@@ -1075,4 +1075,3 @@ const securityInfo = {
 		</div>
 	);
 }
-

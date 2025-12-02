@@ -113,7 +113,7 @@ UI_URL=http://localhost:8080
 ### Environment-Specific Credentials
 ```bash
 # ❌ Don't do this
-DB_PASSWORD=password123
+DB_PASSWORD=password
 
 # ✅ Do this instead
 # Local: DB_PASSWORD=dev_password_123

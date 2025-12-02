@@ -1,6 +1,4 @@
-# Staging Environment Inventory  
-# Multi-node deployment for testing and QA
-
+# Development-based baseline inventory copied for staging
 [all:vars]
 # Environment settings
 env=staging
@@ -10,52 +8,48 @@ adminlte_version=1.0.0
 
 # Network configuration
 domain_name=adminlte-staging.university.edu
-use_ssl=true
+use_ssl=false
 api_port=8080
 ui_port=80
 
-# Load balancer configuration
-nginx_worker_processes=auto
-nginx_worker_connections=1024
-client_max_body_size=10M
-
-# Database settings (HA setup)
-postgres_host=db-staging-01.university.edu
+# Database settings
+postgres_host=localhost
 postgres_port=5432
 postgres_db=adminlte_staging
 postgres_user=adminlte
-postgres_max_connections=100
-postgres_shared_buffers=256MB
-postgres_effective_cache_size=1GB
+postgres_password=dev_password
+postgres_max_connections=20
 
-# Redis cluster settings
-redis_cluster_enabled=true
-redis_maxmemory=1gb
-redis_maxmemory_policy=allkeys-lru
+# Redis settings
+redis_host=localhost
+redis_port=6379
+redis_password=dev_redis_pass
+redis_maxmemory=256mb
 
 # Service configuration
-java_opts="-Xmx1g -Xms512m -XX:+UseZGC"
+java_opts="-Xmx512m -Xms256m"
 spring_profiles=staging
-log_level=INFO
-rolling_update_batch=50%
+log_level=DEBUG
 
-# Monitoring
-prometheus_enabled=true
-grafana_enabled=true
-metrics_retention=30d
+# Security (development only - use proper secrets in production)
+jwt_secret=dev_jwt_secret_key_not_for_production
+saml_keystore_password=dev_keystore_pass
+admin_default_password=admin123
 
 [webservers]
-web-staging-01.university.edu ansible_host=10.0.1.10
-web-staging-02.university.edu ansible_host=10.0.1.11
+dell-r640-01 ansible_host=192.168.0.51
 
 [databases]
-db-staging-01.university.edu ansible_host=10.0.2.10
+dell-r640-01 ansible_host=192.168.0.51
 
-[loadbalancers] 
-lb-staging-01.university.edu ansible_host=10.0.0.10
-
-[monitoring]
-mon-staging-01.university.edu ansible_host=10.0.3.10
+[etcd]
+dell-r640-01 ansible_host=192.168.0.51
 
 [redis]
-redis-staging-01.university.edu ansible_host=10.0.2.20
+dell-r640-01 ansible_host=192.168.0.51
+
+[loadbalancers]
+dell-r640-01 ansible_host=192.168.0.51
+
+[monitoring]
+dell-r640-01 ansible_host=192.168.0.51

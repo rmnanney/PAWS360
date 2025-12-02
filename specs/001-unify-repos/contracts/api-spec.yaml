@@ -1,0 +1,460 @@
+openapi: 3.0.3
+info:
+  title: PAWS360 Demo Unification API
+  description: API contracts for seamless demo across student portal and admin view
+  version: 1.0.0
+  contact:
+    name: PAWS360 Team
+    
+servers:
+  - url: http://localhost:8081
+    description: Demo environment
+
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate user and create session
+      description: Primary authentication endpoint for SSO across modules
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  maxLength: 50
+                  example: "student1"
+                password:
+                  type: string
+                  example: "demopass123"
+      responses:
+        '200':
+          description: Authentication successful
+          headers:
+            Set-Cookie:
+              description: Session cookie for SSO
+              schema:
+                type: string
+                example: "JSESSIONID=ABC123; Path=/; HttpOnly; SameSite=Lax"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Invalid request format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      summary: Terminate user session
+      description: Invalidate current session and clear SSO state
+      tags:
+        - Authentication
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+        '401':
+          description: No active session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/session:
+    get:
+      summary: Validate current session
+      description: Check if user session is active and get user info
+      tags:
+        - Authentication
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Session valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionInfo'
+        '401':
+          description: Session expired or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/users/profile:
+    get:
+      summary: Get current user profile
+      description: Retrieve profile data for authenticated user
+      tags:
+        - User Profile
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Profile data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/students/{studentId}:
+    get:
+      summary: Get student details (admin view)
+      description: Retrieve student profile for admin/instructor access
+      tags:
+        - Admin Operations
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+          example: "STU123456"
+      responses:
+        '200':
+          description: Student profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentProfile'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/students:
+    get:
+      summary: List students (admin view)
+      description: Get paginated list of students for admin interface
+      tags:
+        - Admin Operations
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: search
+          in: query
+          description: Search by name or student ID
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: Student list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentList'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /actuator/health:
+    get:
+      summary: Health check endpoint
+      description: Service health status for demo environment verification
+      tags:
+        - Health Monitoring
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+      description: HTTP session cookie for SSO authentication
+
+  schemas:
+    AuthResponse:
+      type: object
+      required:
+        - success
+        - user
+      properties:
+        success:
+          type: boolean
+          example: true
+        user:
+          $ref: '#/components/schemas/UserInfo'
+        message:
+          type: string
+          example: "Authentication successful"
+
+    UserInfo:
+      type: object
+      required:
+        - id
+        - username
+        - role
+        - firstName
+        - lastName
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        username:
+          type: string
+          example: "student1"
+        role:
+          type: string
+          enum: [STUDENT, ADMIN, INSTRUCTOR]
+          example: "STUDENT"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@uwm.edu"
+
+    SessionInfo:
+      type: object
+      required:
+        - valid
+        - user
+        - expiresAt
+      properties:
+        valid:
+          type: boolean
+          example: true
+        user:
+          $ref: '#/components/schemas/UserInfo'
+        expiresAt:
+          type: string
+          format: date-time
+          example: "2025-11-06T15:30:00Z"
+        lastAccessed:
+          type: string
+          format: date-time
+          example: "2025-11-06T14:45:00Z"
+
+    UserProfile:
+      allOf:
+        - $ref: '#/components/schemas/UserInfo'
+        - type: object
+          properties:
+            studentProfile:
+              $ref: '#/components/schemas/StudentProfile'
+            createdAt:
+              type: string
+              format: date-time
+              example: "2025-01-15T10:00:00Z"
+            lastLoginAt:
+              type: string
+              format: date-time
+              example: "2025-11-06T14:30:00Z"
+
+    StudentProfile:
+      type: object
+      required:
+        - studentId
+        - enrollmentStatus
+      properties:
+        studentId:
+          type: string
+          maxLength: 20
+          example: "STU123456"
+        major:
+          type: string
+          maxLength: 100
+          example: "Computer Science"
+        year:
+          type: string
+          enum: [FRESHMAN, SOPHOMORE, JUNIOR, SENIOR, GRADUATE]
+          example: "JUNIOR"
+        gpa:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 4.0
+          example: 3.75
+        enrollmentStatus:
+          type: string
+          enum: [ACTIVE, INACTIVE, GRADUATED, WITHDRAWN]
+          example: "ACTIVE"
+        advisorName:
+          type: string
+          maxLength: 100
+          example: "Dr. Jane Smith"
+        expectedGraduation:
+          type: string
+          format: date
+          example: "2025-05-15"
+
+    StudentList:
+      type: object
+      required:
+        - content
+        - totalElements
+        - totalPages
+        - number
+        - size
+      properties:
+        content:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/UserInfo'
+              - type: object
+                properties:
+                  studentProfile:
+                    $ref: '#/components/schemas/StudentProfile'
+        totalElements:
+          type: integer
+          format: int64
+          example: 150
+        totalPages:
+          type: integer
+          example: 8
+        number:
+          type: integer
+          example: 0
+        size:
+          type: integer
+          example: 20
+
+    HealthStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN, OUT_OF_SERVICE, UNKNOWN]
+          example: "UP"
+        components:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [UP, DOWN, OUT_OF_SERVICE, UNKNOWN]
+              details:
+                type: object
+                additionalProperties: true
+          example:
+            db:
+              status: "UP"
+              details:
+                database: "PostgreSQL"
+                validationQuery: "isValid()"
+            diskSpace:
+              status: "UP"
+              details:
+                total: 10737418240
+                free: 8589934592
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: "AUTHENTICATION_FAILED"
+        message:
+          type: string
+          example: "Invalid username or password"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-06T14:30:00Z"
+        path:
+          type: string
+          example: "/auth/login"

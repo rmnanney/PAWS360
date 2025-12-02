@@ -1,0 +1,51 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: paws360-pdb
+  namespace: paws360
+  labels:
+    app: paws360
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: paws360
+      component: backend
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: paws360-quota
+  namespace: paws360
+spec:
+  hard:
+    requests.cpu: "10"
+    requests.memory: "20Gi"
+    limits.cpu: "20"
+    limits.memory: "40Gi"
+    persistentvolumeclaims: "10"
+    pods: "50"
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: paws360-limits
+  namespace: paws360
+spec:
+  limits:
+  - max:
+      cpu: "2"
+      memory: "4Gi"
+    min:
+      cpu: "100m"
+      memory: "128Mi"
+    default:
+      cpu: "500m"
+      memory: "1Gi"
+    defaultRequest:
+      cpu: "250m"
+      memory: "512Mi"
+    type: Container

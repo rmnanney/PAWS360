@@ -1,0 +1,24 @@
+{
+  "name": "paws360-performance-tests",
+  "version": "1.0.0",
+  "description": "Performance tests for PAWS360 authentication system using K6",
+  "scripts": {
+    "test:performance": "k6 run auth-performance.js",
+    "test:load": "k6 run --vus 10 --duration 30s auth-performance.js",
+    "test:stress": "k6 run --vus 50 --duration 2m auth-stress.js",
+    "test:spike": "k6 run auth-spike.js",
+    "test:volume": "k6 run --vus 100 --duration 5m auth-volume.js",
+    "test:all": "npm run test:performance && npm run test:load && npm run test:stress",
+    "install:k6": "curl https://github.com/grafana/k6/releases/download/v0.47.0/k6-v0.47.0-linux-amd64.tar.gz -L | tar xvz --strip-components 1"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "performance",
+    "testing",
+    "k6",
+    "authentication",
+    "load-testing"
+  ],
+  "author": "PAWS360 Team",
+  "license": "MIT"
+}

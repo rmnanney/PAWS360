@@ -1,0 +1,8 @@
+
+> nextn@0.1.0 export
+> next export
+
+ ⨯ 
+    `next export` has been removed in favor of 'output: export' in next.config.js.
+Learn more: https://nextjs.org/docs/app/building-your-application/deploying/static-exports
+  

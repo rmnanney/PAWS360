@@ -102,6 +102,15 @@ export function ScheduleCard() {
     const { toast } = require("@/hooks/useToast");
     const { API_BASE } = require("@/lib/api");
 
+    const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+    const dayAbbr: Record<string, string> = {
+        'MONDAY': 'Mon',
+        'TUESDAY': 'Tue',
+        'WEDNESDAY': 'Wed',
+        'THURSDAY': 'Thu',
+        'FRIDAY': 'Fri',
+    };
+
     React.useEffect(() => {
         const load = async () => {
             try {
@@ -118,13 +127,24 @@ export function ScheduleCard() {
                 const res = await fetch(`${API_BASE}/enrollments/student/${sidData.student_id}/today-schedule`);
                 if (!res.ok) return;
                 const data = await res.json();
-                const mapped = (data || []).map((d: any) => ({
-                    time: d.start_time ? new Date(`1970-01-01T${d.start_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "",
-                    course: d.course_code,
-                    title: d.title,
-                    room: d.room || "TBD",
-                }));
-                setItems(mapped);
+                
+                // Group classes by day
+                const grouped: Record<string, Array<{ time: string; course: string; title: string; room: string }>> = {};
+                days.forEach(day => { grouped[day] = []; });
+                
+                (data || []).forEach((d: any) => {
+                    const day = d.meeting_day?.toUpperCase();
+                    if (day && grouped[day]) {
+                        grouped[day].push({
+                            time: d.start_time ? new Date(`1970-01-01T${d.start_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "",
+                            course: d.course_code,
+                            title: d.title,
+                            room: d.room || "TBD",
+                        });
+                    }
+                });
+                
+                setWeeklySchedule(grouped);
             } catch (e: any) {
                 toast({ variant: "destructive", title: "Failed to load schedule", description: e?.message || "Try again later." });
             } finally {
@@ -139,7 +159,7 @@ export function ScheduleCard() {
 			{/* Header with calendar icon and title */}
 			<div className={s.scheduleHeader}>
 				<Calendar className="h-6 w-6 text-primary" />
-				<h3 className={s.scheduleTitle}>Today's Schedule</h3>
+				<h3 className={s.scheduleTitle}>This Week's Schedule</h3>
 			</div>
 
 			{/* Schedule items list */}

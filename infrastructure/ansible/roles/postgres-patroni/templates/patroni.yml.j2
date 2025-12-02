@@ -1,0 +1,41 @@
+scope: {{ patroni_scope }}
+namespace: /service
+name: {{ patroni_name }}
+
+restapi:
+  listen: 0.0.0.0:{{ patroni_rest_port }}
+  connect_address: {{ ansible_host }}:{{ patroni_rest_port }}
+
+etcd:
+  hosts: {% for h in patroni_etcd_hosts %}{{ h }}{% if not loop.last %}, {% endif %}{% endfor %}
+{% if patroni_etcd_tls_enable %}
+  tls:
+    ca_file: {{ patroni_etcd_ca_file }}
+    cert_file: {{ patroni_etcd_client_cert }}
+    key_file: {{ patroni_etcd_client_key }}
+{% endif %}
+
+bootstrap:
+  dcs:
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+
+postgresql:
+  listen: {{ patroni_pg_listen }}:{{ patroni_pg_port }}
+  connect_address: {{ ansible_host }}:{{ patroni_pg_port }}
+  data_dir: {{ postgres_data_dir }}/{{ patroni_name }}
+  bin_dir: /usr/lib/postgresql/{{ postgres_version }}/bin
+  authentication:
+    replication:
+      username: replicator
+      password: "{{ postgres_password }}"
+    superuser:
+      username: {{ postgres_superuser }}
+      password: "{{ postgres_password }}"
+
+watchdog:
+  mode: off

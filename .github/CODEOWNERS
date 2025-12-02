@@ -1,0 +1,4 @@
+# Code owners for workflows and infra-related files
+.github/workflows/ @ZackHawkins
+monitoring/ci-cd-dashboard/ @ZackHawkins
+.github/hooks/ @ZackHawkins
