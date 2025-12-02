@@ -1,0 +1,48 @@
+name: Constitutional Self-Check
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # every 15 minutes
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-session:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update session timestamp
+        run: |
+          python - <<'PY'
+          import yaml, datetime
+          p='contexts/sessions/current-session.yml'
+          try:
+            with open(p) as fh:
+              data=yaml.safe_load(fh) or {}
+          except FileNotFoundError:
+            data={}
+          now=datetime.datetime.utcnow().isoformat()+'Z'
+          data['last_update']=now
+          data.setdefault('compliance_checks',{})['last_check']=now
+          data['current_status']='active'
+          with open(p,'w') as fh:
+            yaml.safe_dump(data, fh, sort_keys=False)
+          print('session updated',now)
+
+      - name: Commit & push session update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add contexts/sessions/current-session.yml || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(session): heartbeat self-check update [skip ci]" || true
+            git push
+          fi

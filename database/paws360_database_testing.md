@@ -368,7 +368,7 @@ BEGIN
         -- Simulate user login and data access
         PERFORM paws360.authenticate_user(
             'student' || i || '@uwm.edu',
-            'password123'
+            'password'
         );
 
         -- Simulate course search

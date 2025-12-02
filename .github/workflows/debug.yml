@@ -1,0 +1,42 @@
+name: Debug CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job to run (build, test, lint)'
+        required: true
+        type: choice
+        options: [build, test, lint]
+      stepDebug:
+        description: 'Enable step debug logs'
+        required: false
+        type: boolean
+
+jobs:
+  run-selected:
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_STEP_DEBUG: ${{ inputs.stepDebug }}
+      DEBUG: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Selective execution
+        run: |
+          case "${{ inputs.job }}" in
+            build) echo "placeholder: build" ;;
+            test) echo "placeholder: test" ;;
+            lint) echo "placeholder: lint" ;;
+            *) echo "unknown" ;;
+          esac
+      - name: Upload debug artifacts
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-artifacts
+          path: |
+            logs/**
+            coverage/**
+          if-no-files-found: ignore
+          retention-days: 1

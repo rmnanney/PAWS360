@@ -83,6 +83,35 @@ deploy-prod:
 ci: clean build test lint security-scan
 	@echo "✅ CI pipeline completed successfully!"
 
+# Debugging helpers (placeholders)
+.PHONY: debug-ci debug-job ci-local ci-quick ci-full setup-hooks
+
+debug-ci:
+	@echo "🔧 debug-ci placeholder: run a single debug CI flow (to be fully implemented in Phase 2)"
+
+debug-job:
+	@echo "🔧 debug-job placeholder: run JOB=$(JOB) locally (to be implemented). Use 'make debug-job JOB=build'"
+
+ci-local:
+	@echo "🔁 ci-local placeholder: run full local CI via docker-compose (to be implemented in Phase 5)"
+
+ci-quick:
+	@echo "⚡ ci-quick placeholder: quick local checks (lint + unit tests)"
+
+ci-full:
+	@echo "🏁 ci-full placeholder: run full local CI and HA tests (to be implemented)"
+
+setup-hooks:
+	@echo "⚙️ Verifying/Installing git hooks from .github/hooks/"
+	@if [ -d .github/hooks ]; then \
+	  for f in .github/hooks/*; do \
+	    cp "$${f}" .git/hooks/ || true; chmod +x .git/hooks/`basename "$${f}"` || true; \
+	  done; \
+	  echo "Hooks installed into .git/hooks/ (developer-level)"; \
+	else \
+	  echo "No .github/hooks directory found"; exit 1; \
+	fi
+
 security-scan:
 	@echo "🔒 Running security vulnerability scan..."
 	mvn org.owasp:dependency-check-maven:check

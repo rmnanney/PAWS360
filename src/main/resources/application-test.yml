@@ -1,0 +1,55 @@
+spring:
+  datasource:
+    # For tests always use an in-memory H2 DB to avoid reliance on local Postgres
+    # and to ensure CI runs are hermetic. Remove env-based override for test profile.
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
+    username: ${DATABASE_USERNAME:sa}
+    password: ${DATABASE_PASSWORD:}
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+    # Use H2 as the test database provider. This helps ensure tests don't try to
+    # connect to an external Postgres DB when running in CI or locally.
+    database: h2
+  redis:
+    url: ${REDIS_URL:redis://localhost:6380}
+    password: ${REDIS_PASSWORD:test_redis_password}
+  application:
+    name: PAWS360
+
+server:
+  port: 9999
+
+# Management endpoints for test environment
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+  info:
+    git:
+      enabled: false
+# Disable git info lookup in test profile (prevents calling /usr/bin/git during tests in CI)
+
+logging:
+  level:
+    org.springframework: INFO
+    com.uwm.paws360: DEBUG

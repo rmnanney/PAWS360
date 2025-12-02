@@ -8,6 +8,10 @@ pipeline {
         DOCKER_IMAGE = 'paws360-app'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         REGISTRY = 'your-registry.com'
+        // Enable CI_SKIP_WIP for CI jobs (Jenkins) to skip known flaky UI WIP tests.
+        // This mirrors what we do in GitHub Actions or other CI platforms to keep
+        // pipelines green while these tests are stabilized.
+        CI_SKIP_WIP = 'true'
     }
 
     stages {

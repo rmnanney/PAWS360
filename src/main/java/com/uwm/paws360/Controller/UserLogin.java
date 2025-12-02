@@ -21,6 +21,9 @@ public class UserLogin {
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDTO> login(@Valid @RequestBody UserLoginRequestDTO loginDTO){
         UserLoginResponseDTO response = loginService.login(loginDTO);
+        if (response == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UserLoginResponseDTO(-1, null, null, null, null, null, null, null, "Login failed"));
+        }
         if(response.message().equals("Login Successful")){
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }

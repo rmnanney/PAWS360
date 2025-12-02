@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Critical Configuration Parameters",
+  "description": "Critical configuration parameters that must match between local, staging, and production environments",
+  "version": "1.0.0",
+  "parameters": {
+    "postgresql": {
+      "version": {
+        "description": "PostgreSQL major version",
+        "severity": "critical",
+        "local": "15",
+        "staging": "15",
+        "production": "15"
+      },
+      "max_connections": {
+        "description": "Maximum number of PostgreSQL connections",
+        "severity": "warning",
+        "local": "100",
+        "staging": "200",
+        "production": "500"
+      },
+      "shared_buffers": {
+        "description": "PostgreSQL shared buffer size",
+        "severity": "info",
+        "local": "128MB",
+        "staging": "1GB",
+        "production": "4GB"
+      }
+    },
+    "patroni": {
+      "ttl": {
+        "description": "Patroni TTL for leader lease",
+        "severity": "critical",
+        "local": "30",
+        "staging": "30",
+        "production": "30"
+      },
+      "loop_wait": {
+        "description": "Patroni loop wait interval",
+        "severity": "warning",
+        "local": "10",
+        "staging": "10",
+        "production": "10"
+      },
+      "retry_timeout": {
+        "description": "Patroni retry timeout",
+        "severity": "warning",
+        "local": "10",
+        "staging": "10",
+        "production": "10"
+      },
+      "maximum_lag_on_failover": {
+        "description": "Maximum replication lag bytes for failover eligibility",
+        "severity": "critical",
+        "local": "1048576",
+        "staging": "1048576",
+        "production": "1048576"
+      }
+    },
+    "etcd": {
+      "cluster_size": {
+        "description": "Number of etcd cluster members",
+        "severity": "critical",
+        "local": "3",
+        "staging": "3",
+        "production": "5"
+      },
+      "heartbeat_interval": {
+        "description": "etcd heartbeat interval in milliseconds",
+        "severity": "warning",
+        "local": "100",
+        "staging": "100",
+        "production": "100"
+      },
+      "election_timeout": {
+        "description": "etcd election timeout in milliseconds",
+        "severity": "warning",
+        "local": "1000",
+        "staging": "1000",
+        "production": "1000"
+      }
+    },
+    "redis": {
+      "version": {
+        "description": "Redis major version",
+        "severity": "critical",
+        "local": "7",
+        "staging": "7",
+        "production": "7"
+      },
+      "sentinel_quorum": {
+        "description": "Redis Sentinel quorum for master failover",
+        "severity": "critical",
+        "local": "2",
+        "staging": "2",
+        "production": "3"
+      },
+      "sentinel_down_after_milliseconds": {
+        "description": "Time before Sentinel considers master down",
+        "severity": "warning",
+        "local": "5000",
+        "staging": "5000",
+        "production": "5000"
+      },
+      "maxmemory_policy": {
+        "description": "Redis eviction policy when max memory reached",
+        "severity": "warning",
+        "local": "allkeys-lru",
+        "staging": "allkeys-lru",
+        "production": "allkeys-lru"
+      }
+    },
+    "application": {
+      "backend_port": {
+        "description": "Backend application port",
+        "severity": "info",
+        "local": "8080",
+        "staging": "8080",
+        "production": "8080"
+      },
+      "frontend_port": {
+        "description": "Frontend application port",
+        "severity": "info",
+        "local": "3000",
+        "staging": "3000",
+        "production": "3000"
+      }
+    }
+  },
+  "metadata": {
+    "last_updated": "2025-11-27",
+    "maintainer": "PAWS360 Infrastructure Team",
+    "validation_frequency": "Before each deployment"
+  }
+}

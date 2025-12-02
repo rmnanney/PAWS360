@@ -39,68 +39,42 @@
 		--chart-4: 43 74% 66%;
 		--chart-5: 27 87% 67%;
 		--radius: 0.5rem;
-		--sidebar-background: 0 0% 98%;
-		--sidebar-foreground: 240 5.3% 26.1%;
-		--sidebar-primary: 45 100% 50%;
-		--sidebar-primary-foreground: 0 0% 0%;
-		--sidebar-accent: 240 4.8% 95.9%;
-		--sidebar-accent-foreground: 240 5.9% 10%;
-		--sidebar-border: 220 13% 91%;
-		--sidebar-ring: 45 100% 50%;
 	}
 
 	.dark {
-		--background: 0 0% 10%;
-		/* Dark Gray */
-		--foreground: 0 0% 95%;
-		/* Off White */
-		--card: 0 0% 14%;
-		/* Slightly lighter dark */
-		--card-foreground: 0 0% 95%;
-		/* Off White */
-		--popover: 0 0% 12%;
-		/* Dark popover */
-		--popover-foreground: 0 0% 95%;
-		/* Off White */
+		--background: 0 0% 100%;
+		/* White */
+		--foreground: 0 0% 0%;
+		/* Panther Black */
+		--card: 0 0% 100%;
+		/* White */
+		--card-foreground: 0 0% 0%;
+		/* Panther Black */
+		--popover: 0 0% 100%;
+		/* White */
+		--popover-foreground: 0 0% 0%;
+		/* Panther Black */
 		--primary: 45 100% 50%;
-		/* UWM Gold (keep bright) */
-		--primary-foreground: 0 0% 10%;
-		/* Dark text on gold */
-		--secondary: 240 3.7% 20%;
-		/* Dark secondary */
-		--secondary-foreground: 0 0% 95%;
-		/* Light text */
-		--muted: 240 3.7% 18%;
-		/* Muted dark */
-		--muted-foreground: 240 5% 64.9%;
-		/* Muted light text */
-		--accent: 240 3.7% 20%;
-		/* Dark accent */
-		--accent-foreground: 0 0% 95%;
-		/* Light text */
-		--destructive: 0 62.8% 50.6%;
-		/* Slightly darker red */
+		/* UWM Gold */
+		--primary-foreground: 0 0% 0%;
+		/* Panther Black */
+		--secondary: 240 4.8% 95.9%;
+		--secondary-foreground: 240 5.9% 10%;
+		--muted: 240 4.8% 95.9%;
+		--muted-foreground: 240 3.8% 46.1%;
+		--accent: 240 4.8% 95.9%;
+		--accent-foreground: 240 5.9% 10%;
+		--destructive: 0 84.2% 60.2%;
 		--destructive-foreground: 0 0% 98%;
-		/* White text */
-		--border: 240 3.7% 25%;
-		/* Dark border */
-		--input: 240 3.7% 20%;
-		/* Dark input */
+		--border: 240 5.9% 90%;
+		--input: 240 5.9% 90%;
 		--ring: 45 100% 50%;
-		/* UWM Gold ring */
-		--chart-1: 220 70% 60%;
-		--chart-2: 160 60% 55%;
-		--chart-3: 30 80% 65%;
-		--chart-4: 280 65% 70%;
-		--chart-5: 340 75% 65%;
-		--sidebar-background: 0 0% 12%;
-		--sidebar-foreground: 240 4.8% 95.9%;
-		--sidebar-primary: 45 100% 50%;
-		--sidebar-primary-foreground: 0 0% 10%;
-		--sidebar-accent: 240 3.7% 20%;
-		--sidebar-accent-foreground: 240 4.8% 95.9%;
-		--sidebar-border: 240 3.7% 25%;
-		--sidebar-ring: 45 100% 50%;
+		/* UWM Gold */
+		--chart-1: 220 70% 50%;
+		--chart-2: 160 60% 45%;
+		--chart-3: 30 80% 55%;
+		--chart-4: 280 65% 60%;
+		--chart-5: 340 75% 55%;
 	}
 }
 
@@ -109,20 +83,18 @@
 		@apply border-border;
 	}
 
+	/* Force scrollbar to always show to prevent layout shift */
+	html {
+		overflow-y: scroll !important;
+		width: calc(100vw);
+	}
+
 	body {
 		@apply bg-background text-foreground;
-	}
-
-	input, textarea, select {
-		color: hsl(var(--foreground));
-	}
-
-	input::placeholder, textarea::placeholder {
-		color: hsl(var(--muted-foreground));
-	}
-
-	/* Force scrollbar to always show to prevent layout shift for Collapsibles*/
-	html {
-		overflow-y: scroll;
+		/* Force body to always be taller than viewport to ensure scrollbar */
+		min-height: calc(100vh);
+		overflow-x: hidden;
+		width: 100%;
+		position: relative;
 	}
 }

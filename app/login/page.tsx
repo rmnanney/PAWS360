@@ -3,6 +3,8 @@ import React from "react";
 import { PlaceHolderImages } from "../lib/placeholder-img";
 import Logo from "@/components/Others/logo";
 import LoginForm from "@/components/LoginForm/login";
+import useAuth from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 import {
     Card,
@@ -16,6 +18,10 @@ import s from "./styles.module.css";
 export default function Login() {
 	const bgImage = PlaceHolderImages.find((img) => img.id === "uwm-building");
 	const { toast } = require("@/hooks/useToast");
+	const { authChecked, isAuthenticated } = useAuth();
+	const router = useRouter();
+
+	// Handle toast notification for unauthenticated access
 	React.useEffect(() => {
 		if (typeof window !== "undefined") {
 			if (localStorage.getItem("showAuthToast") === "true") {
@@ -28,6 +34,29 @@ export default function Login() {
 			}
 		}
 	}, [toast]);
+
+	// Redirect authenticated users to homepage
+	React.useEffect(() => {
+		if (authChecked && isAuthenticated) {
+			router.push("/homepage");
+		}
+	}, [authChecked, isAuthenticated, router]);
+
+	// Show loading state while checking authentication
+	if (!authChecked) {
+		return (
+			<main style={{ position: "relative", minHeight: "100vh" }}>
+				<div className="flex items-center justify-center h-screen">
+					<div>Loading...</div>
+				</div>
+			</main>
+		);
+	}
+
+	// Don't render login form if user is authenticated (will redirect)
+	if (isAuthenticated) {
+		return null;
+	}
 
 	return (
 		<main style={{ position: "relative", minHeight: "100vh" }}>

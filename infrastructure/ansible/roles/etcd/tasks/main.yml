@@ -1,0 +1,231 @@
+---
+- name: Create etcd user
+  user:
+    name: etcd
+    system: yes
+    create_home: no
+
+- name: Ensure etcd directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: etcd
+    group: etcd
+    mode: '0750'
+  loop:
+    - "{{ etcd_data_dir }}"
+    - "/etc/etcd"
+
+- block:
+    - name: Ensure cert dir exists on host
+      file:
+        path: "{{ etcd_tls_cert_dir }}"
+        state: directory
+        owner: etcd
+        group: etcd
+        mode: '0750'
+  when: etcd_tls_enable
+
+- block:
+    - name: Generate CA + host certificates on controller for etcd (run once)
+      delegate_to: localhost
+      run_once: true
+      vars:
+        cert_tmp: "/tmp/etcd-certs"
+      block:
+        - name: Ensure certificate temp dir on controller
+          file:
+            path: "{{ cert_tmp }}"
+            state: directory
+            mode: '0700'
+
+        - name: Create CA private key (controller) using openssl if missing
+          shell: |
+            set -euo pipefail
+            if [ ! -f "{{ cert_tmp }}/ca.key" ]; then
+              openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out "{{ cert_tmp }}/ca.key"
+            fi
+          args:
+            creates: "{{ cert_tmp }}/ca.key"
+
+        - name: Create CA certificate (controller) using openssl if missing
+          shell: |
+            set -euo pipefail
+            if [ ! -f "{{ cert_tmp }}/ca.crt" ]; then
+              openssl req -x509 -new -nodes -key "{{ cert_tmp }}/ca.key" -sha256 -days 3650 -subj "/CN=etcd-root-ca" -out "{{ cert_tmp }}/ca.crt"
+            fi
+          args:
+            creates: "{{ cert_tmp }}/ca.crt"
+
+        - name: Generate private key for each etcd host (controller) using openssl if missing
+          loop: "{{ groups['etcd'] | default([]) }}"
+          loop_control:
+            loop_var: etcd_host
+          shell: |
+            set -euo pipefail
+            HOST="{{ etcd_host }}"
+            if [ ! -f "{{ cert_tmp }}/$HOST.key" ]; then
+              openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "{{ cert_tmp }}/$HOST.key"
+            fi
+          args:
+            creates: "{{ cert_tmp }}/{{ etcd_host }}.key"
+
+        - name: Create CSR config file for each etcd host (controller)
+          loop: "{{ groups['etcd'] | default([]) }}"
+          loop_control:
+            loop_var: etcd_host
+          copy:
+            dest: "{{ cert_tmp }}/{{ etcd_host }}.cnf"
+            content: |
+              [req]
+              distinguished_name = req_distinguished_name
+              req_extensions = v3_req
+              prompt = no
+
+              [req_distinguished_name]
+              CN = {{ etcd_host }}
+
+              [v3_req]
+              subjectAltName = @alt_names
+
+              [alt_names]
+              DNS.1 = {{ etcd_host }}
+              IP.1 = {{ hostvars[etcd_host].ansible_host | default('127.0.0.1') }}
+            owner: root
+            mode: '0600'
+            force: no
+
+        - name: Generate CSR for each etcd host (controller)
+          loop: "{{ groups['etcd'] | default([]) }}"
+          loop_control:
+            loop_var: etcd_host
+          shell: |
+            set -euo pipefail
+            HOST="{{ etcd_host }}"
+            if [ ! -f "{{ cert_tmp }}/$HOST.csr" ]; then
+              openssl req -new -key "{{ cert_tmp }}/$HOST.key" -out "{{ cert_tmp }}/$HOST.csr" -config "{{ cert_tmp }}/$HOST.cnf"
+            fi
+          args:
+            creates: "{{ cert_tmp }}/{{ etcd_host }}.csr"
+
+        - name: Sign host CSRs with CA (controller) using openssl if missing
+          loop: "{{ groups['etcd'] | default([]) }}"
+          loop_control:
+            loop_var: etcd_host
+          shell: |
+            set -euo pipefail
+            HOST="{{ etcd_host }}"
+            if [ ! -f "{{ cert_tmp }}/$HOST.crt" ]; then
+              openssl x509 -req -in "{{ cert_tmp }}/$HOST.csr" -CA "{{ cert_tmp }}/ca.crt" -CAkey "{{ cert_tmp }}/ca.key" -CAcreateserial -out "{{ cert_tmp }}/$HOST.crt" -days 3650 -sha256 -extensions v3_req -extfile "{{ cert_tmp }}/$HOST.cnf"
+            fi
+          args:
+            creates: "{{ cert_tmp }}/{{ etcd_host }}.crt"
+  when: etcd_tls_enable
+
+- block:
+    - name: Copy CA cert to hosts
+      copy:
+        src: "/tmp/etcd-certs/ca.crt"
+        dest: "{{ etcd_tls_cert_dir }}/ca.crt"
+        owner: etcd
+        group: etcd
+        mode: '0644'
+
+    - name: Copy host certs to each host
+      copy:
+        src: "/tmp/etcd-certs/{{ inventory_hostname }}.crt"
+        dest: "{{ etcd_tls_cert_dir }}/{{ inventory_hostname }}.crt"
+        owner: etcd
+        group: etcd
+        mode: '0640'
+
+    - name: Copy host keys to each host
+      copy:
+        src: "/tmp/etcd-certs/{{ inventory_hostname }}.key"
+        dest: "{{ etcd_tls_cert_dir }}/{{ inventory_hostname }}.key"
+        owner: etcd
+        group: etcd
+        mode: '0600'
+  when: etcd_tls_enable
+
+- name: Download etcd release
+  get_url:
+    url: "https://github.com/etcd-io/etcd/releases/download/v{{ etcd_version }}/etcd-v{{ etcd_version }}-linux-amd64.tar.gz"
+    dest: "/tmp/etcd-{{ etcd_version }}.tar.gz"
+    mode: '0644'
+  register: etcd_download
+  until: etcd_download is succeeded
+  retries: 3
+  delay: 10
+
+- name: Extract etcd binary
+  unarchive:
+    src: "/tmp/etcd-{{ etcd_version }}.tar.gz"
+    dest: /tmp
+    remote_src: yes
+
+- name: Install etcd binaries
+  copy:
+    remote_src: yes
+    src: "/tmp/etcd-v{{ etcd_version }}-linux-amd64/etcd"
+    dest: "{{ etcd_install_dir }}/etcd"
+    mode: '0755'
+
+- name: Install etcdctl binary
+  copy:
+    remote_src: yes
+    src: "/tmp/etcd-v{{ etcd_version }}-linux-amd64/etcdctl"
+    dest: "{{ etcd_install_dir }}/etcdctl"
+    mode: '0755'
+
+- name: Write environment / arguments for etcd
+  template:
+    src: etcd.env.j2
+    dest: /etc/etcd/etcd.env
+    owner: etcd
+    group: etcd
+    mode: '0640'
+  notify:
+    - restart etcd
+
+- name: Write systemd service for etcd
+  template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - reload systemd
+    - restart etcd
+
+
+- block:
+    - name: Ensure etcd authentication is enabled and root user exists (run once)
+      when: etcd_auth_enable
+      delegate_to: "{{ groups['etcd'][0] }}"
+      run_once: true
+      block:
+        - name: Build TLS flags for etcdctl
+          set_fact:
+            etcdctl_tls_flags: >-
+              {% if etcd_tls_enable %}
+                --cacert={{ etcd_tls_cert_dir }}/ca.crt --cert={{ etcd_tls_cert_dir }}/{{ groups['etcd'][0] }}.crt --key={{ etcd_tls_cert_dir }}/{{ groups['etcd'][0] }}.key
+              {% else %}
+                
+              {% endif %}
+
+        - name: Check current etcd auth status
+          shell: "ETCDCTL_API=3 {{ etcd_install_dir }}/etcdctl --endpoints=localhost:2379 {{ etcdctl_tls_flags }} auth status || true"
+          register: etcd_auth_status
+
+        - name: Enable root user and auth when disabled
+          shell: |
+            set -euo pipefail
+            ETCDCTL_API=3 {{ etcd_install_dir }}/etcdctl --endpoints=localhost:2379 {{ etcdctl_tls_flags }} user add {{ etcd_root_user }}:{{ etcd_root_password }} || true
+            {{ etcd_install_dir }}/etcdctl --endpoints=localhost:2379 {{ etcdctl_tls_flags }} role add root || true
+            {{ etcd_install_dir }}/etcdctl --endpoints=localhost:2379 {{ etcdctl_tls_flags }} user grant-role {{ etcd_root_user }} root || true
+            {{ etcd_install_dir }}/etcdctl --endpoints=localhost:2379 {{ etcdctl_tls_flags }} auth enable || true
+          when: etcd_auth_status.stdout is search('disabled') or etcd_auth_status.stdout == ''
+
+  when: etcd_auth_enable

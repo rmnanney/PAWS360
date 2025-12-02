@@ -3,7 +3,6 @@
 import SearchBar from "../SearchBar/searchbar";
 import { SidebarTrigger } from "../SideBar/Base/sidebarbase";
 import { Button } from "../Others/button";
-import { ThemeToggle } from "../ThemeToggle/theme-toggle";
 import { useState } from "react";
 import {
 	GraduationCap,
@@ -105,12 +104,9 @@ export function Header() {
 					</div>
 				</div>
 
-				<div className="flex items-center gap-3">
-					<ThemeToggle />
-					<a href="/homepage">
-						<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
-					</a>
-				</div>
+				<a href="/homepage">
+					<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
+				</a>
 			</div>
 
 			{/* Mobile Search Dropdown */}

@@ -1,14 +1,14 @@
 // Mock all lucide-react icons
+const React = require('react');
+
 const createMockIcon = (name) => {
   const MockIcon = (props) => {
-    return {
-      type: 'svg',
-      props: {
-        'data-testid': `${name}-icon`,
-        className: props.className,
-        onClick: props.onClick,
-      },
-    };
+    return React.createElement('svg', {
+      'data-testid': `${name}-icon`,
+      className: props.className,
+      onClick: props.onClick,
+      ...props
+    });
   };
   MockIcon.displayName = name;
   return MockIcon;

@@ -19,6 +19,8 @@ import {
 } from "../Others/form";
 import { Input } from "../Others/input";
 import { useToast } from "../../hooks/useToast";
+import { useAuthMonitoring } from "../../hooks/useMonitoring";
+import useAuth from "../../hooks/useAuth";
 import s from "./styles.module.css";
 
 const formSchema = z.object({
@@ -35,6 +37,8 @@ export default function LoginForm() {
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
 	const { toast } = useToast();
+	const { monitorLogin, recordAuthEvent, setUserId } = useAuthMonitoring();
+	const { refreshAuth } = useAuth();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -46,52 +50,78 @@ export default function LoginForm() {
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		setIsLoading(true);
-		// Simulate API call
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		try {
-			const res = await fetch("http://localhost:8080/login", {
+		
+		// Wrap login with monitoring
+	const result = await monitorLogin(async () => {
+		// Use relative path so Next.js rewrites proxy to backend and cookies are first-party
+		const res = await fetch(`/auth/login`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
+					"X-Service-Origin": "student-portal",
 				},
 				body: JSON.stringify(values),
+				credentials: "include",
 			});
 
-    const data = await res.json();
+			const data = await res.json();
 
-            if (res.ok && data.message === "Login Successful") {
-                localStorage.setItem("authToken", data.session_token);
-                // Persist minimal user info used by pages (e.g., academics)
-                if (data.email) localStorage.setItem("userEmail", data.email);
-                if (data.firstname) localStorage.setItem("userFirstName", data.firstname);
+			if (res.ok && data.message === "Login Successful") {
+				// SSO authentication successful - session cookie is automatically set
+				// Store minimal user info for UI purposes only (not for authentication)
+				if (data.email) sessionStorage.setItem("userEmail", data.email);
+				if (data.firstname) sessionStorage.setItem("userFirstName", data.firstname);
+				if (data.role) sessionStorage.setItem("userRole", data.role);
 
-                toast({
-                    title: "Login Successful",
-                    description: `Welcome ${data.firstname}! Redirecting...`,
-                    duration: 1500,
-                });
+				// Set user ID for monitoring
+				setUserId(data.email);
 
-				setTimeout(() => {
-					router.push("/homepage");
-				}, 1500);
+				toast({
+					title: "Login Successful",
+					description: `Welcome ${data.firstname}! SSO session established.`,
+					duration: 1500,
+				});
+
+				// Refresh auth state to ensure useAuth hook recognizes the new session
+				await refreshAuth();
+
+				// Navigate to homepage
+				router.push("/homepage");
+
+				return { success: true, data };
+			} else if (res.status === 423) {
+				// Account locked
+				toast({
+					variant: "destructive",
+					title: "Account Locked",
+					description: data.message || "Your account has been temporarily locked due to too many failed attempts.",
+				});
+				form.reset({ ...values, password: "" });
+				return { success: false, error: "account_locked", data };
 			} else {
 				toast({
 					variant: "destructive",
 					title: "Login Failed",
-					description:
-						data.message || "Sorry, something went wrong. Please try again.",
+					description: data.message || "Sorry, something went wrong. Please try again.",
 				});
 				form.reset({ ...values, password: "" });
+				return { success: false, error: "invalid_credentials", data };
 			}
-		} catch (error) {
-			toast({
-				variant: "destructive",
-				title: "Error",
-				description: "Unable to connect to the server. Try again later.",
-			});
-		} finally {
-			setIsLoading(false);
+		}, values.email);
+
+		// Handle monitoring result
+		if (!result.success) {
+			if (result.error === "network_error") {
+				// Align wording with E2E expectations
+				toast({
+					variant: "destructive",
+					title: "Service unavailable",
+					description: "Unable to connect to the server. Try again later.",
+				});
+			}
 		}
+
+		setIsLoading(false);
 	}
 
 	return (

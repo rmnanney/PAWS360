@@ -2,7 +2,44 @@
 
 This README section contains the minimal, copy/paste steps to get PAWS360 running locally with the Student Frontend included.
 
-## Quick start — 3 commands
+## 🚀 Quick Start (Automated)
+
+**New!** Use the automated quickstart script for a complete HA environment setup:
+
+```bash
+# One-command setup with full validation
+./docs/quickstart.sh
+```
+
+The script will:
+- ✓ Validate prerequisites (Docker, memory, ports)
+- ✓ Pull all required images
+- ✓ Start the full HA stack (PostgreSQL cluster, Redis Sentinel, etc.)
+- ✓ Run health checks
+- ✓ Display access URLs
+
+**Options:**
+```bash
+./docs/quickstart.sh --lite      # Minimal setup (single PostgreSQL, no HA)
+./docs/quickstart.sh --skip-pull # Skip image pulling (faster if cached)
+./docs/quickstart.sh --clean     # Fresh start, remove existing volumes
+./docs/quickstart.sh --help      # Show all options
+```
+
+**Access URLs (after setup):**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080
+- Health Check: http://localhost:8080/actuator/health
+
+📚 **Documentation:**
+- [Developer Onboarding Checklist](docs/local-development/onboarding-checklist.md)
+- [Makefile Target Reference](docs/reference/makefile-targets.md)
+- [HA Architecture Guide](docs/architecture/ha-stack.md)
+- [CI/CD Dashboard (monitoring)](monitoring/ci-cd-dashboard/README.md) → Live CI/CD metrics and historical trends (published to GitHub Pages when enabled)
+
+---
+
+## Quick start — 3 commands (Legacy)
 
 1) Prepare the environment (Ansible helper)
 
@@ -66,6 +103,8 @@ psql -h localhost -p 5432 -U paws360 -d paws360_dev -c "SELECT 1;" || echo "Data
 - **First-time Setup**: You may need to install `docker-compose-plugin` for modern Docker Compose support: `sudo apt install docker-compose-plugin`
 - If you see a Docker permission/daemon error, run `docker info` and ensure your user can access the Docker daemon or use `sudo`.
 
+NOTE: The repository's SSO end-to-end test artifacts (Playwright) have been retired due to maintenance and CI flakiness. See `docs/SSO-RETIREMENT.md` for details on how these tests were handled and how to temporarily re-enable them if necessary.
+
 ## Postman collection
 - Import `PAWS360_Admin_API.postman_collection.json` from the repo root to exercise APIs. Set `base_url` to `http://localhost:8080` (or the service port you want to target).
 
@@ -98,6 +137,7 @@ PAWS360/
 | **🚀 Start Everything** | `./scripts/setup/paws360-services.sh start` | Launch all services |
 | **🧪 Run All Tests** | `./scripts/testing/exhaustive-test-suite.sh` | Validate everything works |
 | **🔧 Setup Local Dev** | `cd infrastructure/ansible && ./dev-helper.sh deploy-local-dev` | Complete environment setup |
+| **✍️ Enforce commit message format** | `git config --local commit.template .gitmessage && make setup-hooks` | Use the commit template and install repo hooks (commit-msg enforces JIRA key) |
 | **📊 Test APIs** | Import `PAWS360_Admin_API.postman_collection.json` | Test all endpoints |
 | **🗄️ Database Access** | Check `database/` folder | SQL scripts & docs |
 | **🎓 Run Student Frontend** | `cd frontend && npm run dev` | Next.js student app (port 9002) |
@@ -187,6 +227,7 @@ PAWS360/
 ### **👥 Team Help:**
 - **Slack/Teams** → Ask questions
 - **Code Reviews** → Get feedback on changes
+ - **Commit message policy** → Use `.gitmessage` as the template and run `make setup-hooks` to install the `commit-msg` hook which enforces a JIRA key (e.g., SCRUM-84) in the commit message.
 - **Mentor** → Find someone to pair with
 
 ---

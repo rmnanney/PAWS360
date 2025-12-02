@@ -9,21 +9,21 @@
 -- Super Admin
 INSERT INTO paws360.users (username, email, password_hash, role, is_active, ferpa_consent_given)
 VALUES
-('admin', 'admin@paws360.uwm.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu', 'super_admin', true, true);
+('admin', 'admin@paws360.uwm.edu', '$2b$12$aSb5KDjeHRz/nEc7Wg6yBeMKzrFybT7wU3CV7FGePrajKCa6Uu87i', 'super_admin', true, true);
 
 -- Administrators
 INSERT INTO paws360.users (username, email, password_hash, role, is_active, ferpa_consent_given)
 VALUES
-('registrar', 'registrar@uwm.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu', 'admin', true, true),
-('admissions', 'admissions@uwm.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu', 'admin', true, true),
-('financial_aid', 'finaid@uwm.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu', 'admin', true, true);
+('registrar', 'registrar@uwm.edu', '$2b$12$aSb5KDjeHRz/nEc7Wg6yBeMKzrFybT7wU3CV7FGePrajKCa6Uu87i', 'admin', true, true),
+('admissions', 'admissions@uwm.edu', '$2b$12$aSb5KDjeHRz/nEc7Wg6yBeMKzrFybT7wU3CV7FGePrajKCa6Uu87i', 'admin', true, true),
+('financial_aid', 'finaid@uwm.edu', '$2b$12$aSb5KDjeHRz/nEc7Wg6yBeMKzrFybT7wU3CV7FGePrajKCa6Uu87i', 'admin', true, true);
 
 -- Faculty (sample of 50 faculty members)
 INSERT INTO paws360.users (username, email, password_hash, role, is_active, ferpa_consent_given)
 SELECT
     'faculty_' || i,
     'faculty' || i || '@uwm.edu',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu',
+    '$2b$12$aSb5KDjeHRz/nEc7Wg6yBeMKzrFybT7wU3CV7FGePrajKCa6Uu87i',
     'faculty',
     true,
     true
@@ -32,9 +32,9 @@ FROM generate_series(1, 50) AS i;
 -- Staff
 INSERT INTO paws360.users (username, email, password_hash, role, is_active, ferpa_consent_given)
 VALUES
-('advisor1', 'advisor1@uwm.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu', 'staff', true, true),
-('advisor2', 'advisor2@uwm.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu', 'staff', true, true),
-('tutor_center', 'tutoring@uwm.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu', 'staff', true, true);
+('advisor1', 'advisor1@uwm.edu', '$2b$12$aSb5KDjeHRz/nEc7Wg6yBeMKzrFybT7wU3CV7FGePrajKCa6Uu87i', 'staff', true, true),
+('advisor2', 'advisor2@uwm.edu', '$2b$12$aSb5KDjeHRz/nEc7Wg6yBeMKzrFybT7wU3CV7FGePrajKCa6Uu87i', 'staff', true, true),
+('tutor_center', 'tutoring@uwm.edu', '$2b$12$aSb5KDjeHRz/nEc7Wg6yBeMKzrFybT7wU3CV7FGePrajKCa6Uu87i', 'staff', true, true);
 
 -- =========================================
 -- STUDENTS (25,000 realistic students)
@@ -45,7 +45,7 @@ INSERT INTO paws360.users (username, email, password_hash, role, is_active, ferp
 SELECT
     'student_' || LPAD(i::TEXT, 7, '0'),
     'student' || i || '@uwm.edu',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj8ZJcKvqXu',
+    '$2b$12$aSb5KDjeHRz/nEc7Wg6yBeMKzrFybT7wU3CV7FGePrajKCa6Uu87i',
     'student',
     true,
     CASE WHEN random() < 0.95 THEN true ELSE false END

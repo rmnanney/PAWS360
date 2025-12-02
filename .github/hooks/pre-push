@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Pre-push hook: run local quick checks before allowing push
+set -euo pipefail
+
+./scripts/local-ci/pre-push-checks.sh || {
+  echo "Pre-push checks failed — aborting push"
+  exit 1
+}
+
+exit 0

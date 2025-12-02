@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # Use H2 for unit/integration tests to avoid dependence on local Postgres
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+    
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+    # Use a test-only SQL seed file to avoid running production Postgres-specific SQL
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:test-data.sql
+    
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+
+  web:
+    cors:
+      allowed-origins: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
+      allowed-methods: "*"
+      allowed-headers: "*"
+      allow-credentials: true
+
+logging:
+  level:
+    com.uwm.paws360: INFO
+    org.springframework.security: WARN
+    org.hibernate: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  info:
+    git:
+      enabled: false
+# Prevent tests from invoking system git (common in CI where git isn't available or repository is shallow)
