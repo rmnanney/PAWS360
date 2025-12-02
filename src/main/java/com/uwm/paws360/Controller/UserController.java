@@ -47,7 +47,7 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> editUser(@Valid @RequestBody EditUserRequestDTO userDTO) {
         UserResponseDTO response = userService.editUser(userDTO);
         if (response == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of()));
         }
         if (response.user_id() == -1) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
