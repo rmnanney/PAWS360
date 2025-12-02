@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   // export (out/) when desired. This mirrors older `next export` functionality.
   // Configure carefully — when you enable this the app should be fully static
   // compatible (no runtime server-only features on exported pages).
-  output: 'export',
+  // output: 'export', // DISABLED - breaks rewrites needed for authentication
   /* config options here */
   
   // Hot Module Replacement (HMR) configuration for rapid development

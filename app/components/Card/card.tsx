@@ -98,6 +98,7 @@ export function HomepageCard({
 
 export function ScheduleCard() {
     const [weeklySchedule, setWeeklySchedule] = React.useState<Record<string, Array<{ time: string; course: string; title: string; room: string }>>>({});
+    const [loading, setLoading] = React.useState(true);
     const { toast } = require("@/hooks/useToast");
     const { API_BASE } = require("@/lib/api");
 
