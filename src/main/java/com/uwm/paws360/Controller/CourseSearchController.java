@@ -85,6 +85,40 @@ public class CourseSearchController {
         return jdbcTemplate.queryForList(sql, studentId, dayName);
     }
 
+    @GetMapping("/student/{studentId}/weekly-schedule")
+    public List<Map<String, Object>> getWeeklySchedule(@PathVariable Integer studentId) {
+        String sql = 
+            "SELECT " +
+            "  c.course_code, " +
+            "  c.title, " +
+            "  cs.start_time, " +
+            "  cs.end_time, " +
+            "  csmd.meeting_day, " +
+            "  COALESCE(b.code || ' ' || cr.room_number, 'TBD') as room " +
+            "FROM course_enrollments ce " +
+            "JOIN course_sections cs ON ce.lecture_section_id = cs.section_id " +
+            "JOIN courses c ON cs.course_id = c.course_id " +
+            "LEFT JOIN course_section_meeting_days csmd ON cs.section_id = csmd.section_id " +
+            "LEFT JOIN buildings b ON cs.building_id = b.building_id " +
+            "LEFT JOIN classrooms cr ON cs.classroom_id = cr.classroom_id " +
+            "WHERE ce.student_id = ? " +
+            "  AND ce.status = 'ENROLLED' " +
+            "ORDER BY " +
+            "  CASE csmd.meeting_day " +
+            "    WHEN 'MONDAY' THEN 1 " +
+            "    WHEN 'TUESDAY' THEN 2 " +
+            "    WHEN 'WEDNESDAY' THEN 3 " +
+            "    WHEN 'THURSDAY' THEN 4 " +
+            "    WHEN 'FRIDAY' THEN 5 " +
+            "    WHEN 'SATURDAY' THEN 6 " +
+            "    WHEN 'SUNDAY' THEN 7 " +
+            "    ELSE 8 " +
+            "  END, " +
+            "  cs.start_time";
+        
+        return jdbcTemplate.queryForList(sql, studentId);
+    }
+
     @GetMapping("/student/{studentId}/all-enrolled")
     public List<Map<String, Object>> getAllEnrolled(@PathVariable Integer studentId) {
         String sql = 
