@@ -15,7 +15,7 @@ on:
 
 jobs:
   run-selected:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     env:
       ACTIONS_STEP_DEBUG: ${{ inputs.stepDebug }}
       DEBUG: "1"

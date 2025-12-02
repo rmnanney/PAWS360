@@ -14,7 +14,7 @@ on:
 jobs:
   daily-artifact-report:
     name: Daily artifact report
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     permissions:
       actions: write
       contents: read

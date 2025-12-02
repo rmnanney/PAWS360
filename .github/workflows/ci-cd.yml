@@ -20,7 +20,7 @@ on:
 jobs:
   bypass-audit:
     name: Bypass Audit (detect unrecorded bypasses)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     if: github.event_name == 'push'
     permissions:
       issues: write
@@ -56,7 +56,7 @@ jobs:
 
   changed-paths:
     name: Detect changed paths
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     outputs:
       has_backend: ${{ steps.detect.outputs.has_backend }}
       has_frontend: ${{ steps.detect.outputs.has_frontend }}
@@ -74,7 +74,7 @@ jobs:
 
   cleanup-artifacts:
     name: Prune artifacts (keep current + previous run)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     permissions:
       actions: write
       contents: read
@@ -97,7 +97,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     env:
       CI_SKIP_WIP: true
 
@@ -203,7 +203,7 @@ jobs:
 
   docker-build:
     name: Docker Build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -227,7 +227,7 @@ jobs:
 
   security-scan:
     name: Security Scan
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-security
       cancel-in-progress: true
@@ -257,7 +257,7 @@ jobs:
 
   ui-tests:
     name: UI Tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-ui
       cancel-in-progress: true
@@ -288,7 +288,7 @@ jobs:
       - docker-build
       - security-scan
       - ui-tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
 
     steps:
@@ -308,7 +308,7 @@ jobs:
       - docker-build
       - security-scan
       - ui-tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     steps:

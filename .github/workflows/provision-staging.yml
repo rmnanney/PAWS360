@@ -12,7 +12,7 @@ on:
 jobs:
   plan:
     name: Terraform Plan
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     steps:
       - uses: actions/checkout@v4
 
@@ -40,7 +40,7 @@ jobs:
   apply:
     name: Terraform Apply (gated)
     needs: plan
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     environment: staging
     if: ${{ github.event.inputs.auto_apply == 'true' }}
     steps:

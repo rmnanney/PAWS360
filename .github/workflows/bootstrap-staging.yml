@@ -7,7 +7,7 @@ on:
 jobs:
   bootstrap:
     name: Bootstrap staging (gated)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     environment: staging
     steps:
       - uses: actions/checkout@v4

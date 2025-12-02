@@ -19,7 +19,7 @@ env:
 jobs:
   cleanup-artifacts:
     name: Prune artifacts (keep current + previous run)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     permissions:
       actions: write
       contents: read
@@ -39,7 +39,7 @@ jobs:
 
   validate-environment:
     name: Validate Environment
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs: cleanup-artifacts
 
     steps:
@@ -68,7 +68,7 @@ jobs:
 
   test-infrastructure:
     name: Test Infrastructure
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs: validate-environment
 
     services:
@@ -191,7 +191,7 @@ jobs:
 
   security-scan:
     name: Security Image Scanning
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     needs: validate-environment
 
     steps:
