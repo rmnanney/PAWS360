@@ -15,21 +15,21 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @Configuration
 public class WebConfig {
 
-    @Value("${spring.web.cors.allowed-origins:http://localhost:9002}")
+    @Value("${spring.web.cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
 
     @Bean
-    public WebMvcConfigurer corsConfigurer(){
+    public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
-            public void addCorsMappings(CorsRegistry registry){
+            public void addCorsMappings(CorsRegistry registry) {
                 // Allowed origins configurable via application properties or environment
                 String[] origins = allowedOrigins.split(",");
 
                 registry.addMapping("/**")
-                    .allowedOrigins(origins)
-                    // Support origin patterns (wildcards/subdomains) alongside explicit origins
-                    .allowedOriginPatterns(origins)
+                        .allowedOrigins(origins)
+                        // Support origin patterns (wildcards/subdomains) alongside explicit origins
+                        .allowedOriginPatterns(origins)
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
@@ -42,7 +42,8 @@ public class WebConfig {
         };
     }
 
-    // Provide a CorsConfigurationSource bean used by Spring Security when http.cors() is enabled
+    // Provide a CorsConfigurationSource bean used by Spring Security when
+    // http.cors() is enabled
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
