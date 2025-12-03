@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React from "react";
+import { Spinner } from "../components/Others/spinner";
 import {
 	Card,
 	CardContent,
@@ -35,6 +36,14 @@ import {
     Phone,
 } from "lucide-react";
 const { API_BASE } = require("@/lib/api");
+import type {
+    Advisor as AdvisorDTOBackend,
+    Appointment as AppointmentDTOBackend,
+    AdvisingMessage as AdvisingMessageDTO,
+    DegreeRequirementsBreakdown,
+    RequirementItem,
+    AcademicSummary,
+} from "@/lib/types";
 
 type AdvisorDTO = {
     advisorId: number;
@@ -152,7 +161,7 @@ export default function AdvisingPage() {
                 ]);
 
                 if (summaryRes && summaryRes.ok) {
-                    const s = await summaryRes.json();
+                    const s: AcademicSummary = await summaryRes.json();
                     setDegreeProgress({
                         overallProgress: s.graduationProgress ?? 0,
                         totalCredits: 120, // fallback displayed denominator
@@ -163,7 +172,7 @@ export default function AdvisingPage() {
                 }
 
                 if (dirRes && dirRes.ok) {
-                    const list: AdvisorDTO[] = await dirRes.json();
+                    const list: AdvisorDTOBackend[] = await dirRes.json();
                     setAdvisorDirectory(list.map(a => ({ ...a })));
                 }
 
@@ -176,8 +185,8 @@ export default function AdvisingPage() {
                 // Load requirements breakdown
                 const reqRes = await fetch(`${API_BASE}/academics/student/${studentId}/requirements`).catch(() => null);
                 if (reqRes && reqRes.ok) {
-                    const body = await reqRes.json();
-                    const cats = (body.categories || []).map((c: any) => ({
+                    const body: DegreeRequirementsBreakdown = await reqRes.json();
+                    const cats = (body.categories || []).map((c) => ({
                         category: c.category,
                         required: Number(c.required || 0),
                         completed: Number(c.completed || 0),
@@ -190,13 +199,13 @@ export default function AdvisingPage() {
                 // Load requirement items table
                 const itemsRes = await fetch(`${API_BASE}/academics/student/${studentId}/requirements/items`).catch(() => null);
                 if (itemsRes && itemsRes.ok) {
-                    const list = await itemsRes.json();
+                    const list: RequirementItem[] = await itemsRes.json();
                     setRequirementItems(list || []);
                 }
 
                 // Build upcoming appointments list
                 if (apptRes && apptRes.ok) {
-                    const items: AppointmentDTO[] = await apptRes.json();
+                    const items: AppointmentDTOBackend[] = await apptRes.json();
                     const mapped = items.map(it => {
                         const d = new Date(it.scheduledAt);
                         const date = isNaN(d.getTime()) ? "" : d.toLocaleDateString();
@@ -219,8 +228,8 @@ export default function AdvisingPage() {
 
                 // Messages (grouped by advisor)
                 if (msgRes && msgRes.ok) {
-                    const list = await msgRes.json();
-                    const msgs: AdvisorMessage[] = (list || []).map((m: any) => ({
+                    const list: AdvisingMessageDTO[] = await msgRes.json();
+                    const msgs: AdvisorMessage[] = (list || []).map((m) => ({
                         id: m.id,
                         advisorId: m.advisorId,
                         advisorName: m.advisorName,
@@ -252,7 +261,9 @@ export default function AdvisingPage() {
     if (loading) {
         return (
             <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-                <p className="text-sm text-muted-foreground">Loading advising data...</p>
+                <div className="flex items-center justify-center text-sm text-muted-foreground" style={{ minHeight: 160 }}>
+                    <span className="inline-flex items-center gap-2"><Spinner size="sm" /> Loading advising data...</span>
+                </div>
             </div>
         );
     }
@@ -415,8 +426,8 @@ export default function AdvisingPage() {
             const studentId = sidData.student_id;
             const msgRes = await fetch(`${API_BASE}/advising/student/${studentId}/messages`);
             if (!msgRes.ok) throw new Error("Unable to load messages");
-            const list = await msgRes.json();
-            const msgs: AdvisorMessage[] = (list || []).map((m: any) => ({
+            const list: AdvisingMessageDTO[] = await msgRes.json();
+            const msgs: AdvisorMessage[] = (list || []).map((m) => ({
                 id: m.id,
                 advisorId: m.advisorId,
                 advisorName: m.advisorName,
@@ -453,8 +464,8 @@ export default function AdvisingPage() {
             const studentId = sidData.student_id;
             const msgRes = await fetch(`${API_BASE}/advising/student/${studentId}/messages`);
             if (!msgRes.ok) throw new Error("Unable to load messages");
-            const list = await msgRes.json();
-            const msgs: AdvisorMessage[] = (list || []).filter((m:any) => m.advisorId === advisorId).map((m: any) => ({
+            const list: AdvisingMessageDTO[] = await msgRes.json();
+            const msgs: AdvisorMessage[] = (list || []).filter((m) => m.advisorId === advisorId).map((m) => ({
                 id: m.id,
                 advisorId: m.advisorId,
                 advisorName: m.advisorName,
@@ -861,8 +872,14 @@ export default function AdvisingPage() {
                                     <div className="text-xs text-muted-foreground mt-1">Last updated: {messagesLastUpdated ? new Date(messagesLastUpdated).toLocaleString() : '-'}</div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    {refreshingMsgs && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                                    <Button variant="outline" size="sm" onClick={refreshMessages} disabled={refreshingMsgs}>Refresh</Button>
+                                    <Button variant="outline" size="sm" onClick={refreshMessages} disabled={refreshingMsgs}>
+                                        {refreshingMsgs ? (
+                                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                        ) : (
+                                            <RefreshCw className="h-4 w-4 mr-2" />
+                                        )}
+                                        Refresh
+                                    </Button>
                                 </div>
                             </div>
 						</CardHeader>
@@ -952,7 +969,7 @@ export default function AdvisingPage() {
                         </div>
                         <div>
                             <label className="text-sm">Date & Time</label>
-                            <Input type="datetime-local" value={scheduleWhen} onChange={(e:any) => setScheduleWhen(e.target.value)} className="mt-1" />
+                            <Input type="datetime-local" value={scheduleWhen} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScheduleWhen(e.target.value)} className="mt-1" />
                         </div>
                         <div>
                             <label className="text-sm">Type</label>
@@ -967,11 +984,11 @@ export default function AdvisingPage() {
                         </div>
                         <div>
                             <label className="text-sm">Location (optional)</label>
-                            <Input value={scheduleLocation} onChange={(e:any) => setScheduleLocation(e.target.value)} className="mt-1" placeholder="e.g., Bolton Hall 123 or Zoom" />
+                            <Input value={scheduleLocation} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setScheduleLocation(e.target.value)} className="mt-1" placeholder="e.g., Bolton Hall 123 or Zoom" />
                         </div>
                         <div>
                             <label className="text-sm">Notes (optional)</label>
-                            <Textarea value={scheduleNotes} onChange={(e:any) => setScheduleNotes(e.target.value)} className="mt-1" rows={3} />
+                            <Textarea value={scheduleNotes} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setScheduleNotes(e.target.value)} className="mt-1" rows={3} />
                         </div>
                         <div className="flex justify-end gap-2 pt-2">
                             <Button variant="outline" onClick={() => setScheduleOpen(false)}>Cancel</Button>
@@ -1005,7 +1022,7 @@ export default function AdvisingPage() {
                         </div>
                         <div>
                             <label className="text-sm">Message</label>
-                            <Textarea rows={5} value={messageBody} onChange={(e:any) => setMessageBody(e.target.value)} className="mt-1" placeholder="Type your message..." />
+                            <Textarea rows={5} value={messageBody} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessageBody(e.target.value)} className="mt-1" placeholder="Type your message..." />
                         </div>
                         <div className="flex items-center justify-between pt-2">
                             <div className="text-xs text-muted-foreground h-5">

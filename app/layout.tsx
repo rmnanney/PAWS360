@@ -59,6 +59,10 @@ export default function RootLayout({
 			router.push("/personal");
 		} else if (section === "resources") {
 			router.push("/resources");
+		} else if (section === "Class Search/Catalog" || section === "Class Search") {
+			router.push("/courses/search");
+		} else if (section === "Enrollment Date" || section === "Enrollment Dates") {
+			router.push("/enrollment-date");
 		} else if (section === "Class Search/Catalog") {
 			router.push("/courses");
 		} else if (section === "Quick Links") {
@@ -91,8 +95,19 @@ export default function RootLayout({
 				/>
 			</head>
 			<body className="font-body antialiased">
-				{isPublicPage || !authChecked || !isAuthenticated ? (
+				{isPublicPage ? (
 					// Render public pages without sidebar
+					<>
+						{children}
+						<Toaster />
+					</>
+				) : !authChecked ? (
+					// Show loading state while checking auth
+					<div className="flex items-center justify-center min-h-screen">
+						<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+					</div>
+				) : !isAuthenticated ? (
+					// Redirect to login if not authenticated
 					<>
 						{children}
 						<Toaster />

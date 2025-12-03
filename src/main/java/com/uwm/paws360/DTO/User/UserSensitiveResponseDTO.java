@@ -8,6 +8,7 @@ import java.util.List;
 public record UserSensitiveResponseDTO(
         int user_id,
         String email,
+        String alternate_email,
         String firstname,
         String lastname,
         String ssn,
@@ -19,6 +20,8 @@ public record UserSensitiveResponseDTO(
         LocalDate dob,
         Country_Code country_code,
         String phone,
+        String alternate_phone,
+        String profile_picture_url,
         List<AddressDTO> addresses
 ) {
 }

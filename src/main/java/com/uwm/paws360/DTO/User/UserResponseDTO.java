@@ -8,6 +8,7 @@ import java.util.List;
 public record UserResponseDTO(
         int user_id,
         String email,
+        String alternate_email,
         String firstname,
         String preferred_name,
         String lastname,
@@ -19,6 +20,8 @@ public record UserResponseDTO(
         LocalDate dob,
         Country_Code country_code,
         String phone,
+        String alternate_phone,
+        String profile_picture_url,
         List<AddressDTO> addresses
 ) {
 }

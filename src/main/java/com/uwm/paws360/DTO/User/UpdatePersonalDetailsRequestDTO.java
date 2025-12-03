@@ -15,6 +15,7 @@ public record UpdatePersonalDetailsRequestDTO(
         String middlename,
         String lastname,
         String preferredName,
+        String profilePictureUrl,
         Ethnicity ethnicity,
         Gender gender,
         Nationality nationality,

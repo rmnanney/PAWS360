@@ -31,6 +31,9 @@ import {
 } from "../components/Collapsible/collapsible";
 import { Badge } from "../components/Badge/badge";
 import s from "./styles.module.css";
+import { Spinner } from "../components/Others/spinner";
+import React from "react";
+import type { FinancesSummary, GetStudentIdResponse } from "@/lib/types";
 
 export default function FinancesPage() {
     const router = useRouter();
@@ -39,7 +42,8 @@ export default function FinancesPage() {
     const [accountBalanceVisible, setAccountBalanceVisible] = useState(false);
     const [pendingAidVisible, setPendingAidVisible] = useState(false);
     const [lastPaymentVisible, setLastPaymentVisible] = useState(false);
-    const [summary, setSummary] = useState<any | null>(null);
+    const [summary, setSummary] = useState<FinancesSummary | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
     const { toast } = require("@/hooks/useToast");
     const { API_BASE } = require("@/lib/api");
 
@@ -49,14 +53,21 @@ export default function FinancesPage() {
                 const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
                 if (!email) return;
                 const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
-                const sidData = await sidRes.json();
-                if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) return;
+                const sidData: GetStudentIdResponse = await sidRes.json();
+                if (!sidRes.ok || typeof sidData.student_id !== "number" || sidData.student_id < 0) {
+                    if (sidRes.status === 400) {
+                        toast({ variant: "destructive", title: "User not found", description: "Please verify your account." });
+                    }
+                    return;
+                }
                 const res = await fetch(`${API_BASE}/finances/student/${sidData.student_id}/summary`);
                 if (!res.ok) throw new Error("Failed to load summary");
-                const data = await res.json();
+                const data: FinancesSummary = await res.json();
                 setSummary(data);
             } catch (e: any) {
                 toast({ variant: "destructive", title: "Failed to load finances", description: e?.message || "Try again later." });
+            } finally {
+                setLoading(false);
             }
         };
         load();
@@ -124,8 +135,15 @@ export default function FinancesPage() {
 							</div>
 						</CardHeader>
 					</CollapsibleTrigger>
-					<CollapsibleContent>
-						<CardContent className={s.cardContent}>
+                <CollapsibleContent>
+                    {loading ? (
+                        <CardContent className={s.cardContent}>
+                            <div className="flex items-center justify-center text-sm text-muted-foreground" style={{ minHeight: 120 }}>
+                                <span className="inline-flex items-center gap-2"><Spinner size="sm" /> Loading account summary…</span>
+                            </div>
+                        </CardContent>
+                    ) : (
+                    <CardContent className={s.cardContent}>
 							{/* Charges Due Section */}
 							<div className={s.contentSpacing}>
 								<div className={s.chargesSection}>
@@ -142,7 +160,7 @@ export default function FinancesPage() {
 													}
 												>
                             {chargesDueVisible ? (
-                                <p className="text-2xl font-semibold">{summary ? `$${Number(summary.chargesDue || 0).toLocaleString()}` : "--"}</p>
+                                <p className={`text-2xl font-semibold ${summary && Number(summary.chargesDue || 0) <= 0 ? 'text-green-600' : ''}`}>{summary ? `$${Number(summary.chargesDue || 0).toLocaleString()}` : "--"}</p>
                             ) : (
 														<div className={s.dotsContainer}>
 															<div className={s.dot}></div>
@@ -155,7 +173,11 @@ export default function FinancesPage() {
 												</div>
 											</div>
 										</div>
-                            <Badge variant="destructive">{summary?.dueDate ? `Due ${new Date(summary.dueDate).toLocaleDateString()}`: "Due Soon"}</Badge>
+                            {summary && Number(summary.chargesDue || 0) <= 0 ? (
+                                <Badge variant="secondary">Paid in Full</Badge>
+                            ) : (
+                                <Badge variant="destructive">{summary?.dueDate ? `Due ${new Date(summary.dueDate).toLocaleDateString()}`: "Due Soon"}</Badge>
+                            )}
 									</div>
 
 									{/* Payment Center Link */}
@@ -185,7 +207,7 @@ export default function FinancesPage() {
 											}
 										>
                                 {accountBalanceVisible ? (
-                                    <p className="text-lg font-semibold">{summary ? `$${Number(summary.accountBalance || 0).toLocaleString()}` : "--"}</p>
+                                    <p className={`text-lg font-semibold ${summary && Number(summary.accountBalance || 0) <= 0 ? 'text-green-600' : ''}`}>{summary ? `$${Number(summary.accountBalance || 0).toLocaleString()}` : "--"}</p>
                                 ) : (
 												<div className={s.dotsContainer}>
 													<div className={s.dot}></div>
@@ -236,8 +258,9 @@ export default function FinancesPage() {
 									</div>
 								</div>
 							</div>
-						</CardContent>
-					</CollapsibleContent>
+                    </CardContent>
+                    )}
+                </CollapsibleContent>
 				</Card>
 			</Collapsible>
 

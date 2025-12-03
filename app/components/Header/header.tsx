@@ -2,6 +2,7 @@
 
 import SearchBar from "../SearchBar/searchbar";
 import { SidebarTrigger } from "../SideBar/Base/sidebarbase";
+import { ThemeToggle } from "../ThemeToggle/theme-toggle";
 import { Button } from "../Others/button";
 import { useState } from "react";
 import {
@@ -100,16 +101,17 @@ export function Header() {
 							>
 								<Search className="h-4 w-4" />
 							</Button>
-						</div>
 					</div>
 				</div>
+			</div>
 
+			<div className={s.headerRight}>
+				<ThemeToggle />
 				<a href="/homepage">
 					<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
 				</a>
 			</div>
-
-			{/* Mobile Search Dropdown */}
+		</div>			{/* Mobile Search Dropdown */}
 			{showMobileSearch && (
 				<div className={s.mobileSearchDropdown}>
 					<SearchBar

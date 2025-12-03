@@ -58,12 +58,16 @@ export default function Homepage() {
 			router.push("/personal");
 		} else if (section === "Resources") {
 			router.push("/resources");
+		} else if (section === "Enrollment Date") {
+			router.push("/enrollment-date");
 		} else if (section === "Quick Links") {
 			router.push("/quick-links");
 		} else if (section === "Handshake") {
 			window.open("https://uwm.joinhandshake.com/", "_blank");
-		} else if (section === "Quick Links") {
-			router.push("/quick-links");
+		} else if (section === "Class Search/Catalog") {
+			router.push("/courses");
+		} else if (section === "Holds/To Do List") {
+			router.push("/holds-tasks");
 		}
 	};
 

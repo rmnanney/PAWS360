@@ -9,11 +9,19 @@ import com.uwm.paws360.Entity.Base.EmergencyContact;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.uwm.paws360.Entity.EntityDomains.User.Role;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -32,6 +40,13 @@ public class UserService {
     private final EmergencyContactRepository emergencyContactRepository;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    @Value("${app.upload-dir:uploads}")
+    private String uploadDir;
+
+    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
+            "image/png", "image/jpeg", "image/jpg", "image/webp"
+    );
 
     public UserService(UserRepository userRepository, AdvisorRepository advisorRepository,
                        CounselorRepository counselorRepository, FacultyRepository facultyRepository,
@@ -139,8 +154,8 @@ public class UserService {
     }
 
     public UserResponseDTO editUser(EditUserRequestDTO userDTO){
-        Users user = userRepository.findUsersByEmailIgnoreCase(userDTO.email());
-        if(user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(userDTO.email());
+        if(user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         user.setFirstname(userDTO.firstname());
         user.setMiddlename(userDTO.middlename());
         user.setLastname(userDTO.lastname());
@@ -193,8 +208,8 @@ public class UserService {
 
     // Address management
     public UserResponseDTO addAddress(AddAddressRequestDTO dto){
-        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
-        if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         Address addr = new Address();
         addr.setUser(user);
         addr.setAddress_type(dto.address().address_type());
@@ -213,7 +228,7 @@ public class UserService {
 
     public UserResponseDTO editAddress(EditAddressRequestDTO dto){
         Optional<Address> addressOpt = addressRepository.findById(dto.address_id());
-        if (addressOpt.isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+        if (addressOpt.isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         Address addr = addressOpt.get();
         addr.setAddress_type(dto.address().address_type());
         addr.setStreet_address_1(dto.address().street_address_1());
@@ -240,8 +255,8 @@ public class UserService {
     }
 
     public UserResponseDTO getUser(GetUserRequestDTO dto){
-        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
-        if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         return toUserResponseDTO(user);
     }
 
@@ -283,22 +298,40 @@ public class UserService {
             if (p.isEmpty()) return false;
             user.setPhone(p);
         }
+        if (dto.alternatePhone() != null) {
+            String ap = dto.alternatePhone().trim();
+            user.setAlternatePhone(ap.isEmpty() ? null : ap);
+        }
+        if (dto.alternateEmail() != null) {
+            String ae = dto.alternateEmail().trim();
+            user.setAlternateEmail(ae.isEmpty() ? null : ae);
+        }
+        if (dto.newEmail() != null) {
+            String ne = dto.newEmail().trim();
+            if (!ne.isEmpty()) {
+                Users existing = userRepository.findUsersByEmailLikeIgnoreCase(ne);
+                if (existing != null && existing.getId() != user.getId()) {
+                    return false;
+                }
+                user.setEmail(ne);
+            }
+        }
         userRepository.save(user);
         return true;
     }
 
     public UserResponseDTO updatePersonalDetails(UpdatePersonalDetailsRequestDTO dto){
-        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
-        if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         if (dto.firstname() != null) {
-            if (dto.firstname().trim().isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+            if (dto.firstname().trim().isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
             user.setFirstname(dto.firstname().trim());
         }
         if (dto.middlename() != null) {
             user.setMiddlename(dto.middlename().trim());
         }
         if (dto.lastname() != null) {
-            if (dto.lastname().trim().isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+            if (dto.lastname().trim().isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
             user.setLastname(dto.lastname().trim());
         }
         if (dto.preferredName() != null) {
@@ -312,16 +345,20 @@ public class UserService {
             java.time.LocalDate min = java.time.LocalDate.of(1900,1,1);
             java.time.LocalDate now = java.time.LocalDate.now();
             if (dto.dob().isBefore(min) || dto.dob().isAfter(now)) {
-                return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+                return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
             }
             user.setDob(dto.dob());
         }
         if (dto.ssn() != null) {
             String digits = dto.ssn().trim();
             if (!digits.matches("^\\d{9}$")) {
-                return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
+                return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
             }
             user.setSocialsecurity(digits);
+        }
+        if (dto.profilePictureUrl() != null) {
+            String url = dto.profilePictureUrl().trim();
+            user.setProfilePictureUrl(url.isEmpty() ? null : url);
         }
         userRepository.save(user);
         return toUserResponseDTO(user);
@@ -363,6 +400,51 @@ public class UserService {
         if (found.isEmpty()) return false;
         emergencyContactRepository.delete(found.get());
         return true;
+    }
+
+    public String uploadProfilePicture(String email, MultipartFile file) throws Exception {
+        if (file == null || file.isEmpty()) return null;
+        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        if (user == null) return null;
+
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+            throw new IllegalArgumentException("Unsupported image type");
+        }
+
+        String ext;
+        switch (contentType.toLowerCase()){
+            case "image/png": ext = ".png"; break;
+            case "image/jpeg":
+            case "image/jpg": ext = ".jpg"; break;
+            case "image/webp": ext = ".webp"; break;
+            default: ext = ""; break;
+        }
+
+        Path base = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path dir = base.resolve("profile-pictures");
+        Files.createDirectories(dir);
+
+        String filename = "user-" + user.getId() + "-" + System.currentTimeMillis() + ext;
+        Path target = dir.resolve(filename);
+        try (InputStream in = file.getInputStream()){
+            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        // delete previously stored file if it was in our uploads directory
+        String old = user.getProfilePictureUrl();
+        if (old != null && old.startsWith("/uploads/")){
+            try {
+                // expected format: /uploads/profile-pictures/<name>
+                Path oldPath = dir.resolve(Paths.get(old).getFileName());
+                Files.deleteIfExists(oldPath);
+            } catch (Exception ignore) {}
+        }
+
+        String publicUrl = "/uploads/profile-pictures/" + filename;
+        user.setProfilePictureUrl(publicUrl);
+        userRepository.save(user);
+        return publicUrl;
     }
 
     private EmergencyContactDTO toEmergencyDTO(EmergencyContact c){
@@ -473,6 +555,7 @@ public class UserService {
         return new UserResponseDTO(
                 user.getId(),
                 user.getEmail(),
+                user.getAlternateEmail(),
                 user.getFirstname(),
                 user.getPreferred_name(),
                 user.getLastname(),
@@ -484,6 +567,8 @@ public class UserService {
                 user.getDob(),
                 user.getCountryCode(),
                 user.getPhone(),
+                user.getAlternatePhone(),
+                user.getProfilePictureUrl(),
                 toAddressDTOs(user.getAddresses())
         );
     }

@@ -5,6 +5,7 @@ import { LucideIcon, Calendar, Clock } from "lucide-react";
 
 import { cn } from "../../lib/utils";
 import s from "./styles.module.css";
+import { Spinner } from "../Others/spinner";
 
 const Card = React.forwardRef<
 	HTMLDivElement,
@@ -97,6 +98,7 @@ export function HomepageCard({
 
 export function ScheduleCard() {
     const [weeklySchedule, setWeeklySchedule] = React.useState<Record<string, Array<{ time: string; course: string; title: string; room: string }>>>({});
+    const [loading, setLoading] = React.useState(true);
     const { toast } = require("@/hooks/useToast");
     const { API_BASE } = require("@/lib/api");
 
@@ -140,6 +142,8 @@ export function ScheduleCard() {
                 setWeeklySchedule(grouped);
             } catch (e: any) {
                 toast({ variant: "destructive", title: "Failed to load schedule", description: e?.message || "Try again later." });
+            } finally {
+                setLoading(false);
             }
         };
         load();

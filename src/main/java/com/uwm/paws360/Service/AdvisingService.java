@@ -45,14 +45,16 @@ public class AdvisingService {
     public AdvisorDTO getPrimaryAdvisor(Integer studentId) {
         Student s = studentRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
-        StudentAdvisor link = studentAdvisorRepository.findFirstByStudentAndPrimaryAdvisorIsTrue(s)
-                .orElseThrow(() -> new EntityNotFoundException("Primary advisor not assigned for student " + studentId));
-        Advisor a = link.getAdvisor();
-        String name = a.getUser().getFirstname() + " " + a.getUser().getLastname();
-        String email = a.getUser().getEmail();
-        String phone = a.getUser().getPhone();
-        String dept = a.getDepartment() != null ? a.getDepartment().name() : null;
-        return new AdvisorDTO(a.getId(), name, "Academic Advisor", dept, email, phone, a.getOfficeLocation(), "Mon-Fri 9AM-5PM");
+        return studentAdvisorRepository.findFirstByStudentAndPrimaryAdvisorIsTrue(s)
+                .map(link -> {
+                    Advisor a = link.getAdvisor();
+                    String name = a.getUser().getFirstname() + " " + a.getUser().getLastname();
+                    String email = a.getUser().getEmail();
+                    String phone = a.getUser().getPhone();
+                    String dept = a.getDepartment() != null ? a.getDepartment().name() : null;
+                    return new AdvisorDTO(a.getId(), name, "Academic Advisor", dept, email, phone, a.getOfficeLocation(), "Mon-Fri 9AM-5PM");
+                })
+                .orElse(null);
     }
 
     public List<AdvisorDTO> listAdvisors() {

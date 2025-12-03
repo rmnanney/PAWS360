@@ -1,3 +1,4 @@
+import React from "react";
 import {
 	GraduationCap,
 	DollarSign,
@@ -11,7 +12,6 @@ import {
 	Search,
 	Calendar,
 	Home,
-	Settings,
 } from "lucide-react";
 
 import {
@@ -35,6 +35,35 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
+    const { API_BASE } = require("@/lib/api");
+    const [user, setUser] = React.useState<any | null>(null);
+    const [imgError, setImgError] = React.useState<boolean>(false);
+    const resolveImg = (u: string) => {
+        if (!u) return "";
+        if (/^(https?:|blob:|data:)/.test(u)) return u;
+        return `${API_BASE}${u}`;
+    };
+
+    React.useEffect(() => {
+        const load = async () => {
+            try {
+                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                if (!email) return;
+                const res = await fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`);
+                if (res.ok) {
+                    const u = await res.json();
+                    setUser(u);
+                    setImgError(false);
+                }
+            } catch {}
+        };
+        load();
+    }, []);
+
+    const firstName = (user?.firstname && String(user.firstname).trim()) || 'Profile';
+    const initials = (
+        `${(user?.firstname || '').charAt(0)}${(user?.lastname || '').charAt(0)}`.toUpperCase() || 'U'
+    );
 	const academicItems = [
 		{
 			title: "Homepage",
@@ -100,33 +129,55 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 		{
 			title: "Quick Links",
 			icon: LucideLink,
-			onClick: () => onNavigate("quick-links"),
+			onClick: () => onNavigate("Quick Links"),
 		},
 	];
 
 	const router = require("next/navigation").useRouter?.() || null;
 	const { toast } = require("../../hooks/useToast");
 
-	function handleLogout() {
-		const success = true; // Set to false to simulate failure
-		if (typeof window !== "undefined") {
-			localStorage.removeItem("authToken");
-		}
-		if (success) {
+	async function handleLogout() {
+		try {
+			// Call backend logout endpoint to invalidate session
+			const response = await fetch('/auth/logout', {
+				method: 'POST',
+				credentials: 'include', // Include cookies
+			});
+
+			// Clear all local storage and session storage
+			if (typeof window !== "undefined") {
+				localStorage.removeItem("authToken");
+				localStorage.removeItem("userEmail");
+				sessionStorage.removeItem("userEmail");
+				sessionStorage.removeItem("userFirstName");
+				sessionStorage.removeItem("userRole");
+				sessionStorage.clear();
+				localStorage.clear();
+			}
+
 			toast({
 				title: "Logging Out",
 				description: "You have been logged out successfully.",
 				duration: 1500,
 			});
+
 			setTimeout(() => {
-				router?.push?.("/");
+				router?.push?.("/login");
 			}, 1500);
-		} else {
+		} catch (error) {
+			// Even if backend fails, clear local session and redirect
+			if (typeof window !== "undefined") {
+				localStorage.clear();
+				sessionStorage.clear();
+			}
 			toast({
-				variant: "destructive",
-				title: "Logout Failed",
-				description: "There was a problem logging out. Please try again.",
+				title: "Logging Out",
+				description: "You have been logged out.",
+				duration: 1500,
 			});
+			setTimeout(() => {
+				router?.push?.("/login");
+			}, 1500);
 		}
 	}
 
@@ -167,25 +218,27 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<div className={s.profileContainer}>
-							<div className={s.profileImageContainer}>
-								<img
-									src="/api/placeholder/64/64"
-									alt="Profile"
-									className={s.profileImage}
-									onError={(e) => {
-										// Fallback if profile image doesn't load
-										e.currentTarget.style.display = "none";
-										e.currentTarget.parentElement!.innerHTML =
-											'<User className="w-8 h-8 text-gray-500" />';
-									}}
-								/>
+							<div className={s.profileImageContainer} onClick={() => onNavigate("personal")}>
+								{/* eslint-disable-next-line @next/next/no-img-element */}
+								{user?.profile_picture_url && !imgError ? (
+									<img
+										src={resolveImg(user.profile_picture_url)}
+										alt="Profile"
+										className={s.profileImage}
+										onError={() => setImgError(true)}
+									/>
+								) : (
+									<div className={s.profileFallback} aria-label="No profile picture">
+										{initials.trim() || 'U'}
+									</div>
+								)}
 							</div>
 							<SidebarMenuButton
-								onClick={() => onNavigate("Profile")}
+								onClick={() => onNavigate("personal")}
 								className={s.profileButton}
 							>
 								<User className="w-4 h-4" />
-								<span>Profile</span>
+								<span>{firstName}</span>
 							</SidebarMenuButton>
 						</div>
 					</SidebarMenuItem>
@@ -241,14 +294,6 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 				</SidebarGroup>
 			</SidebarContent>
 			<SidebarFooter>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton onClick={() => onNavigate("Settings")}>
-							<Settings />
-							<span>Settings</span>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
 				<Button onClick={handleLogout}>Log Out</Button>
 			</SidebarFooter>
 		</Sidebar>

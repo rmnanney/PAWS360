@@ -21,7 +21,11 @@ public class AdvisingController {
 
     @GetMapping("/student/{studentId}/advisor")
     public ResponseEntity<AdvisorDTO> primaryAdvisor(@PathVariable Integer studentId) {
-        return ResponseEntity.ok(advisingService.getPrimaryAdvisor(studentId));
+        AdvisorDTO dto = advisingService.getPrimaryAdvisor(studentId);
+        if (dto == null) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/student/{studentId}/appointments")
