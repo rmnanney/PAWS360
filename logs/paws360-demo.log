@@ -4779,3 +4779,12 @@ Caused by: java.net.ConnectException: Connection refused
 2025-12-03 23:50:59.299 [http-nio-8086-exec-2] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
 2025-12-03 23:51:02.187 [http-nio-8086-exec-3] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
 2025-12-03 23:51:03.002 [http-nio-8086-exec-4] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
+2025-12-03 23:53:26.278 [http-nio-8086-exec-5] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
+2025-12-03 23:54:08.494 [http-nio-8086-exec-6] INFO  [] c.u.p.Controller.AuthController - Login attempt for email: tes***@uwm.edu from IP: 127.0.0.1
+2025-12-03 23:54:08.557 [http-nio-8086-exec-6] INFO  [] c.u.p.Controller.AuthController - Successful login for user ID: 1 (tes***@uwm.edu), role: STUDENT, from IP: 127.0.0.1
+2025-12-03 23:54:08.778 [http-nio-8086-exec-7] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
+2025-12-03 23:54:14.767 [http-nio-8086-exec-8] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
+2025-12-03 23:54:28.628 [http-nio-8086-exec-9] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
+2025-12-03 23:54:29.117 [http-nio-8086-exec-10] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
+2025-12-03 23:54:30.213 [http-nio-8086-exec-1] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
+2025-12-03 23:54:32.025 [http-nio-8086-exec-2] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
