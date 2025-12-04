@@ -1,619 +1,1758 @@
--- PAWS360 PostgreSQL Database DDL
--- Compatible with AdminLTE v4.0.0-rc4
--- Optimized for UW-Milwaukee enrollment patterns (25,000+ students)
--- FERPA compliant with PII protection
+--
+-- PostgreSQL database dump
+--
 
--- =========================================
--- DATABASE SETUP
--- =========================================
+\restrict SZG1QbB7l5RczQxRXhCrOPy4rmaKfaQfWV3G9S0aIeh6IbsAajsBEigUhsv5GKr
 
--- Create database with proper encoding and collation
-CREATE DATABASE paws360
-    WITH OWNER = paws360_admin
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.UTF-8'
-    LC_CTYPE = 'en_US.UTF-8'
-    TEMPLATE = template0;
+-- Dumped from database version 15.14
+-- Dumped by pg_dump version 15.14
 
--- Connect to the database
-\c paws360;
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
 
--- =========================================
--- EXTENSIONS
--- =========================================
+SET default_tablespace = '';
 
--- Required extensions for performance and functionality
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
-CREATE EXTENSION IF NOT EXISTS "pg_buffercache";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+SET default_table_access_method = heap;
 
--- =========================================
--- SCHEMAS
--- =========================================
+--
+-- Name: account_transactions; Type: TABLE; Schema: public; Owner: -
+--
 
--- Main application schema
-CREATE SCHEMA IF NOT EXISTS paws360 AUTHORIZATION paws360_admin;
-
--- Audit schema for compliance
-CREATE SCHEMA IF NOT EXISTS audit AUTHORIZATION paws360_admin;
-
--- =========================================
--- CUSTOM TYPES
--- =========================================
-
--- FERPA compliance levels
-CREATE TYPE ferpa_compliance_level AS ENUM ('public', 'directory', 'restricted', 'confidential');
-
--- User roles for AdminLTE
-CREATE TYPE user_role AS ENUM ('student', 'faculty', 'staff', 'admin', 'super_admin');
-
--- Enrollment status
-CREATE TYPE enrollment_status AS ENUM ('enrolled', 'waitlisted', 'dropped', 'completed', 'withdrawn');
-
--- Course delivery methods
-CREATE TYPE delivery_method AS ENUM ('in_person', 'online', 'hybrid', 'blended');
-
--- Grade types
-CREATE TYPE grade_type AS ENUM ('letter', 'percentage', 'pass_fail', 'audit');
-
--- =========================================
--- TABLES
--- =========================================
-
--- Users table (core authentication for AdminLTE)
-CREATE TABLE paws360.users (
-    user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255),
-    role user_role NOT NULL DEFAULT 'student',
-    is_active BOOLEAN NOT NULL DEFAULT true,
-    last_login_at TIMESTAMP WITH TIME ZONE,
-    password_changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    failed_login_attempts INTEGER DEFAULT 0,
-    account_locked_until TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-
-    -- FERPA compliance
-    ferpa_consent_given BOOLEAN DEFAULT false,
-    ferpa_consent_date TIMESTAMP WITH TIME ZONE,
-    data_retention_until DATE,
-
-    -- AdminLTE session management
-    session_token VARCHAR(255),
-    session_expires_at TIMESTAMP WITH TIME ZONE,
-
-    CONSTRAINT valid_email CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
-    CONSTRAINT positive_attempts CHECK (failed_login_attempts >= 0)
+CREATE TABLE public.account_transactions (
+    amount numeric(12,2) NOT NULL,
+    due_date date,
+    student_id integer NOT NULL,
+    posted_at timestamp(6) with time zone NOT NULL,
+    transaction_id bigint NOT NULL,
+    status character varying(12) NOT NULL,
+    type character varying(12) NOT NULL,
+    description character varying(255),
+    CONSTRAINT account_transactions_status_check CHECK (((status)::text = ANY ((ARRAY['POSTED'::character varying, 'PENDING'::character varying])::text[]))),
+    CONSTRAINT account_transactions_type_check CHECK (((type)::text = ANY ((ARRAY['CHARGE'::character varying, 'CREDIT'::character varying, 'PAYMENT'::character varying])::text[])))
 );
 
--- Students table (core student information)
-CREATE TABLE paws360.students (
-    student_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES paws360.users(user_id) ON DELETE CASCADE,
-    student_number VARCHAR(20) UNIQUE NOT NULL,
-    first_name VARCHAR(100) NOT NULL,
-    middle_name VARCHAR(100),
-    last_name VARCHAR(100) NOT NULL,
-    date_of_birth DATE,
-    gender CHAR(1) CHECK (gender IN ('M', 'F', 'O')),
-    ethnicity VARCHAR(50),
-    nationality VARCHAR(100),
 
-    -- Contact Information (FERPA protected)
-    primary_email VARCHAR(255),
-    secondary_email VARCHAR(255),
-    phone_number VARCHAR(20),
-    emergency_contact_name VARCHAR(200),
-    emergency_contact_phone VARCHAR(20),
+--
+-- Name: account_transactions_transaction_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
-    -- Academic Information
-    enrollment_year INTEGER,
-    expected_graduation_year INTEGER,
-    academic_standing VARCHAR(50),
-    gpa DECIMAL(3,2) CHECK (gpa >= 0.0 AND gpa <= 4.0),
-    total_credits_earned DECIMAL(6,2) DEFAULT 0,
-
-    -- FERPA compliance flags
-    directory_info_restricted BOOLEAN DEFAULT false,
-    ferpa_level ferpa_compliance_level DEFAULT 'directory',
-
-    -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-
-    -- Constraints
-    CONSTRAINT valid_student_number CHECK (student_number ~ '^[0-9]{7,20}$'),
-    CONSTRAINT valid_graduation_year CHECK (expected_graduation_year >= enrollment_year)
+ALTER TABLE public.account_transactions ALTER COLUMN transaction_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.account_transactions_transaction_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
--- Courses table
-CREATE TABLE paws360.courses (
-    course_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    course_code VARCHAR(20) UNIQUE NOT NULL,
-    course_name VARCHAR(200) NOT NULL,
-    course_description TEXT,
-    department_code VARCHAR(10) NOT NULL,
-    course_level VARCHAR(10), -- 100, 200, 300, 400, 500, etc.
-    credit_hours DECIMAL(3,1) NOT NULL CHECK (credit_hours > 0),
-    prerequisites TEXT,
 
-    -- Course delivery
-    delivery_method delivery_method DEFAULT 'in_person',
-    is_active BOOLEAN DEFAULT true,
+--
+-- Name: address; Type: TABLE; Schema: public; Owner: -
+--
 
-    -- Capacity and enrollment
-    max_enrollment INTEGER CHECK (max_enrollment > 0),
-    current_enrollment INTEGER DEFAULT 0,
-
-    -- Academic year and term
-    academic_year INTEGER NOT NULL,
-    term VARCHAR(20) NOT NULL, -- Fall, Spring, Summer, Winter
-
-    -- Metadata
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT valid_course_code CHECK (course_code ~ '^[A-Z]{2,4}[0-9]{3,4}[A-Z]?$'),
-    CONSTRAINT valid_enrollment CHECK (current_enrollment <= max_enrollment)
+CREATE TABLE public.address (
+    address_id integer NOT NULL,
+    user_id integer NOT NULL,
+    zipcode character varying(6) NOT NULL,
+    address_type character varying(255) NOT NULL,
+    city character varying(255) NOT NULL,
+    firstname character varying(255) NOT NULL,
+    lastname character varying(255) NOT NULL,
+    po_box character varying(255),
+    state character varying(255) NOT NULL,
+    street_address_1 character varying(255) NOT NULL,
+    street_address_2 character varying(255),
+    CONSTRAINT address_address_type_check CHECK (((address_type)::text = ANY ((ARRAY['HOME'::character varying, 'BILLING'::character varying, 'MAILING'::character varying, 'SHIPPING'::character varying, 'WORK'::character varying, 'CAMPUS'::character varying, 'EMERGENCY'::character varying, 'OTHER'::character varying])::text[]))),
+    CONSTRAINT address_state_check CHECK (((state)::text = ANY ((ARRAY['ALABAMA'::character varying, 'ALASKA'::character varying, 'ARIZONA'::character varying, 'ARKANSAS'::character varying, 'CALIFORNIA'::character varying, 'COLORADO'::character varying, 'CONNECTICUT'::character varying, 'DELAWARE'::character varying, 'FLORIDA'::character varying, 'GEORGIA'::character varying, 'HAWAII'::character varying, 'IDAHO'::character varying, 'ILLINOIS'::character varying, 'INDIANA'::character varying, 'IOWA'::character varying, 'KANSAS'::character varying, 'KENTUCKY'::character varying, 'LOUISIANA'::character varying, 'MAINE'::character varying, 'MARYLAND'::character varying, 'MASSACHUSETTS'::character varying, 'MICHIGAN'::character varying, 'MINNESOTA'::character varying, 'MISSISSIPPI'::character varying, 'MISSOURI'::character varying, 'MONTANA'::character varying, 'NEBRASKA'::character varying, 'NEVADA'::character varying, 'NEW_HAMPSHIRE'::character varying, 'NEW_JERSEY'::character varying, 'NEW_MEXICO'::character varying, 'NEW_YORK'::character varying, 'NORTH_CAROLINA'::character varying, 'NORTH_DAKOTA'::character varying, 'OHIO'::character varying, 'OKLAHOMA'::character varying, 'OREGON'::character varying, 'PENNSYLVANIA'::character varying, 'RHODE_ISLAND'::character varying, 'SOUTH_CAROLINA'::character varying, 'SOUTH_DAKOTA'::character varying, 'TENNESSEE'::character varying, 'TEXAS'::character varying, 'UTAH'::character varying, 'VERMONT'::character varying, 'VIRGINIA'::character varying, 'WASHINGTON'::character varying, 'WEST_VIRGINIA'::character varying, 'WISCONSIN'::character varying, 'WYOMING'::character varying, 'DISTRICT_OF_COLUMBIA'::character varying])::text[])))
 );
 
--- Course sections (specific instances of courses)
-CREATE TABLE paws360.course_sections (
-    section_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    course_id UUID REFERENCES paws360.courses(course_id) ON DELETE CASCADE,
-    section_number VARCHAR(10) NOT NULL,
-    instructor_id UUID REFERENCES paws360.users(user_id),
 
-    -- Schedule information
-    days_of_week VARCHAR(20), -- MWF, TR, etc.
-    start_time TIME,
-    end_time TIME,
-    location VARCHAR(100),
+--
+-- Name: address_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
-    -- Enrollment limits
-    max_enrollment INTEGER CHECK (max_enrollment > 0),
-    current_enrollment INTEGER DEFAULT 0,
+CREATE SEQUENCE public.address_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
-    -- Status
-    is_active BOOLEAN DEFAULT true,
 
-    -- Metadata
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--
+-- Name: advisor; Type: TABLE; Schema: public; Owner: -
+--
 
-    UNIQUE(course_id, section_number, academic_year, term)
+CREATE TABLE public.advisor (
+    active boolean NOT NULL,
+    advisee_capacity integer,
+    advisor_id integer NOT NULL,
+    user_id integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    office_location character varying(120),
+    department character varying(255),
+    CONSTRAINT advisor_department_check CHECK (((department)::text = ANY ((ARRAY['BIOLOGICAL_SCIENCES'::character varying, 'CHEMISTRY_BIOCHEMISTRY'::character varying, 'COMPUTER_SCIENCE'::character varying, 'ECONOMICS'::character varying, 'ENGLISH'::character varying, 'HISTORY'::character varying, 'MATHEMATICAL_SCIENCES'::character varying, 'PHILOSOPHY'::character varying, 'PHYSICS'::character varying, 'POLITICAL_SCIENCE'::character varying, 'PSYCHOLOGY'::character varying, 'SOCIOLOGY'::character varying, 'ACCOUNTING'::character varying, 'FINANCE'::character varying, 'INFORMATION_TECHNOLOGY_MANAGEMENT'::character varying, 'MARKETING'::character varying, 'SUPPLY_CHAIN_OPERATIONS'::character varying, 'CIVIL_ENGINEERING'::character varying, 'ELECTRICAL_ENGINEERING'::character varying, 'INDUSTRIAL_ENGINEERING'::character varying, 'MATERIALS_ENGINEERING'::character varying, 'MECHANICAL_ENGINEERING'::character varying, 'COMMUNICATION_SCIENCES_DISORDERS'::character varying, 'BIOMEDICAL_SCIENCES'::character varying, 'OCCUPATIONAL_SCIENCE_TECHNOLOGY'::character varying, 'KINESIOLOGY'::character varying, 'NURSING'::character varying, 'CURRICULUM_INSTRUCTION'::character varying, 'EDUCATIONAL_POLICY_COMMUNITY_STUDIES'::character varying, 'EDUCATIONAL_PSYCHOLOGY'::character varying, 'ADMINISTRATIVE_LEADERSHIP'::character varying, 'ART_DESIGN'::character varying, 'DANCE'::character varying, 'FILM_VIDEO_ANIMATION_NEW_GENRES'::character varying, 'MUSIC'::character varying, 'THEATRE'::character varying, 'ARCHITECTURE'::character varying, 'URBAN_PLANNING'::character varying, 'FRESHWATER_SCIENCES'::character varying, 'PUBLIC_HEALTH'::character varying, 'INFORMATION_SCIENCE_TECHNOLOGY'::character varying, 'GENERAL_STUDIES'::character varying, 'UNDECLARED'::character varying])::text[])))
 );
 
--- Enrollments table (student-course relationships)
-CREATE TABLE paws360.enrollments (
-    enrollment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    student_id UUID REFERENCES paws360.students(student_id) ON DELETE CASCADE,
-    section_id UUID REFERENCES paws360.course_sections(section_id) ON DELETE CASCADE,
-    enrollment_status enrollment_status DEFAULT 'enrolled',
 
-    -- Grades and credits
-    grade VARCHAR(5),
-    grade_points DECIMAL(3,2),
-    credits_earned DECIMAL(3,1),
+--
+-- Name: advisor_appointments; Type: TABLE; Schema: public; Owner: -
+--
 
-    -- Important dates
-    enrollment_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    dropped_date TIMESTAMP WITH TIME ZONE,
-    completed_date TIMESTAMP WITH TIME ZONE,
-
-    -- Waitlist information
-    waitlist_position INTEGER,
-    waitlist_date TIMESTAMP WITH TIME ZONE,
-
-    -- Metadata
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-
-    UNIQUE(student_id, section_id)
+CREATE TABLE public.advisor_appointments (
+    advisor_id integer NOT NULL,
+    student_id integer NOT NULL,
+    appointment_id bigint NOT NULL,
+    scheduled_at timestamp(6) with time zone NOT NULL,
+    status character varying(20) NOT NULL,
+    type character varying(40) NOT NULL,
+    location character varying(200),
+    notes character varying(400),
+    CONSTRAINT advisor_appointments_status_check CHECK (((status)::text = ANY ((ARRAY['CONFIRMED'::character varying, 'PENDING'::character varying, 'CANCELLED'::character varying])::text[]))),
+    CONSTRAINT advisor_appointments_type_check CHECK (((type)::text = ANY ((ARRAY['ACADEMIC_ADVISING'::character varying, 'DEGREE_PLANNING'::character varying, 'CAREER_ADVISEMENT'::character varying])::text[])))
 );
 
--- Sessions table (for AdminLTE session management)
-CREATE TABLE paws360.sessions (
-    session_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES paws360.users(user_id) ON DELETE CASCADE,
-    session_token VARCHAR(255) UNIQUE NOT NULL,
-    ip_address INET,
-    user_agent TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    is_active BOOLEAN DEFAULT true,
 
-    CONSTRAINT valid_session CHECK (expires_at > created_at)
+--
+-- Name: advisor_appointments_appointment_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.advisor_appointments ALTER COLUMN appointment_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.advisor_appointments_appointment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
--- Audit log table (FERPA compliance and security)
-CREATE TABLE audit.audit_log (
-    audit_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    table_name VARCHAR(100) NOT NULL,
-    record_id UUID NOT NULL,
-    operation VARCHAR(10) NOT NULL, -- INSERT, UPDATE, DELETE
-    old_values JSONB,
-    new_values JSONB,
-    user_id UUID REFERENCES paws360.users(user_id),
-    ip_address INET,
-    user_agent TEXT,
-    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT valid_operation CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE'))
+--
+-- Name: advisor_messages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.advisor_messages (
+    advisor_id integer NOT NULL,
+    student_id integer NOT NULL,
+    message_id bigint NOT NULL,
+    sent_at timestamp(6) with time zone NOT NULL,
+    sender character varying(16) NOT NULL,
+    content character varying(1000) NOT NULL,
+    CONSTRAINT advisor_messages_sender_check CHECK (((sender)::text = ANY ((ARRAY['STUDENT'::character varying, 'ADVISOR'::character varying])::text[])))
 );
 
--- Dashboard widgets table (AdminLTE integration)
-CREATE TABLE paws360.dashboard_widgets (
-    widget_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES paws360.users(user_id) ON DELETE CASCADE,
-    widget_type VARCHAR(50) NOT NULL,
-    widget_config JSONB,
-    position_x INTEGER,
-    position_y INTEGER,
-    width INTEGER,
-    height INTEGER,
-    is_visible BOOLEAN DEFAULT true,
 
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+--
+-- Name: advisor_messages_message_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.advisor_messages ALTER COLUMN message_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.advisor_messages_message_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
--- Notifications table (AdminLTE notifications)
-CREATE TABLE paws360.notifications (
-    notification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES paws360.users(user_id) ON DELETE CASCADE,
-    title VARCHAR(200) NOT NULL,
-    message TEXT,
-    notification_type VARCHAR(50),
-    is_read BOOLEAN DEFAULT false,
-    priority VARCHAR(20) DEFAULT 'normal',
 
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    read_at TIMESTAMP WITH TIME ZONE
+--
+-- Name: advisor_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.advisor_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: aid_awards; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.aid_awards (
+    academic_year integer,
+    amount_accepted numeric(12,2),
+    amount_disbursed numeric(12,2),
+    amount_offered numeric(12,2),
+    student_id integer NOT NULL,
+    award_id bigint NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    status character varying(20) NOT NULL,
+    term character varying(20),
+    type character varying(20) NOT NULL,
+    description character varying(200),
+    CONSTRAINT aid_awards_status_check CHECK (((status)::text = ANY ((ARRAY['AVAILABLE'::character varying, 'ACTIVE'::character varying, 'PENDING'::character varying, 'CANCELLED'::character varying])::text[]))),
+    CONSTRAINT aid_awards_type_check CHECK (((type)::text = ANY ((ARRAY['GRANT'::character varying, 'SCHOLARSHIP'::character varying, 'LOAN'::character varying, 'WORK_STUDY'::character varying])::text[])))
 );
 
--- =========================================
--- INDEXES (Performance Optimization)
--- =========================================
 
--- Users table indexes
-CREATE INDEX idx_users_username ON paws360.users(username);
-CREATE INDEX idx_users_email ON paws360.users(email);
-CREATE INDEX idx_users_role ON paws360.users(role);
-CREATE INDEX idx_users_active ON paws360.users(is_active);
-CREATE INDEX idx_users_last_login ON paws360.users(last_login_at);
+--
+-- Name: aid_awards_award_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
--- Students table indexes
-CREATE INDEX idx_students_user_id ON paws360.students(user_id);
-CREATE INDEX idx_students_student_number ON paws360.students(student_number);
-CREATE INDEX idx_students_last_name ON paws360.students(last_name);
-CREATE INDEX idx_students_enrollment_year ON paws360.students(enrollment_year);
-CREATE INDEX idx_students_gpa ON paws360.students(gpa);
+ALTER TABLE public.aid_awards ALTER COLUMN award_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.aid_awards_award_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
--- Courses table indexes
-CREATE INDEX idx_courses_code ON paws360.courses(course_code);
-CREATE INDEX idx_courses_department ON paws360.courses(department_code);
-CREATE INDEX idx_courses_active ON paws360.courses(is_active);
-CREATE INDEX idx_courses_term_year ON paws360.courses(academic_year, term);
 
--- Course sections indexes
-CREATE INDEX idx_sections_course_id ON paws360.course_sections(course_id);
-CREATE INDEX idx_sections_instructor ON paws360.course_sections(instructor_id);
-CREATE INDEX idx_sections_active ON paws360.course_sections(is_active);
+--
+-- Name: authentication_sessions; Type: TABLE; Schema: public; Owner: -
+--
 
--- Enrollments indexes (critical for performance)
-CREATE INDEX idx_enrollments_student ON paws360.enrollments(student_id);
-CREATE INDEX idx_enrollments_section ON paws360.enrollments(section_id);
-CREATE INDEX idx_enrollments_status ON paws360.enrollments(enrollment_status);
-CREATE INDEX idx_enrollments_enrollment_date ON paws360.enrollments(enrollment_date);
+CREATE TABLE public.authentication_sessions (
+    is_active boolean NOT NULL,
+    user_id integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    expires_at timestamp(6) without time zone NOT NULL,
+    last_accessed timestamp(6) without time zone NOT NULL,
+    ip_address character varying(45),
+    logout_reason character varying(50),
+    service_origin character varying(100),
+    user_agent character varying(500),
+    session_id character varying(255) NOT NULL,
+    session_token character varying(255) NOT NULL
+);
 
--- Sessions indexes
-CREATE INDEX idx_sessions_user_id ON paws360.sessions(user_id);
-CREATE INDEX idx_sessions_token ON paws360.sessions(session_token);
-CREATE INDEX idx_sessions_expires ON paws360.sessions(expires_at);
-CREATE INDEX idx_sessions_active ON paws360.sessions(is_active);
 
--- Audit log indexes
-CREATE INDEX idx_audit_table_record ON audit.audit_log(table_name, record_id);
-CREATE INDEX idx_audit_timestamp ON audit.audit_log(timestamp);
-CREATE INDEX idx_audit_user ON audit.audit_log(user_id);
+--
+-- Name: buildings; Type: TABLE; Schema: public; Owner: -
+--
 
--- Dashboard widgets indexes
-CREATE INDEX idx_widgets_user ON paws360.dashboard_widgets(user_id);
-CREATE INDEX idx_widgets_type ON paws360.dashboard_widgets(widget_type);
+CREATE TABLE public.buildings (
+    accessible boolean NOT NULL,
+    building_id bigint NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    code character varying(12) NOT NULL,
+    campus character varying(120),
+    name character varying(120) NOT NULL,
+    notes character varying(500)
+);
 
--- Notifications indexes
-CREATE INDEX idx_notifications_user ON paws360.notifications(user_id);
-CREATE INDEX idx_notifications_read ON paws360.notifications(is_read);
-CREATE INDEX idx_notifications_created ON paws360.notifications(created_at);
 
--- =========================================
--- VIEWS (For AdminLTE Dashboard)
--- =========================================
+--
+-- Name: buildings_building_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
--- Student enrollment summary view
-CREATE VIEW paws360.student_enrollment_summary AS
-SELECT
-    s.student_id,
-    s.student_number,
-    s.first_name || ' ' || s.last_name AS full_name,
-    s.enrollment_year,
-    s.academic_standing,
-    s.gpa,
-    s.total_credits_earned,
-    COUNT(e.enrollment_id) AS current_enrollments,
-    SUM(c.credit_hours) AS current_credit_load
-FROM paws360.students s
-LEFT JOIN paws360.enrollments e ON s.student_id = e.student_id
-    AND e.enrollment_status = 'enrolled'
-LEFT JOIN paws360.course_sections cs ON e.section_id = cs.section_id
-LEFT JOIN paws360.courses c ON cs.course_id = c.course_id
-GROUP BY s.student_id, s.student_number, s.first_name, s.last_name,
-         s.enrollment_year, s.academic_standing, s.gpa, s.total_credits_earned;
+ALTER TABLE public.buildings ALTER COLUMN building_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.buildings_building_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
--- Course enrollment summary view
-CREATE VIEW paws360.course_enrollment_summary AS
-SELECT
-    c.course_id,
-    c.course_code,
-    c.course_name,
-    c.department_code,
-    c.academic_year,
-    c.term,
-    c.max_enrollment,
-    c.current_enrollment,
-    ROUND((c.current_enrollment::DECIMAL / c.max_enrollment) * 100, 2) AS enrollment_percentage,
-    COUNT(DISTINCT cs.section_id) AS total_sections
-FROM paws360.courses c
-LEFT JOIN paws360.course_sections cs ON c.course_id = cs.course_id
-    AND cs.is_active = true
-GROUP BY c.course_id, c.course_code, c.course_name, c.department_code,
-         c.academic_year, c.term, c.max_enrollment, c.current_enrollment;
 
--- Dashboard metrics view
-CREATE VIEW paws360.dashboard_metrics AS
-SELECT
-    'total_students' AS metric_name,
-    COUNT(*)::TEXT AS metric_value,
-    'Total active students' AS description
-FROM paws360.students s
-JOIN paws360.users u ON s.user_id = u.user_id
-WHERE u.is_active = true
+--
+-- Name: classroom_features; Type: TABLE; Schema: public; Owner: -
+--
 
-UNION ALL
+CREATE TABLE public.classroom_features (
+    classroom_id bigint NOT NULL,
+    feature character varying(80)
+);
 
-SELECT
-    'total_courses' AS metric_name,
-    COUNT(*)::TEXT AS metric_value,
-    'Total active courses' AS description
-FROM paws360.courses
-WHERE is_active = true
 
-UNION ALL
+--
+-- Name: classrooms; Type: TABLE; Schema: public; Owner: -
+--
 
-SELECT
-    'total_enrollments' AS metric_name,
-    COUNT(*)::TEXT AS metric_value,
-    'Total current enrollments' AS description
-FROM paws360.enrollments
-WHERE enrollment_status = 'enrolled'
+CREATE TABLE public.classrooms (
+    capacity integer,
+    building_id bigint NOT NULL,
+    classroom_id bigint NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    room_number character varying(20) NOT NULL,
+    room_type character varying(30),
+    CONSTRAINT classrooms_room_type_check CHECK (((room_type)::text = ANY ((ARRAY['GENERAL_PURPOSE'::character varying, 'COMPUTER_LAB'::character varying, 'SCIENCE_LAB'::character varying, 'LECTURE_HALL'::character varying, 'STUDIO'::character varying, 'ONLINE'::character varying])::text[])))
+);
 
-UNION ALL
 
-SELECT
-    'average_gpa' AS metric_name,
-    ROUND(AVG(gpa), 2)::TEXT AS metric_value,
-    'Average student GPA' AS description
-FROM paws360.students
-WHERE gpa IS NOT NULL;
+--
+-- Name: classrooms_classroom_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
--- =========================================
--- TRIGGERS (Automated Updates)
--- =========================================
+ALTER TABLE public.classrooms ALTER COLUMN classroom_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.classrooms_classroom_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
--- Update course enrollment counts
-CREATE OR REPLACE FUNCTION paws360.update_course_enrollment_count()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        UPDATE paws360.courses
-        SET current_enrollment = current_enrollment + 1
-        WHERE course_id = (
-            SELECT c.course_id
-            FROM paws360.course_sections cs
-            JOIN paws360.courses c ON cs.course_id = c.course_id
-            WHERE cs.section_id = NEW.section_id
-        );
-        RETURN NEW;
-    ELSIF TG_OP = 'DELETE' THEN
-        UPDATE paws360.courses
-        SET current_enrollment = current_enrollment - 1
-        WHERE course_id = (
-            SELECT c.course_id
-            FROM paws360.course_sections cs
-            JOIN paws360.courses c ON cs.course_id = c.course_id
-            WHERE cs.section_id = OLD.section_id
-        );
-        RETURN OLD;
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_update_course_enrollment
-    AFTER INSERT OR DELETE ON paws360.enrollments
-    FOR EACH ROW EXECUTE FUNCTION paws360.update_course_enrollment_count();
+--
+-- Name: counselor; Type: TABLE; Schema: public; Owner: -
+--
 
--- Update section enrollment counts
-CREATE OR REPLACE FUNCTION paws360.update_section_enrollment_count()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        UPDATE paws360.course_sections
-        SET current_enrollment = current_enrollment + 1
-        WHERE section_id = NEW.section_id;
-        RETURN NEW;
-    ELSIF TG_OP = 'DELETE' THEN
-        UPDATE paws360.course_sections
-        SET current_enrollment = current_enrollment - 1
-        WHERE section_id = OLD.section_id;
-        RETURN OLD;
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
+CREATE TABLE public.counselor (
+    active boolean NOT NULL,
+    councelor_id integer NOT NULL,
+    user_id integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    office_location character varying(120),
+    specialty character varying(120),
+    department character varying(255),
+    CONSTRAINT counselor_department_check CHECK (((department)::text = ANY ((ARRAY['BIOLOGICAL_SCIENCES'::character varying, 'CHEMISTRY_BIOCHEMISTRY'::character varying, 'COMPUTER_SCIENCE'::character varying, 'ECONOMICS'::character varying, 'ENGLISH'::character varying, 'HISTORY'::character varying, 'MATHEMATICAL_SCIENCES'::character varying, 'PHILOSOPHY'::character varying, 'PHYSICS'::character varying, 'POLITICAL_SCIENCE'::character varying, 'PSYCHOLOGY'::character varying, 'SOCIOLOGY'::character varying, 'ACCOUNTING'::character varying, 'FINANCE'::character varying, 'INFORMATION_TECHNOLOGY_MANAGEMENT'::character varying, 'MARKETING'::character varying, 'SUPPLY_CHAIN_OPERATIONS'::character varying, 'CIVIL_ENGINEERING'::character varying, 'ELECTRICAL_ENGINEERING'::character varying, 'INDUSTRIAL_ENGINEERING'::character varying, 'MATERIALS_ENGINEERING'::character varying, 'MECHANICAL_ENGINEERING'::character varying, 'COMMUNICATION_SCIENCES_DISORDERS'::character varying, 'BIOMEDICAL_SCIENCES'::character varying, 'OCCUPATIONAL_SCIENCE_TECHNOLOGY'::character varying, 'KINESIOLOGY'::character varying, 'NURSING'::character varying, 'CURRICULUM_INSTRUCTION'::character varying, 'EDUCATIONAL_POLICY_COMMUNITY_STUDIES'::character varying, 'EDUCATIONAL_PSYCHOLOGY'::character varying, 'ADMINISTRATIVE_LEADERSHIP'::character varying, 'ART_DESIGN'::character varying, 'DANCE'::character varying, 'FILM_VIDEO_ANIMATION_NEW_GENRES'::character varying, 'MUSIC'::character varying, 'THEATRE'::character varying, 'ARCHITECTURE'::character varying, 'URBAN_PLANNING'::character varying, 'FRESHWATER_SCIENCES'::character varying, 'PUBLIC_HEALTH'::character varying, 'INFORMATION_SCIENCE_TECHNOLOGY'::character varying, 'GENERAL_STUDIES'::character varying, 'UNDECLARED'::character varying])::text[])))
+);
 
-CREATE TRIGGER trigger_update_section_enrollment
-    AFTER INSERT OR DELETE ON paws360.enrollments
-    FOR EACH ROW EXECUTE FUNCTION paws360.update_section_enrollment_count();
 
--- Audit trigger function
-CREATE OR REPLACE FUNCTION audit.audit_trigger_function()
-RETURNS TRIGGER AS $$
-DECLARE
-    old_row JSONB;
-    new_row JSONB;
-    operation_type TEXT;
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        old_row := NULL;
-        new_row := to_jsonb(NEW);
-        operation_type := 'INSERT';
-    ELSIF TG_OP = 'UPDATE' THEN
-        old_row := to_jsonb(OLD);
-        new_row := to_jsonb(NEW);
-        operation_type := 'UPDATE';
-    ELSIF TG_OP = 'DELETE' THEN
-        old_row := to_jsonb(OLD);
-        new_row := NULL;
-        operation_type := 'DELETE';
-    END IF;
+--
+-- Name: counselor_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
-    INSERT INTO audit.audit_log (
-        table_name,
-        record_id,
-        operation,
-        old_values,
-        new_values,
-        user_id
-    ) VALUES (
-        TG_TABLE_NAME,
-        COALESCE(NEW.id, OLD.id),
-        operation_type,
-        old_row,
-        new_row,
-        current_setting('app.current_user_id', true)::UUID
-    );
+CREATE SEQUENCE public.counselor_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
-    RETURN COALESCE(NEW, OLD);
-END;
-$$ LANGUAGE plpgsql;
 
--- Apply audit triggers to sensitive tables
-CREATE TRIGGER audit_users_trigger
-    AFTER INSERT OR UPDATE OR DELETE ON paws360.users
-    FOR EACH ROW EXECUTE FUNCTION audit.audit_trigger_function();
+--
+-- Name: course_enrollments; Type: TABLE; Schema: public; Owner: -
+--
 
-CREATE TRIGGER audit_students_trigger
-    AFTER INSERT OR UPDATE OR DELETE ON paws360.students
-    FOR EACH ROW EXECUTE FUNCTION audit.audit_trigger_function();
+CREATE TABLE public.course_enrollments (
+    auto_enrolled_from_waitlist boolean NOT NULL,
+    current_letter character varying(2),
+    current_percentage integer,
+    final_letter character varying(2),
+    student_id integer NOT NULL,
+    waitlist_position integer,
+    completed_at timestamp(6) with time zone,
+    dropped_at timestamp(6) with time zone,
+    enrolled_at timestamp(6) with time zone NOT NULL,
+    enrollment_id bigint NOT NULL,
+    lab_section_id bigint,
+    last_grade_update timestamp(6) with time zone,
+    lecture_section_id bigint NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    waitlisted_at timestamp(6) with time zone,
+    status character varying(20) NOT NULL,
+    CONSTRAINT course_enrollments_status_check CHECK (((status)::text = ANY ((ARRAY['ENROLLED'::character varying, 'WAITLISTED'::character varying, 'DROPPED'::character varying, 'PENDING_APPROVAL'::character varying, 'COMPLETED'::character varying])::text[])))
+);
 
--- =========================================
--- ROW LEVEL SECURITY (FERPA Compliance)
--- =========================================
 
--- Enable RLS on sensitive tables
-ALTER TABLE paws360.students ENABLE ROW LEVEL SECURITY;
-ALTER TABLE paws360.enrollments ENABLE ROW LEVEL SECURITY;
+--
+-- Name: course_enrollments_enrollment_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
--- Students can only see their own data
-CREATE POLICY students_own_data ON paws360.students
-    FOR ALL USING (user_id = current_setting('app.current_user_id', true)::UUID);
+ALTER TABLE public.course_enrollments ALTER COLUMN enrollment_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.course_enrollments_enrollment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
--- Faculty can see students in their courses
-CREATE POLICY faculty_student_access ON paws360.students
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM paws360.users u
-            WHERE u.user_id = current_setting('app.current_user_id', true)::UUID
-            AND u.role IN ('faculty', 'admin', 'super_admin')
-        )
-    );
 
--- Students can see their own enrollments
-CREATE POLICY students_own_enrollments ON paws360.enrollments
-    FOR ALL USING (
-        student_id IN (
-            SELECT s.student_id FROM paws360.students s
-            WHERE s.user_id = current_setting('app.current_user_id', true)::UUID
-        )
-    );
+--
+-- Name: course_prerequisites; Type: TABLE; Schema: public; Owner: -
+--
 
--- =========================================
--- PERMISSIONS
--- =========================================
+CREATE TABLE public.course_prerequisites (
+    concurrent_allowed boolean NOT NULL,
+    course_id integer NOT NULL,
+    minimum_grade character varying(4),
+    prerequisite_course_id integer NOT NULL,
+    course_prerequisite_id bigint NOT NULL
+);
 
--- Grant permissions to application roles
-GRANT USAGE ON SCHEMA paws360 TO paws360_app;
-GRANT USAGE ON SCHEMA audit TO paws360_app;
 
--- Grant table permissions
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA paws360 TO paws360_app;
-GRANT SELECT ON ALL TABLES IN SCHEMA audit TO paws360_app;
+--
+-- Name: course_prerequisites_course_prerequisite_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
--- Grant sequence permissions
-GRANT USAGE ON ALL SEQUENCES IN SCHEMA paws360 TO paws360_app;
+ALTER TABLE public.course_prerequisites ALTER COLUMN course_prerequisite_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.course_prerequisites_course_prerequisite_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
--- Grant view permissions
-GRANT SELECT ON ALL TABLES IN SCHEMA paws360 TO paws360_readonly;
 
--- =========================================
--- COMMENTS (Documentation)
--- =========================================
+--
+-- Name: course_section_meeting_days; Type: TABLE; Schema: public; Owner: -
+--
 
-COMMENT ON DATABASE paws360 IS 'PAWS360 Student Information System - FERPA Compliant';
-COMMENT ON SCHEMA paws360 IS 'Main application schema for PAWS360';
-COMMENT ON SCHEMA audit IS 'Audit schema for FERPA compliance logging';
+CREATE TABLE public.course_section_meeting_days (
+    section_id bigint NOT NULL,
+    meeting_day character varying(255) NOT NULL,
+    CONSTRAINT course_section_meeting_days_meeting_day_check CHECK (((meeting_day)::text = ANY ((ARRAY['MONDAY'::character varying, 'TUESDAY'::character varying, 'WEDNESDAY'::character varying, 'THURSDAY'::character varying, 'FRIDAY'::character varying, 'SATURDAY'::character varying, 'SUNDAY'::character varying])::text[])))
+);
 
--- Table comments
-COMMENT ON TABLE paws360.users IS 'User accounts for AdminLTE authentication and authorization';
-COMMENT ON TABLE paws360.students IS 'Student personal and academic information (FERPA protected)';
-COMMENT ON TABLE paws360.courses IS 'Course catalog and metadata';
-COMMENT ON TABLE paws360.course_sections IS 'Specific course instances with scheduling';
-COMMENT ON TABLE paws360.enrollments IS 'Student-course enrollment relationships';
-COMMENT ON TABLE paws360.sessions IS 'AdminLTE session management';
-COMMENT ON TABLE paws360.dashboard_widgets IS 'AdminLTE dashboard customization';
-COMMENT ON TABLE paws360.notifications IS 'AdminLTE notification system';
-COMMENT ON TABLE audit.audit_log IS 'FERPA compliance audit trail';
 
--- =========================================
--- PERFORMANCE SETTINGS
--- =========================================
+--
+-- Name: course_sections; Type: TABLE; Schema: public; Owner: -
+--
 
--- Set performance-related settings
-ALTER DATABASE paws360 SET work_mem = '64MB';
-ALTER DATABASE paws360 SET maintenance_work_mem = '256MB';
-ALTER DATABASE paws360 SET shared_buffers = '256MB';
-ALTER DATABASE paws360 SET effective_cache_size = '1GB';
-ALTER DATABASE paws360 SET checkpoint_completion_target = 0.9;
-ALTER DATABASE paws360 SET wal_buffers = '16MB';
-ALTER DATABASE paws360 SET default_statistics_target = 100;
+CREATE TABLE public.course_sections (
+    academic_year integer NOT NULL,
+    auto_enroll_waitlist boolean NOT NULL,
+    consent_required boolean NOT NULL,
+    course_id integer NOT NULL,
+    current_enrollment integer,
+    current_waitlist integer,
+    end_time time(6) without time zone,
+    max_enrollment integer,
+    start_time time(6) without time zone,
+    waitlist_capacity integer,
+    building_id bigint,
+    classroom_id bigint,
+    created_at timestamp(6) with time zone NOT NULL,
+    parent_section_id bigint,
+    section_id bigint NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    section_code character varying(15) NOT NULL,
+    section_type character varying(20) NOT NULL,
+    term character varying(20) NOT NULL,
+    CONSTRAINT course_sections_section_type_check CHECK (((section_type)::text = ANY ((ARRAY['LECTURE'::character varying, 'LAB'::character varying, 'DISCUSSION'::character varying, 'SEMINAR'::character varying, 'ONLINE_COMPONENT'::character varying])::text[])))
+);
 
--- =========================================
--- FINAL SETUP
--- =========================================
 
--- Create indexes for performance
-REINDEX DATABASE paws360;
+--
+-- Name: course_sections_section_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
--- Analyze tables for query planning
-ANALYZE;
+ALTER TABLE public.course_sections ALTER COLUMN section_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.course_sections_section_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
 
--- Set search path for application
-ALTER DATABASE paws360 SET search_path TO paws360, public;
 
-COMMIT;</content>
-<parameter name="filePath">/home/ryan/repos/PAWS360ProjectPlan/paws360_database_ddl.sql
+--
+-- Name: courses; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.courses (
+    academic_year integer NOT NULL,
+    course_cost numeric(7,2) NOT NULL,
+    course_id integer NOT NULL,
+    credit_hours numeric(3,1) NOT NULL,
+    is_active boolean NOT NULL,
+    max_enrollment integer,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    course_level character varying(10),
+    course_code character varying(20) NOT NULL,
+    delivery_method character varying(20) NOT NULL,
+    term character varying(20) NOT NULL,
+    department character varying(64) NOT NULL,
+    course_name character varying(200) NOT NULL,
+    course_description text,
+    CONSTRAINT courses_delivery_method_check CHECK (((delivery_method)::text = ANY ((ARRAY['IN_PERSON'::character varying, 'ONLINE'::character varying, 'HYBRID'::character varying, 'BLENDED'::character varying])::text[]))),
+    CONSTRAINT courses_department_check CHECK (((department)::text = ANY ((ARRAY['BIOLOGICAL_SCIENCES'::character varying, 'CHEMISTRY_BIOCHEMISTRY'::character varying, 'COMPUTER_SCIENCE'::character varying, 'ECONOMICS'::character varying, 'ENGLISH'::character varying, 'HISTORY'::character varying, 'MATHEMATICAL_SCIENCES'::character varying, 'PHILOSOPHY'::character varying, 'PHYSICS'::character varying, 'POLITICAL_SCIENCE'::character varying, 'PSYCHOLOGY'::character varying, 'SOCIOLOGY'::character varying, 'ACCOUNTING'::character varying, 'FINANCE'::character varying, 'INFORMATION_TECHNOLOGY_MANAGEMENT'::character varying, 'MARKETING'::character varying, 'SUPPLY_CHAIN_OPERATIONS'::character varying, 'CIVIL_ENGINEERING'::character varying, 'ELECTRICAL_ENGINEERING'::character varying, 'INDUSTRIAL_ENGINEERING'::character varying, 'MATERIALS_ENGINEERING'::character varying, 'MECHANICAL_ENGINEERING'::character varying, 'COMMUNICATION_SCIENCES_DISORDERS'::character varying, 'BIOMEDICAL_SCIENCES'::character varying, 'OCCUPATIONAL_SCIENCE_TECHNOLOGY'::character varying, 'KINESIOLOGY'::character varying, 'NURSING'::character varying, 'CURRICULUM_INSTRUCTION'::character varying, 'EDUCATIONAL_POLICY_COMMUNITY_STUDIES'::character varying, 'EDUCATIONAL_PSYCHOLOGY'::character varying, 'ADMINISTRATIVE_LEADERSHIP'::character varying, 'ART_DESIGN'::character varying, 'DANCE'::character varying, 'FILM_VIDEO_ANIMATION_NEW_GENRES'::character varying, 'MUSIC'::character varying, 'THEATRE'::character varying, 'ARCHITECTURE'::character varying, 'URBAN_PLANNING'::character varying, 'FRESHWATER_SCIENCES'::character varying, 'PUBLIC_HEALTH'::character varying, 'INFORMATION_SCIENCE_TECHNOLOGY'::character varying, 'GENERAL_STUDIES'::character varying, 'UNDECLARED'::character varying])::text[])))
+);
+
+
+--
+-- Name: courses_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.courses_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: degree_programs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.degree_programs (
+    total_credits_required integer NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    degree_id bigint NOT NULL,
+    updated_at timestamp(6) with time zone NOT NULL,
+    code character varying(50) NOT NULL,
+    name character varying(200) NOT NULL
+);
+
+
+--
+-- Name: degree_programs_degree_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.degree_programs ALTER COLUMN degree_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.degree_programs_degree_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: degree_requirements; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.degree_requirements (
+    course_id integer NOT NULL,
+    is_required boolean NOT NULL,
+    degree_id bigint NOT NULL,
+    requirement_id bigint NOT NULL
+);
+
+
+--
+-- Name: degree_requirements_requirement_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.degree_requirements ALTER COLUMN requirement_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.degree_requirements_requirement_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: demo_data_sets; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.demo_data_sets (
+    admin_count integer NOT NULL,
+    course_count integer NOT NULL,
+    data_set_id integer NOT NULL,
+    faculty_count integer NOT NULL,
+    is_active boolean NOT NULL,
+    student_count integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    last_reset_at timestamp(6) without time zone,
+    updated_at timestamp(6) without time zone NOT NULL,
+    version character varying(20) NOT NULL,
+    data_consistency_hash character varying(64),
+    data_set_name character varying(100) NOT NULL,
+    description character varying(500),
+    reset_script_path character varying(255),
+    validation_script_path character varying(255)
+);
+
+
+--
+-- Name: demo_data_sets_data_set_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.demo_data_sets ALTER COLUMN data_set_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.demo_data_sets_data_set_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: emergency_contact; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.emergency_contact (
+    emergency_contact_id integer NOT NULL,
+    user_id integer NOT NULL,
+    zipcode character varying(10),
+    phone character varying(20),
+    relationship character varying(50),
+    city character varying(60),
+    email character varying(100),
+    name character varying(100) NOT NULL,
+    street_address_1 character varying(120),
+    street_address_2 character varying(120),
+    state character varying(255),
+    CONSTRAINT emergency_contact_state_check CHECK (((state)::text = ANY ((ARRAY['ALABAMA'::character varying, 'ALASKA'::character varying, 'ARIZONA'::character varying, 'ARKANSAS'::character varying, 'CALIFORNIA'::character varying, 'COLORADO'::character varying, 'CONNECTICUT'::character varying, 'DELAWARE'::character varying, 'FLORIDA'::character varying, 'GEORGIA'::character varying, 'HAWAII'::character varying, 'IDAHO'::character varying, 'ILLINOIS'::character varying, 'INDIANA'::character varying, 'IOWA'::character varying, 'KANSAS'::character varying, 'KENTUCKY'::character varying, 'LOUISIANA'::character varying, 'MAINE'::character varying, 'MARYLAND'::character varying, 'MASSACHUSETTS'::character varying, 'MICHIGAN'::character varying, 'MINNESOTA'::character varying, 'MISSISSIPPI'::character varying, 'MISSOURI'::character varying, 'MONTANA'::character varying, 'NEBRASKA'::character varying, 'NEVADA'::character varying, 'NEW_HAMPSHIRE'::character varying, 'NEW_JERSEY'::character varying, 'NEW_MEXICO'::character varying, 'NEW_YORK'::character varying, 'NORTH_CAROLINA'::character varying, 'NORTH_DAKOTA'::character varying, 'OHIO'::character varying, 'OKLAHOMA'::character varying, 'OREGON'::character varying, 'PENNSYLVANIA'::character varying, 'RHODE_ISLAND'::character varying, 'SOUTH_CAROLINA'::character varying, 'SOUTH_DAKOTA'::character varying, 'TENNESSEE'::character varying, 'TEXAS'::character varying, 'UTAH'::character varying, 'VERMONT'::character varying, 'VIRGINIA'::character varying, 'WASHINGTON'::character varying, 'WEST_VIRGINIA'::character varying, 'WISCONSIN'::character varying, 'WYOMING'::character varying, 'DISTRICT_OF_COLUMBIA'::character varying])::text[])))
+);
+
+
+--
+-- Name: emergency_contact_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.emergency_contact_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: faculty; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.faculty (
+    active boolean NOT NULL,
+    faculty_id integer NOT NULL,
+    hire_date date,
+    user_id integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    title character varying(120),
+    department character varying(255),
+    CONSTRAINT faculty_department_check CHECK (((department)::text = ANY ((ARRAY['BIOLOGICAL_SCIENCES'::character varying, 'CHEMISTRY_BIOCHEMISTRY'::character varying, 'COMPUTER_SCIENCE'::character varying, 'ECONOMICS'::character varying, 'ENGLISH'::character varying, 'HISTORY'::character varying, 'MATHEMATICAL_SCIENCES'::character varying, 'PHILOSOPHY'::character varying, 'PHYSICS'::character varying, 'POLITICAL_SCIENCE'::character varying, 'PSYCHOLOGY'::character varying, 'SOCIOLOGY'::character varying, 'ACCOUNTING'::character varying, 'FINANCE'::character varying, 'INFORMATION_TECHNOLOGY_MANAGEMENT'::character varying, 'MARKETING'::character varying, 'SUPPLY_CHAIN_OPERATIONS'::character varying, 'CIVIL_ENGINEERING'::character varying, 'ELECTRICAL_ENGINEERING'::character varying, 'INDUSTRIAL_ENGINEERING'::character varying, 'MATERIALS_ENGINEERING'::character varying, 'MECHANICAL_ENGINEERING'::character varying, 'COMMUNICATION_SCIENCES_DISORDERS'::character varying, 'BIOMEDICAL_SCIENCES'::character varying, 'OCCUPATIONAL_SCIENCE_TECHNOLOGY'::character varying, 'KINESIOLOGY'::character varying, 'NURSING'::character varying, 'CURRICULUM_INSTRUCTION'::character varying, 'EDUCATIONAL_POLICY_COMMUNITY_STUDIES'::character varying, 'EDUCATIONAL_PSYCHOLOGY'::character varying, 'ADMINISTRATIVE_LEADERSHIP'::character varying, 'ART_DESIGN'::character varying, 'DANCE'::character varying, 'FILM_VIDEO_ANIMATION_NEW_GENRES'::character varying, 'MUSIC'::character varying, 'THEATRE'::character varying, 'ARCHITECTURE'::character varying, 'URBAN_PLANNING'::character varying, 'FRESHWATER_SCIENCES'::character varying, 'PUBLIC_HEALTH'::character varying, 'INFORMATION_SCIENCE_TECHNOLOGY'::character varying, 'GENERAL_STUDIES'::character varying, 'UNDECLARED'::character varying])::text[])))
+);
+
+
+--
+-- Name: faculty_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.faculty_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: financial_accounts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.financial_accounts (
+    account_balance numeric(12,2) NOT NULL,
+    charges_due numeric(12,2) NOT NULL,
+    due_date date,
+    last_payment_amount numeric(12,2),
+    pending_aid numeric(12,2) NOT NULL,
+    student_id integer NOT NULL,
+    account_id bigint NOT NULL,
+    created_at timestamp(6) with time zone NOT NULL,
+    last_payment_at timestamp(6) with time zone,
+    updated_at timestamp(6) with time zone NOT NULL
+);
+
+
+--
+-- Name: financial_accounts_account_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.financial_accounts ALTER COLUMN account_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.financial_accounts_account_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: instructor; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.instructor (
+    hire_date date,
+    instructor_id integer NOT NULL,
+    part_time boolean NOT NULL,
+    user_id integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    title character varying(100),
+    department character varying(255),
+    CONSTRAINT instructor_department_check CHECK (((department)::text = ANY ((ARRAY['BIOLOGICAL_SCIENCES'::character varying, 'CHEMISTRY_BIOCHEMISTRY'::character varying, 'COMPUTER_SCIENCE'::character varying, 'ECONOMICS'::character varying, 'ENGLISH'::character varying, 'HISTORY'::character varying, 'MATHEMATICAL_SCIENCES'::character varying, 'PHILOSOPHY'::character varying, 'PHYSICS'::character varying, 'POLITICAL_SCIENCE'::character varying, 'PSYCHOLOGY'::character varying, 'SOCIOLOGY'::character varying, 'ACCOUNTING'::character varying, 'FINANCE'::character varying, 'INFORMATION_TECHNOLOGY_MANAGEMENT'::character varying, 'MARKETING'::character varying, 'SUPPLY_CHAIN_OPERATIONS'::character varying, 'CIVIL_ENGINEERING'::character varying, 'ELECTRICAL_ENGINEERING'::character varying, 'INDUSTRIAL_ENGINEERING'::character varying, 'MATERIALS_ENGINEERING'::character varying, 'MECHANICAL_ENGINEERING'::character varying, 'COMMUNICATION_SCIENCES_DISORDERS'::character varying, 'BIOMEDICAL_SCIENCES'::character varying, 'OCCUPATIONAL_SCIENCE_TECHNOLOGY'::character varying, 'KINESIOLOGY'::character varying, 'NURSING'::character varying, 'CURRICULUM_INSTRUCTION'::character varying, 'EDUCATIONAL_POLICY_COMMUNITY_STUDIES'::character varying, 'EDUCATIONAL_PSYCHOLOGY'::character varying, 'ADMINISTRATIVE_LEADERSHIP'::character varying, 'ART_DESIGN'::character varying, 'DANCE'::character varying, 'FILM_VIDEO_ANIMATION_NEW_GENRES'::character varying, 'MUSIC'::character varying, 'THEATRE'::character varying, 'ARCHITECTURE'::character varying, 'URBAN_PLANNING'::character varying, 'FRESHWATER_SCIENCES'::character varying, 'PUBLIC_HEALTH'::character varying, 'INFORMATION_SCIENCE_TECHNOLOGY'::character varying, 'GENERAL_STUDIES'::character varying, 'UNDECLARED'::character varying])::text[])))
+);
+
+
+--
+-- Name: instructor_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.instructor_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mentor; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mentor (
+    active boolean NOT NULL,
+    end_date date,
+    mentor_id integer NOT NULL,
+    start_date date,
+    user_id integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    program character varying(120)
+);
+
+
+--
+-- Name: mentor_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mentor_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: payment_plans; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.payment_plans (
+    monthly_payment numeric(12,2),
+    next_payment_date date,
+    remaining_payments integer,
+    student_id integer NOT NULL,
+    total_amount numeric(12,2),
+    plan_id bigint NOT NULL,
+    status character varying(20) NOT NULL,
+    name character varying(80),
+    CONSTRAINT payment_plans_status_check CHECK (((status)::text = ANY ((ARRAY['ACTIVE'::character varying, 'COMPLETED'::character varying, 'CANCELLED'::character varying])::text[])))
+);
+
+
+--
+-- Name: payment_plans_plan_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.payment_plans ALTER COLUMN plan_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.payment_plans_plan_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: professor; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.professor (
+    hire_date date,
+    professor_id integer NOT NULL,
+    tenured boolean NOT NULL,
+    user_id integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    title character varying(100),
+    department character varying(255),
+    CONSTRAINT professor_department_check CHECK (((department)::text = ANY ((ARRAY['BIOLOGICAL_SCIENCES'::character varying, 'CHEMISTRY_BIOCHEMISTRY'::character varying, 'COMPUTER_SCIENCE'::character varying, 'ECONOMICS'::character varying, 'ENGLISH'::character varying, 'HISTORY'::character varying, 'MATHEMATICAL_SCIENCES'::character varying, 'PHILOSOPHY'::character varying, 'PHYSICS'::character varying, 'POLITICAL_SCIENCE'::character varying, 'PSYCHOLOGY'::character varying, 'SOCIOLOGY'::character varying, 'ACCOUNTING'::character varying, 'FINANCE'::character varying, 'INFORMATION_TECHNOLOGY_MANAGEMENT'::character varying, 'MARKETING'::character varying, 'SUPPLY_CHAIN_OPERATIONS'::character varying, 'CIVIL_ENGINEERING'::character varying, 'ELECTRICAL_ENGINEERING'::character varying, 'INDUSTRIAL_ENGINEERING'::character varying, 'MATERIALS_ENGINEERING'::character varying, 'MECHANICAL_ENGINEERING'::character varying, 'COMMUNICATION_SCIENCES_DISORDERS'::character varying, 'BIOMEDICAL_SCIENCES'::character varying, 'OCCUPATIONAL_SCIENCE_TECHNOLOGY'::character varying, 'KINESIOLOGY'::character varying, 'NURSING'::character varying, 'CURRICULUM_INSTRUCTION'::character varying, 'EDUCATIONAL_POLICY_COMMUNITY_STUDIES'::character varying, 'EDUCATIONAL_PSYCHOLOGY'::character varying, 'ADMINISTRATIVE_LEADERSHIP'::character varying, 'ART_DESIGN'::character varying, 'DANCE'::character varying, 'FILM_VIDEO_ANIMATION_NEW_GENRES'::character varying, 'MUSIC'::character varying, 'THEATRE'::character varying, 'ARCHITECTURE'::character varying, 'URBAN_PLANNING'::character varying, 'FRESHWATER_SCIENCES'::character varying, 'PUBLIC_HEALTH'::character varying, 'INFORMATION_SCIENCE_TECHNOLOGY'::character varying, 'GENERAL_STUDIES'::character varying, 'UNDECLARED'::character varying])::text[])))
+);
+
+
+--
+-- Name: professor_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.professor_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: section_staff_assignments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.section_staff_assignments (
+    user_id integer NOT NULL,
+    assigned_at timestamp(6) with time zone NOT NULL,
+    assignment_id bigint NOT NULL,
+    section_id bigint NOT NULL,
+    role character varying(30) NOT NULL,
+    CONSTRAINT section_staff_assignments_role_check CHECK (((role)::text = ANY ((ARRAY['PROFESSOR'::character varying, 'INSTRUCTOR'::character varying, 'TEACHING_ASSISTANT'::character varying])::text[])))
+);
+
+
+--
+-- Name: section_staff_assignments_assignment_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.section_staff_assignments ALTER COLUMN assignment_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.section_staff_assignments_assignment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: student; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.student (
+    expected_graduation date,
+    gpa numeric(3,2),
+    student_id integer NOT NULL,
+    user_id integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    campus_id character varying(32),
+    department character varying(255),
+    enrollement_status character varying(255),
+    standing character varying(255),
+    CONSTRAINT student_department_check CHECK (((department)::text = ANY ((ARRAY['BIOLOGICAL_SCIENCES'::character varying, 'CHEMISTRY_BIOCHEMISTRY'::character varying, 'COMPUTER_SCIENCE'::character varying, 'ECONOMICS'::character varying, 'ENGLISH'::character varying, 'HISTORY'::character varying, 'MATHEMATICAL_SCIENCES'::character varying, 'PHILOSOPHY'::character varying, 'PHYSICS'::character varying, 'POLITICAL_SCIENCE'::character varying, 'PSYCHOLOGY'::character varying, 'SOCIOLOGY'::character varying, 'ACCOUNTING'::character varying, 'FINANCE'::character varying, 'INFORMATION_TECHNOLOGY_MANAGEMENT'::character varying, 'MARKETING'::character varying, 'SUPPLY_CHAIN_OPERATIONS'::character varying, 'CIVIL_ENGINEERING'::character varying, 'ELECTRICAL_ENGINEERING'::character varying, 'INDUSTRIAL_ENGINEERING'::character varying, 'MATERIALS_ENGINEERING'::character varying, 'MECHANICAL_ENGINEERING'::character varying, 'COMMUNICATION_SCIENCES_DISORDERS'::character varying, 'BIOMEDICAL_SCIENCES'::character varying, 'OCCUPATIONAL_SCIENCE_TECHNOLOGY'::character varying, 'KINESIOLOGY'::character varying, 'NURSING'::character varying, 'CURRICULUM_INSTRUCTION'::character varying, 'EDUCATIONAL_POLICY_COMMUNITY_STUDIES'::character varying, 'EDUCATIONAL_PSYCHOLOGY'::character varying, 'ADMINISTRATIVE_LEADERSHIP'::character varying, 'ART_DESIGN'::character varying, 'DANCE'::character varying, 'FILM_VIDEO_ANIMATION_NEW_GENRES'::character varying, 'MUSIC'::character varying, 'THEATRE'::character varying, 'ARCHITECTURE'::character varying, 'URBAN_PLANNING'::character varying, 'FRESHWATER_SCIENCES'::character varying, 'PUBLIC_HEALTH'::character varying, 'INFORMATION_SCIENCE_TECHNOLOGY'::character varying, 'GENERAL_STUDIES'::character varying, 'UNDECLARED'::character varying])::text[]))),
+    CONSTRAINT student_enrollement_status_check CHECK (((enrollement_status)::text = ANY ((ARRAY['ENROLLED'::character varying, 'WAITLISTED'::character varying, 'DROPPED'::character varying, 'COMPLETED'::character varying, 'WITHDRAWN'::character varying])::text[]))),
+    CONSTRAINT student_standing_check CHECK (((standing)::text = ANY ((ARRAY['FRESHMAN'::character varying, 'SOPHOMORE'::character varying, 'JUNIOR'::character varying, 'SENIOR'::character varying])::text[])))
+);
+
+
+--
+-- Name: student_advisors; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.student_advisors (
+    advisor_id integer NOT NULL,
+    primary_advisor boolean NOT NULL,
+    student_id integer NOT NULL,
+    assigned_at timestamp(6) with time zone NOT NULL,
+    id bigint NOT NULL
+);
+
+
+--
+-- Name: student_advisors_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.student_advisors ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.student_advisors_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: student_programs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.student_programs (
+    expected_grad_year integer,
+    primary_flag boolean NOT NULL,
+    student_id integer NOT NULL,
+    declared_at timestamp(6) with time zone NOT NULL,
+    degree_id bigint NOT NULL,
+    student_program_id bigint NOT NULL,
+    expected_grad_term character varying(255)
+);
+
+
+--
+-- Name: student_programs_student_program_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.student_programs ALTER COLUMN student_program_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.student_programs_student_program_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: student_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.student_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: ta; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ta (
+    active boolean NOT NULL,
+    end_date date,
+    id integer NOT NULL,
+    start_date date,
+    user_id integer NOT NULL,
+    weekly_hours integer,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    department character varying(255),
+    CONSTRAINT ta_department_check CHECK (((department)::text = ANY ((ARRAY['BIOLOGICAL_SCIENCES'::character varying, 'CHEMISTRY_BIOCHEMISTRY'::character varying, 'COMPUTER_SCIENCE'::character varying, 'ECONOMICS'::character varying, 'ENGLISH'::character varying, 'HISTORY'::character varying, 'MATHEMATICAL_SCIENCES'::character varying, 'PHILOSOPHY'::character varying, 'PHYSICS'::character varying, 'POLITICAL_SCIENCE'::character varying, 'PSYCHOLOGY'::character varying, 'SOCIOLOGY'::character varying, 'ACCOUNTING'::character varying, 'FINANCE'::character varying, 'INFORMATION_TECHNOLOGY_MANAGEMENT'::character varying, 'MARKETING'::character varying, 'SUPPLY_CHAIN_OPERATIONS'::character varying, 'CIVIL_ENGINEERING'::character varying, 'ELECTRICAL_ENGINEERING'::character varying, 'INDUSTRIAL_ENGINEERING'::character varying, 'MATERIALS_ENGINEERING'::character varying, 'MECHANICAL_ENGINEERING'::character varying, 'COMMUNICATION_SCIENCES_DISORDERS'::character varying, 'BIOMEDICAL_SCIENCES'::character varying, 'OCCUPATIONAL_SCIENCE_TECHNOLOGY'::character varying, 'KINESIOLOGY'::character varying, 'NURSING'::character varying, 'CURRICULUM_INSTRUCTION'::character varying, 'EDUCATIONAL_POLICY_COMMUNITY_STUDIES'::character varying, 'EDUCATIONAL_PSYCHOLOGY'::character varying, 'ADMINISTRATIVE_LEADERSHIP'::character varying, 'ART_DESIGN'::character varying, 'DANCE'::character varying, 'FILM_VIDEO_ANIMATION_NEW_GENRES'::character varying, 'MUSIC'::character varying, 'THEATRE'::character varying, 'ARCHITECTURE'::character varying, 'URBAN_PLANNING'::character varying, 'FRESHWATER_SCIENCES'::character varying, 'PUBLIC_HEALTH'::character varying, 'INFORMATION_SCIENCE_TECHNOLOGY'::character varying, 'GENERAL_STUDIES'::character varying, 'UNDECLARED'::character varying])::text[])))
+);
+
+
+--
+-- Name: ta_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.ta_seq
+    START WITH 1
+    INCREMENT BY 50
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.users (
+    account_locked boolean NOT NULL,
+    account_updated date NOT NULL,
+    changed_password date NOT NULL,
+    contact_by_email boolean NOT NULL,
+    contact_by_mail boolean NOT NULL,
+    contact_by_phone boolean NOT NULL,
+    date_created date NOT NULL,
+    dob date NOT NULL,
+    failed_attempts integer NOT NULL,
+    ferpa_directory_opt_in boolean NOT NULL,
+    photo_release_opt_in boolean NOT NULL,
+    user_id integer NOT NULL,
+    account_locked_duration timestamp(6) without time zone,
+    last_login timestamp(6) without time zone NOT NULL,
+    session_expiration timestamp(6) without time zone,
+    ssn character varying(9) NOT NULL,
+    phone character varying(10),
+    alternate_phone character varying(20),
+    lastname character varying(30) NOT NULL,
+    alternate_email character varying(50),
+    email character varying(50) NOT NULL,
+    firstname character varying(100) NOT NULL,
+    middlename character varying(100),
+    preferred_name character varying(100),
+    password character varying(120) NOT NULL,
+    country_code character varying(255),
+    ethnicity character varying(255),
+    ferpa_compliance character varying(255) NOT NULL,
+    gender character varying(255),
+    nationality character varying(255),
+    profile_picture_url character varying(255),
+    role character varying(255) NOT NULL,
+    session_token character varying(255),
+    status character varying(255) NOT NULL,
+    CONSTRAINT users_country_code_check CHECK (((country_code)::text = ANY ((ARRAY['US'::character varying, 'CA'::character varying, 'MX'::character varying, 'JM'::character varying, 'TT'::character varying, 'BB'::character varying, 'BR'::character varying, 'AR'::character varying, 'CL'::character varying, 'CO'::character varying, 'PE'::character varying, 'VE'::character varying, 'UY'::character varying, 'PY'::character varying, 'BO'::character varying, 'EC'::character varying, 'GB'::character varying, 'IE'::character varying, 'FR'::character varying, 'DE'::character varying, 'ES'::character varying, 'IT'::character varying, 'PT'::character varying, 'NL'::character varying, 'BE'::character varying, 'CH'::character varying, 'AT'::character varying, 'SE'::character varying, 'NO'::character varying, 'DK'::character varying, 'FI'::character varying, 'PL'::character varying, 'CZ'::character varying, 'SK'::character varying, 'HU'::character varying, 'GR'::character varying, 'RO'::character varying, 'BG'::character varying, 'UA'::character varying, 'RU'::character varying, 'TR'::character varying, 'IL'::character varying, 'SA'::character varying, 'AE'::character varying, 'QA'::character varying, 'KW'::character varying, 'OM'::character varying, 'BH'::character varying, 'JO'::character varying, 'LB'::character varying, 'IR'::character varying, 'IQ'::character varying, 'ZA'::character varying, 'NG'::character varying, 'KE'::character varying, 'EG'::character varying, 'GH'::character varying, 'TZ'::character varying, 'UG'::character varying, 'ZM'::character varying, 'ZW'::character varying, 'DZ'::character varying, 'MA'::character varying, 'TN'::character varying, 'ET'::character varying, 'SD'::character varying, 'IN'::character varying, 'CN'::character varying, 'JP'::character varying, 'KR'::character varying, 'PK'::character varying, 'BD'::character varying, 'LK'::character varying, 'NP'::character varying, 'AF'::character varying, 'MY'::character varying, 'SG'::character varying, 'TH'::character varying, 'VN'::character varying, 'PH'::character varying, 'ID'::character varying, 'MM'::character varying, 'KH'::character varying, 'AU'::character varying, 'NZ'::character varying, 'FJ'::character varying, 'PG'::character varying])::text[]))),
+    CONSTRAINT users_ethnicity_check CHECK (((ethnicity)::text = ANY ((ARRAY['HISPANIC_OR_LATINO'::character varying, 'NOT_HISPANIC_OR_LATINO'::character varying, 'AMERICAN_INDIAN_OR_ALASKA_NATIVE'::character varying, 'ASIAN'::character varying, 'BLACK_OR_AFRICAN_AMERICAN'::character varying, 'NATIVE_HAWAIIAN_OR_OTHER_PACIFIC_ISLANDER'::character varying, 'WHITE'::character varying, 'TWO_OR_MORE_RACES'::character varying, 'OTHER'::character varying, 'PREFER_NOT_TO_ANSWER'::character varying])::text[]))),
+    CONSTRAINT users_ferpa_compliance_check CHECK (((ferpa_compliance)::text = ANY ((ARRAY['PUBLIC'::character varying, 'DIRECTORY'::character varying, 'RESTRICTED'::character varying, 'CONFIDENTIAL'::character varying])::text[]))),
+    CONSTRAINT users_gender_check CHECK (((gender)::text = ANY ((ARRAY['MALE'::character varying, 'FEMALE'::character varying, 'OTHER'::character varying])::text[]))),
+    CONSTRAINT users_nationality_check CHECK (((nationality)::text = ANY ((ARRAY['UNITED_STATES'::character varying, 'CANADA'::character varying, 'MEXICO'::character varying, 'BRAZIL'::character varying, 'ARGENTINA'::character varying, 'CHILE'::character varying, 'COLOMBIA'::character varying, 'PERU'::character varying, 'UNITED_KINGDOM'::character varying, 'FRANCE'::character varying, 'GERMANY'::character varying, 'ITALY'::character varying, 'SPAIN'::character varying, 'PORTUGAL'::character varying, 'NETHERLANDS'::character varying, 'BELGIUM'::character varying, 'SWEDEN'::character varying, 'NORWAY'::character varying, 'DENMARK'::character varying, 'FINLAND'::character varying, 'POLAND'::character varying, 'GREECE'::character varying, 'SWITZERLAND'::character varying, 'IRELAND'::character varying, 'RUSSIA'::character varying, 'NIGERIA'::character varying, 'SOUTH_AFRICA'::character varying, 'EGYPT'::character varying, 'KENYA'::character varying, 'GHANA'::character varying, 'ETHIOPIA'::character varying, 'MOROCCO'::character varying, 'SAUDI_ARABIA'::character varying, 'UNITED_ARAB_EMIRATES'::character varying, 'TURKEY'::character varying, 'ISRAEL'::character varying, 'IRAN'::character varying, 'INDIA'::character varying, 'CHINA'::character varying, 'JAPAN'::character varying, 'SOUTH_KOREA'::character varying, 'PAKISTAN'::character varying, 'BANGLADESH'::character varying, 'INDONESIA'::character varying, 'PHILIPPINES'::character varying, 'VIETNAM'::character varying, 'THAILAND'::character varying, 'MALAYSIA'::character varying, 'SINGAPORE'::character varying, 'AUSTRALIA'::character varying, 'NEW_ZEALAND'::character varying, 'FIJI'::character varying, 'OTHER'::character varying, 'PREFER_NOT_TO_ANSWER'::character varying])::text[]))),
+    CONSTRAINT users_role_check CHECK (((role)::text = ANY ((ARRAY['STUDENT'::character varying, 'PROFESSOR'::character varying, 'TA'::character varying, 'INSTRUCTOR'::character varying, 'COUNSELOR'::character varying, 'MENTOR'::character varying, 'ADVISOR'::character varying, 'FACULTY'::character varying, 'STAFF'::character varying, 'Administrator'::character varying, 'Super_Administrator'::character varying])::text[]))),
+    CONSTRAINT users_status_check CHECK (((status)::text = ANY ((ARRAY['ACTIVE'::character varying, 'INACTIVE'::character varying, 'PENDING'::character varying, 'SUSPENDED'::character varying])::text[])))
+);
+
+
+--
+-- Name: users_user_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.users ALTER COLUMN user_id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.users_user_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: account_transactions account_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_transactions
+    ADD CONSTRAINT account_transactions_pkey PRIMARY KEY (transaction_id);
+
+
+--
+-- Name: address address_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.address
+    ADD CONSTRAINT address_pkey PRIMARY KEY (address_id);
+
+
+--
+-- Name: advisor_appointments advisor_appointments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.advisor_appointments
+    ADD CONSTRAINT advisor_appointments_pkey PRIMARY KEY (appointment_id);
+
+
+--
+-- Name: advisor_messages advisor_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.advisor_messages
+    ADD CONSTRAINT advisor_messages_pkey PRIMARY KEY (message_id);
+
+
+--
+-- Name: advisor advisor_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.advisor
+    ADD CONSTRAINT advisor_pkey PRIMARY KEY (advisor_id);
+
+
+--
+-- Name: advisor advisor_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.advisor
+    ADD CONSTRAINT advisor_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: aid_awards aid_awards_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.aid_awards
+    ADD CONSTRAINT aid_awards_pkey PRIMARY KEY (award_id);
+
+
+--
+-- Name: authentication_sessions authentication_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.authentication_sessions
+    ADD CONSTRAINT authentication_sessions_pkey PRIMARY KEY (session_id);
+
+
+--
+-- Name: authentication_sessions authentication_sessions_session_token_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.authentication_sessions
+    ADD CONSTRAINT authentication_sessions_session_token_key UNIQUE (session_token);
+
+
+--
+-- Name: buildings buildings_code_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buildings
+    ADD CONSTRAINT buildings_code_key UNIQUE (code);
+
+
+--
+-- Name: buildings buildings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.buildings
+    ADD CONSTRAINT buildings_pkey PRIMARY KEY (building_id);
+
+
+--
+-- Name: classrooms classrooms_building_id_room_number_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.classrooms
+    ADD CONSTRAINT classrooms_building_id_room_number_key UNIQUE (building_id, room_number);
+
+
+--
+-- Name: classrooms classrooms_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.classrooms
+    ADD CONSTRAINT classrooms_pkey PRIMARY KEY (classroom_id);
+
+
+--
+-- Name: counselor counselor_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.counselor
+    ADD CONSTRAINT counselor_pkey PRIMARY KEY (councelor_id);
+
+
+--
+-- Name: counselor counselor_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.counselor
+    ADD CONSTRAINT counselor_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: course_enrollments course_enrollments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_enrollments
+    ADD CONSTRAINT course_enrollments_pkey PRIMARY KEY (enrollment_id);
+
+
+--
+-- Name: course_enrollments course_enrollments_student_id_lecture_section_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_enrollments
+    ADD CONSTRAINT course_enrollments_student_id_lecture_section_id_key UNIQUE (student_id, lecture_section_id);
+
+
+--
+-- Name: course_prerequisites course_prerequisites_course_id_prerequisite_course_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_prerequisites
+    ADD CONSTRAINT course_prerequisites_course_id_prerequisite_course_id_key UNIQUE (course_id, prerequisite_course_id);
+
+
+--
+-- Name: course_prerequisites course_prerequisites_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_prerequisites
+    ADD CONSTRAINT course_prerequisites_pkey PRIMARY KEY (course_prerequisite_id);
+
+
+--
+-- Name: course_section_meeting_days course_section_meeting_days_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_section_meeting_days
+    ADD CONSTRAINT course_section_meeting_days_pkey PRIMARY KEY (section_id, meeting_day);
+
+
+--
+-- Name: course_sections course_sections_course_id_section_code_term_academic_year_s_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_sections
+    ADD CONSTRAINT course_sections_course_id_section_code_term_academic_year_s_key UNIQUE (course_id, section_code, term, academic_year, section_type);
+
+
+--
+-- Name: course_sections course_sections_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_sections
+    ADD CONSTRAINT course_sections_pkey PRIMARY KEY (section_id);
+
+
+--
+-- Name: courses courses_course_code_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.courses
+    ADD CONSTRAINT courses_course_code_key UNIQUE (course_code);
+
+
+--
+-- Name: courses courses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.courses
+    ADD CONSTRAINT courses_pkey PRIMARY KEY (course_id);
+
+
+--
+-- Name: degree_programs degree_programs_code_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.degree_programs
+    ADD CONSTRAINT degree_programs_code_key UNIQUE (code);
+
+
+--
+-- Name: degree_programs degree_programs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.degree_programs
+    ADD CONSTRAINT degree_programs_pkey PRIMARY KEY (degree_id);
+
+
+--
+-- Name: degree_requirements degree_requirements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.degree_requirements
+    ADD CONSTRAINT degree_requirements_pkey PRIMARY KEY (requirement_id);
+
+
+--
+-- Name: demo_data_sets demo_data_sets_data_set_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.demo_data_sets
+    ADD CONSTRAINT demo_data_sets_data_set_name_key UNIQUE (data_set_name);
+
+
+--
+-- Name: demo_data_sets demo_data_sets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.demo_data_sets
+    ADD CONSTRAINT demo_data_sets_pkey PRIMARY KEY (data_set_id);
+
+
+--
+-- Name: emergency_contact emergency_contact_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.emergency_contact
+    ADD CONSTRAINT emergency_contact_pkey PRIMARY KEY (emergency_contact_id);
+
+
+--
+-- Name: faculty faculty_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.faculty
+    ADD CONSTRAINT faculty_pkey PRIMARY KEY (faculty_id);
+
+
+--
+-- Name: faculty faculty_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.faculty
+    ADD CONSTRAINT faculty_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: financial_accounts financial_accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.financial_accounts
+    ADD CONSTRAINT financial_accounts_pkey PRIMARY KEY (account_id);
+
+
+--
+-- Name: financial_accounts financial_accounts_student_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.financial_accounts
+    ADD CONSTRAINT financial_accounts_student_id_key UNIQUE (student_id);
+
+
+--
+-- Name: instructor instructor_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.instructor
+    ADD CONSTRAINT instructor_pkey PRIMARY KEY (instructor_id);
+
+
+--
+-- Name: instructor instructor_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.instructor
+    ADD CONSTRAINT instructor_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: mentor mentor_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentor
+    ADD CONSTRAINT mentor_pkey PRIMARY KEY (mentor_id);
+
+
+--
+-- Name: mentor mentor_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentor
+    ADD CONSTRAINT mentor_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: payment_plans payment_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_plans
+    ADD CONSTRAINT payment_plans_pkey PRIMARY KEY (plan_id);
+
+
+--
+-- Name: professor professor_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.professor
+    ADD CONSTRAINT professor_pkey PRIMARY KEY (professor_id);
+
+
+--
+-- Name: professor professor_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.professor
+    ADD CONSTRAINT professor_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: section_staff_assignments section_staff_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.section_staff_assignments
+    ADD CONSTRAINT section_staff_assignments_pkey PRIMARY KEY (assignment_id);
+
+
+--
+-- Name: section_staff_assignments section_staff_assignments_section_id_user_id_role_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.section_staff_assignments
+    ADD CONSTRAINT section_staff_assignments_section_id_user_id_role_key UNIQUE (section_id, user_id, role);
+
+
+--
+-- Name: student_advisors student_advisors_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student_advisors
+    ADD CONSTRAINT student_advisors_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: student_advisors student_advisors_student_id_advisor_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student_advisors
+    ADD CONSTRAINT student_advisors_student_id_advisor_id_key UNIQUE (student_id, advisor_id);
+
+
+--
+-- Name: student student_campus_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student
+    ADD CONSTRAINT student_campus_id_key UNIQUE (campus_id);
+
+
+--
+-- Name: student student_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student
+    ADD CONSTRAINT student_pkey PRIMARY KEY (student_id);
+
+
+--
+-- Name: student_programs student_programs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student_programs
+    ADD CONSTRAINT student_programs_pkey PRIMARY KEY (student_program_id);
+
+
+--
+-- Name: student_programs student_programs_student_id_degree_id_primary_flag_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student_programs
+    ADD CONSTRAINT student_programs_student_id_degree_id_primary_flag_key UNIQUE (student_id, degree_id, primary_flag);
+
+
+--
+-- Name: student student_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student
+    ADD CONSTRAINT student_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: ta ta_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ta
+    ADD CONSTRAINT ta_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ta ta_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ta
+    ADD CONSTRAINT ta_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: users users_ssn_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_ssn_key UNIQUE (ssn);
+
+
+--
+-- Name: account_transactions fk1vrxb98kn1mpw4wydnc1a828l; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_transactions
+    ADD CONSTRAINT fk1vrxb98kn1mpw4wydnc1a828l FOREIGN KEY (student_id) REFERENCES public.student(student_id);
+
+
+--
+-- Name: course_sections fk1y9luj5asbv91o3hxa6jo2c6; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_sections
+    ADD CONSTRAINT fk1y9luj5asbv91o3hxa6jo2c6 FOREIGN KEY (parent_section_id) REFERENCES public.course_sections(section_id);
+
+
+--
+-- Name: advisor_messages fk2i4y9tfplrfmuffo2j6mktryn; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.advisor_messages
+    ADD CONSTRAINT fk2i4y9tfplrfmuffo2j6mktryn FOREIGN KEY (advisor_id) REFERENCES public.advisor(advisor_id);
+
+
+--
+-- Name: student_programs fk2qxlfsgxp1yo86gq47lphbvl3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student_programs
+    ADD CONSTRAINT fk2qxlfsgxp1yo86gq47lphbvl3 FOREIGN KEY (student_id) REFERENCES public.student(student_id);
+
+
+--
+-- Name: course_sections fk4xiaseygl0aodt5ahkbm8s2ds; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_sections
+    ADD CONSTRAINT fk4xiaseygl0aodt5ahkbm8s2ds FOREIGN KEY (course_id) REFERENCES public.courses(course_id);
+
+
+--
+-- Name: authentication_sessions fk5hjcfttlal36qo0pejlx9hor9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.authentication_sessions
+    ADD CONSTRAINT fk5hjcfttlal36qo0pejlx9hor9 FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: student_advisors fk5qmceylbrl9w6rue4mcuycf71; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student_advisors
+    ADD CONSTRAINT fk5qmceylbrl9w6rue4mcuycf71 FOREIGN KEY (advisor_id) REFERENCES public.advisor(advisor_id);
+
+
+--
+-- Name: professor fk61e8vtqmh2l1p3fiiildvva6t; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.professor
+    ADD CONSTRAINT fk61e8vtqmh2l1p3fiiildvva6t FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: advisor_appointments fk6e0vxg1ppc5brefa1ys9ewclh; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.advisor_appointments
+    ADD CONSTRAINT fk6e0vxg1ppc5brefa1ys9ewclh FOREIGN KEY (advisor_id) REFERENCES public.advisor(advisor_id);
+
+
+--
+-- Name: address fk6i66ijb8twgcqtetl8eeeed6v; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.address
+    ADD CONSTRAINT fk6i66ijb8twgcqtetl8eeeed6v FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: classroom_features fk6o2aofnje40ibwmb88ca1l8dx; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.classroom_features
+    ADD CONSTRAINT fk6o2aofnje40ibwmb88ca1l8dx FOREIGN KEY (classroom_id) REFERENCES public.classrooms(classroom_id);
+
+
+--
+-- Name: aid_awards fk78tjlkbq62urrawj5ayddodtb; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.aid_awards
+    ADD CONSTRAINT fk78tjlkbq62urrawj5ayddodtb FOREIGN KEY (student_id) REFERENCES public.student(student_id);
+
+
+--
+-- Name: counselor fk7o8cant90qt9xf19jxtpm0jfw; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.counselor
+    ADD CONSTRAINT fk7o8cant90qt9xf19jxtpm0jfw FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: course_section_meeting_days fk97iadtbomrg3fxh60b9ovtmda; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_section_meeting_days
+    ADD CONSTRAINT fk97iadtbomrg3fxh60b9ovtmda FOREIGN KEY (section_id) REFERENCES public.course_sections(section_id);
+
+
+--
+-- Name: ta fk9d7sppm77urhfa1v299bi4rjm; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ta
+    ADD CONSTRAINT fk9d7sppm77urhfa1v299bi4rjm FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: advisor_appointments fkbo0igfpw0t0gcqs1k5iv4jiy9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.advisor_appointments
+    ADD CONSTRAINT fkbo0igfpw0t0gcqs1k5iv4jiy9 FOREIGN KEY (student_id) REFERENCES public.student(student_id);
+
+
+--
+-- Name: faculty fkfakwwhqpm5bahy2do8t30j58r; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.faculty
+    ADD CONSTRAINT fkfakwwhqpm5bahy2do8t30j58r FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: course_sections fkfhbvlm68op1v30bngy5ytm3ky; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_sections
+    ADD CONSTRAINT fkfhbvlm68op1v30bngy5ytm3ky FOREIGN KEY (classroom_id) REFERENCES public.classrooms(classroom_id);
+
+
+--
+-- Name: degree_requirements fkh2uh82wv3ko235090caxqdcha; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.degree_requirements
+    ADD CONSTRAINT fkh2uh82wv3ko235090caxqdcha FOREIGN KEY (degree_id) REFERENCES public.degree_programs(degree_id);
+
+
+--
+-- Name: student_programs fkhgm4hl76xc1o4fwtxbcb6de8y; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student_programs
+    ADD CONSTRAINT fkhgm4hl76xc1o4fwtxbcb6de8y FOREIGN KEY (degree_id) REFERENCES public.degree_programs(degree_id);
+
+
+--
+-- Name: course_prerequisites fkhh4f1avebuvlv54m3j3l3pp36; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_prerequisites
+    ADD CONSTRAINT fkhh4f1avebuvlv54m3j3l3pp36 FOREIGN KEY (course_id) REFERENCES public.courses(course_id);
+
+
+--
+-- Name: financial_accounts fkhtkdj327u21b40i9tdd8xc238; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.financial_accounts
+    ADD CONSTRAINT fkhtkdj327u21b40i9tdd8xc238 FOREIGN KEY (student_id) REFERENCES public.student(student_id);
+
+
+--
+-- Name: payment_plans fkhyiy8fa28t2iqnjq68ajmk59k; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_plans
+    ADD CONSTRAINT fkhyiy8fa28t2iqnjq68ajmk59k FOREIGN KEY (student_id) REFERENCES public.student(student_id);
+
+
+--
+-- Name: student fkk0thg920a3xk3v59yjbsatw1l; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student
+    ADD CONSTRAINT fkk0thg920a3xk3v59yjbsatw1l FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: student_advisors fkkb6ycs0jd8ir3guo6o4q4ge3p; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.student_advisors
+    ADD CONSTRAINT fkkb6ycs0jd8ir3guo6o4q4ge3p FOREIGN KEY (student_id) REFERENCES public.student(student_id);
+
+
+--
+-- Name: instructor fkl05wgmungp55i9sr39da79agy; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.instructor
+    ADD CONSTRAINT fkl05wgmungp55i9sr39da79agy FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: course_enrollments fklencphvbdvpfumgyn871fps4t; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_enrollments
+    ADD CONSTRAINT fklencphvbdvpfumgyn871fps4t FOREIGN KEY (student_id) REFERENCES public.student(student_id);
+
+
+--
+-- Name: section_staff_assignments fklrdxlwnkehmd3hg00ish0dnsh; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.section_staff_assignments
+    ADD CONSTRAINT fklrdxlwnkehmd3hg00ish0dnsh FOREIGN KEY (section_id) REFERENCES public.course_sections(section_id);
+
+
+--
+-- Name: advisor_messages fklrexynj783nqprr1dwpxq2r54; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.advisor_messages
+    ADD CONSTRAINT fklrexynj783nqprr1dwpxq2r54 FOREIGN KEY (student_id) REFERENCES public.student(student_id);
+
+
+--
+-- Name: section_staff_assignments fkmga20mm6287wslj5k7uf8ai05; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.section_staff_assignments
+    ADD CONSTRAINT fkmga20mm6287wslj5k7uf8ai05 FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: advisor fknpt0ewyx1oh40k1c835ak6kjr; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.advisor
+    ADD CONSTRAINT fknpt0ewyx1oh40k1c835ak6kjr FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: emergency_contact fkntgmuu2ichvsflk6uupb4w6q9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.emergency_contact
+    ADD CONSTRAINT fkntgmuu2ichvsflk6uupb4w6q9 FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: course_prerequisites fkolf0a7iwh8c1mv9keyis4ebe8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_prerequisites
+    ADD CONSTRAINT fkolf0a7iwh8c1mv9keyis4ebe8 FOREIGN KEY (prerequisite_course_id) REFERENCES public.courses(course_id);
+
+
+--
+-- Name: course_enrollments fkoqo123qptierplmltbvf4h340; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_enrollments
+    ADD CONSTRAINT fkoqo123qptierplmltbvf4h340 FOREIGN KEY (lecture_section_id) REFERENCES public.course_sections(section_id);
+
+
+--
+-- Name: classrooms fkp169e84csib3wbj8ipuh3omkg; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.classrooms
+    ADD CONSTRAINT fkp169e84csib3wbj8ipuh3omkg FOREIGN KEY (building_id) REFERENCES public.buildings(building_id);
+
+
+--
+-- Name: mentor fkpnuc2btrta2rqf4a1p7i542gi; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentor
+    ADD CONSTRAINT fkpnuc2btrta2rqf4a1p7i542gi FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: course_sections fkq1ooiqf1p73lmdifqf04l657g; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_sections
+    ADD CONSTRAINT fkq1ooiqf1p73lmdifqf04l657g FOREIGN KEY (building_id) REFERENCES public.buildings(building_id);
+
+
+--
+-- Name: degree_requirements fkq69nhh4savwx30kajth2do4qp; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.degree_requirements
+    ADD CONSTRAINT fkq69nhh4savwx30kajth2do4qp FOREIGN KEY (course_id) REFERENCES public.courses(course_id);
+
+
+--
+-- Name: course_enrollments fkqiwek769v29r3n8b8wwllpq27; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.course_enrollments
+    ADD CONSTRAINT fkqiwek769v29r3n8b8wwllpq27 FOREIGN KEY (lab_section_id) REFERENCES public.course_sections(section_id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict SZG1QbB7l5RczQxRXhCrOPy4rmaKfaQfWV3G9S0aIeh6IbsAajsBEigUhsv5GKr
+

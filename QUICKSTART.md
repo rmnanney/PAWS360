@@ -6,10 +6,11 @@ Welcome! This guide will get you up and running in minutes.
 
 ```bash
 # 1. Run setup (installs everything you need)
-./scripts/setup/setup-from-scratch.sh
+bash setup.sh
+# OR: bash scripts/setup/setup-from-scratch.sh
 
 # 2. Start the application
-./scripts/setup/start-app.sh
+bash scripts/setup/start-app.sh
 
 # 3. Open browser to http://localhost:3000
 ```

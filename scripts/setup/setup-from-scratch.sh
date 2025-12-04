@@ -161,11 +161,9 @@ echo -e "${GREEN}✓${NC} PostgreSQL container started"
 
 # Wait for PostgreSQL to be ready
 echo "Waiting for PostgreSQL to be ready..."
-sleep 5
-
 max_attempts=30
 attempt=0
-while ! docker exec paws360-postgres pg_isready -U paws360 >/dev/null 2>&1; do
+while ! docker exec paws360-postgres pg_isready -U paws360 -d paws360_dev >/dev/null 2>&1; do
     attempt=$((attempt + 1))
     if [ $attempt -eq $max_attempts ]; then
         echo -e "${RED}✗${NC} PostgreSQL failed to start after ${max_attempts} seconds"

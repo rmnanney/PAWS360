@@ -12,105 +12,80 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration
-DB_NAME="paws360"
-DB_USER="paws360_admin"
+# Configuration - Using Docker container from setup script
+DB_NAME="paws360_dev"
+DB_USER="paws360"
+DB_PASSWORD="paws360_dev_password"
 DB_HOST="localhost"
 DB_PORT="5432"
+CONTAINER_NAME="paws360-postgres"
 
 echo -e "${BLUE}🐘 PAWS360 Database Setup${NC}"
 echo "================================="
 
-# Check if PostgreSQL is installed
-if ! command -v psql &> /dev/null; then
-    echo -e "${RED}❌ PostgreSQL is not installed. Please install PostgreSQL first.${NC}"
-    echo "   Ubuntu/Debian: sudo apt install postgresql postgresql-contrib"
-    echo "   macOS: brew install postgresql"
-    echo "   CentOS/RHEL: sudo yum install postgresql-server postgresql-contrib"
+# Check if Docker container is running
+if ! docker ps | grep -q "$CONTAINER_NAME"; then
+    echo -e "${RED}❌ PostgreSQL container '$CONTAINER_NAME' is not running.${NC}"
+    echo "   Please run: bash scripts/setup/setup-from-scratch.sh"
     exit 1
 fi
 
-# Check if PostgreSQL is running
-if ! sudo -u postgres psql -c "SELECT 1;" &> /dev/null; then
-    echo -e "${RED}❌ PostgreSQL is not running. Please start PostgreSQL service.${NC}"
-    echo "   Ubuntu/Debian: sudo systemctl start postgresql"
-    echo "   macOS: brew services start postgresql"
-    echo "   CentOS/RHEL: sudo systemctl start postgresql"
-    exit 1
-fi
+echo -e "${GREEN}✅ PostgreSQL container is running${NC}"
 
-echo -e "${GREEN}✅ PostgreSQL is running${NC}"
+# Wait for PostgreSQL to be fully ready
+echo -e "${BLUE}Waiting for database to be ready...${NC}"
+max_attempts=30
+attempt=0
+while ! docker exec $CONTAINER_NAME pg_isready -U $DB_USER -d $DB_NAME >/dev/null 2>&1; do
+    attempt=$((attempt + 1))
+    if [ $attempt -eq $max_attempts ]; then
+        echo -e "${RED}❌ Database connection failed after ${max_attempts} seconds${NC}"
+        exit 1
+    fi
+    sleep 1
+done
 
-# Get database password
-echo -e "${YELLOW}Enter password for database user '${DB_USER}':${NC}"
-read -s DB_PASSWORD
+echo -e "${GREEN}✅ Database connection successful${NC}"
 
-if [ -z "$DB_PASSWORD" ]; then
-    echo -e "${RED}❌ Password cannot be empty${NC}"
-    exit 1
-fi
-
-echo -e "\n${BLUE}Setting up database...${NC}"
-
-# Create user and database
-sudo -u postgres psql << EOF
--- Create user if not exists
-DO \$\$
-BEGIN
-   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${DB_USER}') THEN
-      CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';
-   END IF;
-END
-\$\$;
-
--- Create database if not exists
-SELECT 'CREATE DATABASE ${DB_NAME} OWNER ${DB_USER}'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${DB_NAME}')\gexec
-
--- Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};
-EOF
-
-echo -e "${GREEN}✅ Database and user created${NC}"
-
-# Test connection
-echo -e "${BLUE}Testing database connection...${NC}"
-export PGPASSWORD="${DB_PASSWORD}"
-
-if psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT version();" &> /dev/null; then
-    echo -e "${GREEN}✅ Database connection successful${NC}"
-else
-    echo -e "${RED}❌ Database connection failed${NC}"
-    exit 1
-fi
-
-# Check for DDL file
-DDL_FILE="paws360_database_ddl.sql"
+# Check for DDL file (look in database directory)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DDL_FILE="$SCRIPT_DIR/paws360_database_ddl.sql"
 if [ ! -f "$DDL_FILE" ]; then
-    echo -e "${RED}❌ DDL file '${DDL_FILE}' not found in current directory${NC}"
-    echo "   Please ensure you're running this script from the database directory"
+    echo -e "${RED}❌ DDL file '${DDL_FILE}' not found${NC}"
+    echo "   Expected location: database/paws360_database_ddl.sql"
     exit 1
 fi
 
 # Run DDL
 echo -e "${BLUE}Creating database schema...${NC}"
-psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -f "$DDL_FILE"
+if ! cat "$DDL_FILE" | docker exec -i $CONTAINER_NAME psql -U $DB_USER -d $DB_NAME 2>&1 | tee /tmp/paws360_ddl.log | grep -i "ERROR" | head -5; then
+    echo -e "${GREEN}✓${NC} No critical errors in schema creation"
+else
+    echo -e "${RED}✗${NC} Errors detected in DDL execution (see /tmp/paws360_ddl.log for details)"
+    echo ""
+    echo "First few errors:"
+    grep -i "ERROR" /tmp/paws360_ddl.log | head -10
+    exit 1
+fi
+
+# Verify schemas were created
+echo -e "${BLUE}Verifying schemas...${NC}"
+SCHEMA_COUNT=$(docker exec $CONTAINER_NAME psql -U $DB_USER -d $DB_NAME -t -c "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name IN ('paws360', 'audit');")
+if [ "$SCHEMA_COUNT" -eq 2 ]; then
+    echo -e "${GREEN}✓${NC} Schemas created successfully"
+else
+    echo -e "${RED}✗${NC} Schema creation failed (found $SCHEMA_COUNT/2 schemas)"
+    exit 1
+fi
 
 echo -e "${GREEN}✅ Database schema created${NC}"
 
 # Check for seed data
-SEED_FILE="paws360_seed_data.sql"
+SEED_FILE="$SCRIPT_DIR/paws360_seed_data.sql"
 if [ -f "$SEED_FILE" ]; then
-    echo -e "${YELLOW}Seed data file found. Load sample data? (y/n):${NC}"
-    read -r LOAD_SEED
-
-    if [[ $LOAD_SEED =~ ^[Yy]$ ]]; then
-        echo -e "${BLUE}Loading sample data (this may take a few minutes)...${NC}"
-        psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -f "$SEED_FILE"
-        echo -e "${GREEN}✅ Sample data loaded${NC}"
-    else
-        echo -e "${YELLOW}Skipping sample data load${NC}"
-    fi
+    echo -e "${BLUE}Loading sample data (this may take a few minutes)...${NC}"
+    cat "$SEED_FILE" | docker exec -i $CONTAINER_NAME psql -U $DB_USER -d $DB_NAME
+    echo -e "${GREEN}✅ Sample data loaded${NC}"
 else
     echo -e "${YELLOW}No seed data file found, skipping sample data load${NC}"
 fi
@@ -118,7 +93,7 @@ fi
 # Run basic health check
 echo -e "${BLUE}Running health check...${NC}"
 
-TABLE_COUNT=$(psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d "${DB_NAME}" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'paws360';")
+TABLE_COUNT=$(docker exec $CONTAINER_NAME psql -U $DB_USER -d $DB_NAME -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'paws360';")
 
 if [ "$TABLE_COUNT" -gt 0 ]; then
     echo -e "${GREEN}✅ Health check passed - $TABLE_COUNT tables created${NC}"
@@ -168,6 +143,6 @@ echo "  Email: admin@paws360.uwm.edu"
 echo "  Password: admin123"
 echo ""
 echo -e "${BLUE}Useful Commands:${NC}"
-echo "  Connect: psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME}"
-echo "  Backup: pg_dump -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} > backup.sql"
-echo "  Monitor: psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c 'SELECT * FROM paws360.dashboard_metrics;'"
+echo "  Connect: docker exec -it $CONTAINER_NAME psql -U ${DB_USER} -d ${DB_NAME}"
+echo "  Backup: docker exec $CONTAINER_NAME pg_dump -U ${DB_USER} -d ${DB_NAME} > backup.sql"
+echo "  Monitor: docker exec $CONTAINER_NAME psql -U ${DB_USER} -d ${DB_NAME} -c 'SELECT * FROM paws360.dashboard_metrics;'"

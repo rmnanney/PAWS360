@@ -17,8 +17,8 @@ Thank you for testing PAWS360! This zip package contains everything you need to 
 
 1. Extract this zip file
 2. Open a terminal in the extracted folder
-3. Run: `./scripts/setup/setup-from-scratch.sh`
-4. Run: `./scripts/setup/start-app.sh`
+3. Run: `bash setup.sh`
+4. Run: `bash scripts/setup/start-app.sh`
 5. Open browser to: http://localhost:3000
 6. Login: `test@uwm.edu` / `password`
 
@@ -132,15 +132,15 @@ This account has:
 
 ```bash
 # Are services running?
-./scripts/setup/health-check.sh
+bash scripts/setup/health-check.sh
 
 # View logs
 tail -f /tmp/paws360-logs/backend.log
 tail -f /tmp/paws360-logs/frontend.log
 
 # Restart everything
-./scripts/setup/stop-app.sh
-./scripts/setup/start-app.sh
+bash scripts/setup/stop-app.sh
+bash scripts/setup/start-app.sh
 ```
 
 ### Common Issues
