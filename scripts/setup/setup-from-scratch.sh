@@ -218,9 +218,18 @@ echo "=========================================="
 echo ""
 
 echo "Installing npm packages (this may take 2-5 minutes)..."
-npm install
+if [ ! -d "node_modules" ]; then
+    npm install
+    echo -e "${GREEN}✓${NC} npm packages installed"
+else
+    echo -e "${YELLOW}⚠${NC} node_modules already exists, skipping npm install"
+    echo "  (Run 'npm install' manually if you need to reinstall packages)"
+fi
 
-echo -e "${GREEN}✓${NC} Frontend dependencies installed"
+# Make mvnw executable
+chmod +x mvnw
+
+echo -e "${GREEN}✓${NC} Frontend dependencies ready"
 
 echo ""
 echo "=========================================="

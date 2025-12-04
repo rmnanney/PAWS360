@@ -49,6 +49,9 @@ echo "  Backend:  /tmp/paws360-logs/backend.log"
 echo "  Frontend: /tmp/paws360-logs/frontend.log"
 echo ""
 
+# Make mvnw executable
+chmod +x ./mvnw
+
 # Start backend in background
 ./mvnw spring-boot:run > /tmp/paws360-logs/backend.log 2>&1 &
 BACKEND_PID=$!
