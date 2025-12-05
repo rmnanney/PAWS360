@@ -12,7 +12,7 @@ INSERT INTO users (
 ) VALUES (
     1,
     'test@uwm.edu',
-    '$2a$10$ZKnJLWCE9fGQlm5.5D7oJO5Zy5wZ4VZq1qKZVqKZVqKZVqKZVqKZVq',
+    '$2a$06$faD/ESn9B1OFLU6C.KYOQO9IpkFxAa9/EZeQaseWWqQd6aVpLUKEu',
     'Test',
     'Student',
     '2000-01-01',
