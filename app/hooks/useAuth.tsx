@@ -4,11 +4,23 @@ import { useRouter } from "next/navigation";
 export default function useAuth() {
 	const router = useRouter();
 
-	// Compact auth state object so the hook can be extended later
+	// Initialize state synchronously from storage to avoid flash
 	const [authChecked, setAuthChecked] = useState(false);
-	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [isAuthenticated, setIsAuthenticated] = useState(() => {
+		if (typeof window === "undefined") return false;
+		return !!(sessionStorage.getItem("userEmail") || localStorage.getItem("authToken"));
+	});
 	const [isLoading, setIsLoading] = useState(true);
-	const [user, setUser] = useState(null as null | { email?: string; firstname?: string; role?: string });
+	const [user, setUser] = useState(() => {
+		if (typeof window === "undefined") return null;
+		const sessionEmail = sessionStorage.getItem("userEmail");
+		const sessionFirst = sessionStorage.getItem("userFirstName");
+		const sessionRole = sessionStorage.getItem("userRole");
+		if (sessionEmail) {
+			return { email: sessionEmail, firstname: sessionFirst ?? undefined, role: sessionRole ?? undefined };
+		}
+		return null;
+	});
 
 	const validateSession = useCallback(async () => {
 		// Lightweight validate: prefer sessionStorage values for the current SSO session

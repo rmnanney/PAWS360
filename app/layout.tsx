@@ -94,7 +94,7 @@ export default function RootLayout({
 					content="PAWS360 - University of Wisconsin, Milwaukee Student Portal"
 				/>
 			</head>
-			<body className="font-body antialiased">
+			<body className="font-body antialiased" key={`auth-${authChecked}-${isAuthenticated}`}>
 				{!authChecked && !isPublicPage ? (
 					// Show loading state while checking auth (only for protected pages)
 					<div className="flex items-center justify-center min-h-screen">

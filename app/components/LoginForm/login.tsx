@@ -85,8 +85,9 @@ export default function LoginForm() {
 				// Refresh auth state to ensure useAuth hook recognizes the new session
 				await refreshAuth();
 
-				// Navigate to homepage
-				router.push("/homepage");
+				// Force a full page reload to ensure layout picks up auth state
+				// This is more reliable than router.push for initial login
+				window.location.href = "/homepage";
 
 				return { success: true, data };
 			} else if (res.status === 423) {
