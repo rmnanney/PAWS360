@@ -127,6 +127,55 @@ def parse_git_log(output):
             if ext:
                 a["extensions"][ext] += 1
 
+        # infer normalized high-level features from files and messages
+        # mapping patterns -> human-readable feature label
+        path_feature_map = [
+            (r"^src/main/java/", "Backend (Java Spring)"),
+            (r"^src/", "Source code (src)"),
+            (r"^app/", "Frontend (Next.js)"),
+            (r"^db/", "Database schema & seed"),
+            (r"^database/", "Database docs & scripts"),
+            (r"^infrastructure/", "Infrastructure / Ansible / Docker"),
+            (r"^config/", "Configuration / env"),
+            (r"^scripts/", "Developer scripts / automation"),
+            (r"^\.github/", "CI/CD / GitHub Actions"),
+            (r"Controller/CourseSearchController|/api/course-search|app/courses", "Course search & schedules"),
+            (r"Controller/CourseEnrollmentController|/api/enrollment|enrollment", "Enrollment & grading"),
+            (r"Controller/AdvisingController|advising|app/advising", "Advising feature"),
+            (r"Controller/FinancesController|finances|app/finances", "Finances feature"),
+            (r"Controller/AuthController|auth|login|app/login|forgot-password", "Login / Authentication"),
+            (r"^tests/", "Tests / E2E / Unit tests"),
+            (r"courses|course", "Courses feature"),
+            (r"users|user", "User management / Profiles"),
+        ]
+
+        # detect features by file paths
+        seen_features = set()
+        for f in files:
+            for pat, label in path_feature_map:
+                try:
+                    if re.search(pat, f, flags=re.I):
+                        seen_features.add(label)
+                except re.error:
+                    continue
+
+        # also detect by commit message keywords
+        msg = (message or "").lower()
+        if any(k in msg for k in ["login", "auth", "authentication", "jwt"]):
+            seen_features.add("Login / Authentication")
+        if any(k in msg for k in ["finance", "finances", "billing"]):
+            seen_features.add("Finances feature")
+        if any(k in msg for k in ["advis", "advising"]):
+            seen_features.add("Advising feature")
+        if any(k in msg for k in ["course", "courses"]):
+            seen_features.add("Courses feature")
+        if any(k in msg for k in ["user", "users", "profile"]):
+            seen_features.add("User management / Profiles")
+
+        # aggregate detected features into author's feature counter
+        for feat in sorted(seen_features):
+            a["features"][feat] += 1
+
     return authors, total_commits
 
 
