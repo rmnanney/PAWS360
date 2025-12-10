@@ -78,17 +78,45 @@ def parse_git_log(output):
             a["messages"][message] += 1
             # detect likely feature/implementation messages
             msg_l = message.lower()
+            # expanded keyword list (conventional commits and common verbs)
             feature_keywords = [
                 "feat:", "feature", "implement", "implemented", "implementing",
-                "add", "added", "create", "created", "backend for", "introduce",
-                "introducing", "initial push", "initial commit", "entities",
-                "api", "add finances", "add advising",
+                "add", "added", "adding", "create", "created", "creating",
+                "backend for", "frontend", "api", "endpoint", "connect", "connected",
+                "integrate", "integrated", "migrate", "migrated", "support", "enable",
+                "introduce", "introducing", "initial push", "initial commit", "entities",
+                "wire", "setup", "setup", "configure", "integration", "hookup", "connect",
+                "transcript", "advising", "finances", "login", "authentication", "auth",
             ]
-            if any(k in msg_l for k in feature_keywords):
+
+            # detect JIRA/SCRUM IDs (e.g. SCRUM-123 or PROJ-456) and include them in features
+            jira_match = re.findall(r"(SCRUM|JIRA|PROJ|T)\-?\d+", message, flags=re.I)
+
+            matched = any(k in msg_l for k in feature_keywords)
+            if matched:
                 short = message.strip()
-                if len(short) > 80:
-                    short = short[:77] + "..."
+                if len(short) > 120:
+                    short = short[:117] + "..."
+                if jira_match:
+                    short = ("[" + ",".join(sorted(set(jira_match))) + "] ") + short
                 a["features"][short] += 1
+            else:
+                # if message didn't match feature keywords, attempt to infer feature from files touched
+                if files:
+                    # collect top-level areas touched in this commit
+                    areas = []
+                    for f in files:
+                        if not f:
+                            continue
+                        top = f.split('/')[0]
+                        areas.append(top)
+                    areas = [a0 for a0 in dict.fromkeys(areas) if a0]
+                    if areas:
+                        short = "Touched areas: " + ", ".join(areas[:6])
+                        # append a short sample file to hint at area
+                        sample = files[0]
+                        short = short + " (e.g. " + sample + ")"
+                        a["features"][short] += 1
         for f in files:
             if not f:
                 continue
