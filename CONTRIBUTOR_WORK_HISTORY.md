@@ -2,7 +2,7 @@
 
 Generated on: 2025-12-10
 
-Total commits parsed: **1529**
+Total commits parsed: **1531**
 
 Total contributors: **6**
 
@@ -15,17 +15,27 @@ Total contributors: **6**
 
 ### github-actions[bot]  
 - Email: `github-actions[bot]@users.noreply.github.com`  
-- Commits: **681**  
+- Commits: **682**  
 - Active: 2025-11-29 → 2025-12-10  
 - Top areas edited:
-  - `contexts/sessions` — 681 commits
+  - `contexts/sessions` — 682 commits
 - Common file types:
-  - `.yml` — 681 files
+  - `.yml` — 682 files
 - Example commit messages:
   - chore(session): heartbeat self-check update [skip ci]
 
 
 ### Ryan  
+- Key functionality introduced:
+  - feat: Update homepage navigation for all modules — 8 commits
+  - feat: Implement Resources Module (SCRUM-60) — 8 commits
+  - feat: Implement Personal Information Module (SCRUM-59) — 8 commits
+  - feat: Implement Finances Module (SCRUM-58) — 8 commits
+  - feat: Implement Advising Module (SCRUM-57) — 8 commits
+  - feat: Implement Academic Module (SCRUM-56) — 8 commits
+  - feat: Setup CI/CD pipeline and development environment — 8 commits
+  - feat: Add JIRA user stories for PAWS360 modules — 8 commits
+
 - Email: `serotonin@gmail.com`  
 - Commits: **468**  
 - Active: 2025-09-11 → 2025-12-01  
@@ -53,6 +63,16 @@ Total contributors: **6**
 
 
 ### Zack  
+- Key functionality introduced:
+  - Backend for Users.java — 9 commits
+  - Address names update when users update — 4 commits
+  - Added getUser by email — 4 commits
+  - Entities Update — 4 commits
+  - Load domain values from backend and add API endpoints — 3 commits
+  - Add editable personal and emergency contact info — 3 commits
+  - Add advisor messaging feature to advising module — 3 commits
+  - Add transcript PDF generation and program info API — 3 commits
+
 - Email: `152580273+zackhawkins@users.noreply.github.com`  
 - Commits: **214**  
 - Active: 2025-09-02 → 2025-12-02  
@@ -80,33 +100,52 @@ Total contributors: **6**
 
 
 ### Ryan Nanney  
+- Key functionality introduced:
+  - chore: add generated contributor work history — 1 commit
+  - feat: add local production deployment test environment — 1 commit
+  - docs: add comprehensive runner optimization summary — 1 commit
+  - feat: migrate all GitHub Actions workflows to self-hosted runner — 1 commit
+  - ci(images): add production frontend Dockerfile (fix empty file causing Build ... — 1 commit
+  - lint(yaml): add newline at EOF for jira-api.yaml to satisfy yamllint — 1 commit
+  - ci: normalize GHCR owner/repo to lowercase; move Local Dev CI to manual+sched... — 1 commit
+  - ci(e2e-smoke): add Playwright localStorage fallback (session_token) — 1 commit
+
 - Email: `rmnanney@uwm.edu`  
-- Commits: **72**  
-- Active: 2025-11-28 → 2025-12-01  
+- Commits: **73**  
+- Active: 2025-11-28 → 2025-12-10  
 - Top areas edited:
   - `.github/workflows` — 104 commits
   - `specs/001-ci-cd-optimization` — 23 commits
-  - `.` — 17 commits
+  - `.` — 18 commits
   - `docs` — 9 commits
   - `specs/001-ci-cd-optimization/checklists` — 9 commits
   - `scripts/local-ci` — 9 commits
 - Common file types:
   - `.yml` — 110 files
-  - `.md` — 58 files
+  - `.md` — 59 files
   - `.sh` — 18 files
   - `.json` — 11 files
   - `.tsx` — 10 files
   - `.sql` — 10 files
 - Example commit messages:
+  - chore: add generated contributor work history
   - feat: add local production deployment test environment
   - fix: make Ansible deployments conditional on SSH key availability
   - docs: add comprehensive runner optimization summary
   - docs: runner optimization complete - 355GB freed, Maven 3.9.9, automation configured
   - docs: update runner setup for repository-level runner
-  - feat: migrate all GitHub Actions workflows to self-hosted runner
 
 
 ### Zenith  
+- Key functionality introduced:
+  - added navigation to some sidebar + homepage but not search result yet, CSS mo... — 3 commits
+  - added login checks and unit tests — 3 commits
+  - add base check for login — 3 commits
+  - Merge pull request #5 from ZackHawkins/feat/SCRUM-7-create-login-page — 3 commits
+  - Merge branch 'feat/SCRUM-7-create-login-page' of github.com:ZackHawkins/PAWS3... — 3 commits
+  - create login — 3 commits
+  - feat: Quick links with graduation packages + Resources update — 1 commit
+
 - Email: `85917176+zeenith09@users.noreply.github.com`  
 - Commits: **49**  
 - Active: 2025-09-18 → 2025-12-02  
@@ -134,6 +173,16 @@ Total contributors: **6**
 
 
 ### Randall-S4  
+- Key functionality introduced:
+  - added course and course search page. — 2 commits
+  - made a script to add every known UWM course to the database, — 2 commits
+  - added testing scripts — 1 commit
+  - added holds page — 1 commit
+  - Merge pull request #59 from ZackHawkins/misc-fixes-and--additions — 1 commit
+  - Merge branch 'master' into misc-fixes-and--additions — 1 commit
+  - added hover effect to page — 1 commit
+  - added quick links page — 1 commit
+
 - Email: `randallds2@gmail.com`  
 - Commits: **45**  
 - Active: 2025-09-16 → 2025-12-05  
