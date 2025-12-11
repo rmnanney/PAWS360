@@ -1,0 +1,87 @@
+name: Test Production Runners
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-primary:
+    runs-on: [self-hosted, Linux, X64, production, primary]
+    steps:
+      - name: Runner Info
+        run: |
+          echo "## Primary Runner Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Runner Name**: $RUNNER_NAME" >> $GITHUB_STEP_SUMMARY
+          echo "- **Hostname**: $(hostname)" >> $GITHUB_STEP_SUMMARY
+          echo "- **User**: $(whoami)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Architecture**: $(uname -m)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Kernel**: $(uname -r)" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Check Production Tools Available
+        run: |
+          echo "## Tool Availability Check" >> $GITHUB_STEP_SUMMARY
+          
+          if command -v ansible &> /dev/null; then
+            echo "✅ Ansible: $(ansible --version | head -1)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Ansible: Not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if command -v docker &> /dev/null; then
+            echo "✅ Docker: $(docker --version)" >> $GITHUB_STEP_SUMMARY
+          elif command -v podman &> /dev/null; then
+            echo "✅ Podman: $(podman --version)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Container runtime: Not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if command -v java &> /dev/null; then
+            echo "✅ Java: $(java -version 2>&1 | head -1)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Java: Not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+      - name: Network Connectivity Check
+        run: |
+          echo "## Network Connectivity" >> $GITHUB_STEP_SUMMARY
+          echo "- **IP Addresses**: $(ip addr show | grep 'inet ' | awk '{print $2}')" >> $GITHUB_STEP_SUMMARY
+          
+  test-secondary:
+    runs-on: [self-hosted, Linux, X64, production, secondary]
+    steps:
+      - name: Runner Info
+        run: |
+          echo "## Secondary Runner Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Runner Name**: $RUNNER_NAME" >> $GITHUB_STEP_SUMMARY
+          echo "- **Hostname**: $(hostname)" >> $GITHUB_STEP_SUMMARY
+          echo "- **User**: $(whoami)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Architecture**: $(uname -m)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Kernel**: $(uname -r)" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Check Production Tools Available
+        run: |
+          echo "## Tool Availability Check" >> $GITHUB_STEP_SUMMARY
+          
+          if command -v ansible &> /dev/null; then
+            echo "✅ Ansible: $(ansible --version | head -1)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Ansible: Not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if command -v docker &> /dev/null; then
+            echo "✅ Docker: $(docker --version)" >> $GITHUB_STEP_SUMMARY
+          elif command -v podman &> /dev/null; then
+            echo "✅ Podman: $(podman --version)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Container runtime: Not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if command -v java &> /dev/null; then
+            echo "✅ Java: $(java -version 2>&1 | head -1)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Java: Not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+      - name: Network Connectivity Check
+        run: |
+          echo "## Network Connectivity" >> $GITHUB_STEP_SUMMARY
+          echo "- **IP Addresses**: $(ip addr show | grep 'inet ' | awk '{print $2}')" >> $GITHUB_STEP_SUMMARY
