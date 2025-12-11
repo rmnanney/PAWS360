@@ -1,8 +1,10 @@
-# Contributor Work History
+# Contributor Work History (Unified)
 
-Generated on: 2025-12-10
+Generated on: 2025-12-11
 
-Total commits parsed: **1537**
+> Note: This file unifies contributor work history and ownership/last-touch mapping into a single source-of-truth. The original `CONTRIBUTOR_OWNERSHIP.md` has been merged into this document.
+
+Total commits parsed: **1543**
 
 Total contributors: **6**
 
@@ -15,29 +17,29 @@ Total contributors: **6**
 
 ### github-actions[bot]  
 - Key functionality introduced:
-  - Touched areas: contexts (e.g. contexts/sessions/current-session.yml) — 685 commits
+  - Touched areas: contexts (e.g. contexts/sessions/current-session.yml) — 690 commits
 
 - Email: `github-actions[bot]@users.noreply.github.com`  
-- Commits: **685**  
+- Commits: **690**  
 - Active: 2025-11-29 → 2025-12-10  
 - Top areas edited:
-  - `contexts/sessions` — 685 commits
+  - `contexts/sessions` — 690 commits
 - Common file types:
-  - `.yml` — 685 files
+  - `.yml` — 690 files
 - Example commit messages:
   - chore(session): heartbeat self-check update [skip ci]
 
 
 ### Ryan  
 - Key functionality introduced:
-  - CI/CD / GitHub Actions — 100 commits
-  - Infrastructure / Ansible / Docker — 91 commits
-  - Login / Authentication — 75 commits
-  - Frontend (Next.js) — 59 commits
-  - Source code (src) — 58 commits
-  - User management / Profiles — 54 commits
-  - Developer scripts / automation — 44 commits
-  - Tests / E2E / Unit tests — 38 commits
+  - CI/CD Workflows — 96 commits
+  - Docker Configuration — 76 commits
+  - Docker Compose Setup — 54 commits
+  - Automation Scripts — 44 commits
+  - Login / Authentication — 29 commits
+  - Touched areas: .github (e.g. .github/workflows/ci-cd.yml) — 26 commits
+  - User management / Profiles — 23 commits
+  - User Domain Model — 17 commits
 
 - Email: `serotonin@gmail.com`  
 - Commits: **468**  
@@ -67,14 +69,14 @@ Total contributors: **6**
 
 ### Zack  
 - Key functionality introduced:
-  - Source code (src) — 144 commits
-  - Backend (Java Spring) — 133 commits
-  - User management / Profiles — 111 commits
-  - Courses feature — 41 commits
-  - Frontend (Next.js) — 38 commits
-  - Login / Authentication — 28 commits
-  - Enrollment & grading — 18 commits
-  - Advising feature — 15 commits
+  - User management / Profiles — 56 commits
+  - User Domain Model — 55 commits
+  - User Business Logic — 53 commits
+  - User Profile & Management API — 48 commits
+  - Courses feature — 22 commits
+  - Address Domain Model — 22 commits
+  - Course Domain Model — 21 commits
+  - Personal Information UI — 18 commits
 
 - Email: `152580273+zackhawkins@users.noreply.github.com`  
 - Commits: **214**  
@@ -104,51 +106,51 @@ Total contributors: **6**
 
 ### Ryan Nanney  
 - Key functionality introduced:
-  - CI/CD / GitHub Actions — 44 commits
-  - Developer scripts / automation — 14 commits
+  - CI/CD Workflows — 41 commits
+  - Automation Scripts — 15 commits
   - Touched areas: .github (e.g. .github/workflows/ci.yml) — 11 commits
-  - Tests / E2E / Unit tests — 7 commits
-  - Frontend (Next.js) — 7 commits
-  - Login / Authentication — 5 commits
-  - Source code (src) — 4 commits
-  - Infrastructure / Ansible / Docker — 3 commits
+  - Documentation — 10 commits
+  - Login / Authentication — 4 commits
+  - Touched areas: .github (e.g. .github/workflows/ci-cd.yml) — 3 commits
+  - Database Scripts — 3 commits
+  - Docker Compose Setup — 2 commits
 
 - Email: `rmnanney@uwm.edu`  
-- Commits: **76**  
+- Commits: **77**  
 - Active: 2025-11-28 → 2025-12-10  
 - Top areas edited:
   - `.github/workflows` — 104 commits
   - `specs/001-ci-cd-optimization` — 23 commits
-  - `.` — 20 commits
-  - `scripts` — 9 commits
+  - `.` — 21 commits
+  - `scripts` — 10 commits
   - `docs` — 9 commits
   - `specs/001-ci-cd-optimization/checklists` — 9 commits
 - Common file types:
   - `.yml` — 110 files
-  - `.md` — 61 files
+  - `.md` — 62 files
   - `.sh` — 18 files
   - `.json` — 11 files
   - `.java` — 10 files
   - `.tsx` — 10 files
 - Example commit messages:
+  - chore: improve feature inference using controllers and app routes
   - chore: add logging to UserController (observability) and fix control flow
   - chore: expand feature detection (keywords, JIRA IDs, file-path inference)
   - chore: prioritize functionality in contributor summary
   - chore: add generated contributor work history
   - feat: add local production deployment test environment
-  - fix: make Ansible deployments conditional on SSH key availability
 
 
 ### Zenith  
 - Key functionality introduced:
-  - Login / Authentication — 39 commits
-  - Frontend (Next.js) — 31 commits
-  - Finances feature — 9 commits
-  - Touched areas: app (e.g. app/components/Layout/AuthenticatedLayout.tsx) — 3 commits
-  - added navigation to some sidebar + homepage but not search result yet, CSS module for readability — 3 commits
-  - Advising feature — 3 commits
-  - Touched areas: app, package-lock.json (e.g. app/__tests__/homepage-auth.test.tsx) — 3 commits
-  - added login checks and unit tests — 3 commits
+  - UI Component Library — 29 commits
+  - Homepage/Dashboard — 22 commits
+  - Login / Authentication — 21 commits
+  - UI Form Components — 15 commits
+  - Finances UI — 9 commits
+  - UI Button Components — 9 commits
+  - UI Card Components — 9 commits
+  - Login Page — 9 commits
 
 - Email: `85917176+zeenith09@users.noreply.github.com`  
 - Commits: **49**  
@@ -178,14 +180,14 @@ Total contributors: **6**
 
 ### Randall-S4  
 - Key functionality introduced:
-  - Frontend (Next.js) — 25 commits
-  - Source code (src) — 18 commits
-  - Courses feature — 18 commits
-  - Backend (Java Spring) — 12 commits
-  - Course search & schedules — 12 commits
-  - Database docs & scripts — 7 commits
-  - Developer scripts / automation — 7 commits
-  - Enrollment & grading — 7 commits
+  - UI Component Library — 13 commits
+  - Courses feature — 11 commits
+  - UI Card Components — 9 commits
+  - Homepage/Dashboard — 8 commits
+  - Course Search & Enrollment UI — 8 commits
+  - Automation Scripts — 7 commits
+  - Course Search API — 7 commits
+  - Database Scripts — 6 commits
 
 - Email: `randallds2@gmail.com`  
 - Commits: **45**  
@@ -211,4 +213,39 @@ Total contributors: **6**
   - added course and course search page.
   - Spring should auto populate courses now.
   - igonre this yml file when merging
+
+---
+
+## Contributor Ownership & Last Touch (Unified)
+
+This section combines `git blame` (last-touch) analysis with historical contribution data to clarify current ownership and recent responsibility for files and areas of the codebase.
+
+> Note: "Last touch" indicates the most recent commit that touched a file and is not necessarily the only owner or sole maintainer—see the per-contributor activity sections above for historical context.
+
+### Ownership Summary (by area)
+- **Backend Controllers**: UserController last touched by `Ryan Nanney` (observability/control flow). Course, enrollment, advising, finances, and academics controllers were last touched primarily by `Zack` and `Randall-S4` in their respective domains.
+- **Backend Services**: Core services (UserService, Enrollment/Academics/Finances/Advising) are primarily maintained by `Zack`. Observability and session management services were last touched by `Ryan`.
+- **Entities/DTOs**: The majority of domain models and DTOs are owned and last touched by `Zack` (users, courses, academics, finances, advising). `Ryan` owns a small set of base entities and session-related entities.
+- **Frontend Pages/Components**: The UI component library and many pages were implemented and last touched by `Zenith` and `Randall-S4` (homepage, Card, Header, LoginForm, ThemeToggle), while pages for courses/advising/academics/finances were last touched by `Zack`.
+- **CI/CD & Workflows**: All GitHub Actions workflow files and CI configurations were last touched by `Ryan Nanney`.
+
+### Last Touch by File Type (summary)
+- Java Controllers: majority last modified by `Zack`, `Ryan`, `Ryan Nanney`, and `Randall-S4` as indicated in the per-file analysis.
+- Java Services: `Zack` and `Ryan` split responsibilities; `Zack` for business logic, `Ryan` for auth/health/session services.
+- Java Entities/DTOs/Repos: mostly `Zack`.
+- Frontend Pages/Components: `Zenith`, `Randall-S4`, `Zack`, and `Ryan` depending on area.
+- Workflows & CI: `Ryan Nanney`.
+
+### Noise and Caveats
+- Some file-type counts are inflated by committed build outputs (`.next/*`) and vendored dependencies (`tests/ui/node_modules/*`); those should be excluded when assessing code ownership.
+- Last touch does not imply exclusive ownership — follow-up commits, refactors, or test updates by others may indicate collaborative ownership.
+
+### How to interpret this document
+- Use `Key functionality introduced` (per contributor) to understand intent and scope of historical work.
+- Use `Contributor Ownership` and `Last Touch` to assign responsibility for code areas and drive question/PR review assignments.
+- Consult `git blame` on specific files for the most granular, per-line ownership.
+
+---
+
+If you'd like, I can produce a CSV mapping of path → last-touch author → last-touch date for all files (noise-filtered) or a simplified ownership report per top-level module (backend/frontend/infra/tests/CI) for quick assignment.
 
