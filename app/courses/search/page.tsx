@@ -266,7 +266,7 @@ export default function CourseSearchPage() {
 									Subject / Department
 								</label>
 								<input
-									className="w-full rounded-md border p-2"
+									className="w-full rounded-md border p-2 bg-background text-foreground"
 									value={filters.subject}
 									onChange={(e) =>
 										setFilters((p) => ({ ...p, subject: e.target.value }))
@@ -279,7 +279,7 @@ export default function CourseSearchPage() {
 									Course code
 								</label>
 								<input
-									className="w-full rounded-md border p-2"
+									className="w-full rounded-md border p-2 bg-background text-foreground"
 									value={filters.courseCode}
 									onChange={(e) =>
 										setFilters((p) => ({ ...p, courseCode: e.target.value }))
@@ -292,7 +292,7 @@ export default function CourseSearchPage() {
 									Course title
 								</label>
 								<input
-									className="w-full rounded-md border p-2"
+									className="w-full rounded-md border p-2 bg-background text-foreground"
 									value={filters.title}
 									onChange={(e) =>
 										setFilters((p) => ({ ...p, title: e.target.value }))
@@ -305,7 +305,7 @@ export default function CourseSearchPage() {
 									Term (optional)
 								</label>
 								<input
-									className="w-full rounded-md border p-2"
+									className="w-full rounded-md border p-2 bg-background text-foreground"
 									value={filters.term}
 									onChange={(e) =>
 										setFilters((p) => ({ ...p, term: e.target.value }))
