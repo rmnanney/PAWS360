@@ -1,0 +1,311 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "github-runner-health",
+    "title": "GitHub Runner Health Dashboard",
+    "tags": ["github", "runners", "production", "INFRA-472"],
+    "timezone": "browser",
+    "schemaVersion": 27,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m"],
+      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "7d"]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Runner Status Timeline",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "runner_status{environment=\"production\"}",
+            "legendFormat": "{{hostname}} - {{active_state}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            },
+            "unit": "bool",
+            "mappings": [
+              {"value": 0, "text": "Offline"},
+              {"value": 1, "text": "Online"}
+            ]
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["lastNotNull"]
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "CPU Usage",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "runner_cpu_usage_percent{environment=\"production\"}",
+            "legendFormat": "{{hostname}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 80, "color": "red"}
+              ]
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Memory Usage",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 8},
+        "targets": [
+          {
+            "expr": "runner_memory_usage_percent{environment=\"production\"}",
+            "legendFormat": "{{hostname}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 80, "color": "red"}
+              ]
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Disk Available",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+        "targets": [
+          {
+            "expr": "runner_disk_available_bytes{environment=\"production\"}",
+            "legendFormat": "{{hostname}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 10737418240, "color": "yellow"},
+                {"value": 53687091200, "color": "green"}
+              ]
+            },
+            "unit": "bytes",
+            "min": 0
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Last Check-In Age",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "(time() - runner_last_check_in_timestamp_seconds{environment=\"production\"})",
+            "legendFormat": "{{hostname}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 300, "color": "yellow"},
+                {"value": 600, "color": "red"}
+              ]
+            },
+            "unit": "s",
+            "mappings": []
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 6,
+        "title": "Deployment Metrics (Last 24h)",
+        "type": "table",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "sum by (hostname) (rate(deployment_total{environment=\"production\"}[24h]) * 86400)",
+            "legendFormat": "",
+            "refId": "A",
+            "instant": true
+          },
+          {
+            "expr": "sum by (hostname) (rate(deployment_success_total{environment=\"production\"}[24h]) * 86400)",
+            "legendFormat": "",
+            "refId": "B",
+            "instant": true
+          },
+          {
+            "expr": "sum by (hostname) (rate(deployment_failure_total{environment=\"production\"}[24h]) * 86400)",
+            "legendFormat": "",
+            "refId": "C",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "left",
+              "displayMode": "auto"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "showHeader": true
+        },
+        "transformations": [
+          {
+            "id": "merge",
+            "options": {}
+          },
+          {
+            "id": "organize",
+            "options": {
+              "renameByName": {
+                "hostname": "Runner",
+                "Value #A": "Total Deployments",
+                "Value #B": "Successful",
+                "Value #C": "Failed"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Active Alerts",
+        "type": "alertlist",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 22},
+        "options": {
+          "showOptions": "current",
+          "stateFilter": {
+            "firing": true,
+            "pending": true,
+            "ok": false
+          },
+          "alertName": "",
+          "dashboardAlerts": false,
+          "alertInstanceLabelFilter": "{component=\"github-runner\"}"
+        }
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": false,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Deployments",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "description": "GitHub Actions self-hosted runner health monitoring for PAWS360 production deployments. Tracks runner status, resource usage, check-in age, and deployment metrics.",
+    "links": [
+      {
+        "title": "JIRA INFRA-472",
+        "url": "https://YOUR_ORG.atlassian.net/browse/INFRA-472",
+        "type": "link"
+      },
+      {
+        "title": "Runner Offline Runbook",
+        "url": "https://github.com/YOUR_ORG/PAWS360/blob/main/docs/runbooks/runner-offline-restore.md",
+        "type": "link"
+      },
+      {
+        "title": "Degraded Resources Runbook",
+        "url": "https://github.com/YOUR_ORG/PAWS360/blob/main/docs/runbooks/runner-degraded-resources.md",
+        "type": "link"
+      }
+    ]
+  }
+}

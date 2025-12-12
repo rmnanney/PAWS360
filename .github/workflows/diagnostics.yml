@@ -1,0 +1,276 @@
+name: Enhanced CI/CD Diagnostics
+
+on:
+  workflow_dispatch:
+    inputs:
+      diagnostic_level:
+        description: 'Diagnostic depth'
+        required: true
+        default: 'standard'
+        type: choice
+        options:
+          - quick
+          - standard
+          - deep
+      target_runner:
+        description: 'Target runner (leave empty for all)'
+        required: false
+        type: string
+      include_logs:
+        description: 'Include system logs'
+        required: true
+        default: true
+        type: boolean
+
+env:
+  PROMETHEUS_URL: http://192.168.0.200:9090
+  GRAFANA_URL: http://192.168.0.200:3000
+  LOKI_URL: http://192.168.0.200:3100
+
+jobs:
+  runner-diagnostics:
+    name: Runner Diagnostics
+    runs-on: self-hosted
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install diagnostic tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            sysstat \
+            iotop \
+            htop \
+            stress-ng \
+            jq \
+            curl \
+            bc
+      
+      - name: Collect runner information
+        id: runner-info
+        run: |
+          echo "=== Runner Information ==="
+          echo "Hostname: $(hostname)"
+          echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d'"' -f2)"
+          echo "Kernel: $(uname -r)"
+          echo "Uptime: $(uptime -p)"
+          echo ""
+          
+          echo "=== Hardware Resources ==="
+          echo "CPU: $(nproc) cores"
+          echo "Memory: $(free -h | awk '/^Mem:/ {print $2}')"
+          echo "Disk: $(df -h / | awk 'NR==2 {print $2}')"
+          echo ""
+          
+          echo "=== Runner Process ==="
+          ps aux | grep "[r]unner.listener" || echo "Runner process not found"
+          echo ""
+          
+          # Save to file
+          {
+            echo "runner_hostname=$(hostname)"
+            echo "runner_cores=$(nproc)"
+            echo "runner_memory_gb=$(free -g | awk '/^Mem:/ {print $2}')"
+          } >> "$GITHUB_OUTPUT"
+      
+      - name: Check system load
+        run: |
+          echo "=== System Load ==="
+          echo "Load Average: $(uptime | awk -F'load average:' '{print $2}')"
+          echo ""
+          
+          echo "=== Top CPU Consumers ==="
+          ps aux --sort=-%cpu | head -10
+          echo ""
+          
+          echo "=== Top Memory Consumers ==="
+          ps aux --sort=-%mem | head -10
+          echo ""
+      
+      - name: Check disk usage
+        run: |
+          echo "=== Disk Usage ==="
+          df -h
+          echo ""
+          
+          echo "=== Disk I/O Stats ==="
+          iostat -x 1 5
+          echo ""
+          
+          echo "=== Docker Disk Usage ==="
+          if command -v docker &> /dev/null; then
+            docker system df
+          else
+            echo "Docker not available"
+          fi
+          echo ""
+      
+      - name: Check network connectivity
+        run: |
+          echo "=== Network Connectivity ==="
+          echo "GitHub API: $(curl -s -o /dev/null -w '%{http_code}' https://api.github.com)"
+          echo "Prometheus: $(curl -s -o /dev/null -w '%{http_code}' $PROMETHEUS_URL/-/healthy)"
+          echo "Grafana: $(curl -s -o /dev/null -w '%{http_code}' $GRAFANA_URL/api/health)"
+          echo ""
+          
+          echo "=== Network Statistics ==="
+          netstat -s | grep -E "segments|packets"
+          echo ""
+      
+      - name: Query Prometheus metrics
+        run: |
+          echo "=== Prometheus Metrics for $(hostname) ==="
+          
+          RUNNER=$(hostname)
+          
+          # CPU metrics
+          CPU_USAGE=$(curl -s "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode "query=100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\",instance=~\"${RUNNER}.*\"}[5m])) * 100)" \
+            | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "N/A")
+          echo "CPU Usage: ${CPU_USAGE}%"
+          
+          # Memory metrics
+          MEM_USAGE=$(curl -s "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode "query=(1 - (node_memory_MemAvailable_bytes{instance=~\"${RUNNER}.*\"} / node_memory_MemTotal_bytes{instance=~\"${RUNNER}.*\"})) * 100" \
+            | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "N/A")
+          echo "Memory Usage: ${MEM_USAGE}%"
+          
+          # Disk metrics
+          DISK_USAGE=$(curl -s "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode "query=(1 - (node_filesystem_avail_bytes{instance=~\"${RUNNER}.*\",mountpoint=\"/\"} / node_filesystem_size_bytes{instance=~\"${RUNNER}.*\",mountpoint=\"/\"})) * 100" \
+            | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "N/A")
+          echo "Disk Usage: ${DISK_USAGE}%"
+          
+          echo ""
+      
+      - name: Check for active alerts
+        run: |
+          echo "=== Active Alerts ==="
+          RUNNER=$(hostname)
+          
+          curl -s "$PROMETHEUS_URL/api/v1/alerts" \
+            | jq -r ".data.alerts[] | select(.labels.instance | contains(\"${RUNNER}\")) | \"[\(.state)] \(.labels.alertname): \(.annotations.summary // \"No summary\")\"" \
+            2>/dev/null || echo "No alerts or query failed"
+          echo ""
+      
+      - name: Collect system logs (if requested)
+        if: inputs.include_logs == true
+        run: |
+          echo "=== Recent System Logs ==="
+          sudo journalctl --since "1 hour ago" --no-pager | tail -100
+          echo ""
+          
+          echo "=== Runner Service Logs ==="
+          sudo journalctl -u actions.runner.* --since "1 hour ago" --no-pager | tail -100
+          echo ""
+      
+      - name: Deep diagnostic tests
+        if: inputs.diagnostic_level == 'deep'
+        run: |
+          echo "=== Running Deep Diagnostics ==="
+          
+          echo "CPU Stress Test (30s)..."
+          stress-ng --cpu $(nproc) --timeout 30s --metrics-brief
+          
+          echo ""
+          echo "Memory Test (30s)..."
+          stress-ng --vm 2 --vm-bytes 50% --timeout 30s --metrics-brief
+          
+          echo ""
+          echo "I/O Test (30s)..."
+          stress-ng --iomix 4 --timeout 30s --metrics-brief
+          
+          echo ""
+      
+      - name: Generate diagnostic report
+        if: always()
+        run: |
+          REPORT_FILE="diagnostic-report-$(hostname)-$(date +%Y%m%d-%H%M%S).txt"
+          
+          {
+            echo "================================================"
+            echo "CI/CD Infrastructure Diagnostic Report"
+            echo "================================================"
+            echo "Generated: $(date)"
+            echo "Runner: $(hostname)"
+            echo "Diagnostic Level: ${{ inputs.diagnostic_level }}"
+            echo "================================================"
+            echo ""
+            
+            echo "Summary:"
+            echo "- Runner Status: $(systemctl is-active actions.runner.* 2>/dev/null || echo 'unknown')"
+            echo "- CPU Load: $(uptime | awk -F'load average:' '{print $2}')"
+            echo "- Memory Available: $(free -h | awk '/^Mem:/ {print $7}')"
+            echo "- Disk Available: $(df -h / | awk 'NR==2 {print $4}')"
+            echo ""
+            
+          } > "$REPORT_FILE"
+          
+          echo "Diagnostic report saved to: $REPORT_FILE"
+          cat "$REPORT_FILE"
+      
+      - name: Upload diagnostic artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic-report-${{ steps.runner-info.outputs.runner_hostname }}
+          path: diagnostic-report-*.txt
+          retention-days: 30
+
+  monitoring-health-check:
+    name: Monitoring Stack Health
+    runs-on: self-hosted
+    timeout-minutes: 10
+    
+    steps:
+      - name: Check Prometheus health
+        run: |
+          echo "=== Prometheus Health Check ==="
+          curl -s "$PROMETHEUS_URL/-/healthy" || echo "FAILED"
+          echo ""
+          
+          echo "=== Prometheus Metrics ==="
+          curl -s "$PROMETHEUS_URL/api/v1/query?query=up" | jq '.data.result[] | {job: .metric.job, instance: .metric.instance, status: .value[1]}'
+          echo ""
+      
+      - name: Check Grafana health
+        run: |
+          echo "=== Grafana Health Check ==="
+          curl -s "$GRAFANA_URL/api/health" | jq '.'
+          echo ""
+      
+      - name: Check Loki health
+        run: |
+          echo "=== Loki Health Check ==="
+          curl -s "$LOKI_URL/ready" || echo "FAILED"
+          echo ""
+      
+      - name: Validate alert rules
+        run: |
+          echo "=== Alert Rules Validation ==="
+          curl -s "$PROMETHEUS_URL/api/v1/rules" | jq -r '.data.groups[] | .name'
+          echo ""
+
+  summary:
+    name: Diagnostic Summary
+    needs: [runner-diagnostics, monitoring-health-check]
+    runs-on: self-hosted
+    if: always()
+    
+    steps:
+      - name: Generate summary
+        run: |
+          echo "### Diagnostic Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Diagnostic Level:** ${{ inputs.diagnostic_level }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Runner:** ${{ inputs.target_runner || 'All runners' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Include Logs:** ${{ inputs.include_logs }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Jobs Status:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Runner Diagnostics: ${{ needs.runner-diagnostics.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Monitoring Health: ${{ needs.monitoring-health-check.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check artifacts for detailed diagnostic reports." >> $GITHUB_STEP_SUMMARY

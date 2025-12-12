@@ -50,6 +50,37 @@ deploy() {
         error "Inventory file not found: inventories/$env/hosts"
     fi
     
+    # T031: Check current production state before deployment
+    if [ "$env" = "production" ]; then
+        log "Checking current production state..."
+        
+        # Query current version from production state file (if exists)
+        STATE_FILE="/var/lib/paws360-production-state.json"
+        CURRENT_VERSION=""
+        
+        # Extract version from extra_vars if provided
+        DEPLOY_VERSION=$(echo "$extra_vars" | grep -oP 'backend_image=\K[^[:space:]]+' || echo "unknown")
+        
+        if [ -n "$DEPLOY_VERSION" ] && [ "$DEPLOY_VERSION" != "unknown" ]; then
+            log "Target deployment version: $DEPLOY_VERSION"
+            
+            # Check if already deployed (query first production host)
+            FIRST_HOST=$(awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1;exit}' inventories/$env/hosts)
+            
+            if [ -n "$FIRST_HOST" ]; then
+                CURRENT_VERSION=$(ssh -o StrictHostKeyChecking=no "$FIRST_HOST" \
+                    "test -f $STATE_FILE && jq -r '.current_version // \"none\"' $STATE_FILE 2>/dev/null || echo 'none'")
+                
+                log "Current production version: $CURRENT_VERSION"
+                
+                if [ "$CURRENT_VERSION" = "$DEPLOY_VERSION" ]; then
+                    warning "Target version ($DEPLOY_VERSION) already deployed to production"
+                    warning "Deployment is idempotent - proceeding will re-apply configuration"
+                fi
+            fi
+        fi
+    fi
+    
     # Run deployment
     ansible-playbook -i inventories/$env site.yml \
         --check --diff \
@@ -58,8 +89,40 @@ deploy() {
     read -p "🤔 Proceed with actual deployment? (y/N): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # T031: Record deployment start time
+        DEPLOY_START=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        DEPLOY_RUNNER=$(hostname)
+        
         ansible-playbook -i inventories/$env site.yml \
             ${extra_vars:+--extra-vars "$extra_vars"}
+        
+        # T031: Update production state file after successful deployment
+        if [ "$env" = "production" ] && [ -n "$DEPLOY_VERSION" ] && [ "$DEPLOY_VERSION" != "unknown" ]; then
+            DEPLOY_END=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            
+            log "Updating production state file on all hosts..."
+            
+            # Create state update JSON
+            STATE_JSON=$(cat <<EOF
+{
+  "current_version": "$DEPLOY_VERSION",
+  "previous_version": "$CURRENT_VERSION",
+  "last_deploy_timestamp": "$DEPLOY_END",
+  "deploy_start": "$DEPLOY_START",
+  "deploy_runner": "$DEPLOY_RUNNER",
+  "deployed_by": "${USER:-unknown}"
+}
+EOF
+)
+            
+            # Update state file on all production hosts
+            ansible webservers -i inventories/$env -b -m copy \
+                -a "content='$STATE_JSON' dest=$STATE_FILE mode=0644" \
+                || warning "Failed to update state file on some hosts"
+            
+            success "Production state file updated"
+        fi
+        
         success "Deployment to $env completed!"
     else
         warning "Deployment cancelled"

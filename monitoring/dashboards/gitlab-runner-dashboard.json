@@ -1,0 +1,190 @@
+{
+  "dashboard": {
+    "title": "GitLab Runner Monitoring",
+    "tags": ["gitlab", "runner", "ci-cd", "proxmox"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Runner Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"gitlab-runner-node\"}",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "orientation": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"type": "value", "value": "0", "text": "DOWN", "color": "red"},
+              {"type": "value", "value": "1", "text": "UP", "color": "green"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{job=\"gitlab-runner-node\",mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "yaxes": [
+          {"format": "percent", "min": 0, "max": 100}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes{job=\"gitlab-runner-node\"} / node_memory_MemTotal_bytes{job=\"gitlab-runner-node\"})) * 100",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "yaxes": [
+          {"format": "percent", "min": 0, "max": 100}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Disk Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "100 - ((node_filesystem_avail_bytes{job=\"gitlab-runner-node\",mountpoint=\"/\"} / node_filesystem_size_bytes{job=\"gitlab-runner-node\",mountpoint=\"/\"}) * 100)",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+        "yaxes": [
+          {"format": "percent", "min": 0, "max": 100}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [85], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "type": "query"
+            }
+          ],
+          "name": "Disk usage alert"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Running Containers",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "count(container_last_seen{job=\"gitlab-runner-cadvisor\"}) by (instance)",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12}
+      },
+      {
+        "id": 6,
+        "title": "Network Traffic",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_bytes_total{job=\"gitlab-runner-node\",device!~\"lo|docker.*\"}[5m])",
+            "legendFormat": "{{instance}} - RX"
+          },
+          {
+            "expr": "rate(node_network_transmit_bytes_total{job=\"gitlab-runner-node\",device!~\"lo|docker.*\"}[5m])",
+            "legendFormat": "{{instance}} - TX"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+        "yaxes": [
+          {"format": "Bps"}
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Container CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{job=\"gitlab-runner-cadvisor\",name=~\".+\"}[5m]) * 100",
+            "legendFormat": "{{name}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+        "yaxes": [
+          {"format": "percent"}
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Container Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{job=\"gitlab-runner-cadvisor\",name=~\".+\"}",
+            "legendFormat": "{{name}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 28},
+        "yaxes": [
+          {"format": "bytes"}
+        ]
+      },
+      {
+        "id": 9,
+        "title": "System Load",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "node_load1{job=\"gitlab-runner-node\"}",
+            "legendFormat": "{{instance}} - 1m"
+          },
+          {
+            "expr": "node_load5{job=\"gitlab-runner-node\"}",
+            "legendFormat": "{{instance}} - 5m"
+          },
+          {
+            "expr": "node_load15{job=\"gitlab-runner-node\"}",
+            "legendFormat": "{{instance}} - 15m"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 28}
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "instance",
+          "type": "query",
+          "query": "label_values(up{job=\"gitlab-runner-node\"}, instance)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true
+        }
+      ]
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    }
+  }
+}

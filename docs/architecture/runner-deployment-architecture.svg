@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" width="1400" height="1000">
+  <defs>
+    <style>
+      .title { font: bold 24px sans-serif; fill: #1a1a1a; }
+      .subtitle { font: bold 16px sans-serif; fill: #333333; }
+      .label { font: 14px sans-serif; fill: #1a1a1a; }
+      .small-label { font: 12px sans-serif; fill: #555555; }
+      .box { fill: #ffffff; stroke: #2563eb; stroke-width: 2; }
+      .primary-box { fill: #dbeafe; stroke: #2563eb; stroke-width: 2; }
+      .secondary-box { fill: #fef3c7; stroke: #f59e0b; stroke-width: 2; }
+      .monitoring-box { fill: #dcfce7; stroke: #16a34a; stroke-width: 2; }
+      .safeguard-box { fill: #fecaca; stroke: #dc2626; stroke-width: 2; }
+      .ansible-box { fill: #e9d5ff; stroke: #9333ea; stroke-width: 2; }
+      .arrow { stroke: #374151; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .primary-arrow { stroke: #2563eb; stroke-width: 3; fill: none; marker-end: url(#primary-arrowhead); }
+      .failover-arrow { stroke: #f59e0b; stroke-width: 2; stroke-dasharray: 5,5; fill: none; marker-end: url(#failover-arrowhead); }
+      .monitoring-arrow { stroke: #16a34a; stroke-width: 2; fill: none; marker-end: url(#monitoring-arrowhead); }
+      .rollback-arrow { stroke: #dc2626; stroke-width: 2; stroke-dasharray: 5,5; fill: none; marker-end: url(#rollback-arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#374151" />
+    </marker>
+    <marker id="primary-arrowhead" markerWidth="12" markerHeight="12" refX="11" refY="3.5" orient="auto">
+      <polygon points="0 0, 12 3.5, 0 7" fill="#2563eb" />
+    </marker>
+    <marker id="failover-arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#f59e0b" />
+    </marker>
+    <marker id="monitoring-arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#16a34a" />
+    </marker>
+    <marker id="rollback-arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#dc2626" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="700" y="35" class="title" text-anchor="middle">GitHub Runner Production Deployment Architecture</text>
+  <text x="700" y="55" class="small-label" text-anchor="middle">JIRA Epic: INFRA-472 | Three-Layer Architecture: Deployment • Monitoring • Safeguards</text>
+
+  <!-- ========== SECTION 1: DEPLOYMENT FLOW ========== -->
+  <text x="70" y="100" class="subtitle">1. Deployment Flow (Primary Path with Failover)</text>
+  
+  <!-- GitHub Actions Workflow -->
+  <rect x="70" y="120" width="220" height="120" class="box" rx="5"/>
+  <text x="180" y="145" class="label" text-anchor="middle" font-weight="bold">GitHub Actions Workflow</text>
+  <text x="180" y="165" class="small-label" text-anchor="middle">.github/workflows/ci.yml</text>
+  <line x1="80" y1="175" x2="280" y2="175" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="80" y="195" class="small-label">• Concurrency: production-deploy</text>
+  <text x="80" y="210" class="small-label">• Environment: production</text>
+  <text x="80" y="225" class="small-label">• Preflight validation</text>
+
+  <!-- Primary Runner -->
+  <rect x="380" y="100" width="200" height="90" class="primary-box" rx="5"/>
+  <text x="480" y="125" class="label" text-anchor="middle" font-weight="bold">Primary Runner</text>
+  <text x="480" y="145" class="small-label" text-anchor="middle">Serotonin-paws360</text>
+  <text x="480" y="160" class="small-label" text-anchor="middle">192.168.0.13</text>
+  <text x="480" y="175" class="small-label" text-anchor="middle">Labels: [self-hosted, production, primary]</text>
+
+  <!-- Secondary Runner (Failover) -->
+  <rect x="380" y="210" width="200" height="90" class="secondary-box" rx="5"/>
+  <text x="480" y="235" class="label" text-anchor="middle" font-weight="bold">Secondary Runner (Failover)</text>
+  <text x="480" y="255" class="small-label" text-anchor="middle">dell-r640-01-runner</text>
+  <text x="480" y="270" class="small-label" text-anchor="middle">192.168.0.51</text>
+  <text x="480" y="285" class="small-label" text-anchor="middle">Labels: [self-hosted, production, secondary]</text>
+
+  <!-- Ansible Deployment -->
+  <rect x="670" y="120" width="200" height="120" class="ansible-box" rx="5"/>
+  <text x="770" y="145" class="label" text-anchor="middle" font-weight="bold">Ansible Deployment</text>
+  <text x="770" y="165" class="small-label" text-anchor="middle">infrastructure/ansible/</text>
+  <line x1="680" y1="175" x2="860" y2="175" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="680" y="195" class="small-label">• Transaction safety (block/rescue)</text>
+  <text x="680" y="210" class="small-label">• 20+ health checks</text>
+  <text x="680" y="225" class="small-label">• Automatic rollback</text>
+
+  <!-- Production Environment -->
+  <rect x="960" y="120" width="200" height="120" class="box" rx="5"/>
+  <text x="1060" y="145" class="label" text-anchor="middle" font-weight="bold">Production Environment</text>
+  <line x1="970" y1="155" x2="1150" y2="155" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="970" y="175" class="small-label">• Backend (Spring Boot)</text>
+  <text x="970" y="190" class="small-label">• Frontend (Next.js)</text>
+  <text x="970" y="205" class="small-label">• Database (PostgreSQL)</text>
+  <text x="970" y="220" class="small-label">• Auxiliary services</text>
+
+  <!-- Deployment Flow Arrows -->
+  <path d="M 290 180 L 380 145" class="primary-arrow"/>
+  <text x="320" y="155" class="small-label">Job scheduled</text>
+  
+  <path d="M 290 180 L 380 255" class="failover-arrow"/>
+  <text x="310" y="230" class="small-label" fill="#f59e0b">Failover (&lt;30s)</text>
+  
+  <path d="M 580 145 L 670 165" class="primary-arrow"/>
+  <text x="605" y="145" class="small-label">Execute playbook</text>
+  
+  <path d="M 580 255 L 670 200" class="failover-arrow"/>
+  
+  <path d="M 870 180 L 960 180" class="primary-arrow"/>
+  <text x="885" y="170" class="small-label">Deploy artifacts</text>
+
+  <!-- Health check indicator -->
+  <text x="995" y="260" class="small-label" fill="#16a34a">✓ Health checks pass</text>
+
+  <!-- ========== SECTION 2: MONITORING DATA FLOW ========== -->
+  <text x="70" y="360" class="subtitle">2. Monitoring &amp; Observability Stack</text>
+
+  <!-- Runner Exporter -->
+  <rect x="380" y="380" width="200" height="80" class="monitoring-box" rx="5"/>
+  <text x="480" y="405" class="label" text-anchor="middle" font-weight="bold">Runner Exporter</text>
+  <text x="480" y="425" class="small-label" text-anchor="middle">scripts/monitoring/</text>
+  <text x="480" y="440" class="small-label" text-anchor="middle">runner-exporter.py</text>
+  <text x="480" y="455" class="small-label" text-anchor="middle">Metrics: status, jobs, capacity</text>
+
+  <!-- Prometheus -->
+  <rect x="670" y="380" width="200" height="100" class="monitoring-box" rx="5"/>
+  <text x="770" y="405" class="label" text-anchor="middle" font-weight="bold">Prometheus</text>
+  <text x="770" y="425" class="small-label" text-anchor="middle">Time-series metrics database</text>
+  <line x1="680" y1="435" x2="860" y2="435" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="680" y="455" class="small-label">• 15s scrape interval</text>
+  <text x="680" y="470" class="small-label">• 12 alert rules</text>
+
+  <!-- Grafana -->
+  <rect x="960" y="380" width="200" height="100" class="monitoring-box" rx="5"/>
+  <text x="1060" y="405" class="label" text-anchor="middle" font-weight="bold">Grafana Dashboards</text>
+  <line x1="970" y1="415" x2="1150" y2="415" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="970" y="435" class="small-label">• Runner Health Dashboard</text>
+  <text x="970" y="450" class="small-label">• Deployment Pipeline</text>
+  <text x="970" y="465" class="small-label">• Real-time alerts</text>
+
+  <!-- Loki Log Aggregation -->
+  <rect x="670" y="500" width="200" height="70" class="monitoring-box" rx="5"/>
+  <text x="770" y="525" class="label" text-anchor="middle" font-weight="bold">Loki (Log Aggregation)</text>
+  <text x="770" y="545" class="small-label" text-anchor="middle">Runner logs + deployment logs</text>
+  <text x="770" y="560" class="small-label" text-anchor="middle">Query templates in runbooks</text>
+
+  <!-- Monitoring Flow Arrows -->
+  <path d="M 480 380 L 480 340 L 145 340 L 145 240" class="monitoring-arrow"/>
+  <text x="155" y="310" class="small-label" fill="#16a34a">Collect metrics</text>
+  
+  <path d="M 580 420 L 670 420" class="monitoring-arrow"/>
+  <text x="595" y="410" class="small-label">Scrape every 15s</text>
+  
+  <path d="M 870 430 L 960 430" class="monitoring-arrow"/>
+  <text x="885" y="420" class="small-label">Visualize</text>
+  
+  <path d="M 770 480 L 770 500" class="monitoring-arrow"/>
+  <text x="780" y="495" class="small-label">Forward logs</text>
+
+  <!-- Alerting -->
+  <rect x="1220" y="380" width="160" height="100" class="safeguard-box" rx="5"/>
+  <text x="1300" y="405" class="label" text-anchor="middle" font-weight="bold">Alerting</text>
+  <line x1="1230" y1="415" x2="1370" y2="415" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="1230" y="435" class="small-label">• oncall-sre routing</text>
+  <text x="1230" y="450" class="small-label">• Critical: page</text>
+  <text x="1230" y="465" class="small-label">• Warning: ticket</text>
+
+  <path d="M 1160 430 L 1220 430" class="monitoring-arrow"/>
+  <text x="1170" y="420" class="small-label">Fire alerts</text>
+
+  <!-- ========== SECTION 3: SAFEGUARDS &amp; ROLLBACK ========== -->
+  <text x="70" y="630" class="subtitle">3. Safeguards &amp; Rollback Flow</text>
+
+  <!-- Pre-Deployment Checks -->
+  <rect x="70" y="650" width="200" height="120" class="safeguard-box" rx="5"/>
+  <text x="170" y="675" class="label" text-anchor="middle" font-weight="bold">Pre-Deployment Checks</text>
+  <line x1="80" y1="685" x2="260" y2="685" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="80" y="705" class="small-label">1. Runner health validation</text>
+  <text x="80" y="720" class="small-label">2. Secrets validation</text>
+  <text x="80" y="735" class="small-label">3. Current version capture</text>
+  <text x="80" y="750" class="small-label">4. Concurrency gate</text>
+  <text x="80" y="765" class="small-label">5. Environment protection</text>
+
+  <!-- Transaction Safety -->
+  <rect x="340" y="650" width="200" height="120" class="safeguard-box" rx="5"/>
+  <text x="440" y="675" class="label" text-anchor="middle" font-weight="bold">Transaction Safety</text>
+  <text x="440" y="695" class="small-label" text-anchor="middle">Ansible block/rescue/always</text>
+  <line x1="350" y1="705" x2="530" y2="705" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="350" y="725" class="small-label">• Atomic operations</text>
+  <text x="350" y="740" class="small-label">• State capture</text>
+  <text x="350" y="755" class="small-label">• Rollback on any failure</text>
+
+  <!-- Post-Deployment Health Checks -->
+  <rect x="610" y="650" width="200" height="120" class="safeguard-box" rx="5"/>
+  <text x="710" y="675" class="label" text-anchor="middle" font-weight="bold">Health Check Gate</text>
+  <text x="710" y="695" class="small-label" text-anchor="middle">20+ automated checks</text>
+  <line x1="620" y1="705" x2="800" y2="705" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="620" y="725" class="small-label">• Backend /actuator/health</text>
+  <text x="620" y="740" class="small-label">• Frontend accessibility</text>
+  <text x="620" y="755" class="small-label">• Database connectivity</text>
+
+  <!-- Rollback Playbook -->
+  <rect x="880" y="650" width="200" height="120" class="safeguard-box" rx="5"/>
+  <text x="980" y="675" class="label" text-anchor="middle" font-weight="bold">Automatic Rollback</text>
+  <text x="980" y="695" class="small-label" text-anchor="middle">rollback-production.yml</text>
+  <line x1="890" y1="705" x2="1070" y2="705" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="890" y="725" class="small-label">• Restore prior version</text>
+  <text x="890" y="740" class="small-label">• Verify health checks</text>
+  <text x="890" y="755" class="small-label">• Create incident issue</text>
+
+  <!-- Incident Tracking -->
+  <rect x="1150" y="650" width="200" height="120" class="safeguard-box" rx="5"/>
+  <text x="1250" y="675" class="label" text-anchor="middle" font-weight="bold">Incident Tracking</text>
+  <line x1="1160" y1="685" x2="1340" y2="685" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="1160" y="705" class="small-label">• GitHub issue created</text>
+  <text x="1160" y="720" class="small-label">• JIRA ticket linked</text>
+  <text x="1160" y="735" class="small-label">• Oncall notified</text>
+  <text x="1160" y="750" class="small-label">• Metrics recorded</text>
+
+  <!-- Safeguard Flow Arrows -->
+  <path d="M 270 710 L 340 710" class="arrow"/>
+  <text x="280" y="700" class="small-label">Pass ✓</text>
+  
+  <path d="M 540 710 L 610 710" class="arrow"/>
+  <text x="550" y="700" class="small-label">Deploy</text>
+  
+  <path d="M 810 710 L 880 710" class="arrow"/>
+  <text x="820" y="700" class="small-label">Verify</text>
+
+  <!-- Rollback trigger arrows -->
+  <path d="M 710 770 L 710 820 L 980 820 L 980 770" class="rollback-arrow"/>
+  <text x="800" y="810" class="small-label" fill="#dc2626">Health check FAIL → Rollback</text>
+  
+  <path d="M 1080 710 L 1150 710" class="arrow"/>
+  <text x="1090" y="700" class="small-label">Log</text>
+
+  <!-- ========== LEGEND ========== -->
+  <text x="70" y="840" class="subtitle">Legend</text>
+  
+  <rect x="70" y="855" width="250" height="120" class="box" rx="5"/>
+  
+  <!-- Primary flow -->
+  <line x1="85" y1="875" x2="135" y2="875" class="primary-arrow"/>
+  <text x="145" y="880" class="small-label">Primary deployment flow</text>
+  
+  <!-- Failover -->
+  <line x1="85" y1="895" x2="135" y2="895" class="failover-arrow"/>
+  <text x="145" y="900" class="small-label">Failover path (degraded primary)</text>
+  
+  <!-- Monitoring -->
+  <line x1="85" y1="915" x2="135" y2="915" class="monitoring-arrow"/>
+  <text x="145" y="920" class="small-label">Monitoring data flow</text>
+  
+  <!-- Rollback -->
+  <line x1="85" y1="935" x2="135" y2="935" class="rollback-arrow"/>
+  <text x="145" y="940" class="small-label">Rollback on failure</text>
+  
+  <!-- Generic -->
+  <line x1="85" y1="955" x2="135" y2="955" class="arrow"/>
+  <text x="145" y="960" class="small-label">Standard flow</text>
+
+  <!-- ========== SUCCESS CRITERIA ========== -->
+  <text x="380" y="840" class="subtitle">Success Criteria (INFRA-472)</text>
+  
+  <rect x="380" y="855" width="470" height="120" class="monitoring-box" rx="5"/>
+  
+  <text x="390" y="880" class="small-label">✓ SC-001: Deployment success rate ≥95% (measured over 30 days)</text>
+  <text x="390" y="900" class="small-label">✓ SC-002: p95 deployment duration ≤10 minutes (excluding queue time)</text>
+  <text x="390" y="920" class="small-label">✓ SC-003: Zero partial deployments (all safeguards operational)</text>
+  <text x="390" y="940" class="small-label">✓ SC-004: All rollbacks tracked with root cause analysis</text>
+  <text x="390" y="960" class="small-label">✓ SC-005: Monitoring alerts operational (&lt;5min detection, &lt;30s failover)</text>
+
+  <!-- ========== KEY METRICS ========== -->
+  <text x="920" y="840" class="subtitle">Key Metrics</text>
+  
+  <rect x="920" y="855" width="430" height="120" class="box" rx="5"/>
+  
+  <text x="930" y="880" class="small-label">• Runner failover time: &lt;30 seconds</text>
+  <text x="930" y="900" class="small-label">• Health check count: 20+ automated checks</text>
+  <text x="930" y="920" class="small-label">• Alert rules: 12 (critical, warning, info levels)</text>
+  <text x="930" y="940" class="small-label">• Grafana dashboards: 2 (runner health, deployment pipeline)</text>
+  <text x="930" y="960" class="small-label">• Runbooks: 6 operational guides for diagnostics &amp; remediation</text>
+
+  <!-- Footer -->
+  <text x="700" y="995" class="small-label" text-anchor="middle">Generated: 2025-12-11 | Status: Implementation Complete | Production Ready</text>
+</svg>
