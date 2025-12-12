@@ -91,7 +91,7 @@ export default function PersonalPage() {
 	React.useEffect(() => {
 		const load = async () => {
 			try {
-				const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+				const email = typeof window !== "undefined" ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail")) : null;
 				if (!email) return;
 					const [userRes, sidRes, prefRes, emgRes, genRes, ethRes, natRes] = await Promise.all([
 						fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`),
@@ -320,7 +320,7 @@ const securityInfo = {
                                     }
                                 }
 
-                                const personalRes = await fetch(`${API_BASE}/users/personal`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, firstname: firstNameEdit, middlename: middleNameEdit || null, lastname: lastNameEdit, preferredName: preferredNameEdit || null, gender: genderEdit || null, ethnicity: ethnicityEdit || null, nationality: nationalityEdit || null, dob: dobEdit || null, ssn: ssnDigits }) });
+                                const personalRes = await fetch(`${API_BASE}/users/personal`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, firstname: firstNameEdit, middlename: middleNameEdit || null, lastname: lastNameEdit, preferredName: preferredNameEdit || null, profilePictureUrl: profilePicEdit || null, gender: genderEdit || null, ethnicity: ethnicityEdit || null, nationality: nationalityEdit || null, dob: dobEdit || null, ssn: ssnDigits }) });
 								if (!personalRes.ok) {
 									toast({ variant: "destructive", title: "Failed to update name", description: "Please check inputs and try again." });
 									return;
@@ -369,7 +369,12 @@ const securityInfo = {
                                 // Now update contact info (do this last so earlier updates still find user by email)
                                 const contactRes = await fetch(`${API_BASE}/users/contact`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, phone: phoneEdit || null, newEmail: primaryEmailEdit || null, alternateEmail: altEmailEdit || null, alternatePhone: altPhoneEdit || null }) });
                                 if (contactRes && contactRes.ok && primaryEmailEdit && primaryEmailEdit !== email) {
-                                    try { if (typeof window !== 'undefined') localStorage.setItem('userEmail', primaryEmailEdit); } catch {}
+                                    try { 
+                                        if (typeof window !== 'undefined') {
+                                            sessionStorage.setItem('userEmail', primaryEmailEdit);
+                                            localStorage.setItem('userEmail', primaryEmailEdit);
+                                        }
+                                    } catch {}
                                 }
                                 // Reflect changes locally
                                 setUser((prev: any) => ({ ...(prev || {}), firstname: firstNameEdit, middlename: middleNameEdit, lastname: lastNameEdit, preferred_name: preferredNameEdit, profile_picture_url: profilePicEdit, gender: genderEdit, ethnicity: ethnicityEdit, nationality: nationalityEdit, dob: dobEdit || prev?.dob, email: primaryEmailEdit || prev?.email, phone: phoneEdit, alternate_email: altEmailEdit, alternate_phone: altPhoneEdit }));
@@ -377,6 +382,10 @@ const securityInfo = {
 								setMailingAddress(mailingAddrEdit);
 								toast({ title: "Profile Updated", description: "Your changes have been saved." });
 								setIsEditing(false);
+								// Reload page to refresh all data
+								setTimeout(() => {
+									if (typeof window !== 'undefined') window.location.reload();
+								}, 1000);
 							} catch (e: any) {
 								toast({ variant: "destructive", title: "Update failed", description: e?.message || "Try again later." });
 							}
@@ -405,7 +414,7 @@ const securityInfo = {
 						<User className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">{personalInfo.studentId}</div>
+						<div className="text-2xl font-bold text-foreground">{personalInfo.studentId}</div>
 						<p className="text-xs text-muted-foreground">Active Student</p>
 					</CardContent>
 				</Card>
@@ -427,7 +436,7 @@ const securityInfo = {
 									</span>
 								)}
 							</div>
-							<div className="text-2xl font-bold">
+							<div className="text-2xl font-bold text-foreground">
 								{personalInfo.firstName} {personalInfo.lastName}
 							</div>
 						</div>
@@ -443,7 +452,7 @@ const securityInfo = {
 						<Mail className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className="text-2xl font-bold text-foreground">
                             {contactInfo.email ? String(contactInfo.email).split("@")[0] : ""}
                         </div>
                         <p className="text-xs text-muted-foreground">{contactInfo.email ? `@${String(contactInfo.email).split("@")[1]}` : ""}</p>
@@ -502,7 +511,7 @@ const securityInfo = {
                                             <input
                                                 type="file"
                                                 accept="image/png,image/jpeg,image/jpg,image/webp"
-                                                className="flex-1 border rounded-md p-2"
+                                                className="flex-1 border rounded-md p-2 bg-background text-foreground"
                                                 onChange={(e) => {
                                                     const f = e.target.files?.[0] || null;
                                                     setProfilePicFile(f);
@@ -523,25 +532,25 @@ const securityInfo = {
                             <div>
                                 <label className="text-sm font-medium">First Name</label>
                                 {isEditing ? (
-                                    <input className="w-full border rounded-md p-2" value={firstNameEdit} onChange={(e) => setFirstNameEdit(e.target.value)} />
+                                    <input className="w-full border rounded-md p-2 bg-background text-foreground" value={firstNameEdit} onChange={(e) => setFirstNameEdit(e.target.value)} />
                                 ) : (
-                                    <p className="text-lg">{personalInfo.firstName}</p>
+                                    <p className="text-lg text-foreground">{personalInfo.firstName}</p>
                                 )}
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Last Name</label>
                                 {isEditing ? (
-                                    <input className="w-full border rounded-md p-2" value={lastNameEdit} onChange={(e) => setLastNameEdit(e.target.value)} />
+                                    <input className="w-full border rounded-md p-2 bg-background text-foreground" value={lastNameEdit} onChange={(e) => setLastNameEdit(e.target.value)} />
                                 ) : (
-                                    <p className="text-lg">{personalInfo.lastName}</p>
+                                    <p className="text-lg text-foreground">{personalInfo.lastName}</p>
                                 )}
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Preferred Name</label>
                                 {isEditing ? (
-                                    <input className="w-full border rounded-md p-2" value={preferredNameEdit} onChange={(e) => setPreferredNameEdit(e.target.value)} />
+                                    <input className="w-full border rounded-md p-2 bg-background text-foreground" value={preferredNameEdit} onChange={(e) => setPreferredNameEdit(e.target.value)} />
                                 ) : (
-                                    <p className="text-lg">{personalInfo.preferredName}</p>
+                                    <p className="text-lg text-foreground">{personalInfo.preferredName}</p>
                                 )}
                             </div>
 								</div>
@@ -549,48 +558,48 @@ const securityInfo = {
                             <div>
                                 <label className="text-sm font-medium">Date of Birth</label>
                                 {isEditing ? (
-                                    <input type="date" className="w-full border rounded-md p-2" value={dobEdit || ""} onChange={(e) => setDobEdit(e.target.value)} />
+                                    <input type="date" className="w-full border rounded-md p-2 bg-background text-foreground" value={dobEdit || ""} onChange={(e) => setDobEdit(e.target.value)} />
                                 ) : (
-                                    <p className="text-lg">{personalInfo.dateOfBirth}</p>
+                                    <p className="text-lg text-foreground">{personalInfo.dateOfBirth}</p>
                                 )}
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Gender</label>
                                 {isEditing ? (
-                                    <select className="w-full border rounded-md p-2" value={genderEdit || ""} onChange={(e) => setGenderEdit(e.target.value)}>
+                                    <select className="w-full border rounded-md p-2 bg-background text-foreground" value={genderEdit || ""} onChange={(e) => setGenderEdit(e.target.value)}>
                                         <option value="">Select...</option>
                                         {genders.map((g) => (
                                             <option key={g.value} value={g.value}>{g.label}</option>
                                         ))}
                                     </select>
                                 ) : (
-                                    <p className="text-lg">{labelFor(user?.gender, genders)}</p>
+                                    <p className="text-lg text-foreground">{labelFor(user?.gender, genders)}</p>
                                 )}
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Ethnicity</label>
                                 {isEditing ? (
-                                    <select className="w-full border rounded-md p-2" value={ethnicityEdit || ""} onChange={(e) => setEthnicityEdit(e.target.value)}>
+                                    <select className="w-full border rounded-md p-2 bg-background text-foreground" value={ethnicityEdit || ""} onChange={(e) => setEthnicityEdit(e.target.value)}>
                                         <option value="">Select...</option>
                                         {ethnicities.map((e1) => (
                                             <option key={e1.value} value={e1.value}>{e1.label}</option>
                                         ))}
                                     </select>
                                 ) : (
-                                    <p className="text-lg">{labelFor(user?.ethnicity, ethnicities)}</p>
+                                    <p className="text-lg text-foreground">{labelFor(user?.ethnicity, ethnicities)}</p>
                                 )}
                             </div>
                             <div>
                                 <label className="text-sm font-medium">Citizenship</label>
                                 {isEditing ? (
-                                    <select className="w-full border rounded-md p-2" value={nationalityEdit || ""} onChange={(e) => setNationalityEdit(e.target.value)}>
+                                    <select className="w-full border rounded-md p-2 bg-background text-foreground" value={nationalityEdit || ""} onChange={(e) => setNationalityEdit(e.target.value)}>
                                         <option value="">Select...</option>
                                         {nationalities.map((n) => (
                                             <option key={n.value} value={n.value}>{n.label}</option>
                                         ))}
                                     </select>
                                 ) : (
-                                    <p className="text-lg">{labelFor(user?.nationality, nationalities)}</p>
+                                    <p className="text-lg text-foreground">{labelFor(user?.nationality, nationalities)}</p>
                                 )}
                             </div>
                             {/* SSN display with last 4 when unhidden; input when editing */}
@@ -647,7 +656,7 @@ const securityInfo = {
                                 <div className="w-full">
                                     <p className="font-medium">Primary Email</p>
                                     {isEditing ? (
-                                        <input className="w-full border rounded-md p-2" value={primaryEmailEdit} onChange={(e) => setPrimaryEmailEdit(e.target.value)} />
+                                        <input className="w-full border rounded-md p-2 bg-background text-foreground" value={primaryEmailEdit} onChange={(e) => setPrimaryEmailEdit(e.target.value)} />
                                     ) : (
                                         <p className="text-sm text-muted-foreground">{contactInfo.email}</p>
                                     )}
@@ -658,7 +667,7 @@ const securityInfo = {
                                 <div className="w-full">
                                     <p className="font-medium">Alternate Email</p>
                                     {isEditing ? (
-                                        <input className="w-full border rounded-md p-2" value={altEmailEdit} onChange={(e) => setAltEmailEdit(e.target.value)} />
+                                        <input className="w-full border rounded-md p-2 bg-background text-foreground" value={altEmailEdit} onChange={(e) => setAltEmailEdit(e.target.value)} />
                                     ) : (
                                         <p className="text-sm text-muted-foreground">{contactInfo.alternateEmail}</p>
                                     )}
@@ -669,7 +678,7 @@ const securityInfo = {
                             <div className="w-full">
                                 <p className="font-medium">Primary Phone</p>
                                 {isEditing ? (
-                                    <input className="w-full border rounded-md p-2" value={phoneEdit} onChange={(e) => setPhoneEdit(e.target.value)} />
+                                    <input className="w-full border rounded-md p-2 bg-background text-foreground" value={phoneEdit} onChange={(e) => setPhoneEdit(e.target.value)} />
                                 ) : (
                                     <p className="text-sm text-muted-foreground">{contactInfo.phone}</p>
                                 )}
@@ -680,7 +689,7 @@ const securityInfo = {
                             <div className="w-full">
                                 <p className="font-medium">Alternate Phone</p>
                                 {isEditing ? (
-                                    <input className="w-full border rounded-md p-2" value={altPhoneEdit} onChange={(e) => setAltPhoneEdit(e.target.value)} />
+                                    <input className="w-full border rounded-md p-2 bg-background text-foreground" value={altPhoneEdit} onChange={(e) => setAltPhoneEdit(e.target.value)} />
                                 ) : (
                                     <p className="text-sm text-muted-foreground">{contactInfo.alternatePhone}</p>
                                 )}
@@ -704,8 +713,8 @@ const securityInfo = {
                                 <div className="text-sm">
                                     {isEditing ? (
                                         <div className="space-y-2 w-full">
-                                            <input className="w-full border rounded-md p-2" placeholder="Street" value={homeAddrEdit?.street_address_1 || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), street_address_1: e.target.value })} />
-                                            <input className="w-full border rounded-md p-2" placeholder="Street 2" value={homeAddrEdit?.street_address_2 || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), street_address_2: e.target.value })} />
+                                            <input className="w-full border rounded-md p-2 bg-background text-foreground" placeholder="Street" value={homeAddrEdit?.street_address_1 || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), street_address_1: e.target.value })} />
+                                            <input className="w-full border rounded-md p-2 bg-background text-foreground" placeholder="Street 2" value={homeAddrEdit?.street_address_2 || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), street_address_2: e.target.value })} />
                                             <div className="grid grid-cols-3 gap-2">
                                                 <input className="border rounded-md p-2" placeholder="City" value={homeAddrEdit?.city || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), city: e.target.value })} />
                                                 <input className="border rounded-md p-2" placeholder="State" value={homeAddrEdit?.us_states || ""} onChange={(e) => setHomeAddrEdit({ ...(homeAddrEdit||{}), us_states: e.target.value })} />
@@ -733,8 +742,8 @@ const securityInfo = {
                                 <div className="text-sm">
                                     {isEditing ? (
                                         <div className="space-y-2 w-full">
-                                            <input className="w-full border rounded-md p-2" placeholder="Street" value={mailingAddrEdit?.street_address_1 || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), street_address_1: e.target.value })} />
-                                            <input className="w-full border rounded-md p-2" placeholder="Street 2" value={mailingAddrEdit?.street_address_2 || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), street_address_2: e.target.value })} />
+                                            <input className="w-full border rounded-md p-2 bg-background text-foreground" placeholder="Street" value={mailingAddrEdit?.street_address_1 || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), street_address_1: e.target.value })} />
+                                            <input className="w-full border rounded-md p-2 bg-background text-foreground" placeholder="Street 2" value={mailingAddrEdit?.street_address_2 || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), street_address_2: e.target.value })} />
                                             <div className="grid grid-cols-3 gap-2">
                                                 <input className="border rounded-md p-2" placeholder="City" value={mailingAddrEdit?.city || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), city: e.target.value })} />
                                                 <input className="border rounded-md p-2" placeholder="State" value={mailingAddrEdit?.us_states || ""} onChange={(e) => setMailingAddrEdit({ ...(mailingAddrEdit||{}), us_states: e.target.value })} />
@@ -793,41 +802,41 @@ const securityInfo = {
 											<div>
 												<label className="text-sm font-medium">Name</label>
 												{isEditing ? (
-													<input className="w-full border rounded-md p-2" value={contact.name || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], name: e.target.value }; setEmergencyContacts(u);} } />
+													<input className="w-full border rounded-md p-2 bg-background text-foreground" value={contact.name || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], name: e.target.value }; setEmergencyContacts(u);} } />
 												) : (
-													<p className="text-lg">{contact.name}</p>
+													<p className="text-lg text-foreground">{contact.name}</p>
 												)}
 											</div>
 											<div>
 												<label className="text-sm font-medium">Relationship</label>
 												{isEditing ? (
-													<input className="w-full border rounded-md p-2" value={contact.relationship || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], relationship: e.target.value }; setEmergencyContacts(u);} } />
+													<input className="w-full border rounded-md p-2 bg-background text-foreground" value={contact.relationship || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], relationship: e.target.value }; setEmergencyContacts(u);} } />
 												) : (
-													<p className="text-lg">{contact.relationship}</p>
+													<p className="text-lg text-foreground">{contact.relationship}</p>
 												)}
 											</div>
 											<div>
 												<label className="text-sm font-medium">Phone</label>
 												{isEditing ? (
-													<input className="w-full border rounded-md p-2" value={contact.phone || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], phone: e.target.value }; setEmergencyContacts(u);} } />
+													<input className="w-full border rounded-md p-2 bg-background text-foreground" value={contact.phone || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], phone: e.target.value }; setEmergencyContacts(u);} } />
 												) : (
-													<p className="text-lg">{contact.phone}</p>
+													<p className="text-lg text-foreground">{contact.phone}</p>
 												)}
 											</div>
 											<div>
 												<label className="text-sm font-medium">Email</label>
 												{isEditing ? (
-													<input className="w-full border rounded-md p-2" value={contact.email || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], email: e.target.value }; setEmergencyContacts(u);} } />
+													<input className="w-full border rounded-md p-2 bg-background text-foreground" value={contact.email || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], email: e.target.value }; setEmergencyContacts(u);} } />
 												) : (
-													<p className="text-lg">{contact.email}</p>
+													<p className="text-lg text-foreground">{contact.email}</p>
 												)}
 											</div>
 											<div className="md:col-span-2">
 												<label className="text-sm font-medium">Address</label>
 												{isEditing ? (
 													<div className="space-y-2">
-														<input className="w-full border rounded-md p-2" placeholder="Street" value={contact.street_address_1 || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], street_address_1: e.target.value }; setEmergencyContacts(u);} } />
-														<input className="w-full border rounded-md p-2" placeholder="Street 2" value={contact.street_address_2 || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], street_address_2: e.target.value }; setEmergencyContacts(u);} } />
+														<input className="w-full border rounded-md p-2 bg-background text-foreground" placeholder="Street" value={contact.street_address_1 || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], street_address_1: e.target.value }; setEmergencyContacts(u);} } />
+														<input className="w-full border rounded-md p-2 bg-background text-foreground" placeholder="Street 2" value={contact.street_address_2 || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], street_address_2: e.target.value }; setEmergencyContacts(u);} } />
 														<div className="grid grid-cols-3 gap-2">
 															<input className="border rounded-md p-2" placeholder="City" value={contact.city || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], city: e.target.value }; setEmergencyContacts(u);} } />
 															<input className="border rounded-md p-2" placeholder="State" value={contact.us_states || ""} onChange={(e) => { const u=[...emergencyContacts]; u[index] = { ...u[index], us_states: e.target.value }; setEmergencyContacts(u);} } />

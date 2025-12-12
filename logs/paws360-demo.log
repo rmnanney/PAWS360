@@ -3518,3 +3518,126 @@ Caused by: org.postgresql.util.PSQLException: ERROR: column c.title does not exi
 2025-12-11 19:24:48.824 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
 2025-12-11 19:24:48.835 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 2 active sessions
 2025-12-11 19:24:48.838 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 2 active sessions (max: 100)
+2025-12-11 19:29:25.724 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 19:29:25.733 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 2 active sessions
+2025-12-11 19:33:08.235 [http-nio-8086-exec-1] INFO  [] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-11 19:33:08.235 [http-nio-8086-exec-1] INFO  [] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-12-11 19:33:08.236 [http-nio-8086-exec-1] INFO  [] o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+2025-12-11 19:33:08.257 [http-nio-8086-exec-1] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 1 from IP: 127.0.0.1
+2025-12-11 19:34:02.643 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 19:34:02.651 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 2 active sessions
+2025-12-11 19:38:39.542 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 19:38:39.551 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 2 active sessions
+2025-12-11 19:38:39.553 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 2 active sessions (max: 100)
+2025-12-11 19:43:16.513 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 19:43:16.521 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 2 active sessions
+2025-12-11 19:47:53.360 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 19:47:53.369 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 2 active sessions
+2025-12-11 19:52:30.292 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 19:52:30.302 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 2 active sessions
+2025-12-11 19:52:30.305 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 2 active sessions (max: 100)
+2025-12-11 19:57:07.184 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 19:57:07.193 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 2 active sessions
+2025-12-11 20:01:44.088 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:01:44.099 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 20:06:21.010 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:06:21.018 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 20:06:21.020 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 1 active sessions (max: 100)
+2025-12-11 20:10:57.914 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:10:57.922 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 20:15:47.783 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:15:47.798 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 20:20:47.743 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:20:47.750 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 20:20:47.751 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 1 active sessions (max: 100)
+2025-12-11 20:25:47.686 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:25:47.693 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 20:30:47.647 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:30:47.654 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 20:33:38.660 [http-nio-8086-exec-8] WARN  [] c.u.p.C.UserProfileController - Student profile request without session token from IP: 127.0.0.1
+2025-12-11 20:35:47.540 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:35:47.548 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 20:35:47.550 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 0 active sessions (max: 100)
+2025-12-11 20:40:47.402 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:40:47.411 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 20:45:47.288 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:45:47.298 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 20:46:49.255 [http-nio-8086-exec-5] WARN  [] c.u.p.C.UserProfileController - Student profile request without session token from IP: 127.0.0.1
+2025-12-11 20:47:21.109 [http-nio-8086-exec-5] WARN  [] c.u.p.C.UserProfileController - Student profile request without session token from IP: 127.0.0.1
+2025-12-11 20:50:47.094 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:50:47.104 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 20:50:47.105 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 0 active sessions (max: 100)
+2025-12-11 20:52:55.937 [http-nio-8086-exec-1] WARN  [] c.u.p.C.UserProfileController - Student profile request without session token from IP: 127.0.0.1
+2025-12-11 20:52:58.069 [http-nio-8086-exec-9] WARN  [] c.u.p.C.UserProfileController - Student profile request without session token from IP: 127.0.0.1
+2025-12-11 20:53:43.046 [http-nio-8086-exec-8] WARN  [] c.u.p.C.UserProfileController - Student profile request without session token from IP: 127.0.0.1
+2025-12-11 20:54:23.393 [http-nio-8086-exec-6] WARN  [] c.u.p.C.UserProfileController - Student profile request without session token from IP: 127.0.0.1
+2025-12-11 20:55:46.850 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 20:55:46.859 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 20:56:50.535 [http-nio-8086-exec-6] WARN  [] c.u.p.C.UserProfileController - Student profile request without session token from IP: 127.0.0.1
+2025-12-11 20:57:14.662 [http-nio-8086-exec-3] WARN  [] c.u.p.C.UserProfileController - Student profile request without session token from IP: 127.0.0.1
+2025-12-11 21:00:46.575 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:00:46.583 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 21:03:24.413 [http-nio-8086-exec-7] INFO  [] c.u.p.Controller.AuthController - Login attempt for email: ale***@uwm.edu from IP: 127.0.0.1
+2025-12-11 21:03:24.520 [http-nio-8086-exec-7] INFO  [] c.u.p.Controller.AuthController - Successful login for user ID: 42 (ale***@uwm.edu), role: STUDENT, from IP: 127.0.0.1
+2025-12-11 21:03:24.747 [http-nio-8086-exec-2] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:05:46.277 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:05:46.284 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 21:05:46.285 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 0 active sessions (max: 100)
+2025-12-11 21:10:45.941 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:10:45.950 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 21:15:45.585 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:15:45.593 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 21:20:45.246 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:20:45.252 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 21:20:45.254 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 0 active sessions (max: 100)
+2025-12-11 21:22:41.654 [http-nio-8086-exec-8] INFO  [] c.u.p.Controller.AuthController - Login attempt for email: ale***@uwm.edu from IP: 127.0.0.1
+2025-12-11 21:22:41.720 [http-nio-8086-exec-8] INFO  [] c.u.p.Controller.AuthController - Successful login for user ID: 42 (ale***@uwm.edu), role: STUDENT, from IP: 127.0.0.1
+2025-12-11 21:22:41.912 [http-nio-8086-exec-7] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:24:53.743 [http-nio-8086-exec-4] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:25:25.052 [http-nio-8086-exec-1] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:25:44.843 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:25:44.851 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 21:26:40.172 [http-nio-8086-exec-9] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:29:30.301 [http-nio-8086-exec-3] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:30:44.445 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:30:44.452 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 21:31:57.007 [http-nio-8086-exec-8] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:32:52.945 [http-nio-8086-exec-5] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:35:44.024 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:35:44.034 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 21:35:44.036 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 1 active sessions (max: 100)
+2025-12-11 21:35:44.377 [http-nio-8086-exec-1] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:36:23.452 [http-nio-8086-exec-3] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:40:43.574 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:40:43.586 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 0 active sessions
+2025-12-11 21:43:01.734 [http-nio-8086-exec-6] INFO  [] c.u.p.Controller.AuthController - Login attempt for email: ale***@uwm.edu from IP: 127.0.0.1
+2025-12-11 21:43:01.807 [http-nio-8086-exec-6] INFO  [] c.u.p.Controller.AuthController - Successful login for user ID: 42 (ale***@uwm.edu), role: STUDENT, from IP: 127.0.0.1
+2025-12-11 21:43:01.992 [http-nio-8086-exec-9] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:45:43.082 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:45:43.088 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 21:50:42.531 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:50:42.542 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 21:50:42.544 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 1 active sessions (max: 100)
+2025-12-11 21:51:23.151 [http-nio-8086-exec-5] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:53:41.146 [http-nio-8086-exec-8] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:54:01.746 [http-nio-8086-exec-9] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:54:42.411 [http-nio-8086-exec-10] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 21:55:41.952 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 21:55:41.958 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 22:00:41.370 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 22:00:41.379 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 22:05:40.753 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 22:05:40.761 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 22:05:40.762 [scheduling-1] INFO  [] c.u.p.config.SessionTimeoutConfig - Session statistics: 1 active sessions (max: 100)
+2025-12-11 22:10:34.782 [http-nio-8086-exec-1] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 22:10:40.137 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 22:10:40.144 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 22:14:50.493 [http-nio-8086-exec-5] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 22:15:03.073 [http-nio-8086-exec-4] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 22:15:18.592 [http-nio-8086-exec-1] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 22:15:37.692 [http-nio-8086-exec-10] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 22:15:39.485 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 22:15:39.491 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
+2025-12-11 22:15:43.897 [http-nio-8086-exec-10] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 22:15:59.965 [http-nio-8086-exec-2] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1
+2025-12-11 22:16:54.539 [http-nio-8086-exec-3] INFO  [] c.u.p.C.UserProfileController - Student profile successfully retrieved for user ID: 42 from IP: 127.0.0.1

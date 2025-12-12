@@ -161,7 +161,7 @@ export default function Academic() {
     const handleDownloadTranscript = async () => {
         const { toast } = require("@/hooks/useToast");
         try {
-            const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+            const email = typeof window !== "undefined" ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail")) : null;
             if (!email) throw new Error("Missing user email");
 
             const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
@@ -180,11 +180,24 @@ export default function Academic() {
             ]);
 
             if (!transcriptRes || !transcriptRes.ok) throw new Error("Transcript unavailable");
-            const transcript = await transcriptRes.json();
-            const summary = summaryRes && summaryRes.ok ? await summaryRes.json() : {};
-            const student = userRes && userRes.ok ? await userRes.json() : {};
-            const advisor = advisorRes && advisorRes.ok ? await advisorRes.json() : null;
-            const program = programRes && programRes.ok ? await programRes.json() : { code: null, name: null, department: null };
+            
+            // Helper to safely parse JSON, handling empty responses
+            const safeJsonParse = async (res: Response | null, fallback: any = null) => {
+                if (!res || !res.ok) return fallback;
+                const text = await res.text();
+                if (!text || text.trim() === '') return fallback;
+                try {
+                    return JSON.parse(text);
+                } catch {
+                    return fallback;
+                }
+            };
+            
+            const transcript = await safeJsonParse(transcriptRes, { terms: [] });
+            const summary = await safeJsonParse(summaryRes, {});
+            const student = await safeJsonParse(userRes, {});
+            const advisor = await safeJsonParse(advisorRes, null);
+            const program = await safeJsonParse(programRes, { code: null, name: null, department: null });
 
             const { generateTranscriptPdf } = await import("@/lib/transcript-pdf");
             await generateTranscriptPdf({
