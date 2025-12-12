@@ -7,6 +7,11 @@ services:
       context: .
       dockerfile: infrastructure/docker/Dockerfile
     container_name: paws360-app-ci
+    # Disable AppArmor to allow network operations during Maven builds
+    # AppArmor on the runner blocks socket creation, causing Permission denied errors
+    # Other security layers (seccomp, cgroupns) remain active
+    security_opt:
+      - apparmor=unconfined
     ports:
       - "8080:8080"
     environment:
