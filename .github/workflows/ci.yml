@@ -367,12 +367,12 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Start docker-compose for CI
-        run: docker compose -f docker-compose.ci.yml up -d --build
+        run: sudo docker compose -f docker-compose.ci.yml up -d --build
 
       - name: Wait for postgres container
         run: |
           for i in {1..60}; do
-            if docker exec paws360-postgres-ci pg_isready -U paws360 -d paws360_test >/dev/null 2>&1; then
+            if sudo docker exec paws360-postgres-ci pg_isready -U paws360 -d paws360_test >/dev/null 2>&1; then
               echo "Postgres is ready"
               break
             fi
@@ -397,11 +397,11 @@ jobs:
           else
             echo "Backend did not become healthy after ${MAX_WAIT_SECONDS}s — gathering diagnostics" >&2
             echo "-- Docker container status --" >&2
-            docker ps -a --format 'table {{.Names}}	{{.Image}}	{{.Status}}' || true
+            sudo docker ps -a --format 'table {{.Names}}	{{.Image}}	{{.Status}}' || true
             echo "-- tail of docker-compose logs (last 500 lines) --" >&2
-            docker compose -f docker-compose.ci.yml logs --tail=500 || true
+            sudo docker compose -f docker-compose.ci.yml logs --tail=500 || true
             # Capture logs for artifact upload and fail this job so CI stops and reports failure
-            docker compose -f docker-compose.ci.yml logs > ci-docker-logs.txt || true
+            sudo docker compose -f docker-compose.ci.yml logs > ci-docker-logs.txt || true
             echo "Saved logs to ci-docker-logs.txt" >&2
             exit 1
           fi
@@ -422,16 +422,16 @@ jobs:
         if: failure()
         run: |
           echo "Listing paws360 schema tables and row counts for diagnostics"
-          docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "\dt paws360.*" || true
-          docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "SELECT 'users_rows', count(*) FROM paws360.users;" || true
+          sudo docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "\dt paws360.*" || true
+          sudo docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "SELECT 'users_rows', count(*) FROM paws360.users;" || true
 
       - name: Capture Docker logs on failure
         if: failure()
-        run: docker compose -f docker-compose.ci.yml logs > ci-docker-logs.txt || true
+        run: sudo docker compose -f docker-compose.ci.yml logs > ci-docker-logs.txt || true
 
       - name: Stop docker-compose
         if: always()
-        run: docker compose -f docker-compose.ci.yml down -v || true
+        run: sudo docker compose -f docker-compose.ci.yml down -v || true
 
       - name: Final cleanup (integration job)
         if: always()
@@ -464,7 +464,7 @@ jobs:
 
       - name: Start backend and infra (quick)
         run: |
-          docker compose -f docker-compose.ci.yml up -d
+          sudo docker compose -f docker-compose.ci.yml up -d
 
       - name: Prepare frontend for smoke checks (no dev server)
         run: |
@@ -627,7 +627,7 @@ jobs:
           echo "===== tail next-dev.log (200 lines) =====" || true
           tail -n 200 next-dev.log || true
           echo "===== docker compose logs (smoke) =====" || true
-          docker compose -f docker-compose.ci.yml logs > smoke-docker-logs.txt || true
+          sudo docker compose -f docker-compose.ci.yml logs > smoke-docker-logs.txt || true
 
       - name: Upload smoke diagnostics
         if: failure()
@@ -642,7 +642,7 @@ jobs:
 
       - name: Stop smoke infra
         if: always()
-        run: docker compose -f docker-compose.ci.yml down -v || true
+        run: sudo docker compose -f docker-compose.ci.yml down -v || true
 
       - name: Final cleanup (smoke job)
         if: always()
@@ -754,7 +754,7 @@ jobs:
 
       - name: Stop docker-compose
         if: always()
-        run: docker compose -f docker-compose.ci.yml down -v || true
+        run: sudo docker compose -f docker-compose.ci.yml down -v || true
 
       - name: Stop Next dev server
         if: always()
