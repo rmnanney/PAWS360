@@ -1,21 +1,27 @@
 # syntax=docker/dockerfile:1
 # Multi-stage Dockerfile for PAWS360
+# Base image with Maven and JDK for building
 FROM maven:3.9-eclipse-temurin-21-alpine AS build
 
 # Set working directory
 WORKDIR /app
 
-# Copy pom.xml first for better layer caching
+# Copy Maven settings to configure local repository
+RUN mkdir -p /root/.m2 && \
+    echo '<settings><localRepository>/cache/maven</localRepository></settings>' > /root/.m2/settings.xml
+
+# Copy pom.xml and pre-resolve dependencies using cache mount
+# The cache mount persists Maven repository between builds
 COPY pom.xml .
+RUN --mount=type=cache,target=/cache/maven \
+    mvn dependency:resolve -B || true
 
 # Copy source code
 COPY src ./src
 
-# Build with network=host to bypass AppArmor restrictions
-# AppArmor blocks network socket creation in default network namespace
-# Using host network allows Maven to download dependencies
-RUN --network=host --mount=type=cache,target=/root/.m2 \
-    mvn clean package -DskipTests -B -Dmaven.artifact.threads=10
+# Build application with cache mount (dependencies already resolved)
+RUN --mount=type=cache,target=/cache/maven \
+    mvn clean package -DskipTests -B -Dmaven.artifact.threads=10 -o
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
