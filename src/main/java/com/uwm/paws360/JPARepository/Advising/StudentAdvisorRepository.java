@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface StudentAdvisorRepository extends JpaRepository<StudentAdvisor, Long> {
     List<StudentAdvisor> findByStudent(Student student);
     Optional<StudentAdvisor> findFirstByStudentAndPrimaryAdvisorIsTrue(Student student);
+    Optional<StudentAdvisor> findByStudentAndAdvisor(Student student, com.uwm.paws360.Entity.UserTypes.Advisor advisor);
 }
-

@@ -143,7 +143,9 @@ export default function AdvisingPage() {
     React.useEffect(() => {
         const load = async () => {
             try {
-                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                const email = typeof window !== "undefined"
+                    ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+                    : null;
                 if (!email) { setLoading(false); return; }
                 const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
                 const sidData = await sidRes.json();
@@ -300,7 +302,9 @@ export default function AdvisingPage() {
 
     async function submitSchedule() {
         try {
-            const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+            const email = typeof window !== "undefined"
+                ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+                : null;
             if (!email) return;
             const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
             const sidData = await sidRes.json();
@@ -362,7 +366,9 @@ export default function AdvisingPage() {
     async function submitMessage() {
         try {
             setSendingMessage(true);
-            const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+            const email = typeof window !== "undefined"
+                ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+                : null;
             if (!email) return;
             const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
             const sidData = await sidRes.json();
@@ -418,7 +424,9 @@ export default function AdvisingPage() {
     async function refreshMessages() {
         try {
             setRefreshingMsgs(true);
-            const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+            const email = typeof window !== "undefined"
+                ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+                : null;
             if (!email) return;
             const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
             const sidData = await sidRes.json();
@@ -456,7 +464,9 @@ export default function AdvisingPage() {
     async function refreshConversation(advisorId: number) {
         try {
             setConvRefreshing(prev => ({ ...prev, [advisorId]: true }));
-            const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+            const email = typeof window !== "undefined"
+                ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+                : null;
             if (!email) return;
             const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
             const sidData = await sidRes.json();
@@ -1045,4 +1055,3 @@ export default function AdvisingPage() {
 		</div>
 	);
 }
-

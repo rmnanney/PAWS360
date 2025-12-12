@@ -102,10 +102,17 @@ public class CourseCatalogService {
         Courses course = courseRepository.findById(request.courseId())
                 .orElseThrow(() -> new EntityNotFoundException("Course not found for id " + request.courseId()));
 
-        CourseSection section = request.sectionId() == null
-                ? new CourseSection()
-                : courseSectionRepository.findById(request.sectionId())
-                .orElseThrow(() -> new EntityNotFoundException("Section not found for id " + request.sectionId()));
+        CourseSection section;
+        if (request.sectionId() != null) {
+            section = courseSectionRepository.findById(request.sectionId())
+                    .orElseThrow(() -> new EntityNotFoundException("Section not found for id " + request.sectionId()));
+        } else {
+            // Idempotent upsert by unique natural key to avoid duplicate constraint failures when seeding
+            section = courseSectionRepository
+                    .findFirstByCourseAndSectionCodeIgnoreCaseAndTermIgnoreCaseAndAcademicYearAndSectionType(
+                            course, request.sectionCode(), request.term(), request.academicYear(), request.sectionType())
+                    .orElse(new CourseSection());
+        }
 
         section.setCourse(course);
         if (section.getId() == null && !course.getSections().contains(section)) {

@@ -5,9 +5,9 @@ import com.uwm.paws360.Entity.Finances.*;
 import com.uwm.paws360.Entity.UserTypes.Student;
 import com.uwm.paws360.JPARepository.Finances.*;
 import com.uwm.paws360.JPARepository.User.StudentRepository;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -40,7 +40,11 @@ public class FinancesService {
         Student s = studentRepository.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
         FinancialAccount acc = financialAccountRepository.findByStudent(s)
-                .orElseThrow(() -> new EntityNotFoundException("Financial account not found for student id " + studentId));
+                .orElseGet(() -> {
+                    FinancialAccount created = new FinancialAccount();
+                    created.setStudent(s);
+                    return financialAccountRepository.save(created);
+                });
         // Derive balances from transactions and aid so the summary stays accurate
         var txns = transactionRepository.findByStudentOrderByPostedAtDesc(s);
 
@@ -133,4 +137,3 @@ public class FinancesService {
                 .collect(Collectors.toList());
     }
 }
-

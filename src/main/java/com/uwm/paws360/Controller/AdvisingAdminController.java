@@ -46,15 +46,25 @@ public class AdvisingAdminController {
         Advisor a = advisorRepository.findById(req.advisorId())
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Advisor not found for id " + req.advisorId()));
 
-        if (Boolean.TRUE.equals(req.primary())) {
+        boolean makePrimary = Boolean.TRUE.equals(req.primary());
+
+        // Gracefully upsert to avoid duplicate key violations when the seed is re-run
+        StudentAdvisor link = studentAdvisorRepository.findByStudentAndAdvisor(s, a)
+                .orElseGet(() -> {
+                    StudentAdvisor sa = new StudentAdvisor();
+                    sa.setStudent(s);
+                    sa.setAdvisor(a);
+                    sa.setAssignedAt(java.time.OffsetDateTime.now());
+                    return sa;
+                });
+
+        if (makePrimary) {
             studentAdvisorRepository.findFirstByStudentAndPrimaryAdvisorIsTrue(s)
+                    .filter(existing -> existing.getAdvisor() != null && existing.getAdvisor().getId() != a.getId())
                     .ifPresent(existing -> { existing.setPrimaryAdvisor(false); studentAdvisorRepository.save(existing); });
         }
 
-        StudentAdvisor link = new StudentAdvisor();
-        link.setStudent(s);
-        link.setAdvisor(a);
-        link.setPrimaryAdvisor(Boolean.TRUE.equals(req.primary()));
+        link.setPrimaryAdvisor(makePrimary);
         studentAdvisorRepository.save(link);
 
         String dept = a.getDepartment() != null ? a.getDepartment().name() : null;
@@ -101,4 +111,3 @@ public class AdvisingAdminController {
         return ResponseEntity.ok(list);
     }
 }
-

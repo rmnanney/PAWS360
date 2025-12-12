@@ -43,13 +43,30 @@ public class AcademicsAdminService {
                 .orElseThrow(() -> new EntityNotFoundException("Student not found for id " + studentId));
         DegreeProgram program = degreeProgramRepository.findById(degreeId)
                 .orElseThrow(() -> new EntityNotFoundException("Degree program not found for id " + degreeId));
-        StudentProgram sp = new StudentProgram();
-        sp.setStudent(student);
-        sp.setProgram(program);
+        boolean makePrimary = primaryFlag != null ? primaryFlag : true;
+
+        // Idempotent upsert so seeding can be rerun without constraint errors
+        StudentProgram sp = studentProgramRepository
+                .findFirstByStudentAndProgramAndPrimary(student, program, makePrimary)
+                .orElseGet(() -> {
+                    StudentProgram created = new StudentProgram();
+                    created.setStudent(student);
+                    created.setProgram(program);
+                    return created;
+                });
+
+        if (makePrimary) {
+            studentProgramRepository.findByStudent(student).stream()
+                    .filter(existing -> existing.isPrimary() && existing.getId() != null && !existing.getId().equals(sp.getId()))
+                    .forEach(existing -> {
+                        existing.setPrimary(false);
+                        studentProgramRepository.save(existing);
+                    });
+        }
+
         sp.setExpectedGraduationTerm(expectedTerm);
         sp.setExpectedGraduationYear(expectedYear);
-        sp.setPrimary(primaryFlag != null ? primaryFlag : true);
+        sp.setPrimary(makePrimary);
         return studentProgramRepository.save(sp);
     }
 }
-

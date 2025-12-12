@@ -1,36 +1,39 @@
 {
   "info": {
-    "_postman_id": "9e2e3b35-4c05-4c3f-9b92-5f3f9c3e3b42",
-    "name": "PAWS360_UWM_Seed",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Lightweight seed collection for PAWS360: creates core users, catalog, enrollment, academics, advising, and finances."
+    "name": "PAWS360 Showcase Seeder",
+    "_postman_id": "d74a16a0-5c1c-458d-9b12-0d6b5daefb49",
+    "description": "One-click seeder for four demo students (Ryan, Zack, Zenith, Randal) with academics, advising, enrollments, and finances.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1) Users",
+      "name": "Catalog - Courses",
       "item": [
         {
-          "name": "Create Student",
+          "name": "Course | DEMO-CS201",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/courses",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstname\": \"Sally\",\n  \"middlename\": \"T\",\n  \"lastname\": \"Panther\",\n  \"dob\": \"2003-09-01\",\n  \"ssn\": \"123456789\",\n  \"ethnicity\": \"ASIAN\",\n  \"gender\": \"FEMALE\",\n  \"nationality\": \"UNITED_STATES\",\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\",\n  \"addresses\": [\n    {\n      \"address_type\": \"HOME\",\n      \"street_address_1\": \"3200 N Cramer St\",\n      \"street_address_2\": \"\",\n      \"po_box\": null,\n      \"city\": \"Milwaukee\",\n      \"us_states\": \"WISCONSIN\",\n      \"zipcode\": \"53211\"\n    }\n  ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145551200\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"STUDENT\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/users/create", "host": ["{{baseUrl}}"], "path": ["users", "create"] }
+              "raw": "{\n  \"courseCode\": \"DEMO-CS201\",\n  \"courseName\": \"Data Structures with Java\",\n  \"courseDescription\": \"Data Structures with Java\",\n  \"department\": \"COMPUTER_SCIENCE\",\n  \"courseLevel\": \"200\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('studentUserId', res.user_id);",
-                  "  pm.environment.set('studentEmail', res.email);",
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_cs201_id',r.courseId);}",
                   "}"
                 ]
               }
@@ -38,27 +41,30 @@
           ]
         },
         {
-          "name": "Create Advisor",
+          "name": "Course | DEMO-CS310",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/courses",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstname\": \"Alex\",\n  \"middlename\": \"R\",\n  \"lastname\": \"Advisor\",\n  \"dob\": \"1980-05-10\",\n  \"ssn\": \"223456789\",\n  \"ethnicity\": \"WHITE\",\n  \"gender\": \"MALE\",\n  \"nationality\": \"UNITED_STATES\",\n  \"email\": \"{{advisorEmail}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"addresses\": [\n    {\n      \"address_type\": \"HOME\",\n      \"street_address_1\": \"200 Advising Hall\",\n      \"street_address_2\": \"\",\n      \"po_box\": null,\n      \"city\": \"Milwaukee\",\n      \"us_states\": \"WISCONSIN\",\n      \"zipcode\": \"53211\"\n    }\n  ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145552200\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"ADVISOR\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/users/create", "host": ["{{baseUrl}}"], "path": ["users", "create"] }
+              "raw": "{\n  \"courseCode\": \"DEMO-CS310\",\n  \"courseName\": \"Algorithms & Complexity\",\n  \"courseDescription\": \"Algorithms & Complexity\",\n  \"department\": \"COMPUTER_SCIENCE\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('advisorUserId', res.user_id);",
-                  "  pm.environment.set('advisorEmail', res.email);",
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_cs310_id',r.courseId);}",
                   "}"
                 ]
               }
@@ -66,27 +72,30 @@
           ]
         },
         {
-          "name": "Create Instructor",
+          "name": "Course | DEMO-CS325",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/courses",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstname\": \"Ivy\",\n  \"middlename\": \"Q\",\n  \"lastname\": \"Instructor\",\n  \"dob\": \"1975-03-12\",\n  \"ssn\": \"323456789\",\n  \"ethnicity\": \"BLACK_OR_AFRICAN_AMERICAN\",\n  \"gender\": \"FEMALE\",\n  \"nationality\": \"UNITED_STATES\",\n  \"email\": \"{{instructorEmail}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"addresses\": [\n    {\n      \"address_type\": \"HOME\",\n      \"street_address_1\": \"400 EMS Building\",\n      \"street_address_2\": \"\",\n      \"po_box\": null,\n      \"city\": \"Milwaukee\",\n      \"us_states\": \"WISCONSIN\",\n      \"zipcode\": \"53211\"\n    }\n  ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145553200\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"INSTRUCTOR\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/users/create", "host": ["{{baseUrl}}"], "path": ["users", "create"] }
+              "raw": "{\n  \"courseCode\": \"DEMO-CS325\",\n  \"courseName\": \"Database Systems\",\n  \"courseDescription\": \"Database Systems\",\n  \"department\": \"COMPUTER_SCIENCE\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('instructorUserId', res.user_id);",
-                  "  pm.environment.set('instructorEmail', res.email);",
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_cs325_id',r.courseId);}",
                   "}"
                 ]
               }
@@ -94,26 +103,30 @@
           ]
         },
         {
-          "name": "Create TA",
+          "name": "Course | DEMO-CS440",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/courses",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstname\": \"Tara\",\n  \"middlename\": \"L\",\n  \"lastname\": \"Assistant\",\n  \"dob\": \"1996-07-15\",\n  \"ssn\": \"423456789\",\n  \"ethnicity\": \"HISPANIC_OR_LATINO\",\n  \"gender\": \"OTHER\",\n  \"nationality\": \"UNITED_STATES\",\n  \"email\": \"{{taEmail}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"addresses\": [\n    {\n      \"address_type\": \"HOME\",\n      \"street_address_1\": \"500 Bolton Hall\",\n      \"street_address_2\": \"\",\n      \"po_box\": null,\n      \"city\": \"Milwaukee\",\n      \"us_states\": \"WISCONSIN\",\n      \"zipcode\": \"53211\"\n    }\n  ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145554200\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"TA\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/users/create", "host": ["{{baseUrl}}"], "path": ["users", "create"] }
+              "raw": "{\n  \"courseCode\": \"DEMO-CS440\",\n  \"courseName\": \"Software Engineering Capstone\",\n  \"courseDescription\": \"Software Engineering Capstone\",\n  \"department\": \"COMPUTER_SCIENCE\",\n  \"courseLevel\": \"400\",\n  \"creditHours\": 4.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1600,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('taUserId', res.user_id);",
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_cs440_id',r.courseId);}",
                   "}"
                 ]
               }
@@ -121,19 +134,650 @@
           ]
         },
         {
-          "name": "Resolve Student Id",
+          "name": "Course | DEMO-MATH231",
           "request": {
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/users/student-id?email={{studentEmail}}", "host": ["{{baseUrl}}"], "path": ["users", "student-id"], "query": [{ "key": "email", "value": "{{studentEmail}}" }] }
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-MATH231\",\n  \"courseName\": \"Discrete Math for Computing\",\n  \"courseDescription\": \"Discrete Math for Computing\",\n  \"department\": \"MATHEMATICAL_SCIENCES\",\n  \"courseLevel\": \"200\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('studentId', res.student_id);",
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_math231_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-COMM105",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-COMM105\",\n  \"courseName\": \"Technical Writing for Engineers\",\n  \"courseDescription\": \"Technical Writing for Engineers\",\n  \"department\": \"ENGLISH\",\n  \"courseLevel\": \"100\",\n  \"creditHours\": 2.0,\n  \"deliveryMethod\": \"HYBRID\",\n  \"courseCost\": 800,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_comm105_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ITM230",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ITM230\",\n  \"courseName\": \"Systems Analysis & Design\",\n  \"courseDescription\": \"Systems Analysis & Design\",\n  \"department\": \"INFORMATION_TECHNOLOGY_MANAGEMENT\",\n  \"courseLevel\": \"200\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_itm230_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ACCT210",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ACCT210\",\n  \"courseName\": \"Accounting for Tech Managers\",\n  \"courseDescription\": \"Accounting for Tech Managers\",\n  \"department\": \"ACCOUNTING\",\n  \"courseLevel\": \"200\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"HYBRID\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_acct210_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ITM305",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ITM305\",\n  \"courseName\": \"Business Data Communications\",\n  \"courseDescription\": \"Business Data Communications\",\n  \"department\": \"INFORMATION_TECHNOLOGY_MANAGEMENT\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_itm305_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ITM421",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ITM421\",\n  \"courseName\": \"IT Project Management\",\n  \"courseDescription\": \"IT Project Management\",\n  \"department\": \"INFORMATION_TECHNOLOGY_MANAGEMENT\",\n  \"courseLevel\": \"400\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_itm421_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ITM431",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ITM431\",\n  \"courseName\": \"Cloud Infrastructure\",\n  \"courseDescription\": \"Cloud Infrastructure\",\n  \"department\": \"INFORMATION_TECHNOLOGY_MANAGEMENT\",\n  \"courseLevel\": \"400\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"HYBRID\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_itm431_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ITM340",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ITM340\",\n  \"courseName\": \"Cybersecurity Fundamentals\",\n  \"courseDescription\": \"Cybersecurity Fundamentals\",\n  \"department\": \"INFORMATION_TECHNOLOGY_MANAGEMENT\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_itm340_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-PBH201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-PBH201\",\n  \"courseName\": \"Intro to Public Health\",\n  \"courseDescription\": \"Intro to Public Health\",\n  \"department\": \"PUBLIC_HEALTH\",\n  \"courseLevel\": \"200\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_pbh201_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-BIO150",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-BIO150\",\n  \"courseName\": \"Human Biology & Lab\",\n  \"courseDescription\": \"Human Biology & Lab\",\n  \"department\": \"BIOLOGICAL_SCIENCES\",\n  \"courseLevel\": \"100\",\n  \"creditHours\": 4.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1600,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_bio150_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-STAT201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-STAT201\",\n  \"courseName\": \"Biostatistics\",\n  \"courseDescription\": \"Biostatistics\",\n  \"department\": \"MATHEMATICAL_SCIENCES\",\n  \"courseLevel\": \"200\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"HYBRID\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_stat201_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-PBH320",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-PBH320\",\n  \"courseName\": \"Epidemiology Methods\",\n  \"courseDescription\": \"Epidemiology Methods\",\n  \"department\": \"PUBLIC_HEALTH\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_pbh320_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-PBH330",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-PBH330\",\n  \"courseName\": \"Health Policy & Management\",\n  \"courseDescription\": \"Health Policy & Management\",\n  \"department\": \"PUBLIC_HEALTH\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"HYBRID\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_pbh330_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-PBH410",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-PBH410\",\n  \"courseName\": \"Global Health Practice\",\n  \"courseDescription\": \"Global Health Practice\",\n  \"department\": \"PUBLIC_HEALTH\",\n  \"courseLevel\": \"400\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_pbh410_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ME201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ME201\",\n  \"courseName\": \"Statics\",\n  \"courseDescription\": \"Statics\",\n  \"department\": \"MECHANICAL_ENGINEERING\",\n  \"courseLevel\": \"200\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_me201_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ME305",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ME305\",\n  \"courseName\": \"Dynamics\",\n  \"courseDescription\": \"Dynamics\",\n  \"department\": \"MECHANICAL_ENGINEERING\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_me305_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ECE260",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ECE260\",\n  \"courseName\": \"Circuits for Mechanical Systems\",\n  \"courseDescription\": \"Circuits for Mechanical Systems\",\n  \"department\": \"ELECTRICAL_ENGINEERING\",\n  \"courseLevel\": \"200\",\n  \"creditHours\": 4.0,\n  \"deliveryMethod\": \"HYBRID\",\n  \"courseCost\": 1600,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_ece260_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ME340",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ME340\",\n  \"courseName\": \"Materials Science for Engineers\",\n  \"courseDescription\": \"Materials Science for Engineers\",\n  \"department\": \"MATERIALS_ENGINEERING\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_me340_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-MATH350",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-MATH350\",\n  \"courseName\": \"Differential Equations\",\n  \"courseDescription\": \"Differential Equations\",\n  \"department\": \"MATHEMATICAL_SCIENCES\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_math350_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ME330",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ME330\",\n  \"courseName\": \"Thermodynamics\",\n  \"courseDescription\": \"Thermodynamics\",\n  \"department\": \"MECHANICAL_ENGINEERING\",\n  \"courseLevel\": \"300\",\n  \"creditHours\": 3.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_me330_id',r.courseId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Course | DEMO-ME440",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"DEMO-ME440\",\n  \"courseName\": \"Senior Design\",\n  \"courseDescription\": \"Senior Design\",\n  \"department\": \"MECHANICAL_ENGINEERING\",\n  \"courseLevel\": \"400\",\n  \"creditHours\": 4.0,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1600,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 90,\n  \"academicYear\": 2025,\n  \"term\": \"SPRING\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.courseId!==undefined){pm.environment.set('course_me440_id',r.courseId);}",
                   "}"
                 ]
               }
@@ -143,29 +787,33 @@
       ]
     },
     {
-      "name": "2) Catalog & Sections",
+      "name": "Catalog - Sections",
       "item": [
         {
-          "name": "Create Building",
+          "name": "Section | CS201-F23-A",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/courses/sections",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"EMS\",\n  \"name\": \"Engineering & Math Sciences\",\n  \"campus\": \"MAIN\",\n  \"accessible\": true,\n  \"notes\": \"Central STEM building\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/courses/buildings", "host": ["{{baseUrl}}"], "path": ["courses", "buildings"] }
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_cs201_id}},\n  \"sectionCode\": \"CS201-F23-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"09:00:00\",\n  \"endTime\": \"10:15:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 10,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2023\n}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('buildingId', res.buildingId || res.id || res.building_id);",
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_cs201_fall23',r.sectionId);}",
                   "}"
                 ]
               }
@@ -173,26 +821,30 @@
           ]
         },
         {
-          "name": "Create Classroom",
+          "name": "Section | MATH231-S24-A",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/courses/sections",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"buildingId\": {{buildingId}},\n  \"roomNumber\": \"E120\",\n  \"capacity\": 40,\n  \"roomType\": \"LECTURE_HALL\",\n  \"features\": [\"Projector\", \"HDMI\", \"Whiteboard\"]\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/courses/classrooms", "host": ["{{baseUrl}}"], "path": ["courses", "classrooms"] }
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_math231_id}},\n  \"sectionCode\": \"MATH231-S24-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"11:00:00\",\n  \"endTime\": \"12:15:00\",\n  \"maxEnrollment\": 50,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2024\n}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('classroomId', res.classroomId || res.id || res.classroom_id);",
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_math231_spr24',r.sectionId);}",
                   "}"
                 ]
               }
@@ -200,26 +852,30 @@
           ]
         },
         {
-          "name": "Create Course",
+          "name": "Section | CS310-F24-A",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/courses/sections",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"courseCode\": \"COMP SCI 351\",\n  \"courseName\": \"Data Structures and Algorithms\",\n  \"courseDescription\": \"Core algorithms and data structures with practical labs.\",\n  \"department\": \"COMPUTER_SCIENCE\",\n  \"courseLevel\": \"UNDERGRAD\",\n  \"creditHours\": 3,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 120,\n  \"academicYear\": 2025,\n  \"term\": \"Fall\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] }
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_cs310_id}},\n  \"sectionCode\": \"CS310-F24-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"10:30:00\",\n  \"endTime\": \"11:45:00\",\n  \"maxEnrollment\": 40,\n  \"waitlistCapacity\": 10,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2024\n}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('courseId', res.courseId);",
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_cs310_fall24',r.sectionId);}",
                   "}"
                 ]
               }
@@ -227,26 +883,30 @@
           ]
         },
         {
-          "name": "Create Lecture Section",
+          "name": "Section | COMM105-S23-A",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/courses/sections",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{courseId}},\n  \"sectionCode\": \"201\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": {{buildingId}},\n  \"classroomId\": {{classroomId}},\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"10:00\",\n  \"endTime\": \"11:15\",\n  \"maxEnrollment\": 40,\n  \"waitlistCapacity\": 10,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2025\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/courses/sections", "host": ["{{baseUrl}}"], "path": ["courses", "sections"] }
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_comm105_id}},\n  \"sectionCode\": \"COMM105-S23-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"FRIDAY\"],\n  \"startTime\": \"09:00:00\",\n  \"endTime\": \"10:50:00\",\n  \"maxEnrollment\": 35,\n  \"waitlistCapacity\": 6,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2023\n}"
+            }
           },
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('lectureSectionId', res.sectionId);",
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_comm105_spr23',r.sectionId);}",
                   "}"
                 ]
               }
@@ -254,255 +914,2948 @@
           ]
         },
         {
-          "name": "Assign Instructor to Section",
+          "name": "Section | CS325-S25-A",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/courses/sections",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"sectionId\": {{lectureSectionId}},\n  \"userId\": {{instructorUserId}},\n  \"role\": \"INSTRUCTOR\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/courses/sections/assign-staff", "host": ["{{baseUrl}}"], "path": ["courses", "sections", "assign-staff"] }
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_cs325_id}},\n  \"sectionCode\": \"CS325-S25-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"14:00:00\",\n  \"endTime\": \"15:15:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 10,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2025\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_cs325_spr25',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | CS440-S25-C",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_cs440_id}},\n  \"sectionCode\": \"CS440-S25-C\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"15:30:00\",\n  \"endTime\": \"17:00:00\",\n  \"maxEnrollment\": 35,\n  \"waitlistCapacity\": 6,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2025\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_cs440_spr25',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ITM230-F23-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_itm230_id}},\n  \"sectionCode\": \"ITM230-F23-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"09:30:00\",\n  \"endTime\": \"10:45:00\",\n  \"maxEnrollment\": 40,\n  \"waitlistCapacity\": 10,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2023\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_itm230_fall23',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ACCT210-S23-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_acct210_id}},\n  \"sectionCode\": \"ACCT210-S23-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"13:00:00\",\n  \"endTime\": \"14:15:00\",\n  \"maxEnrollment\": 50,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2023\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_acct210_spr23',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ITM305-S24-B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_itm305_id}},\n  \"sectionCode\": \"ITM305-S24-B\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"13:00:00\",\n  \"endTime\": \"14:15:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2024\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_itm305_spr24',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ITM421-F24-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_itm421_id}},\n  \"sectionCode\": \"ITM421-F24-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\"],\n  \"startTime\": \"18:00:00\",\n  \"endTime\": \"20:45:00\",\n  \"maxEnrollment\": 35,\n  \"waitlistCapacity\": 6,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2024\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_itm421_fall24',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ITM431-S25-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_itm431_id}},\n  \"sectionCode\": \"ITM431-S25-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"16:00:00\",\n  \"endTime\": \"17:15:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 10,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2025\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_itm431_spr25',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ITM340-S25-B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_itm340_id}},\n  \"sectionCode\": \"ITM340-S25-B\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"11:00:00\",\n  \"endTime\": \"12:15:00\",\n  \"maxEnrollment\": 40,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2025\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_itm340_spr25',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | PBH201-F23-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_pbh201_id}},\n  \"sectionCode\": \"PBH201-F23-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"10:00:00\",\n  \"endTime\": \"11:15:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2023\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_pbh201_fall23',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | BIO150-S23-L1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_bio150_id}},\n  \"sectionCode\": \"BIO150-S23-L1\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"08:00:00\",\n  \"endTime\": \"09:45:00\",\n  \"maxEnrollment\": 50,\n  \"waitlistCapacity\": 10,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2023\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_bio150_spr23',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | STAT201-S24-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_stat201_id}},\n  \"sectionCode\": \"STAT201-S24-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"12:30:00\",\n  \"endTime\": \"13:45:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2024\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_stat201_spr24',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | PBH320-F24-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_pbh320_id}},\n  \"sectionCode\": \"PBH320-F24-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"13:00:00\",\n  \"endTime\": \"14:15:00\",\n  \"maxEnrollment\": 40,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2024\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_pbh320_fall24',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | PBH330-S25-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_pbh330_id}},\n  \"sectionCode\": \"PBH330-S25-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"10:00:00\",\n  \"endTime\": \"11:15:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2025\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_pbh330_spr25',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | PBH410-S25-B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_pbh410_id}},\n  \"sectionCode\": \"PBH410-S25-B\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"WEDNESDAY\"],\n  \"startTime\": \"17:00:00\",\n  \"endTime\": \"19:45:00\",\n  \"maxEnrollment\": 35,\n  \"waitlistCapacity\": 6,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2025\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_pbh410_spr25',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ME201-F22-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_me201_id}},\n  \"sectionCode\": \"ME201-F22-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"08:00:00\",\n  \"endTime\": \"09:15:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2022\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_me201_fall22',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ME305-S23-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_me305_id}},\n  \"sectionCode\": \"ME305-S23-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"10:00:00\",\n  \"endTime\": \"11:15:00\",\n  \"maxEnrollment\": 40,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2023\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_me305_spr23',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ECE260-F23-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_ece260_id}},\n  \"sectionCode\": \"ECE260-F23-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"14:00:00\",\n  \"endTime\": \"15:15:00\",\n  \"maxEnrollment\": 35,\n  \"waitlistCapacity\": 6,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2023\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_ece260_fall23',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ME340-S24-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_me340_id}},\n  \"sectionCode\": \"ME340-S24-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"09:30:00\",\n  \"endTime\": \"10:45:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2024\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_me340_spr24',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | MATH350-F24-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_math350_id}},\n  \"sectionCode\": \"MATH350-F24-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"11:30:00\",\n  \"endTime\": \"12:45:00\",\n  \"maxEnrollment\": 50,\n  \"waitlistCapacity\": 10,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2024\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_math350_fall24',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ME330-S25-A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_me330_id}},\n  \"sectionCode\": \"ME330-S25-A\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"TUESDAY\", \"THURSDAY\"],\n  \"startTime\": \"15:30:00\",\n  \"endTime\": \"16:45:00\",\n  \"maxEnrollment\": 45,\n  \"waitlistCapacity\": 8,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2025\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_me330_spr25',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Section | ME440-S25-B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/courses/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{course_me440_id}},\n  \"sectionCode\": \"ME440-S25-B\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": null,\n  \"classroomId\": null,\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"17:00:00\",\n  \"endTime\": \"18:45:00\",\n  \"maxEnrollment\": 30,\n  \"waitlistCapacity\": 6,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Spring\",\n  \"academicYear\": 2025\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.sectionId!==undefined){pm.environment.set('section_me440_spr25',r.sectionId);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Programs & Requirements",
+      "item": [
+        {
+          "name": "Program | CSCI-DEMO-BS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"CSCI-DEMO-BS\",\n  \"name\": \"Computer Science B.S. (Demo)\",\n  \"totalCreditsRequired\": 120\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.id!==undefined){pm.environment.set('program_cs_id',r.id);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Requirement | CSCI-DEMO-BS -> { course_cs201_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_cs_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_cs201_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | CSCI-DEMO-BS -> { course_cs310_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_cs_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_cs310_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | CSCI-DEMO-BS -> { course_cs325_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_cs_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_cs325_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | CSCI-DEMO-BS -> { course_math231_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_cs_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_math231_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | CSCI-DEMO-BS -> { course_cs440_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_cs_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_cs440_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | CSCI-DEMO-BS -> { course_comm105_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_cs_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_comm105_id}},\n  \"required\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign Program | CSCI-DEMO-BS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/students/{{ryan_id}}/program",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"degreeId\": {{program_cs_id}},\n  \"expectedGradTerm\": \"SPRING\",\n  \"expectedGradYear\": 2025,\n  \"primary\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Program | ITM-DEMO-BS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"ITM-DEMO-BS\",\n  \"name\": \"IT Management B.B.A. (Demo)\",\n  \"totalCreditsRequired\": 120\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.id!==undefined){pm.environment.set('program_itm_id',r.id);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Requirement | ITM-DEMO-BS -> { course_itm230_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_itm_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_itm230_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ITM-DEMO-BS -> { course_itm305_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_itm_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_itm305_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ITM-DEMO-BS -> { course_itm421_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_itm_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_itm421_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ITM-DEMO-BS -> { course_itm431_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_itm_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_itm431_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ITM-DEMO-BS -> { course_acct210_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_itm_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_acct210_id}},\n  \"required\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ITM-DEMO-BS -> { course_itm340_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_itm_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_itm340_id}},\n  \"required\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign Program | ITM-DEMO-BS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/students/{{zack_id}}/program",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"degreeId\": {{program_itm_id}},\n  \"expectedGradTerm\": \"FALL\",\n  \"expectedGradYear\": 2024,\n  \"primary\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Program | PBH-DEMO-BS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"PBH-DEMO-BS\",\n  \"name\": \"Public Health B.S. (Demo)\",\n  \"totalCreditsRequired\": 120\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.id!==undefined){pm.environment.set('program_pbh_id',r.id);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Requirement | PBH-DEMO-BS -> { course_pbh201_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_pbh_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_pbh201_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | PBH-DEMO-BS -> { course_pbh320_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_pbh_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_pbh320_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | PBH-DEMO-BS -> { course_stat201_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_pbh_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_stat201_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | PBH-DEMO-BS -> { course_bio150_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_pbh_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_bio150_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | PBH-DEMO-BS -> { course_pbh410_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_pbh_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_pbh410_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | PBH-DEMO-BS -> { course_pbh330_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_pbh_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_pbh330_id}},\n  \"required\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign Program | PBH-DEMO-BS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/students/{{zenith_id}}/program",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"degreeId\": {{program_pbh_id}},\n  \"expectedGradTerm\": \"SPRING\",\n  \"expectedGradYear\": 2026,\n  \"primary\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Program | ME-DEMO-BS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"ME-DEMO-BS\",\n  \"name\": \"Mechanical Engineering B.S. (Demo)\",\n  \"totalCreditsRequired\": 124\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(pm.response.code===200){",
+                  "const r=pm.response.json();",
+                  "if(r&&r.id!==undefined){pm.environment.set('program_me_id',r.id);}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Requirement | ME-DEMO-BS -> { course_me201_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_me_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_me201_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ME-DEMO-BS -> { course_me305_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_me_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_me305_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ME-DEMO-BS -> { course_me330_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_me_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_me330_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ME-DEMO-BS -> { course_me340_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_me_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_me340_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ME-DEMO-BS -> { course_ece260_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_me_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_ece260_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ME-DEMO-BS -> { course_math350_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_me_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_math350_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Requirement | ME-DEMO-BS -> { course_me440_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/programs/{{program_me_id}}/requirements",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_me440_id}},\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign Program | ME-DEMO-BS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/academics/admin/students/{{randal_id}}/program",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"degreeId\": {{program_me_id}},\n  \"expectedGradTerm\": \"SPRING\",\n  \"expectedGradYear\": 2025,\n  \"primary\": true\n}"
+            }
           }
         }
       ]
     },
     {
-      "name": "3) Academics",
+      "name": "Enrollments & Grades",
       "item": [
         {
-          "name": "Create Degree Program",
+          "name": "Enroll | { ryan_id } -> { section_cs201_fall23 }",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"code\": \"BSCS\",\n  \"name\": \"B.S. Computer Science\",\n  \"totalCreditsRequired\": 120\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/academics/admin/programs", "host": ["{{baseUrl}}"], "path": ["academics", "admin", "programs"] }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('degreeId', res.id || res.degreeId || res.degree_id);",
-                  "}"
-                ]
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
-            }
-          ]
-        },
-        {
-          "name": "Add Required Course",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
             ],
+            "url": "{{base_url}}/enrollments/enroll",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"courseId\": {{courseId}},\n  \"required\": true\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/academics/admin/programs/{{degreeId}}/requirements", "host": ["{{baseUrl}}"], "path": ["academics", "admin", "programs", "{{degreeId}}", "requirements"] }
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_cs201_fall23}},\n  \"labSectionId\": null\n}"
+            }
           }
         },
         {
-          "name": "Assign Program to Student",
+          "name": "Finalize | A",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/enrollments/finalize",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"degreeId\": {{degreeId}},\n  \"expectedGradTerm\": \"Spring\",\n  \"expectedGradYear\": 2027,\n  \"primary\": true\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/academics/admin/students/{{studentId}}/program", "host": ["{{baseUrl}}"], "path": ["academics", "admin", "students", "{{studentId}}", "program"] }
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_cs201_fall23}},\n  \"finalLetter\": \"A\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { ryan_id } -> { section_math231_spr24 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_math231_spr24}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B+",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_math231_spr24}},\n  \"finalLetter\": \"B+\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { ryan_id } -> { section_cs310_fall24 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_cs310_fall24}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | A-",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_cs310_fall24}},\n  \"finalLetter\": \"A-\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { ryan_id } -> { section_comm105_spr23 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_comm105_spr23}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_comm105_spr23}},\n  \"finalLetter\": \"B\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { zack_id } -> { section_itm230_fall23 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm230_fall23}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm230_fall23}},\n  \"finalLetter\": \"B\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { zack_id } -> { section_acct210_spr23 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_acct210_spr23}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B+",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_acct210_spr23}},\n  \"finalLetter\": \"B+\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { zack_id } -> { section_itm305_spr24 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm305_spr24}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | A-",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm305_spr24}},\n  \"finalLetter\": \"A-\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { zack_id } -> { section_itm421_fall24 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm421_fall24}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm421_fall24}},\n  \"finalLetter\": \"B\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { zenith_id } -> { section_pbh201_fall23 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_pbh201_fall23}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | A-",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_pbh201_fall23}},\n  \"finalLetter\": \"A-\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { zenith_id } -> { section_bio150_spr23 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_bio150_spr23}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B+",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_bio150_spr23}},\n  \"finalLetter\": \"B+\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { zenith_id } -> { section_stat201_spr24 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_stat201_spr24}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_stat201_spr24}},\n  \"finalLetter\": \"A\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { zenith_id } -> { section_pbh320_fall24 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_pbh320_fall24}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_pbh320_fall24}},\n  \"finalLetter\": \"A\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { randal_id } -> { section_me201_fall22 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me201_fall22}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me201_fall22}},\n  \"finalLetter\": \"B\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { randal_id } -> { section_me305_spr23 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me305_spr23}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B+",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me305_spr23}},\n  \"finalLetter\": \"B+\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { randal_id } -> { section_ece260_fall23 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_ece260_fall23}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_ece260_fall23}},\n  \"finalLetter\": \"B\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { randal_id } -> { section_me340_spr24 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me340_spr24}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | B-",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me340_spr24}},\n  \"finalLetter\": \"B-\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll | { randal_id } -> { section_math350_fall24 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_math350_fall24}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finalize | C+",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/finalize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_math350_fall24}},\n  \"finalLetter\": \"C+\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll Current | { ryan_id } -> { section_cs325_spr25 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_cs325_spr25}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Current Grade | A- (92%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/grade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_cs325_spr25}},\n  \"currentLetter\": \"A-\",\n  \"currentPercentage\": 92\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll Current | { ryan_id } -> { section_cs440_spr25 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_cs440_spr25}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Current Grade | B+ (88%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/grade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{ryan_id}},\n  \"lectureSectionId\": {{section_cs440_spr25}},\n  \"currentLetter\": \"B+\",\n  \"currentPercentage\": 88\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll Current | { zack_id } -> { section_itm431_spr25 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm431_spr25}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Current Grade | B+ (86%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/grade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm431_spr25}},\n  \"currentLetter\": \"B+\",\n  \"currentPercentage\": 86\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll Current | { zack_id } -> { section_itm340_spr25 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm340_spr25}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Current Grade | A- (90%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/grade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zack_id}},\n  \"lectureSectionId\": {{section_itm340_spr25}},\n  \"currentLetter\": \"A-\",\n  \"currentPercentage\": 90\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll Current | { zenith_id } -> { section_pbh330_spr25 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_pbh330_spr25}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Current Grade | B+ (87%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/grade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_pbh330_spr25}},\n  \"currentLetter\": \"B+\",\n  \"currentPercentage\": 87\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll Current | { zenith_id } -> { section_pbh410_spr25 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_pbh410_spr25}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Current Grade | A- (91%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/grade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{zenith_id}},\n  \"lectureSectionId\": {{section_pbh410_spr25}},\n  \"currentLetter\": \"A-\",\n  \"currentPercentage\": 91\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll Current | { randal_id } -> { section_me330_spr25 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me330_spr25}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Current Grade | B (84%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/grade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me330_spr25}},\n  \"currentLetter\": \"B\",\n  \"currentPercentage\": 84\n}"
+            }
+          }
+        },
+        {
+          "name": "Enroll Current | { randal_id } -> { section_me440_spr25 }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/enroll",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me440_spr25}},\n  \"labSectionId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Current Grade | B+ (88%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/enrollments/grade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{randal_id}},\n  \"lectureSectionId\": {{section_me440_spr25}},\n  \"currentLetter\": \"B+\",\n  \"currentPercentage\": 88\n}"
+            }
           }
         }
       ]
     },
     {
-      "name": "4) Enrollment",
+      "name": "Advising & Messages",
       "item": [
         {
-          "name": "Enroll Student in Lecture",
+          "name": "Advisor Link | { ryan_id }",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/advising/admin/students/{{ryan_id}}/advisor",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"studentId\": {{studentId}},\n  \"lectureSectionId\": {{lectureSectionId}},\n  \"labSectionId\": null\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/enrollments/enroll", "host": ["{{baseUrl}}"], "path": ["enrollments", "enroll"] }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
-                  "  const res = pm.response.json();",
-                  "  pm.environment.set('enrollmentId', res.enrollmentId);",
-                  "}"
-                ]
-              }
+              "raw": "{\n  \"advisorId\": {{advisor_grace_id}},\n  \"primary\": true\n}"
             }
-          ]
+          }
         },
         {
-          "name": "Finalize Grade",
+          "name": "Advisor Link | { ryan_id }",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/advising/admin/students/{{ryan_id}}/advisor",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"studentId\": {{studentId}},\n  \"lectureSectionId\": {{lectureSectionId}},\n  \"finalLetter\": \"A\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/enrollments/finalize", "host": ["{{baseUrl}}"], "path": ["enrollments", "finalize"] }
+              "raw": "{\n  \"advisorId\": {{advisor_omar_id}},\n  \"primary\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Advisor Link | { zack_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{zack_id}}/advisor",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_omar_id}},\n  \"primary\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Advisor Link | { zack_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{zack_id}}/advisor",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_lena_id}},\n  \"primary\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Advisor Link | { zenith_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{zenith_id}}/advisor",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_lena_id}},\n  \"primary\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Advisor Link | { zenith_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{zenith_id}}/advisor",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_elliot_id}},\n  \"primary\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Advisor Link | { randal_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{randal_id}}/advisor",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_elliot_id}},\n  \"primary\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Advisor Link | { randal_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{randal_id}}/advisor",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_grace_id}},\n  \"primary\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Appointment | { ryan_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{ryan_id}}/appointments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_grace_id}},\n  \"scheduledAt\": \"2026-02-10T15:00:00Z\",\n  \"type\": \"DEGREE_PLANNING\",\n  \"location\": \"EMS 301\",\n  \"status\": \"CONFIRMED\",\n  \"notes\": \"Plan remaining CS electives\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Appointment | { zack_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{zack_id}}/appointments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_omar_id}},\n  \"scheduledAt\": \"2026-02-12T14:00:00Z\",\n  \"type\": \"ACADEMIC_ADVISING\",\n  \"location\": \"LUBAR 210\",\n  \"status\": \"CONFIRMED\",\n  \"notes\": \"Review cloud track\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Appointment | { zenith_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{zenith_id}}/appointments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_lena_id}},\n  \"scheduledAt\": \"2026-02-15T16:30:00Z\",\n  \"type\": \"CAREER_ADVISEMENT\",\n  \"location\": \"END 120\",\n  \"status\": \"CONFIRMED\",\n  \"notes\": \"Internship options\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Appointment | { randal_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/admin/students/{{randal_id}}/appointments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_elliot_id}},\n  \"scheduledAt\": \"2026-02-18T17:00:00Z\",\n  \"type\": \"DEGREE_PLANNING\",\n  \"location\": \"PHY 410\",\n  \"status\": \"CONFIRMED\",\n  \"notes\": \"Capstone checkpoint\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Message | { ryan_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/student/{{ryan_id}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_grace_id}},\n  \"content\": \"Hi Grace, can you confirm my capstone counts toward the core?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Message | { ryan_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/student/{{ryan_id}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_omar_id}},\n  \"content\": \"Omar, do you recommend taking AI as an elective?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Message | { zack_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/student/{{zack_id}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_omar_id}},\n  \"content\": \"Can we review my project management certification plan?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Message | { zack_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/student/{{zack_id}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_lena_id}},\n  \"content\": \"Do I need another lab science for ITM graduation?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Message | { zenith_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/student/{{zenith_id}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_lena_id}},\n  \"content\": \"I uploaded my draft personal statement for feedback.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Message | { zenith_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/student/{{zenith_id}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_elliot_id}},\n  \"content\": \"Can you sign off on my practicum placement hours?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Message | { randal_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/student/{{randal_id}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_elliot_id}},\n  \"content\": \"I want to swap lab partners for ME440, is that ok?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Message | { randal_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/advising/student/{{randal_id}}/messages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisor_grace_id}},\n  \"content\": \"Please confirm my math minor audit looks good.\"\n}"
+            }
           }
         }
       ]
     },
     {
-      "name": "5) Advising",
+      "name": "Finances",
       "item": [
         {
-          "name": "Resolve Advisor Id",
+          "name": "Finances | Account { ryan_id }",
           "request": {
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/advising/advisors", "host": ["{{baseUrl}}"], "path": ["advising", "advisors"] }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const list = pm.response.json();",
-                  "const email = pm.environment.get('advisorEmail');",
-                  "const found = (list || []).find(a => a.email === email);",
-                  "if (found) { pm.environment.set('advisorId', found.advisorId); }",
-                  "else { pm.test('advisor present', () => pm.expect(found).to.exist); }"
-                ]
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{ryan_id}}/account",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountBalance\": 450.0,\n  \"chargesDue\": 450.0,\n  \"pendingAid\": 1500.0,\n  \"lastPaymentAmount\": 900.0,\n  \"lastPaymentAt\": \"2025-01-25T15:00:00Z\",\n  \"dueDate\": \"2025-02-10\"\n}"
             }
-          ]
-        },
-        {
-          "name": "Assign Primary Advisor",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"advisorId\": {{advisorId}},\n  \"primary\": true\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/advising/admin/students/{{studentId}}/advisor", "host": ["{{baseUrl}}"], "path": ["advising", "admin", "students", "{{studentId}}", "advisor"] }
           }
         },
         {
-          "name": "Create Advising Appointment",
+          "name": "Finances | CHARGE 2800.0",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/finances/admin/students/{{ryan_id}}/transactions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"advisorId\": {{advisorId}},\n  \"scheduledAt\": \"2025-12-01T15:00:00Z\",\n  \"type\": \"ACADEMIC_ADVISING\",\n  \"location\": \"EMS 200\",\n  \"status\": \"CONFIRMED\",\n  \"notes\": \"Initial degree planning\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/advising/admin/students/{{studentId}}/appointments", "host": ["{{baseUrl}}"], "path": ["advising", "admin", "students", "{{studentId}}", "appointments"] }
+              "raw": "{\n  \"amount\": 2800.0,\n  \"type\": \"CHARGE\",\n  \"status\": \"POSTED\",\n  \"description\": \"Spring 2025 Tuition\",\n  \"postedAt\": \"2025-01-10T14:00:00Z\",\n  \"dueDate\": \"2025-02-10\"\n}"
+            }
           }
         },
         {
-          "name": "Send Advisor Message",
+          "name": "Finances | CHARGE 350.0",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
+            "url": "{{base_url}}/finances/admin/students/{{ryan_id}}/transactions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"advisorId\": {{advisorId}},\n  \"content\": \"Welcome to UWM! Let's plan your first semester.\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/advising/student/{{studentId}}/messages", "host": ["{{baseUrl}}"], "path": ["advising", "student", "{{studentId}}", "messages"] }
+              "raw": "{\n  \"amount\": 350.0,\n  \"type\": \"CHARGE\",\n  \"status\": \"POSTED\",\n  \"description\": \"Student Fees\",\n  \"postedAt\": \"2025-01-11T14:00:00Z\",\n  \"dueDate\": \"2025-02-10\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | CREDIT 300.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{ryan_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 300.0,\n  \"type\": \"CREDIT\",\n  \"status\": \"POSTED\",\n  \"description\": \"Bookstore credit\",\n  \"postedAt\": \"2025-01-15T14:00:00Z\",\n  \"dueDate\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | PAYMENT 900.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{ryan_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 900.0,\n  \"type\": \"PAYMENT\",\n  \"status\": \"POSTED\",\n  \"description\": \"Payment - ACH\",\n  \"postedAt\": \"2025-01-25T15:00:00Z\",\n  \"dueDate\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Aid { ryan_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{ryan_id}}/aid",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"SCHOLARSHIP\",\n  \"description\": \"Panther Excellence\",\n  \"amountOffered\": 3000.0,\n  \"amountAccepted\": 3000.0,\n  \"amountDisbursed\": 1500.0,\n  \"status\": \"ACTIVE\",\n  \"term\": \"SPRING\",\n  \"academicYear\": 2025\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Payment Plan { ryan_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{ryan_id}}/payment-plans",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"3x Installments\",\n  \"totalAmount\": 450.0,\n  \"monthlyPayment\": 150.0,\n  \"remainingPayments\": 3,\n  \"nextPaymentDate\": \"2025-02-05\",\n  \"status\": \"ACTIVE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Account { zack_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zack_id}}/account",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountBalance\": 950.0,\n  \"chargesDue\": 950.0,\n  \"pendingAid\": 500.0,\n  \"lastPaymentAmount\": 700.0,\n  \"lastPaymentAt\": \"2025-01-20T13:00:00Z\",\n  \"dueDate\": \"2025-02-12\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | CHARGE 2400.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zack_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 2400.0,\n  \"type\": \"CHARGE\",\n  \"status\": \"POSTED\",\n  \"description\": \"Spring 2025 Tuition\",\n  \"postedAt\": \"2025-01-09T15:00:00Z\",\n  \"dueDate\": \"2025-02-12\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | CHARGE 400.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zack_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 400.0,\n  \"type\": \"CHARGE\",\n  \"status\": \"POSTED\",\n  \"description\": \"Tech & Activity Fees\",\n  \"postedAt\": \"2025-01-10T15:30:00Z\",\n  \"dueDate\": \"2025-02-12\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | CREDIT 150.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zack_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 150.0,\n  \"type\": \"CREDIT\",\n  \"status\": \"POSTED\",\n  \"description\": \"Employer tuition credit\",\n  \"postedAt\": \"2025-01-22T15:00:00Z\",\n  \"dueDate\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | PAYMENT 700.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zack_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 700.0,\n  \"type\": \"PAYMENT\",\n  \"status\": \"POSTED\",\n  \"description\": \"Payment - Card\",\n  \"postedAt\": \"2025-01-20T13:00:00Z\",\n  \"dueDate\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Aid { zack_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zack_id}}/aid",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"LOAN\",\n  \"description\": \"Stafford Subsidized\",\n  \"amountOffered\": 2000.0,\n  \"amountAccepted\": 1500.0,\n  \"amountDisbursed\": 1000.0,\n  \"status\": \"ACTIVE\",\n  \"term\": \"SPRING\",\n  \"academicYear\": 2025\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Payment Plan { zack_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zack_id}}/payment-plans",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"3-Month Plan\",\n  \"totalAmount\": 950.0,\n  \"monthlyPayment\": 316.67,\n  \"remainingPayments\": 3,\n  \"nextPaymentDate\": \"2025-02-08\",\n  \"status\": \"ACTIVE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Account { zenith_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zenith_id}}/account",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountBalance\": 950.0,\n  \"chargesDue\": 950.0,\n  \"pendingAid\": 800.0,\n  \"lastPaymentAmount\": 600.0,\n  \"lastPaymentAt\": \"2025-01-26T14:00:00Z\",\n  \"dueDate\": \"2025-02-15\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | CHARGE 2400.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zenith_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 2400.0,\n  \"type\": \"CHARGE\",\n  \"status\": \"POSTED\",\n  \"description\": \"Spring 2025 Tuition\",\n  \"postedAt\": \"2025-01-12T15:00:00Z\",\n  \"dueDate\": \"2025-02-15\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | CHARGE 350.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zenith_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 350.0,\n  \"type\": \"CHARGE\",\n  \"status\": \"POSTED\",\n  \"description\": \"Health & Lab Fees\",\n  \"postedAt\": \"2025-01-12T15:05:00Z\",\n  \"dueDate\": \"2025-02-15\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | PAYMENT 600.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zenith_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 600.0,\n  \"type\": \"PAYMENT\",\n  \"status\": \"POSTED\",\n  \"description\": \"Payment - Online\",\n  \"postedAt\": \"2025-01-26T14:00:00Z\",\n  \"dueDate\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Aid { zenith_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zenith_id}}/aid",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"GRANT\",\n  \"description\": \"Public Health Grant\",\n  \"amountOffered\": 2000.0,\n  \"amountAccepted\": 2000.0,\n  \"amountDisbursed\": 1200.0,\n  \"status\": \"ACTIVE\",\n  \"term\": \"SPRING\",\n  \"academicYear\": 2025\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Payment Plan { zenith_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{zenith_id}}/payment-plans",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"4-Pay Installments\",\n  \"totalAmount\": 950.0,\n  \"monthlyPayment\": 237.5,\n  \"remainingPayments\": 4,\n  \"nextPaymentDate\": \"2025-02-07\",\n  \"status\": \"ACTIVE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Account { randal_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{randal_id}}/account",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountBalance\": 2250.0,\n  \"chargesDue\": 2250.0,\n  \"pendingAid\": 500.0,\n  \"lastPaymentAmount\": 500.0,\n  \"lastPaymentAt\": \"2025-01-18T15:00:00Z\",\n  \"dueDate\": \"2025-02-18\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | CHARGE 2800.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{randal_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 2800.0,\n  \"type\": \"CHARGE\",\n  \"status\": \"POSTED\",\n  \"description\": \"Spring 2025 Tuition\",\n  \"postedAt\": \"2025-01-14T14:30:00Z\",\n  \"dueDate\": \"2025-02-18\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | CHARGE 450.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{randal_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 450.0,\n  \"type\": \"CHARGE\",\n  \"status\": \"POSTED\",\n  \"description\": \"Engineering Fees\",\n  \"postedAt\": \"2025-01-14T14:35:00Z\",\n  \"dueDate\": \"2025-02-18\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | PAYMENT 500.0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{randal_id}}/transactions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500.0,\n  \"type\": \"PAYMENT\",\n  \"status\": \"POSTED\",\n  \"description\": \"Payment - Check\",\n  \"postedAt\": \"2025-01-18T15:00:00Z\",\n  \"dueDate\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Aid { randal_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{randal_id}}/aid",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"WORK_STUDY\",\n  \"description\": \"Engineering Co-op\",\n  \"amountOffered\": 1200.0,\n  \"amountAccepted\": 1000.0,\n  \"amountDisbursed\": 500.0,\n  \"status\": \"ACTIVE\",\n  \"term\": \"SPRING\",\n  \"academicYear\": 2025\n}"
+            }
+          }
+        },
+        {
+          "name": "Finances | Payment Plan { randal_id }",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/finances/admin/students/{{randal_id}}/payment-plans",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"4-Payment Plan\",\n  \"totalAmount\": 2250.0,\n  \"monthlyPayment\": 562.5,\n  \"remainingPayments\": 4,\n  \"nextPaymentDate\": \"2025-02-09\",\n  \"status\": \"ACTIVE\"\n}"
+            }
           }
         }
       ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8086"
     },
     {
-      "name": "6) Finances",
-      "item": [
-        {
-          "name": "Upsert Financial Account",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"accountBalance\": 0,\n  \"chargesDue\": 0,\n  \"pendingAid\": 0,\n  \"lastPaymentAmount\": 0,\n  \"lastPaymentAt\": null,\n  \"dueDate\": \"2025-12-31\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/finances/admin/students/{{studentId}}/account", "host": ["{{baseUrl}}"], "path": ["finances", "admin", "students", "{{studentId}}", "account"] }
-          }
-        },
-        {
-          "name": "Seed Charges",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"tuitionAmount\": 4500,\n  \"feesAmount\": 350,\n  \"dueDate\": \"2025-10-01\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/finances/admin/students/{{studentId}}/charges/seed", "host": ["{{baseUrl}}"], "path": ["finances", "admin", "students", "{{studentId}}", "charges", "seed"] }
-          }
-        },
-        {
-          "name": "Create Aid Award",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"type\": \"GRANT\",\n  \"description\": \"Panther Scholarship\",\n  \"amountOffered\": 2000,\n  \"amountAccepted\": 2000,\n  \"amountDisbursed\": 1000,\n  \"status\": \"ACTIVE\",\n  \"term\": \"Fall\",\n  \"academicYear\": 2025\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/finances/admin/students/{{studentId}}/aid", "host": ["{{baseUrl}}"], "path": ["finances", "admin", "students", "{{studentId}}", "aid"] }
-          }
-        },
-        {
-          "name": "Create Payment Plan",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"4-Month Installment\",\n  \"totalAmount\": 2000,\n  \"monthlyPayment\": 500,\n  \"remainingPayments\": 4,\n  \"nextPaymentDate\": \"2025-10-15\",\n  \"status\": \"ACTIVE\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/finances/admin/students/{{studentId}}/payment-plans", "host": ["{{baseUrl}}"], "path": ["finances", "admin", "students", "{{studentId}}", "payment-plans"] }
-          }
-        }
-      ]
+      "key": "ryan_id",
+      "value": "501238411"
+    },
+    {
+      "key": "zack_id",
+      "value": "509874123"
+    },
+    {
+      "key": "zenith_id",
+      "value": "518902347"
+    },
+    {
+      "key": "randal_id",
+      "value": "527640918"
     }
   ]
 }

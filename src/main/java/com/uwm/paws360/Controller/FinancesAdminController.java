@@ -65,6 +65,14 @@ public class FinancesAdminController {
                                                             @Valid @RequestBody CreateTransactionRequestDTO req) {
         Student s = studentRepository.findById(studentId)
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Student not found for id " + studentId));
+        // Ensure account exists so downstream balance adjustments succeed
+        financialAccountRepository.findByStudent(s).orElseGet(() -> {
+            FinancialAccount created = new FinancialAccount();
+            created.setStudent(s);
+            created.setAccountBalance(java.math.BigDecimal.ZERO);
+            created.setChargesDue(java.math.BigDecimal.ZERO);
+            return financialAccountRepository.save(created);
+        });
         AccountTransaction t = new AccountTransaction();
         t.setStudent(s);
         // Cap payments to the remaining balance to avoid overpayment

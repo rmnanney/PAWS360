@@ -73,7 +73,8 @@ public class CourseEnrollmentService {
                 .orElse(null);
 
         if (existingEnrollment != null && existingEnrollment.getStatus() != SectionEnrollmentStatus.DROPPED) {
-            throw new IllegalStateException("Student is already enrolled or waitlisted for this lecture");
+            // Idempotent behavior for seed/automation runs: return existing instead of erroring
+            return toResponse(existingEnrollment);
         }
 
         boolean hasLectureCapacity = hasCapacity(lectureSection);

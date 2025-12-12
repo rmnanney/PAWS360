@@ -71,7 +71,9 @@ export default function MyAccountPage() {
 		const load = async () => {
 			setLoading(true);
 			try {
-				const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+				const email = typeof window !== "undefined"
+					? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+					: null;
 				if (!email) return;
 				const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
 				const sidData: GetStudentIdResponse = await sidRes.json();
