@@ -154,7 +154,7 @@ public class UserService {
     }
 
     public UserResponseDTO editUser(EditUserRequestDTO userDTO){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(userDTO.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(userDTO.email());
         if(user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         user.setFirstname(userDTO.firstname());
         user.setMiddlename(userDTO.middlename());
@@ -208,7 +208,7 @@ public class UserService {
 
     // Address management
     public UserResponseDTO addAddress(AddAddressRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         Address addr = new Address();
         addr.setUser(user);
@@ -255,7 +255,7 @@ public class UserService {
     }
 
     public UserResponseDTO getUser(GetUserRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         return toUserResponseDTO(user);
     }
@@ -309,7 +309,7 @@ public class UserService {
         if (dto.newEmail() != null) {
             String ne = dto.newEmail().trim();
             if (!ne.isEmpty()) {
-                Users existing = userRepository.findUsersByEmailLikeIgnoreCase(ne);
+                Users existing = userRepository.findUsersByEmailIgnoreCase(ne);
                 if (existing != null && existing.getId() != user.getId()) {
                     return false;
                 }
@@ -321,7 +321,7 @@ public class UserService {
     }
 
     public UserResponseDTO updatePersonalDetails(UpdatePersonalDetailsRequestDTO dto){
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(dto.email());
+        Users user = userRepository.findUsersByEmailIgnoreCase(dto.email());
         if (user == null) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
         if (dto.firstname() != null) {
             if (dto.firstname().trim().isEmpty()) return new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of());
@@ -404,7 +404,7 @@ public class UserService {
 
     public String uploadProfilePicture(String email, MultipartFile file) throws Exception {
         if (file == null || file.isEmpty()) return null;
-        Users user = userRepository.findUsersByEmailLikeIgnoreCase(email);
+        Users user = userRepository.findUsersByEmailIgnoreCase(email);
         if (user == null) return null;
 
         String contentType = file.getContentType();

@@ -1,0 +1,40 @@
+concurrent = {{ runner_concurrent }}
+check_interval = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "{{ runner_name }}"
+  url = "{{ gitlab_url }}"
+  token = "__RUNNER_TOKEN_PLACEHOLDER__"
+  executor = "{{ runner_executor }}"
+  
+  [runners.custom_build_dir]
+  
+  [runners.cache]
+    [runners.cache.s3]
+    [runners.cache.gcs]
+    [runners.cache.azure]
+
+  [runners.docker]
+    tls_verify = false
+    image = "{{ runner_docker_image }}"
+    privileged = {{ runner_docker_privileged | lower }}
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = {{ runner_docker_volumes | to_json }}
+    shm_size = 0
+    network_mode = "{{ runner_network_mode }}"
+    pull_policy = ["{{ runner_docker_pull_policy }}"]
+{% if runner_docker_allowed_images is defined and runner_docker_allowed_images | length > 0 %}
+    allowed_images = {{ runner_docker_allowed_images | to_json }}
+{% endif %}
+{% if runner_docker_allowed_services is defined and runner_docker_allowed_services | length > 0 %}
+    allowed_services = {{ runner_docker_allowed_services | to_json }}
+{% endif %}
+{% if enable_cache_volumes | default(true) %}
+    # Cache volume for build artifacts
+    # Mount additional cache volume if configured
+{% endif %}

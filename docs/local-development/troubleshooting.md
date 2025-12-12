@@ -682,6 +682,452 @@ docker exec paws360-patroni1 curl -f http://localhost:8008/health
 
 ---
 
+## CI/CD Infrastructure Troubleshooting
+
+**JIRA:** INFRA-474  
+**Related Documentation:** [Operations Playbook](../operations-playbook.md)
+
+### Runner Issues
+
+#### Issue: Runner Offline or Unavailable
+
+**Symptoms:** 
+- Workflows queuing but not executing
+- GitHub shows runner status "offline"
+- Grafana dashboard shows runner as unavailable
+
+**Diagnosis:**
+```bash
+# Check runner service status
+ssh admin@<runner-ip> "systemctl status actions.runner.*"
+
+# Check recent logs
+ssh admin@<runner-ip> "journalctl -u actions.runner.* --since '10 minutes ago'"
+
+# Verify GitHub connectivity
+ssh admin@<runner-ip> "curl -I https://api.github.com"
+
+# Check runner registration
+gh api /repos/rpalermodrums/PAWS360/actions/runners | jq '.runners[] | {name, status, busy}'
+```
+
+**Solutions:**
+
+**Solution A**: Restart runner service
+```bash
+ssh admin@<runner-ip> "sudo systemctl restart actions.runner.*"
+```
+
+**Solution B**: Re-register runner
+```bash
+# Generate new token
+gh api /repos/rpalermodrums/PAWS360/actions/runners/registration-token
+
+# SSH to runner and re-register
+ssh admin@<runner-ip>
+cd /home/runner/actions-runner
+sudo -u runner ./config.sh remove
+sudo -u runner ./config.sh --url https://github.com/rpalermodrums/PAWS360 --token <TOKEN>
+sudo systemctl restart actions.runner.*
+```
+
+**Solution C**: Check firewall rules
+```bash
+# Ensure GitHub IPs not blocked
+ssh admin@<runner-ip> "sudo ufw status"
+```
+
+**Related Runbook:** [Failover Procedures](../runbooks/failover-procedures.md)
+
+---
+
+#### Issue: Workflows Timing Out or Hanging
+
+**Symptoms:**
+- Workflows exceed configured timeout
+- Jobs never complete or report status
+- Runner appears "busy" indefinitely
+
+**Diagnosis:**
+```bash
+# Check runner resource usage
+ssh admin@<runner-ip> "top -b -n 1 | head -20"
+ssh admin@<runner-ip> "free -h"
+ssh admin@<runner-ip> "df -h"
+
+# Find long-running processes
+ssh admin@<runner-ip> "ps aux --sort=-etime | head -20"
+
+# Check Docker containers
+ssh admin@<runner-ip> "docker ps -a"
+
+# Check in-progress workflows
+gh run list --status in_progress --limit 10
+```
+
+**Solutions:**
+
+**Solution A**: Kill stuck processes
+```bash
+ssh admin@<runner-ip> "sudo pkill -f '<process-name>'"
+ssh admin@<runner-ip> "sudo systemctl restart actions.runner.*"
+```
+
+**Solution B**: Clean Docker
+```bash
+ssh admin@<runner-ip> "docker stop \$(docker ps -q)"
+ssh admin@<runner-ip> "docker system prune -af --volumes"
+```
+
+**Solution C**: Cancel stuck workflows
+```bash
+# Cancel specific run
+gh run cancel <run-id>
+
+# Cancel all in-progress runs (emergency only)
+gh run list --status in_progress --json databaseId --jq '.[].databaseId' | xargs -I {} gh run cancel {}
+```
+
+**Related Runbook:** [Performance Degradation](../runbooks/performance-degradation.md)
+
+---
+
+#### Issue: High CPU/Memory Usage - Performance Degraded
+
+**Symptoms:**
+- CPU > 85% sustained
+- Memory > 85% sustained
+- Workflows taking 2x normal duration
+- Prometheus alert "RunnerHighCPU" or "RunnerHighMemory" firing
+
+**Diagnosis:**
+```bash
+# Check resource usage
+ssh admin@<runner-ip> "vmstat 1 5"
+ssh admin@<runner-ip> "free -h"
+
+# Identify top resource consumers
+ssh admin@<runner-ip> "ps aux --sort=-%cpu | head -10"
+ssh admin@<runner-ip> "ps aux --sort=-%mem | head -10"
+
+# Check concurrent workflows
+gh run list --status in_progress --json name,displayTitle | jq -r '.[] | "\(.name): \(.displayTitle)"'
+
+# Query Prometheus metrics
+curl -s 'http://192.168.0.200:9090/api/v1/query?query=node_cpu_seconds_total' | jq
+```
+
+**Solutions:**
+
+**Solution A**: Trigger manual failover (immediate)
+```bash
+# Stop primary to force failover to backup
+ssh admin@192.168.0.201 "sudo systemctl stop actions.runner.*"
+
+# Monitor failover in Grafana
+open http://192.168.0.200:3000/d/sre-overview
+```
+
+**Solution B**: Cleanup resources
+```bash
+# Remove old workflow artifacts
+ssh admin@<runner-ip> "rm -rf /home/runner/actions-runner/_work/*/_temp/*"
+
+# Docker cleanup
+ssh admin@<runner-ip> "docker system prune -af --volumes"
+
+# Clear system caches (careful!)
+ssh admin@<runner-ip> "sudo sync && sudo sysctl -w vm.drop_caches=3"
+```
+
+**Solution C**: Kill resource-intensive jobs
+```bash
+# Identify resource hogs
+ssh admin@<runner-ip> "ps aux --sort=-%cpu | head -5"
+
+# Cancel corresponding workflow
+gh run cancel <run-id>
+```
+
+**Related Runbook:** [Performance Degradation](../runbooks/performance-degradation.md)
+
+---
+
+#### Issue: Disk Space Full
+
+**Symptoms:**
+- Disk usage > 85%
+- Workflows failing with "No space left on device"
+- Runner slow to start new jobs
+
+**Diagnosis:**
+```bash
+# Check disk usage
+ssh admin@<runner-ip> "df -h"
+
+# Find large directories
+ssh admin@<runner-ip> "du -sh /home/runner/actions-runner/_work/* | sort -h | tail -10"
+
+# Check Docker disk usage
+ssh admin@<runner-ip> "docker system df"
+
+# Find large log files
+ssh admin@<runner-ip> "find /var/log -type f -size +100M -exec ls -lh {} \;"
+```
+
+**Solutions:**
+
+**Solution A**: Clean workflow directories
+```bash
+ssh admin@<runner-ip> "rm -rf /home/runner/actions-runner/_work/*/_temp/*"
+ssh admin@<runner-ip> "find /home/runner/actions-runner/_work -type d -name 'node_modules' -prune -exec rm -rf {} +"
+```
+
+**Solution B**: Docker cleanup
+```bash
+ssh admin@<runner-ip> "docker system prune -af --volumes"
+ssh admin@<runner-ip> "docker image prune -af"
+```
+
+**Solution C**: Log rotation
+```bash
+# Force log rotation
+ssh admin@<runner-ip> "sudo logrotate -f /etc/logrotate.conf"
+
+# Remove old logs
+ssh admin@<runner-ip> "sudo journalctl --vacuum-time=7d"
+```
+
+---
+
+### Monitoring Issues
+
+#### Issue: Prometheus Not Scraping Metrics
+
+**Symptoms:**
+- Grafana dashboards show "No data"
+- Missing metrics in Prometheus query browser
+- Gaps in time-series data
+
+**Diagnosis:**
+```bash
+# Check Prometheus targets
+curl -s http://192.168.0.200:9090/api/v1/targets | jq '.data.activeTargets[] | {job, health, lastError}'
+
+# Check Node Exporter on runner
+ssh admin@<runner-ip> "curl -s http://localhost:9100/metrics | head -20"
+
+# Check Prometheus logs
+docker logs paws360-prometheus | tail -50
+```
+
+**Solutions:**
+
+**Solution A**: Restart Node Exporter
+```bash
+ssh admin@<runner-ip> "sudo systemctl restart node_exporter"
+```
+
+**Solution B**: Check firewall
+```bash
+# Ensure port 9100 accessible from monitoring host
+ssh admin@<runner-ip> "sudo ufw allow from 192.168.0.200 to any port 9100"
+```
+
+**Solution C**: Restart Prometheus
+```bash
+docker restart paws360-prometheus
+```
+
+---
+
+#### Issue: Grafana Dashboards Not Loading
+
+**Symptoms:**
+- Dashboard shows "Error loading dashboard"
+- Panels display "Panel plugin not found"
+- Login fails
+
+**Diagnosis:**
+```bash
+# Check Grafana logs
+docker logs paws360-grafana | tail -50
+
+# Verify Grafana is running
+curl -I http://192.168.0.200:3000
+
+# Check datasource configuration
+curl -u admin:admin http://192.168.0.200:3000/api/datasources
+```
+
+**Solutions:**
+
+**Solution A**: Restart Grafana
+```bash
+docker restart paws360-grafana
+```
+
+**Solution B**: Re-deploy dashboard
+```bash
+cd /home/ryan/repos/PAWS360
+./scripts/deploy-dashboards.sh --dashboard sre-overview
+```
+
+**Solution C**: Check datasources
+```bash
+# Re-configure Prometheus datasource
+./scripts/deploy-dashboards.sh --setup-datasources
+```
+
+---
+
+#### Issue: Alerts Not Firing
+
+**Symptoms:**
+- Known issues not generating alerts
+- Prometheus shows alert rule but state "inactive"
+- No notifications received
+
+**Diagnosis:**
+```bash
+# Check alert rules
+curl -s http://192.168.0.200:9090/api/v1/rules | jq '.data.groups[] | select(.name=="runners") | .rules[] | {alert, state}'
+
+# Query metric manually
+curl -s 'http://192.168.0.200:9090/api/v1/query?query=node_cpu_seconds_total' | jq
+
+# Check Alertmanager
+curl -s http://192.168.0.200:9093/api/v2/alerts | jq
+```
+
+**Solutions:**
+
+**Solution A**: Verify alert rule syntax
+```bash
+# Validate Prometheus config
+docker exec paws360-prometheus promtool check config /etc/prometheus/prometheus.yml
+```
+
+**Solution B**: Adjust thresholds
+```yaml
+# monitoring/prometheus/rules/runners.yml
+- alert: RunnerHighCPU
+  expr: avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) by (instance) > 0.85
+  # Adjust threshold if too sensitive
+```
+
+**Solution C**: Check notification channels
+```bash
+# Test Slack webhook (if configured)
+curl -X POST -H 'Content-type: application/json' --data '{"text":"Test alert"}' <SLACK_WEBHOOK_URL>
+```
+
+**Related Runbook:** [Alert False Positives](../runbooks/alert-false-positives.md)
+
+---
+
+### Failover Issues
+
+#### Issue: Automatic Failover Not Occurring
+
+**Symptoms:**
+- Primary runner degraded > 5 minutes
+- Workflows still routing to primary
+- Backup runner idle
+- Alert "RunnerHighCPU" firing but no failover
+
+**Diagnosis:**
+```bash
+# Check both runner statuses
+gh api /repos/rpalermodrums/PAWS360/actions/runners | jq '.runners[] | {name, status, busy}'
+
+# Check backup runner health
+ssh admin@192.168.0.202 "systemctl status actions.runner.*"
+
+# Review failover metrics
+curl -s 'http://192.168.0.200:9090/api/v1/query?query=runner_health' | jq
+```
+
+**Solutions:**
+
+**Solution A**: Manual failover
+```bash
+# Stop primary to force failover
+ssh admin@192.168.0.201 "sudo systemctl stop actions.runner.*"
+
+# Verify jobs route to backup
+gh run list --limit 5 --json status,name,conclusion
+```
+
+**Solution B**: Verify backup capacity
+```bash
+# Ensure backup not also degraded
+ssh admin@192.168.0.202 "top -b -n 1 | head -20"
+ssh admin@192.168.0.202 "free -h"
+```
+
+**Solution C**: Check GitHub runner selection
+```yaml
+# Ensure workflow doesn't pin to primary
+# .github/workflows/ci.yml
+jobs:
+  build:
+    runs-on: self-hosted  # Good - allows any runner
+    # NOT: runs-on: [self-hosted, primary]  # Bad - pins to primary
+```
+
+**Related Runbook:** [Failover Procedures](../runbooks/failover-procedures.md)
+
+---
+
+### Test Scenario Failures
+
+#### Issue: Test Scenario Scripts Failing
+
+**Symptoms:**
+- `test-runner-degradation-detection.sh` times out
+- `test-automatic-failover.sh` fails validation
+- Test reports "FAIL" status
+
+**Diagnosis:**
+```bash
+# Run test in verbose mode
+cd /home/ryan/repos/PAWS360/tests/ci
+./test-runner-degradation-detection.sh --verbose
+
+# Check stress-ng available
+ssh admin@<runner-ip> "which stress-ng"
+
+# Verify Prometheus accessible
+curl -I http://192.168.0.200:9090
+```
+
+**Solutions:**
+
+**Solution A**: Install missing dependencies
+```bash
+# Install stress-ng on runner
+ssh admin@<runner-ip> "sudo apt-get update && sudo apt-get install -y stress-ng"
+```
+
+**Solution B**: Adjust test timeouts
+```bash
+# Edit test script - increase timeout
+# tests/ci/test-runner-degradation-detection.sh
+TIMEOUT=600  # Increase from 300 if needed
+```
+
+**Solution C**: Manual test execution
+```bash
+# Simulate degradation manually
+ssh admin@192.168.0.201 "stress-ng --cpu 24 --timeout 60s"
+
+# Check alert fires
+curl -s http://192.168.0.200:9090/api/v1/alerts | jq '.data.alerts[] | select(.labels.alertname=="RunnerHighCPU")'
+```
+
+---
+
 ## Quick Diagnostic Commands
 
 ```bash
@@ -702,6 +1148,18 @@ docker stats
 
 # Full system info
 docker info
+
+# CI/CD Infrastructure health
+./scripts/ci-health-check.sh
+
+# Runner status
+gh api /repos/rpalermodrums/PAWS360/actions/runners | jq '.runners[] | {name, status, busy}'
+
+# Prometheus metrics
+curl -s http://192.168.0.200:9090/api/v1/query?query=up | jq
+
+# Grafana dashboard
+open http://192.168.0.200:3000/d/sre-overview
 ```
 
 ## Getting Help
@@ -713,6 +1171,10 @@ If none of these solutions work:
    make -f Makefile.dev health > health-report.txt
    docker-compose logs > full-logs.txt
    docker info > docker-info.txt
+   
+   # For CI/CD issues:
+   ./scripts/ci-health-check.sh > ci-health-report.txt
+   gh api /repos/rpalermodrums/PAWS360/actions/runners > runner-status.json
    ```
 
 2. Create JIRA ticket with:
@@ -722,5 +1184,5 @@ If none of these solutions work:
    - Your OS and Docker version
 
 3. File under project: INFRA
-   - Component: local-development
-   - Label: 001-local-dev-parity
+   - Component: local-development (for dev env) or ci-cd-infrastructure (for runner issues)
+   - Label: 001-local-dev-parity (dev env) or INFRA-474 (CI/CD)

@@ -967,13 +967,19 @@ jobs:
 
   deploy-to-production:
     name: Deploy to production (Ansible)
+    # T071: GitHub Environment protection with deployment coordination lock
+    # - Requires manual approval for production deployments (configured in GitHub UI)
+    # - Locks deployment while in progress (prevents concurrent partial deploys)
+    # - Lock released automatically on completion or failure
+    # - Protection rules: reviewers required, wait timer, deployment branches
     environment: production
     # T026: Concurrency control - serialize production deployments
     # Only one production deployment can run at a time
     # Queued deployments wait for current deployment to complete
+    # T071: This concurrency lock prevents race conditions and partial deployments
     concurrency:
       group: production-deployment
-      cancel-in-progress: false  # Do not cancel in-progress deploys
+      cancel-in-progress: false  # Do not cancel in-progress deploys (safety first)
     # T027: Runner labels - primary runner with failover to secondary
     # Primary: [self-hosted, production, primary]
     # Secondary: [self-hosted, production, secondary] (failover if primary offline)
@@ -1156,6 +1162,85 @@ jobs:
             cd infrastructure/ansible
             printf 'y\n' | ./deploy.sh deploy production "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
 
+      # T048: Capture detailed failure diagnostics
+      - name: Capture deployment failure diagnostics
+        if: failure() && steps.deploy-production.outcome == 'failure'
+        id: failure-diagnostics
+        run: |
+          set +e  # Don't exit on error during diagnostics
+          
+          echo "### 🔍 Deployment Failure Diagnostics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Capture runner health metrics
+          PROMETHEUS_URL="${{ vars.PROMETHEUS_URL }}"
+          current_runner=$(hostname)
+          
+          echo "**Runner Metrics at Failure**:" >> $GITHUB_STEP_SUMMARY
+          runner_cpu=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_cpu_usage_percent{hostname="'$current_runner'"}' \
+            | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "unavailable")
+          runner_memory=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_memory_usage_percent{hostname="'$current_runner'"}' \
+            | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "unavailable")
+          runner_disk=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_disk_usage_percent{hostname="'$current_runner'"}' \
+            | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "unavailable")
+          
+          echo "- CPU: ${runner_cpu}%" >> $GITHUB_STEP_SUMMARY
+          echo "- Memory: ${runner_memory}%" >> $GITHUB_STEP_SUMMARY
+          echo "- Disk: ${runner_disk}%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Parse Ansible logs for root cause
+          echo "**Root Cause Analysis**:" >> $GITHUB_STEP_SUMMARY
+          
+          failure_reason="unknown"
+          remediation_link="docs/runbooks/production-deployment-failures.md"
+          severity="high"
+          
+          # Check for common failure patterns
+          if grep -q "Connection refused\|Connection timed out\|No route to host" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="network_connectivity"
+            remediation_link="docs/runbooks/network-unreachable-troubleshooting.md"
+            echo "🔴 **Network Connectivity Issue Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="critical"
+          elif grep -q "Authentication failure\|Permission denied\|Invalid credentials" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="authentication"
+            remediation_link="docs/runbooks/secrets-expired-rotation.md"
+            echo "🔴 **Authentication Failure Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="critical"
+          elif grep -q "disk.*full\|No space left" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="disk_space"
+            remediation_link="docs/runbooks/runner-degraded-resources.md"
+            echo "🔴 **Disk Space Exhaustion Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="critical"
+          elif grep -q "Out of memory\|Cannot allocate memory" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="memory_exhaustion"
+            remediation_link="docs/runbooks/runner-degraded-resources.md"
+            echo "🔴 **Memory Exhaustion Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="critical"
+          elif grep -q "timeout" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="timeout"
+            remediation_link="docs/runbooks/performance-degradation.md"
+            echo "🟡 **Timeout Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="high"
+          else
+            echo "⚪ **Unknown Failure** - Manual investigation required" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Remediation Guide**: [$remediation_link]($remediation_link)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Save diagnostics for notification script
+          echo "failure_reason=$failure_reason" >> "$GITHUB_OUTPUT"
+          echo "remediation_link=$remediation_link" >> "$GITHUB_OUTPUT"
+          echo "severity=$severity" >> "$GITHUB_OUTPUT"
+          echo "runner_cpu=$runner_cpu" >> "$GITHUB_OUTPUT"
+          echo "runner_memory=$runner_memory" >> "$GITHUB_OUTPUT"
+          echo "runner_disk=$runner_disk" >> "$GITHUB_OUTPUT"
+
       # T030: Rollback on final deployment failure
       - name: Trigger rollback on deployment failure
         if: failure() && steps.deploy-production.outcome == 'failure'
@@ -1179,10 +1264,17 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const failureReason = '${{ steps.failure-diagnostics.outputs.failure_reason }}' || 'unknown';
+            const remediationLink = '${{ steps.failure-diagnostics.outputs.remediation_link }}' || 'docs/runbooks/production-deployment-failures.md';
+            const severity = '${{ steps.failure-diagnostics.outputs.severity }}' || 'high';
+            const runnerCpu = '${{ steps.failure-diagnostics.outputs.runner_cpu }}' || 'unavailable';
+            const runnerMemory = '${{ steps.failure-diagnostics.outputs.runner_memory }}' || 'unavailable';
+            const runnerDisk = '${{ steps.failure-diagnostics.outputs.runner_disk }}' || 'unavailable';
+            
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `🚨 Production Deployment Failed - Run #${context.runNumber}`,
+              title: `🚨 Production Deployment Failed - Run #${context.runNumber} - ${failureReason}`,
               body: `## Production Deployment Failure
             
             **Workflow Run**: [#${context.runNumber}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
@@ -1190,25 +1282,34 @@ jobs:
             **Branch**: ${context.ref}
             **Triggered by**: @${context.actor}
             **Runner**: ${{ steps.runner-health.outputs.runner_name || 'unknown' }}
+            **Severity**: ${severity.toUpperCase()}
             
             ### Failure Details
             
+            - **Root Cause**: \`${failureReason}\`
             - All retry attempts (3) exhausted
             - Automatic rollback triggered
             - Manual verification required
             
+            ### Runner Health at Failure
+            
+            - **CPU Usage**: ${runnerCpu}%
+            - **Memory Usage**: ${runnerMemory}%
+            - **Disk Usage**: ${runnerDisk}%
+            
             ### Next Steps
             
             1. Review workflow logs: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
-            2. Check production health: \`infrastructure/ansible/playbooks/validate-production-deploy.yml\`
-            3. Verify rollback success: Check production state file
-            4. Investigate root cause using runbook: \`docs/runbooks/production-deployment-failures.md\`
-            5. Create post-mortem if necessary
+            2. Follow remediation guide: [${remediationLink}](${remediationLink})
+            3. Check production health: \`infrastructure/ansible/playbooks/validate-production-deploy.yml\`
+            4. Verify rollback success: Check production state file
+            5. Investigate root cause using diagnostics above
+            6. Create post-mortem if necessary
             
             **Assignee**: @oncall-sre
-            **Labels**: production-incident, deployment-failure, requires-investigation
+            **Labels**: production-incident, deployment-failure, ${failureReason}, requires-investigation
             `,
-              labels: ['production-incident', 'deployment-failure', 'requires-investigation'],
+              labels: ['production-incident', 'deployment-failure', failureReason, severity, 'requires-investigation'],
               assignees: ['oncall-sre']
             });
             console.log(`Created incident issue #${issue.data.number}`);

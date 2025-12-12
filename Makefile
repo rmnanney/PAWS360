@@ -93,7 +93,8 @@ debug-job:
 	@echo "🔧 debug-job placeholder: run JOB=$(JOB) locally (to be implemented). Use 'make debug-job JOB=build'"
 
 ci-local:
-	@echo "🔁 ci-local placeholder: run full local CI via docker-compose (to be implemented in Phase 5)"
+	@echo "🔁 Running local CI test scenarios..."
+	@bash tests/ci/run-all-tests.sh
 
 ci-quick:
 	@echo "⚡ ci-quick placeholder: quick local checks (lint + unit tests)"

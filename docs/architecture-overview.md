@@ -467,6 +467,119 @@ graph TD
 - **CDN Integration**: Static content delivered globally
 - **Auto-scaling**: Infrastructure scales based on demand
 
+## CI/CD Infrastructure
+
+### Overview
+
+The PAWS360 CI/CD infrastructure is built on self-hosted GitHub Actions runners for security and control. This provides:
+- **Full control** over build environment and sensitive data
+- **High capacity** for parallel workflow execution
+- **High availability** with automatic failover
+- **Comprehensive monitoring** and observability
+
+See [CI/CD Architecture Documentation](./infrastructure/ci-cd-architecture.md) for complete details.
+
+### Runner Architecture
+
+```mermaid
+graph TD
+    A[GitHub Repository] -->|Workflow Trigger| B{Job Queue}
+    B -->|Primary Available| C[Primary Runner<br/>dell-r640-01<br/>24 cores, 128GB RAM]
+    B -->|Primary Degraded| D[Backup Runner<br/>Serotonin-paws360<br/>16 cores, 64GB RAM]
+    
+    C --> E[Execute Workflow]
+    D --> E
+    
+    E --> F[Report Results]
+    F --> G[Metrics to Prometheus]
+    F --> H[Logs to Loki]
+    
+    I[Health Monitoring] --> C
+    I --> D
+    I -->|Alert| J[Automatic Failover]
+    J --> D
+    
+    style C fill:#c8e6c9
+    style D fill:#fff3e0
+    style J fill:#ffebee
+```
+
+**Total Capacity:** 12 concurrent jobs (8 primary + 4 backup)  
+**Daily Throughput:** ~200 workflow runs  
+**Average Utilization:** 55% (primary), 20% (backup)
+
+### High Availability Design
+
+**Automatic Failover Triggers:**
+- Primary runner CPU > 85% for 5 minutes
+- Primary runner memory > 85% for 5 minutes
+- Primary runner offline for 2 minutes
+- Primary runner disk > 85%
+
+**Service Level Objectives (SLOs):**
+- Availability: 99% (7 hours downtime/month allowed)
+- Degradation Detection: < 5 minutes
+- Automatic Failover: < 10 minutes
+- System Recovery: < 15 minutes
+- Job Success Rate: 95%
+
+### CI/CD Monitoring Stack
+
+```mermaid
+graph TD
+    A[GitHub Runners] -->|Metrics| B[Prometheus<br/>192.168.0.200:9090]
+    A -->|Logs| C[Loki<br/>192.168.0.200:3100]
+    
+    B --> D[Grafana<br/>192.168.0.200:3000]
+    C --> D
+    
+    D --> E[SRE Overview Dashboard]
+    D --> F[Runner Metrics Dashboard]
+    D --> G[Capacity Planning Dashboard]
+    
+    B --> H[Alert Rules]
+    H --> I[Alertmanager]
+    I --> J[Notifications]
+    
+    style B fill:#fff3e0
+    style D fill:#c8e6c9
+    style J fill:#ffebee
+```
+
+**Monitoring Components:**
+- **Prometheus:** Time-series metrics database, 15-day retention
+- **Loki:** Centralized logging, 30-day retention
+- **Grafana:** Visualization dashboards and alerting
+- **Promtail:** Log aggregation agents on each runner
+
+**Key Metrics Tracked:**
+- Runner health and availability
+- CPU, memory, disk utilization
+- Workflow execution duration (P50, P95)
+- Job queue depth and wait time
+- Failover events and MTTR
+- Alert firing and false positive rate
+
+### SRE Operational Excellence
+
+**Comprehensive Runbooks:**
+- [Performance Degradation](./runbooks/performance-degradation.md) - Diagnosis and resolution
+- [Failover Procedures](./runbooks/failover-procedures.md) - Manual and automatic failover
+- [Alert False Positives](./runbooks/alert-false-positives.md) - Alert tuning and investigation
+- [Runner Capacity Planning](./runbooks/runner-capacity-planning.md) - Capacity monitoring and forecasting
+
+**Automated Testing:**
+- Degradation detection scenarios (< 5 min validation)
+- Automatic failover scenarios (< 10 min validation)
+- Monitoring alert scenarios (< 2 min validation)
+- System recovery scenarios (< 15 min validation)
+
+**Capacity Management:**
+- Real-time utilization tracking
+- 30-day growth forecasting
+- Scaling trigger alerts (>80% utilization sustained)
+- Cost analysis and ROI calculations
+
 ## Monitoring and Observability
 
 ### Observability Stack
