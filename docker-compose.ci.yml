@@ -6,6 +6,9 @@ services:
     build:
       context: .
       dockerfile: infrastructure/docker/Dockerfile
+      # Pass build args to configure build environment
+      args:
+        - BUILDKIT_INLINE_CACHE=1
     container_name: paws360-app-ci
     # Disable AppArmor to allow network operations during Maven builds
     # AppArmor on the runner blocks socket creation, causing Permission denied errors
