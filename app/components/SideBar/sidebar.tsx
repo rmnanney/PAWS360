@@ -47,7 +47,9 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     React.useEffect(() => {
         const load = async () => {
             try {
-                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                const email = typeof window !== "undefined"
+                    ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+                    : null;
                 if (!email) return;
                 const res = await fetch(`${API_BASE}/users/get?email=${encodeURIComponent(email)}`);
                 if (res.ok) {
@@ -60,9 +62,13 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         load();
     }, []);
 
-    const firstName = (user?.firstname && String(user.firstname).trim()) || 'Profile';
+    const displayName = (() => {
+        const pref = (user?.preferred_name && String(user.preferred_name).trim()) || "";
+        const first = (user?.firstname && String(user.firstname).trim()) || "";
+        return pref || first || "Profile";
+    })();
     const initials = (
-        `${(user?.firstname || '').charAt(0)}${(user?.lastname || '').charAt(0)}`.toUpperCase() || 'U'
+        `${(user?.preferred_name || user?.firstname || '').charAt(0)}${(user?.lastname || '').charAt(0)}`.toUpperCase() || 'U'
     );
 	const academicItems = [
 		{
@@ -238,7 +244,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 								className={s.profileButton}
 							>
 								<User className="w-4 h-4" />
-								<span>{firstName}</span>
+								<span>{displayName}</span>
 							</SidebarMenuButton>
 						</div>
 					</SidebarMenuItem>

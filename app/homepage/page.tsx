@@ -141,32 +141,8 @@ export default function Homepage() {
 			{/* Welcome Message with Student Info */}
 			<div className={s.welcomeSection}>
 				<h1 className={s.welcomeTitle}>{welcomeMessage}</h1>
-				{studentProfile && (
-					<div className={s.studentInfo}>
-						<div className={s.studentDetails}>
-							{studentProfile.campus_id && (
-								<span className={s.studentDetail}>
-									ID: {studentProfile.campus_id}
-								</span>
-							)}
-							{studentProfile.department && (
-								<span className={s.studentDetail}>
-									Department: {studentProfile.department}
-								</span>
-							)}
-							{studentProfile.standing && (
-								<span className={s.studentDetail}>
-									Standing: {studentProfile.standing}
-								</span>
-							)}
-							{studentProfile.gpa && (
-								<span className={s.studentDetail}>
-									GPA: {studentProfile.gpa.toFixed(2)}
-								</span>
-							)}
-						</div>
-					</div>
-				)}
+				{/* Intentionally hide detailed student stats (ID, department, standing, GPA) on the homepage.
+					They can be inaccurate when transcript data is unavailable. */}
 				{profileLoading && (
 					<div className={s.loadingProfile}>Loading student information...</div>
 				)}

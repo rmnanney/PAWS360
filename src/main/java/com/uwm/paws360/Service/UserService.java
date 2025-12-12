@@ -295,8 +295,7 @@ public class UserService {
         if (user == null) return false;
         if (dto.phone() != null) {
             String p = dto.phone().trim();
-            if (p.isEmpty()) return false;
-            user.setPhone(p);
+            user.setPhone(p.isEmpty() ? null : p);
         }
         if (dto.alternatePhone() != null) {
             String ap = dto.alternatePhone().trim();
@@ -314,6 +313,8 @@ public class UserService {
                     return false;
                 }
                 user.setEmail(ne);
+            } else {
+                // Empty string means "no change"
             }
         }
         userRepository.save(user);

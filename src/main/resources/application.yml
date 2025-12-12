@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/paws360_dev
+    url: jdbc:postgresql://localhost:5433/paws360_dev
     username: paws360
     password: paws360_dev_password
     driver-class-name: org.postgresql.Driver

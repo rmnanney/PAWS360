@@ -78,6 +78,7 @@ export default function PersonalPage() {
 	const [altPhoneEdit, setAltPhoneEdit] = React.useState<string>("");
 	const [profilePicEdit, setProfilePicEdit] = React.useState<string>("");
 	const [profilePicFile, setProfilePicFile] = React.useState<File | null>(null);
+	const [activeTab, setActiveTab] = React.useState<string>("personal");
 	const { toast } = require("@/hooks/useToast");
     const [loading, setLoading] = React.useState<boolean>(true);
 
@@ -270,8 +271,14 @@ const securityInfo = {
 						onClick={async () => {
 							if (!isEditing) { setIsEditing(true); return; }
 							try {
-								const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
-								if (!email) return;
+								const storedEmail = typeof window !== "undefined"
+									? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+									: null;
+								const email = storedEmail || user?.email || "";
+								if (!email) {
+									toast({ variant: "destructive", title: "Missing account", description: "We couldn't determine your account email. Please sign in again." });
+									return;
+								}
 								// Basic validation
                                 if (!firstNameEdit || !lastNameEdit) {
                                     toast({ variant: "destructive", title: "Missing required fields", description: "First and last name are required." });
@@ -382,10 +389,6 @@ const securityInfo = {
 								setMailingAddress(mailingAddrEdit);
 								toast({ title: "Profile Updated", description: "Your changes have been saved." });
 								setIsEditing(false);
-								// Reload page to refresh all data
-								setTimeout(() => {
-									if (typeof window !== 'undefined') window.location.reload();
-								}, 1000);
 							} catch (e: any) {
 								toast({ variant: "destructive", title: "Update failed", description: e?.message || "Try again later." });
 							}
@@ -477,7 +480,7 @@ const securityInfo = {
 			</div>
 
 			{/* Main Content Tabs */}
-			<Tabs defaultValue="personal" className="space-y-4">
+			<Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
 				<TabsList>
 					<TabsTrigger value="personal">Personal Details</TabsTrigger>
 					<TabsTrigger value="contact">Contact Information</TabsTrigger>

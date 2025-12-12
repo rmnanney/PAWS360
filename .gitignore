@@ -66,3 +66,4 @@ docker-compose.override.yml
 .dev-running
 backups/
 snapshots/
+logs/paws360-demo.log
