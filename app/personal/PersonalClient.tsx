@@ -96,7 +96,7 @@ export default function PersonalClient() {
       try {
         const email =
           typeof window !== "undefined"
-            ? localStorage.getItem("userEmail")
+            ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
             : null;
         if (!email) return;
         const [

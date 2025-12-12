@@ -66,7 +66,9 @@ function CurrentlyEnrolledCard() {
 		const load = async () => {
 			try {
 				const email =
-					typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+					typeof window !== "undefined" 
+						? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+						: null;
 				if (!email) return;
 				const sidRes = await fetch(
 					`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`

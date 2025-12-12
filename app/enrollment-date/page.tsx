@@ -202,7 +202,7 @@ export default function EnrollmentDatePage() {
 			try {
 				const email =
 					typeof window !== "undefined"
-						? localStorage.getItem("userEmail")
+						? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
 						: null;
 				if (!email) return;
 				const res = await fetch(

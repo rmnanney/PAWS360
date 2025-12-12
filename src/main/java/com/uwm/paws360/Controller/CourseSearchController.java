@@ -90,7 +90,7 @@ public class CourseSearchController {
         String sql = 
             "SELECT " +
             "  c.course_code, " +
-            "  c.title, " +
+            "  c.course_name as title, " +
             "  cs.start_time, " +
             "  cs.end_time, " +
             "  csmd.meeting_day, " +
@@ -122,23 +122,29 @@ public class CourseSearchController {
     @GetMapping("/student/{studentId}/all-enrolled")
     public List<Map<String, Object>> getAllEnrolled(@PathVariable Integer studentId) {
         String sql = 
-            "SELECT DISTINCT " +
+            "SELECT " +
             "  c.course_code, " +
-            "  c.title, " +
-            "  c.credits, " +
-            "  c.meeting_pattern, " +
-            "  c.instructor, " +
+            "  c.course_name as title, " +
+            "  c.credit_hours as credits, " +
             "  cs.start_time, " +
             "  cs.end_time, " +
             "  cs.section_code, " +
-            "  COALESCE(b.code || ' ' || cr.room_number, 'TBD') as room " +
+            "  COALESCE(b.code || ' ' || cr.room_number, 'TBD') as room, " +
+            "  STRING_AGG(DISTINCT csmd.meeting_day, ', ') as meeting_pattern, " +
+            "  COALESCE(STRING_AGG(DISTINCT u.firstname || ' ' || u.lastname, ', '), 'TBD') as instructor " +
             "FROM course_enrollments ce " +
             "JOIN course_sections cs ON ce.lecture_section_id = cs.section_id " +
             "JOIN courses c ON cs.course_id = c.course_id " +
             "LEFT JOIN buildings b ON cs.building_id = b.building_id " +
             "LEFT JOIN classrooms cr ON cs.classroom_id = cr.classroom_id " +
+            "LEFT JOIN course_section_meeting_days csmd ON cs.section_id = csmd.section_id " +
+            "LEFT JOIN section_staff_assignments ssa ON cs.section_id = ssa.section_id " +
+            "  AND ssa.role IN ('PROFESSOR', 'INSTRUCTOR') " +
+            "LEFT JOIN users u ON ssa.user_id = u.user_id " +
             "WHERE ce.student_id = ? " +
             "  AND ce.status = 'ENROLLED' " +
+            "GROUP BY c.course_code, c.course_name, c.credit_hours, cs.start_time, " +
+            "  cs.end_time, cs.section_code, b.code, cr.room_number " +
             "ORDER BY c.course_code";
         
         return jdbcTemplate.queryForList(sql, studentId);

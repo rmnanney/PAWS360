@@ -83,7 +83,9 @@ export default function Academic() {
     React.useEffect(() => {
         const init = async () => {
             try {
-                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                const email = typeof window !== "undefined" 
+                    ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+                    : null;
                 if (!email) {
                     setLoading(false);
                     return;

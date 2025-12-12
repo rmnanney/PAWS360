@@ -87,7 +87,9 @@ export default function EnrollmentPage() {
 		const loadStudent = async () => {
 			try {
 				const email =
-					typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+					typeof window !== "undefined" 
+						? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+						: null;
 				if (!email) return;
 				const res = await fetch(
 					`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`

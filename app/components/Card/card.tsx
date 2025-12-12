@@ -102,19 +102,22 @@ export function ScheduleCard() {
     const { toast } = require("@/hooks/useToast");
     const { API_BASE } = require("@/lib/api");
 
-    const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+    const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'TBD'];
     const dayAbbr: Record<string, string> = {
         'MONDAY': 'Mon',
         'TUESDAY': 'Tue',
         'WEDNESDAY': 'Wed',
         'THURSDAY': 'Thu',
         'FRIDAY': 'Fri',
+        'TBD': 'TBD',
     };
 
     React.useEffect(() => {
         const load = async () => {
             try {
-                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                const email = typeof window !== "undefined" 
+                    ? (sessionStorage.getItem("userEmail") || localStorage.getItem("userEmail"))
+                    : null;
                 if (!email) return;
                 const sidRes = await fetch(`${API_BASE}/users/student-id?email=${encodeURIComponent(email)}`);
                 const sidData = await sidRes.json();
@@ -127,15 +130,29 @@ export function ScheduleCard() {
                 const grouped: Record<string, Array<{ time: string; course: string; title: string; room: string }>> = {};
                 days.forEach(day => { grouped[day] = []; });
                 
+                // Track courses we've already added to avoid duplicates
+                const addedCourses = new Set<string>();
+                
                 (data || []).forEach((d: any) => {
+                    const courseKey = `${d.course_code}-${d.title}`;
                     const day = d.meeting_day?.toUpperCase();
                     if (day && grouped[day]) {
                         grouped[day].push({
-                            time: d.start_time ? new Date(`1970-01-01T${d.start_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "",
+                            time: d.start_time ? new Date(`1970-01-01T${d.start_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "TBD",
                             course: d.course_code,
                             title: d.title,
                             room: d.room || "TBD",
                         });
+                        addedCourses.add(courseKey);
+                    } else if (!day && !addedCourses.has(courseKey)) {
+                        // Course has no scheduled meeting day - add to TBD section
+                        grouped['TBD'].push({
+                            time: d.start_time ? new Date(`1970-01-01T${d.start_time}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : "TBD",
+                            course: d.course_code,
+                            title: d.title,
+                            room: d.room || "TBD",
+                        });
+                        addedCourses.add(courseKey);
                     }
                 });
                 
