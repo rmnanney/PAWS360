@@ -411,3 +411,5 @@ Identify and stop the process that's listening on port 8086 or configure this ap
 2025-12-11 18:08:30.506 [http-nio-8086-exec-1] INFO  [] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
 2025-12-11 18:08:30.506 [http-nio-8086-exec-1] INFO  [] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
 2025-12-11 18:08:30.508 [http-nio-8086-exec-1] INFO  [] o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-12-11 18:12:46.774 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Starting scheduled session cleanup
+2025-12-11 18:12:46.788 [scheduling-1] DEBUG [] c.u.p.config.SessionTimeoutConfig - Session cleanup completed: no expired sessions found, 1 active sessions
