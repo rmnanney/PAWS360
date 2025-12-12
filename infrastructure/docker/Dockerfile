@@ -5,18 +5,16 @@ FROM maven:3.9-eclipse-temurin-21-alpine AS build
 # Set working directory
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (for better caching)
+# Copy pom.xml first for better layer caching
 COPY pom.xml .
-# Use BuildKit cache mount for Maven dependencies (best practice)
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn dependency:go-offline -B || true
 
 # Copy source code
 COPY src ./src
 
-# Build the application with cache mount
+# Build the application with BuildKit cache mount for Maven dependencies
+# The cache mount persists between builds, eliminating need for dependency downloads
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn clean package -DskipTests
+    mvn clean package -DskipTests -B -Dmaven.artifact.threads=10
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
