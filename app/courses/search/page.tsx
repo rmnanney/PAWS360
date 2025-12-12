@@ -108,6 +108,10 @@ export default function CourseSearchPage() {
 		courseCode: "",
 		title: "",
 		term: "",
+		openOnly: false,
+		startTime: "",
+		endTime: "",
+		days: [] as string[],
 	});
 
 	React.useEffect(() => {
@@ -148,6 +152,34 @@ export default function CourseSearchPage() {
 				if (title && !course.courseName.toUpperCase().includes(title)) return;
 				const sectionTerm = (section.term || course.term || "").toUpperCase();
 				if (term && !sectionTerm.includes(term)) return;
+				
+				// Filter by open seats
+				if (filters.openOnly) {
+					const max = section.maxEnrollment ?? 0;
+					const current = section.currentEnrollment ?? 0;
+					if (max > 0 && current >= max) return; // Full, skip it
+				}
+				
+				// Filter by time range
+				if (filters.startTime && section.startTime) {
+					const sectionStart = section.startTime.replace(":", "");
+					const filterStart = filters.startTime.replace(":", "");
+					if (sectionStart < filterStart) return;
+				}
+				if (filters.endTime && section.endTime) {
+					const sectionEnd = section.endTime.replace(":", "");
+					const filterEnd = filters.endTime.replace(":", "");
+					if (sectionEnd > filterEnd) return;
+				}
+				
+				// Filter by days of week
+				if (filters.days.length > 0 && section.meetingDays && section.meetingDays.length > 0) {
+					const hasMatchingDay = section.meetingDays.some(day => 
+						filters.days.includes(day.toUpperCase())
+					);
+					if (!hasMatchingDay) return;
+				}
+				
 				list.push({ section, course });
 			});
 		});
@@ -243,7 +275,7 @@ export default function CourseSearchPage() {
 	};
 
 	const clearFilters = () =>
-		setFilters({ subject: "", courseCode: "", title: "", term: "" });
+		setFilters({ subject: "", courseCode: "", title: "", term: "", openOnly: false, startTime: "", endTime: "", days: [] });
 
 	return (
 		<div className={s.contentWrapper}>
@@ -313,6 +345,80 @@ export default function CourseSearchPage() {
 									placeholder="e.g. Spring 2026"
 								/>
 							</div>
+							
+							<div className="flex items-center gap-2">
+								<input
+									type="checkbox"
+									id="openOnly"
+									checked={filters.openOnly}
+									onChange={(e) =>
+										setFilters((p) => ({ ...p, openOnly: e.target.checked }))
+									}
+									className="h-4 w-4"
+								/>
+								<label htmlFor="openOnly" className="text-sm text-muted-foreground cursor-pointer">
+									Show only classes with open seats
+								</label>
+							</div>
+							
+							<div className="grid grid-cols-2 gap-2">
+								<div>
+									<label className="block text-sm font-medium text-muted-foreground">
+										Start time (earliest)
+									</label>
+									<input
+										type="time"
+										className="w-full rounded-md border p-2 bg-background text-foreground"
+										value={filters.startTime}
+										onChange={(e) =>
+											setFilters((p) => ({ ...p, startTime: e.target.value }))
+										}
+									/>
+								</div>
+								<div>
+									<label className="block text-sm font-medium text-muted-foreground">
+										End time (latest)
+									</label>
+									<input
+										type="time"
+										className="w-full rounded-md border p-2 bg-background text-foreground"
+										value={filters.endTime}
+										onChange={(e) =>
+											setFilters((p) => ({ ...p, endTime: e.target.value }))
+										}
+									/>
+								</div>
+							</div>
+							
+							<div>
+								<label className="block text-sm font-medium text-muted-foreground mb-2">
+									Days of week
+								</label>
+								<div className="flex flex-wrap gap-2">
+									{["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"].map((day) => (
+										<button
+											key={day}
+											type="button"
+											onClick={() => {
+												setFilters((p) => ({
+													...p,
+													days: p.days.includes(day)
+														? p.days.filter((d) => d !== day)
+														: [...p.days, day],
+												}));
+											}}
+											className={`px-3 py-1 text-xs rounded-md transition-colors ${
+												filters.days.includes(day)
+													? "bg-primary text-primary-foreground"
+													: "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+											}`}
+										>
+											{day.slice(0, 3)}
+										</button>
+									))}
+								</div>
+							</div>
+							
 							<div className="flex gap-2">
 								<button
 									type="button"
