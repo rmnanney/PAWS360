@@ -16,11 +16,21 @@ import {
 	CalendarDays,
 	Search,
 	Link,
+	Home,
 } from "lucide-react";
 import s from "../../homepage/styles.module.css";
 
+type HeaderProps = {
+	onNavigate?: (section: string) => void;
+};
+
 // Homepage items for the main cards
 const homepageItems = [
+	{
+		title: "Homepage",
+		description: "Return to your dashboard",
+		icon: Home,
+	},
 	{
 		title: "Academic",
 		description: "Grades, transcripts, and academic records",
@@ -73,8 +83,13 @@ const homepageItems = [
 	},
 ];
 
-export function Header() {
+export function Header({ onNavigate }: HeaderProps) {
 	const [showMobileSearch, setShowMobileSearch] = useState(false);
+
+	const handleResultClick = (item: (typeof homepageItems)[number]) => {
+		onNavigate?.(item.title);
+		setShowMobileSearch(false);
+	};
 
 	return (
 		<header className={s.header}>
@@ -87,7 +102,7 @@ export function Header() {
 						<div className={s.desktopSearch}>
 							<SearchBar
 								items={homepageItems}
-								// onResultClick={(item) => handleNavigation(item.title)}
+								onResultClick={handleResultClick}
 							/>
 						</div>
 
@@ -101,22 +116,24 @@ export function Header() {
 							>
 								<Search className="h-4 w-4" />
 							</Button>
+						</div>
 					</div>
+				</div>
+
+				<div className={s.headerRight}>
+					<ThemeToggle />
+					<a href="/homepage">
+						<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
+					</a>
 				</div>
 			</div>
 
-			<div className={s.headerRight}>
-				<ThemeToggle />
-				<a href="/homepage">
-					<img src="/PS_LG_HOME.jpeg" alt="Logo" className={s.logo} />
-				</a>
-			</div>
-		</div>			{/* Mobile Search Dropdown */}
+			{/* Mobile Search Dropdown */}
 			{showMobileSearch && (
 				<div className={s.mobileSearchDropdown}>
 					<SearchBar
 						items={homepageItems}
-						onResultClick={() => setShowMobileSearch(false)}
+						onResultClick={handleResultClick}
 					/>
 				</div>
 			)}

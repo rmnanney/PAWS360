@@ -41,47 +41,82 @@ export default function RootLayout({
 	const isPublicPage = publicPages.includes(pathname);
 
 	const handleNavigation = (section: string) => {
-		console.log(`Navigating to ${section}`);
+		if (!section) return;
 
-		// Track navigation interaction
-		recordUserInteraction("navigation", section, 0, true);
+		const target = section.trim();
+		const normalized = target.toLowerCase();
 
-		// Route to appropriate pages
-		if (section === "homepage") {
-			router.push("/homepage");
-		} else if (section === "finances") {
-			router.push("/finances");
-		} else if (section === "advising") {
-			router.push("/advising");
-		} else if (section === "academic") {
-			router.push("/academic");
-		} else if (section === "personal") {
-			router.push("/personal");
-		} else if (section === "resources") {
-			router.push("/resources");
-		} else if (section === "Class Search/Catalog" || section === "Class Search") {
-			router.push("/courses/search");
-		} else if (section === "Enrollment Date" || section === "Enrollment Dates") {
-			router.push("/enrollment-date");
-		} else if (section === "Class Search/Catalog") {
-			router.push("/courses");
-		} else if (section === "Quick Links") {
-			router.push("/quick-links");
-		} else if (section === "financial-aid") {
-			router.push("/finances/financial-aid");
-		} else if (section === "my-account") {
-			router.push("/finances/my-account");
-		} else if (section === "account-inquiry") {
-			router.push("/finances/account-inquiry");
-		} else if (section === "payment-history") {
-			router.push("/finances/payment-history");
-		} else if (section === "university-payments") {
-			router.push("/finances/university-payments");
-		} else if (section === "scholarships") {
-			router.push("/finances/scholarships");
-		} else if (section.startsWith("https://")) {
-			recordUserInteraction("external_link", section, 0, true);
-			window.open(section, "_blank");
+		// Track navigation interaction (using original label for analytics)
+		recordUserInteraction("navigation", target, 0, true);
+
+		// External links should open in a new tab
+		if (target.startsWith("http://") || target.startsWith("https://")) {
+			recordUserInteraction("external_link", target, 0, true);
+			window.open(target, "_blank");
+			return;
+		}
+
+		// Route to appropriate pages (case-insensitive, with aliases)
+		switch (normalized) {
+			case "homepage":
+				router.push("/homepage");
+				break;
+			case "finances":
+				router.push("/finances");
+				break;
+			case "advising":
+				router.push("/advising");
+				break;
+			case "academic":
+			case "academic records":
+				router.push("/academic");
+				break;
+			case "personal":
+			case "personal information":
+				router.push("/personal");
+				break;
+			case "resources":
+				router.push("/resources");
+				break;
+			case "class search":
+			case "class search/catalog":
+				router.push("/courses/search");
+				break;
+			case "enrollment date":
+			case "enrollment dates":
+				router.push("/enrollment-date");
+				break;
+			case "quick links":
+				router.push("/quick-links");
+				break;
+			case "holds & tasks":
+			case "holds/ to do list":
+			case "holds/to do list":
+				router.push("/holds-tasks");
+				break;
+			case "handshake":
+				window.open("https://uwm.joinhandshake.com/", "_blank");
+				break;
+			case "financial-aid":
+				router.push("/finances/financial-aid");
+				break;
+			case "my-account":
+				router.push("/finances/my-account");
+				break;
+			case "account-inquiry":
+				router.push("/finances/account-inquiry");
+				break;
+			case "payment-history":
+				router.push("/finances/payment-history");
+				break;
+			case "university-payments":
+				router.push("/finances/university-payments");
+				break;
+			case "scholarships":
+				router.push("/finances/scholarships");
+				break;
+			default:
+				console.warn(`No navigation mapping for section: ${target}`);
 		}
 	};
 
@@ -109,7 +144,7 @@ export default function RootLayout({
 				) : (
 					// Render authenticated pages with sidebar
 					<SidebarProvider>
-						<Header />
+						<Header onNavigate={handleNavigation} />
 						<AppSidebar onNavigate={handleNavigation} />
 						<SidebarInset className={pathname === "/homepage" ? "" : "pt-10"}>
 							{children}
