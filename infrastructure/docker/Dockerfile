@@ -11,9 +11,10 @@ COPY pom.xml .
 # Copy source code
 COPY src ./src
 
-# Build the application with BuildKit cache mount for Maven dependencies
-# The cache mount persists between builds, eliminating need for dependency downloads
-RUN --mount=type=cache,target=/root/.m2 \
+# Build with network=host to bypass AppArmor restrictions
+# AppArmor blocks network socket creation in default network namespace
+# Using host network allows Maven to download dependencies
+RUN --network=host --mount=type=cache,target=/root/.m2 \
     mvn clean package -DskipTests -B -Dmaven.artifact.threads=10
 
 # Runtime stage
