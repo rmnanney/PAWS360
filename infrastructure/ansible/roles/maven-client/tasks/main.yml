@@ -1,0 +1,22 @@
+---
+- name: Deploy Maven settings.xml with Nexus mirror
+  template:
+    src: settings.xml.j2
+    dest: /etc/maven/settings.xml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure maven is installed
+  package:
+    name: maven
+    state: present
+
+- name: Validate Maven can go offline using mirror
+  become: true
+  become_user: root
+  command: mvn -B -DskipTests dependency:go-offline
+  args:
+    chdir: /tmp
+  register: mvn_offline
+  failed_when: mvn_offline.rc != 0

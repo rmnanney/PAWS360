@@ -1,0 +1,18 @@
+---
+- name: Provision artifact caches (Nexus + optional Docker registry mirror)
+  hosts: webservers
+  become: true
+  vars:
+    nexus_host: "{{ inventory_hostname }}"
+    nexus_port: 8081
+    enable_registry_mirror: false
+    registry_mirror_port: 5000
+
+  roles:
+    - role: ../roles/artifact-cache
+
+  tasks:
+    - name: Optionally enable Docker registry mirror
+      include_role:
+        name: ../roles/registry-mirror
+      when: enable_registry_mirror | bool

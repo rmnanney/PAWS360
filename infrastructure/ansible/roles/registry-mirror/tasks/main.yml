@@ -1,0 +1,26 @@
+---
+- name: Create registry data directory
+  file:
+    path: /var/lib/registry
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Pull Docker registry image
+  community.docker.docker_image:
+    name: registry
+    source: pull
+
+- name: Run Docker registry pull-through cache
+  community.docker.docker_container:
+    name: registry-mirror
+    image: registry:2
+    state: started
+    restart_policy: always
+    published_ports:
+      - 5000:5000
+    volumes:
+      - /var/lib/registry:/var/lib/registry
+    env:
+      REGISTRY_PROXY_REMOTEURL: https://registry-1.docker.io

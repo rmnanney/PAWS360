@@ -1,0 +1,30 @@
+---
+- name: Ensure docker python packages present
+  package:
+    name: python3-docker
+    state: present
+
+- name: Create Nexus data volume
+  community.docker.docker_volume:
+    name: nexus-data
+    state: present
+
+- name: Pull Nexus image
+  community.docker.docker_image:
+    name: sonatype/nexus3
+    source: pull
+
+- name: Run Nexus container
+  community.docker.docker_container:
+    name: nexus
+    image: sonatype/nexus3:latest
+    state: started
+    restart_policy: always
+    published_ports:
+      - 8081:8081
+    volumes:
+      - nexus-data:/nexus-data
+    env:
+      INSTALL4J_ADD_VM_PARAMS: '-Xms1200m -Xmx1200m'
+
+# Optional Nginx + certbot configuration is left to the playbook level (use vars to enable)
