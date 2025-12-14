@@ -5,8 +5,17 @@
     <mirror>
       <id>internal-nexus</id>
       <name>Internal Nexus</name>
-      <url>http://{{ nexus_host }}:{{ nexus_port }}</url>
+      <url>http://{{ nexus_host }}:{{ nexus_port }}/repository/maven-public/</url>
       <mirrorOf>*</mirrorOf>
     </mirror>
   </mirrors>
+  {% if nexus_user is defined and nexus_pass is defined %}
+    <servers>
+      <server>
+        <id>internal-nexus</id>
+        <username>{{ nexus_user }}</username>
+        <password>{{ nexus_pass }}</password>
+      </server>
+    </servers>
+  {% endif %}
 </settings>

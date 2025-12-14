@@ -13,14 +13,16 @@
     source: pull
 
 - name: Run Docker registry pull-through cache
-  community.docker.docker_container:
-    name: registry-mirror
-    image: registry:2
-    state: started
-    restart_policy: always
-    published_ports:
-      - 5000:5000
-    volumes:
-      - /var/lib/registry:/var/lib/registry
-    env:
-      REGISTRY_PROXY_REMOTEURL: https://registry-1.docker.io
+  shell: |
+    if ! docker inspect registry-mirror >/dev/null 2>&1; then
+      docker run -d \
+        --name registry-mirror \
+        --restart always \
+        -p 5000:5000 \
+        -v /var/lib/registry:/var/lib/registry \
+        --ulimit nofile=32768:32768 \
+        -e REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io \
+        registry:2
+    else
+      docker start registry-mirror || true
+    fi

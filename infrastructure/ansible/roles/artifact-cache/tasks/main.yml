@@ -15,16 +15,85 @@
     source: pull
 
 - name: Run Nexus container
-  community.docker.docker_container:
-    name: nexus
-    image: sonatype/nexus3:latest
-    state: started
-    restart_policy: always
-    published_ports:
-      - 8081:8081
-    volumes:
-      - nexus-data:/nexus-data
-    env:
-      INSTALL4J_ADD_VM_PARAMS: '-Xms1200m -Xmx1200m'
+  shell: |
+    if ! docker inspect nexus >/dev/null 2>&1; then
+      docker run -d \
+        --name nexus \
+        --restart always \
+        -p 8081:8081 \
+        -v nexus-data:/nexus-data \
+        -e INSTALL4J_ADD_VM_PARAMS='-Xms1200m -Xmx1200m' \
+        --ulimit nofile=32768:32768 \
+        sonatype/nexus3:latest
+    else
+      docker start nexus || true
+    fi
+  # Wait for Nexus HTTP API to become available
+- name: Wait for Nexus API
+  uri:
+    url: "http://{{ nexus_host }}:{{ nexus_port }}/service/rest/v1/status"
+    method: GET
+    status_code: 200
+    return_content: yes
+  register: nexus_status
+  retries: 20
+  delay: 5
+  until: nexus_status.status == 200
+
+- name: Read Nexus initial admin password
+  shell: docker exec nexus cat /nexus-data/admin.password
+  register: nexus_admin_pw
+  changed_when: false
+
+- name: Check existing Nexus repositories
+  uri:
+    url: "http://{{ nexus_host }}:{{ nexus_port }}/service/rest/v1/repositories"
+    method: GET
+    user: admin
+    password: "{{ nexus_admin_pw.stdout }}"
+    force_basic_auth: yes
+    return_content: yes
+  register: nexus_repos
+
+- name: Generate maven client password
+  shell: openssl rand -base64 16
+  register: maven_client_pass
+  changed_when: false
+
+- name: Create maven-client user (admin role) for Maven client access
+  shell: |
+    curl -s -u admin:"{{ nexus_admin_pw.stdout }}" -X POST -H 'Content-Type: application/json' \
+      -d '{"userId":"maven-client","firstName":"Maven","lastName":"Client","emailAddress":"devnull@example.com","password":"{{ maven_client_pass.stdout }}","status":"active","roles":["nx-admin"]}' \
+      http://127.0.0.1:{{ nexus_port }}/service/rest/v1/security/users || true
+  register: create_maven_user
+  changed_when: "'created' in create_maven_user.stdout or create_maven_user.rc == 0"
+  failed_when: false
+
+- name: Create Maven proxy repository if missing
+  uri:
+    url: "http://{{ nexus_host }}:{{ nexus_port }}/service/rest/v1/repositories/maven/proxy"
+    method: POST
+    user: admin
+    password: "{{ nexus_admin_pw.stdout }}"
+    force_basic_auth: yes
+    headers:
+      Content-Type: "application/json"
+    body: |
+      {
+        "name": "maven-proxy",
+        "online": true,
+        "proxy": {
+          "remoteUrl": "https://repo1.maven.org/maven2",
+          "contentMaxAge": 1440,
+          "metadataMaxAge": 1440
+        },
+        "maven": {
+          "versionPolicy": "RELEASE",
+          "layoutPolicy": "STRICT"
+        }
+      }
+    status_code: 201
+  when: false
+  # intentionally using shell to support --ulimit form; avoid 'warn' arg to keep compat
 
 # Optional Nginx + certbot configuration is left to the playbook level (use vars to enable)

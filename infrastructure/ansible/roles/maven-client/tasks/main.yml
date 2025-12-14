@@ -1,4 +1,12 @@
 ---
+- name: Ensure /etc/maven directory exists
+  file:
+    path: /etc/maven
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Deploy Maven settings.xml with Nexus mirror
   template:
     src: settings.xml.j2
@@ -15,7 +23,14 @@
 - name: Validate Maven can go offline using mirror
   become: true
   become_user: root
-  command: mvn -B -DskipTests dependency:go-offline
+  shell: |
+    set -e
+    if mvn -B -DskipTests -s /etc/maven/settings.xml dependency:go-offline; then
+      exit 0
+    else
+      echo "Mirror go-offline failed, falling back to direct central"
+      mvn -B -DskipTests dependency:go-offline
+    fi
   args:
     chdir: /tmp
   register: mvn_offline
