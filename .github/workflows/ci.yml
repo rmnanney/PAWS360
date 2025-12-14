@@ -812,6 +812,10 @@ jobs:
         id: build
         run: |
           set -euxo pipefail
+          # Pre-populate Maven cache volume to avoid network during BuildKit builds
+          if [ -x "./ci/populate-m2.sh" ]; then
+            ./ci/populate-m2.sh paws360-m2-cache || true
+          fi
           OWNER_REPO="${{ github.repository }}"
           # docker requires repository names in tags to be lowercase — normalize here
           OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')
@@ -869,6 +873,10 @@ jobs:
         id: build
         run: |
           set -euxo pipefail
+          # Pre-populate Maven cache volume to avoid network during BuildKit builds
+          if [ -x "./ci/populate-m2.sh" ]; then
+            ./ci/populate-m2.sh paws360-m2-cache || true
+          fi
           OWNER_REPO="${{ github.repository }}"
           # docker requires repository names in tags to be lowercase — normalize here
           OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')

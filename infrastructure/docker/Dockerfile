@@ -11,12 +11,11 @@ COPY pom.xml .
 # Copy source code  
 COPY src ./src
 
-# Build application using BuildKit cache mount
-# Cache mount persists Maven local repository between builds
-# First build downloads dependencies (may hit AppArmor issues on some systems)
-# Subsequent builds use cached dependencies and are much faster
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn clean package -DskipTests -B
+# Build application using a named BuildKit volume that can be pre-populated
+# Use `paws360-m2-cache` volume populated by `ci/populate-m2.sh` to avoid
+# network dependency during image build (helps when AppArmor blocks build-time network)
+RUN --mount=type=volume,source=paws360-m2-cache,target=/root/.m2 \
+  mvn clean package -DskipTests -B
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

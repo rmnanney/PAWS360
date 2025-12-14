@@ -14,11 +14,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Ensure super-linter image is available on runner
+        run: |
+          set -euxo pipefail
+          echo "Pulling super-linter image"
+          docker pull ghcr.io/github/super-linter:v4.10.0 || true
 
-      - name: Run Super-Linter (workflows only)
-        uses: github/super-linter@v4
+      - name: Run Super-Linter (workflows only) via local wrapper
+        run: |
+          set -euxo pipefail
+          chmod +x ./ci/superlinter-run.sh
+          ENVIRONMENT=runner VALIDATE_WORKFLOWS_ONLY=true VALIDATE_YAML=true DEFAULT_BRANCH=master ./ci/superlinter-run.sh
         env:
-          VALIDATE_WORKFLOWS_ONLY: true
-          VALIDATE_YAML: true
-          DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
