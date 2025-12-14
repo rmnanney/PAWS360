@@ -1,18 +1,22 @@
+# syntax=docker/dockerfile:1
 # Multi-stage Dockerfile for PAWS360
 FROM maven:3.9-eclipse-temurin-21-alpine AS build
 
 # Set working directory
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (for better caching)
+# Copy pom.xml first for better layer caching
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
 
-# Copy source code
+# Copy source code  
 COPY src ./src
 
-# Build the application
-RUN mvn clean package -DskipTests
+# Build application using BuildKit cache mount
+# Cache mount persists Maven local repository between builds
+# First build downloads dependencies (may hit AppArmor issues on some systems)
+# Subsequent builds use cached dependencies and are much faster
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn clean package -DskipTests -B
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

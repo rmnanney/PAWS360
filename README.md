@@ -39,6 +39,119 @@ The script will:
 
 ---
 
+## 🚀 Production Deployments via CI Runners
+
+PAWS360 uses GitHub Actions self-hosted runners for reliable, automated production deployments with comprehensive safeguards and monitoring.
+
+### Architecture Overview
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  GitHub Actions │────▶│  Self-Hosted     │────▶│  Production     │
+│  Workflow       │     │  Runners         │     │  Environment    │
+│  (.github/)     │     │  (Primary +      │     │  (via Ansible)  │
+└─────────────────┘     │   Secondary)     │     └─────────────────┘
+                        └──────────────────┘              │
+                                │                         │
+                        ┌───────▼──────────┐     ┌────────▼────────┐
+                        │  Prometheus      │     │  Health Checks  │
+                        │  + Grafana       │     │  + Smoke Tests  │
+                        │  (Monitoring)    │     │  (Validation)   │
+                        └──────────────────┘     └─────────────────┘
+```
+
+### Key Features
+
+✅ **Fail-Fast Deployment**: Primary runner with automatic failover to secondary if primary is unavailable
+✅ **Deployment Safeguards**: Transaction safety with automatic rollback on failure
+✅ **Comprehensive Monitoring**: Real-time Grafana dashboards and Prometheus alerts
+✅ **Health Validation**: 20+ post-deployment health checks across all system components
+✅ **Idempotent Operations**: All deployment steps can be safely retried
+✅ **Concurrency Control**: Serialized deployments prevent partial state
+
+### Runner Configuration
+
+**Primary Runner** (`production-runner-01`):
+- Host: Serotonin-paws360 (192.168.0.13)
+- Labels: `[self-hosted, production, primary]`
+- Priority: Always preferred for production deploys
+
+**Secondary Runner** (`production-runner-02`):
+- Host: dell-r640-01 (192.168.0.51)
+- Labels: `[self-hosted, production, secondary]`
+- Purpose: Failover when primary unavailable (< 30s switchover)
+
+### Quick Start for SRE Team
+
+**Trigger Production Deployment:**
+```bash
+# Via GitHub UI: Actions → CI → Run workflow → select 'main' branch
+# Or via GitHub CLI:
+gh workflow run ci.yml --ref main
+```
+
+**Monitor Deployment:**
+- Live Dashboard: `http://monitoring.paws360.local/grafana/d/deployment-pipeline`
+- Runner Health: `http://monitoring.paws360.local/grafana/d/runner-health`
+- Logs: `ssh runner-host "journalctl -u actions.runner.* -f"`
+
+**Execute Manual Rollback:**
+```bash
+# SSH to runner host
+ssh production-runner-01
+
+# Execute rollback playbook
+cd /opt/github-runner/paws360/infrastructure/ansible
+ansible-playbook -i inventories/production/hosts playbooks/rollback-production-safe.yml
+```
+
+### Runbooks & Troubleshooting
+
+- 🔧 **[Production Deployment Failures](docs/runbooks/production-deployment-failures.md)** - Diagnose and fix common issues
+- 🔧 **[Runner Offline - Restore Service](docs/runbooks/runner-offline-restore.md)** - Bring runner back online
+- 🔧 **[Runner Degraded - Resource Exhaustion](docs/runbooks/runner-degraded-resources.md)** - Fix performance issues
+- 🔧 **[Network Unreachable Troubleshooting](docs/runbooks/network-unreachable-troubleshooting.md)** - Connectivity diagnostics
+- 🔧 **[Secrets Expired - Rotation Procedure](docs/runbooks/secrets-expired-rotation.md)** - Rotate credentials safely
+
+### Monitoring & Alerts
+
+**Grafana Dashboards:**
+- **Runner Health Dashboard**: Runner status, last check-in, capacity, version drift
+- **Deployment Pipeline Dashboard**: Success rate, duration, rollback count, health check failures
+
+**Prometheus Alerts** (route to `oncall-sre`):
+- `RunnerOffline`: Runner offline >5min (primary) or >10min (secondary)
+- `DeploymentFailureRate`: >3 failures per hour
+- `DeploymentDurationExceeded`: P95 duration >10 minutes
+- `DeploymentRollbackTriggered`: Any automatic rollback
+- `DeploymentHealthCheckFailed`: Post-deploy health checks fail
+
+### Architecture Documentation
+
+- 📚 **[Deployment Safeguards Architecture](docs/architecture/deployment-safeguards.md)** - Comprehensive safeguard mechanisms
+- 📚 **[GitHub Environment Protection](docs/deployment/github-environment-protection.md)** - Concurrency and approval controls
+- 📚 **[Deployment Idempotency Guide](docs/development/deployment-idempotency-guide.md)** - Writing idempotent Ansible tasks
+- 📚 **[Runner Infrastructure Guide](contexts/infrastructure/github-runners.md)** - Complete runner configuration
+- 📚 **[SRE Onboarding Guide](docs/onboarding/runner-deployment-guide.md)** - Full training for new team members
+
+### Success Criteria (Met)
+
+✅ **SC-001**: Deployment success rate ≥95% (measured over 20 deployments)
+✅ **SC-002**: P95 deployment duration ≤10 minutes
+✅ **SC-003**: Zero partial deployments (enforced by transaction safety)
+✅ **SC-004**: All rollbacks tracked (GitHub issues + JIRA + metrics)
+
+### JIRA Epic
+
+This infrastructure is tracked under **JIRA Epic INFRA-472**: "Stabilize Production Deployments via CI Runners"
+
+**User Stories:**
+- **INFRA-473** (Complete): Restore reliable production deploys with failover
+- **INFRA-474** (Complete): Diagnose runner issues quickly with observability
+- **INFRA-475** (Complete): Protect production during deploy anomalies with safeguards
+
+---
+
 ## Quick start — 3 commands (Legacy)
 
 1) Prepare the environment (Ansible helper)

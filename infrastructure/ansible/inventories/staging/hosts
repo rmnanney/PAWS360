@@ -37,19 +37,22 @@ saml_keystore_password=dev_keystore_pass
 admin_default_password=admin123
 
 [webservers]
-dell-r640-01 ansible_host=192.168.0.51
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
 
 [databases]
-dell-r640-01 ansible_host=192.168.0.51
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
 
 [etcd]
-dell-r640-01 ansible_host=192.168.0.51
-
-[redis]
-dell-r640-01 ansible_host=192.168.0.51
-
-[loadbalancers]
-dell-r640-01 ansible_host=192.168.0.51
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
 
 [monitoring]
-dell-r640-01 ansible_host=192.168.0.51
+prometheus-01 ansible_host=192.168.0.200 ansible_user=ryan
+
+[redis]
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
+
+[loadbalancers]
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
+
+[monitoring]
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan

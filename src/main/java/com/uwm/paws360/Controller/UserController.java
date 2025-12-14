@@ -4,6 +4,8 @@ import com.uwm.paws360.DTO.User.*;
 import com.uwm.paws360.Service.UserService;
 import com.uwm.paws360.Entity.EntityDomains.User.Role;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -27,29 +30,36 @@ public class UserController {
             @RequestParam("email") String email,
             @RequestPart("file") MultipartFile file
     ) {
+        logger.info("uploadProfilePicture called for email={}", email);
         try {
             String url = userService.uploadProfilePicture(email, file);
             if (url == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             return ResponseEntity.ok(new UploadProfilePictureResponseDTO(url));
         } catch (IllegalArgumentException e) {
+            logger.warn("uploadProfilePicture bad request for email={}: {}", email, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UploadProfilePictureResponseDTO(null));
         } catch (Exception e) {
+            logger.error("uploadProfilePicture failed for email={}", email, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UploadProfilePictureResponseDTO(null));
         }
     }
 
     @PostMapping("/create")
     public UserResponseDTO createUser(@Valid @RequestBody CreateUserDTO userDTO) {
+        logger.info("createUser called for email={}", userDTO.email());
         return userService.createUser(userDTO);
     }
 
     @PostMapping("/edit")
     public ResponseEntity<UserResponseDTO> editUser(@Valid @RequestBody EditUserRequestDTO userDTO) {
+        logger.info("editUser called for email={}", userDTO.email());
         UserResponseDTO response = userService.editUser(userDTO);
         if (response == null) {
+            logger.error("editUser returned null for email={}", userDTO.email());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UserResponseDTO(-1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, List.of()));
         }
         if (response.user_id() == -1) {
+            logger.warn("editUser bad request for email={}", userDTO.email());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -57,19 +67,25 @@ public class UserController {
 
     @PostMapping("/delete")
     public ResponseEntity<String> deleteUser(@Valid @RequestBody DeleteUserRequestDTO deleteUserRequestDTO) {
+        logger.info("deleteUser called for email={}", deleteUserRequestDTO.email());
         boolean isDeleted = userService.deleteUser(deleteUserRequestDTO);
-        if (isDeleted)
+        if (isDeleted) {
             return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully");
-        else
+        } else {
+            logger.warn("deleteUser failed for email={}", deleteUserRequestDTO.email());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User deletion failed");
+        }
     }
 
     // Address endpoints
     @PostMapping("/addresses/add")
     public ResponseEntity<UserResponseDTO> addAddress(@Valid @RequestBody AddAddressRequestDTO dto) {
+        logger.info("addAddress called for email={}", dto.email());
         UserResponseDTO res = userService.addAddress(dto);
-        if (res.user_id() == -1)
+        if (res.user_id() == -1) {
+            logger.warn("addAddress bad request for email={}", dto.email());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        }
         return ResponseEntity.ok(res);
     }
 
@@ -97,6 +113,7 @@ public class UserController {
     // Role endpoints
     @PostMapping("/roles/assign")
     public ResponseEntity<String> assignRole(@Valid @RequestBody ModifyRoleRequestDTO dto) {
+        logger.info("assignRole called for email={} role={}", dto.email(), dto.role());
         boolean ok = userService.assignRole(dto);
         if (ok)
             return ResponseEntity.ok("Role assigned successfully");
@@ -118,26 +135,34 @@ public class UserController {
 
     @PostMapping("/get")
     public ResponseEntity<UserResponseDTO> getUser(@Valid @RequestBody GetUserRequestDTO dto) {
+        logger.info("getUser called for email={}", dto.email());
         UserResponseDTO res = userService.getUser(dto);
-        if (res.user_id() == -1)
+        if (res.user_id() == -1) {
+            logger.warn("getUser not found for email={}", dto.email());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        }
         return ResponseEntity.ok(res);
     }
 
     @GetMapping("/get")
     public ResponseEntity<UserResponseDTO> getUserByQuery(@RequestParam("email") String email) {
+        logger.info("getUserByQuery called for email={}", email);
         UserResponseDTO res = userService.getUser(new GetUserRequestDTO(email));
-        if (res.user_id() == -1)
+        if (res.user_id() == -1) {
+            logger.warn("getUserByQuery not found for email={}", email);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        }
         return ResponseEntity.ok(res);
     }
 
     // Resolve Student.id by email for enrollment automation
     @GetMapping("/student-id")
     public ResponseEntity<GetStudentIdResponseDTO> getStudentIdByEmail(@RequestParam("email") String email) {
+        logger.info("getStudentIdByEmail called for email={}", email);
         int sid = userService.getStudentIdByEmail(email);
         GetStudentIdResponseDTO body = new GetStudentIdResponseDTO(sid, email);
         if (sid == -1) {
+            logger.warn("getStudentIdByEmail not found for email={}", email);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         }
         return ResponseEntity.ok(body);
@@ -146,26 +171,34 @@ public class UserController {
     // Preferences and privacy
     @GetMapping("/preferences")
     public ResponseEntity<UserPreferencesResponseDTO> getPreferences(@RequestParam("email") String email){
+        logger.info("getPreferences called for email={}", email);
         return ResponseEntity.ok(userService.getPreferences(email));
     }
 
     @PostMapping("/preferences")
     public ResponseEntity<UserPreferencesResponseDTO> updatePreferences(@Valid @RequestBody UpdatePrivacyRequestDTO dto){
+        logger.info("updatePreferences called for email={}", dto.email());
         return ResponseEntity.ok(userService.updatePreferences(dto));
     }
 
     // Contact info (phone)
     @PostMapping("/contact")
     public ResponseEntity<String> updateContact(@Valid @RequestBody UpdateContactInfoRequestDTO dto){
+        logger.info("updateContact called for email={}", dto.email());
         boolean ok = userService.updateContactInfo(dto);
+        if (!ok) logger.warn("updateContact failed for email={}", dto.email());
         return ok ? ResponseEntity.ok("Updated") : ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
     }
 
     // Personal details (subset update)
     @PostMapping("/personal")
     public ResponseEntity<UserResponseDTO> updatePersonal(@Valid @RequestBody UpdatePersonalDetailsRequestDTO dto){
+        logger.info("updatePersonal called for email={}", dto.email());
         UserResponseDTO res = userService.updatePersonalDetails(dto);
-        if (res.user_id() == -1) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        if (res.user_id() == -1) {
+            logger.warn("updatePersonal bad request for email={}", dto.email());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        }
         return ResponseEntity.ok(res);
     }
 

@@ -1,0 +1,111 @@
+openapi: 3.0.3
+info:
+  title: Runner Deployment Control
+  version: 0.1.0
+  description: Control surface for production deployments via authorized runners.
+paths:
+  /runners/health:
+    get:
+      summary: List runner health status
+      responses:
+        '200':
+          description: Runner health
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RunnerHealth'
+  /deployments/production:
+    post:
+      summary: Trigger production deployment
+      parameters:
+        - in: query
+          name: version
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: concurrencyKey
+          schema:
+            type: string
+          required: true
+          description: Key used to serialize production deploys.
+      responses:
+        '202':
+          description: Deployment queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentJob'
+        '409':
+          description: Deployment blocked by concurrency/health gate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /deployments/{jobId}/status:
+    get:
+      summary: Get deployment status
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deployment status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentJob'
+components:
+  schemas:
+    RunnerHealth:
+      type: object
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum: [primary, secondary]
+        status:
+          type: string
+          enum: [online, degraded, offline]
+        lastCheckIn:
+          type: string
+          format: date-time
+        authorizedForProd:
+          type: boolean
+        healthMetrics:
+          type: object
+          additionalProperties:
+            type: number
+    DeploymentJob:
+      type: object
+      properties:
+        jobId:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, succeeded, failed, rolled_back, aborted]
+        runnerId:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        durationSeconds:
+          type: number
+        failReason:
+          type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string

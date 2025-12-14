@@ -1,0 +1,25 @@
+[Unit]
+Description=GitHub Runner Health Exporter for Prometheus
+After=network.target
+Documentation=https://github.com/rmnanney/PAWS360
+
+[Service]
+Type=simple
+User={{ runner_exporter_user }}
+Group={{ runner_exporter_user }}
+ExecStart=/usr/bin/python3 {{ runner_exporter_path }}/runner-exporter.py --port {{ runner_exporter_port }}
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=runner-exporter
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths={{ runner_exporter_path }}
+
+[Install]
+WantedBy=multi-user.target
