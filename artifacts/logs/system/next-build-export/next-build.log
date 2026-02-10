@@ -1,0 +1,74 @@
+
+> nextn@0.1.0 build
+> next build
+
+ ⚠ Specified "rewrites" will not automatically work with "output: export". See more info here: https://nextjs.org/docs/messages/export-no-custom-routes
+ ⚠ Specified "rewrites" will not automatically work with "output: export". See more info here: https://nextjs.org/docs/messages/export-no-custom-routes
+   ▲ Next.js 15.3.3
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 7.0s
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+   Generating static pages (0/27) ...
+🔍 PAWS360 Frontend Monitoring initialized {
+  sessionId: 'paws360_1764464622407_ideudbapcb',
+  endpoint: 'http://localhost:8080/api/monitoring/frontend-metrics',
+  constitutional: 'Article VIIa'
+}
+🔍 PAWS360 Frontend Monitoring initialized {
+  sessionId: 'paws360_1764464622435_gkhqmlfguwm',
+  endpoint: 'http://localhost:8080/api/monitoring/frontend-metrics',
+  constitutional: 'Article VIIa'
+}
+   Generating static pages (6/27) 
+   Generating static pages (13/27) 
+   Generating static pages (20/27) 
+ ✓ Generating static pages (27/27)
+   Finalizing page optimization ...
+   Collecting build traces ...
+ ⚠ rewrites, redirects, and headers are not applied when exporting your application, detected (rewrites). See more info here: https://nextjs.org/docs/messages/export-no-custom-routes
+   Exporting (0/3) ...
+🔍 PAWS360 Frontend Monitoring initialized {
+  sessionId: 'paws360_1764464627916_54vcdukj8ct',
+  endpoint: 'http://localhost:8080/api/monitoring/frontend-metrics',
+  constitutional: 'Article VIIa'
+}
+ ✓ Exporting (3/3)
+
+Route (app)                                                    Size  First Load JS
+┌ ○ /                                                         145 B         102 kB
+├ ○ /_not-found                                               990 B         103 kB
+├ ○ /academic                                               9.52 kB         124 kB
+├ ○ /admin                                                   5.2 kB         149 kB
+├ ○ /advising                                               13.6 kB         153 kB
+├ ○ /courses                                                3.69 kB         106 kB
+├ ○ /courses/enrollment                                     4.39 kB         106 kB
+├ ○ /courses/search                                         3.93 kB         106 kB
+├ ○ /finances                                               2.88 kB         121 kB
+├ ○ /finances/financial-aid                                 3.62 kB         121 kB
+├ ○ /finances/my-account                                    6.01 kB         121 kB
+├ ○ /finances/payment-history                                  5 kB         115 kB
+├ ○ /finances/scholarships                                  5.52 kB         116 kB
+├ ○ /forgot-password                                        2.61 kB         118 kB
+├ ○ /homepage                                               5.45 kB         116 kB
+├ ○ /login                                                  27.1 kB         147 kB
+├ ○ /personal                                               3.37 kB         114 kB
+├ ○ /quick-links                                            5.41 kB         116 kB
+├ ○ /quick-links/grad-package-purchase/cart-icon            2.87 kB         113 kB
+├ ○ /quick-links/grad-package-purchase/cart-page            6.46 kB         117 kB
+├ ○ /quick-links/grad-package-purchase/confirmation         4.19 kB         120 kB
+├ ○ /quick-links/grad-package-purchase/graduation-form      7.79 kB         148 kB
+├ ○ /quick-links/grad-package-purchase/graduation-packages  5.64 kB         122 kB
+├ ○ /quick-links/grad-package-purchase/loading              2.92 kB         113 kB
+└ ○ /resources                                              12.3 kB         156 kB
++ First Load JS shared by all                                102 kB
+  ├ chunks/1684-f8780707a1771229.js                         46.5 kB
+  ├ chunks/4bd1b696-980ddc10b45efeaf.js                     53.2 kB
+  └ other shared chunks (total)                             2.18 kB
+
+
+○  (Static)  prerendered as static content
+

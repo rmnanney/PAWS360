@@ -1,0 +1,6 @@
+<JIRA-TICKET> Short summary (max 72 chars)
+
+Longer description (wrap at ~80 chars). Describe the change and its reason.
+
+Issue: <JIRA-TICKET>  # e.g., SCRUM-84
+Co-authored-by: Name <name@example.com> (optional)

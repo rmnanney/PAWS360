@@ -1,0 +1,322 @@
+---
+name: CI/CD
+
+on:
+  push:
+    branches: [master, develop]
+    paths:
+      - 'src/**'
+      - 'app/**'
+      - 'pom.xml'
+      - 'package.json'
+      - '.github/workflows/**'
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
+
+jobs:
+  bypass-audit:
+    name: Bypass Audit (detect unrecorded bypasses)
+    runs-on: [self-hosted, linux, x64]
+    if: github.event_name == 'push'
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref || github.ref }}
+
+      - name: Detect potential bypass and create audit issue
+        run: |
+          set -euo pipefail
+          SHA=${{ github.sha }}
+          SHORT=$(git rev-parse --short $SHA)
+          # Look for existing issues labeled 'bypass-audit' that reference this commit
+          found=$(gh issue list --label bypass-audit --json number,body --limit 100 | jq -r ".[] | select(.body | contains(\"$SHORT\")) | .number" || true)
+          if [ -n "$found" ]; then
+            echo "Bypass audit issue exists for ${SHORT}: $found"
+            exit 0
+          fi
+
+          # If code files changed, create advisory bypass audit issue
+          BASE=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || echo origin/main)
+          git fetch --no-tags --depth=1 origin $BASE || true
+          CHANGED=$(git diff --name-only $BASE..HEAD || true)
+          echo "Changed paths: $CHANGED"
+          if echo "$CHANGED" | grep -Eq '^src/|^app/|pom.xml|package.json'; then
+            echo "No bypass issue found and code files changed; creating bypass audit issue."
+            gh issue create --title "Bypass Audit: ${SHORT}" --body "Commit ${SHA} pushed without recorded bypass justification.\n\nChanged files: $CHANGED\n\nRun: ${{ github.run_id }}\nRepo: ${{ github.repository }}" --label bypass-audit || true
+          else
+            echo "No code changes detected; skipping bypass audit.";
+          fi
+
+  changed-paths:
+    name: Detect changed paths
+    runs-on: [self-hosted, linux, x64]
+    outputs:
+      has_backend: ${{ steps.detect.outputs.has_backend }}
+      has_frontend: ${{ steps.detect.outputs.has_frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Determine changed paths
+        id: detect
+        run: |
+          BASE=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || echo origin/main)
+          git fetch --no-tags --depth=1 origin $BASE || true
+          CHANGED=$(git diff --name-only $BASE..HEAD || true)
+          echo "changed=$CHANGED" > changed_paths.txt
+          echo "$CHANGED" | grep -E '^src/|^app/|pom.xml' && echo "::set-output name=has_backend::true" || echo "::set-output name=has_backend::false"
+          echo "$CHANGED" | grep -E '^app/|^frontend/|package.json' && echo "::set-output name=has_frontend::true" || echo "::set-output name=has_frontend::false"
+
+  cleanup-artifacts:
+    name: Prune artifacts (keep current + previous run)
+    runs-on: [self-hosted, linux, x64]
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure gh & jq
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y jq gh || true
+
+      - name: Prune artifacts (keep last 5 runs)
+        run: |
+          chmod +x ./scripts/lib/prune-artifacts-keep-last-2.sh || true
+          KEEP_LAST=5 ./scripts/lib/prune-artifacts-keep-last-2.sh
+
+  build-and-test:
+    name: Build and Test
+    needs: [changed-paths, cleanup-artifacts]
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: [self-hosted, linux, x64]
+    env:
+      CI_SKIP_WIP: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Cache Maven dependencies
+        id: cache-maven
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build with Maven
+        if: ${{ needs.changed-paths.outputs.has_backend == 'true' }}
+        run: |
+          echo "::group::Maven build"
+          ./mvnw clean compile -B
+          echo "::endgroup::"
+
+      - name: Run backend tests
+        if: ${{ needs.changed-paths.outputs.has_backend == 'true' }}
+        run: |
+          echo "::group::Maven tests"
+          ./mvnw test -B
+          echo "::endgroup::"
+
+      - name: Package application
+        run: |
+          ./mvnw package -DskipTests -B
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache NPM
+        if: ${{ needs.changed-paths.outputs.has_frontend == 'true' }}
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install frontend dependencies (npm)
+        if: ${{ needs.changed-paths.outputs.has_frontend == 'true' }}
+        run: npm ci
+
+      - name: Run frontend tests
+        if: ${{ needs.changed-paths.outputs.has_frontend == 'true' }}
+        run: |
+          echo "::group::Frontend tests"
+          npm test --silent || true
+          echo "::endgroup::"
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Write cache metrics
+        run: |
+          printf '{"maven_cache_hit":"%s","npm_cache_hit":"%s"}' "${{ steps.cache-maven.outcome }}" "${{ steps.cache-npm.outcome }}" > cache-metrics.json || true
+
+      - name: Upload artifacts
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        # Do not upload large build artifacts by default — only upload when the job fails
+        if: failure()
+        with:
+          name: build-artifacts
+          path: |
+            target/*.jar
+            .next/
+          retention-days: 1
+      - name: Upload cache metrics
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cache-metrics.json
+          path: cache-metrics.json
+          retention-days: 1
+
+      - name: Final cleanup (build-and-test)
+        if: always()
+        run: |
+          echo "Cleaning up build artifacts to reduce actions storage pressure"
+          rm -rf .next target || true
+          docker system prune -af || true
+
+  docker-build:
+    name: Docker Build
+    runs-on: [self-hosted, linux, x64]
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    if: github.event_name != 'pull_request' || (github.event.pull_request != null && github.event.pull_request.draft == false)
+    needs: build-and-test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -f Dockerfile -t paws360-app:${{ github.sha }} .
+
+      - name: Test Docker image
+        run: |
+          docker run --rm paws360-app:${{ github.sha }} java -version
+
+  security-scan:
+    name: Security Scan
+    runs-on: [self-hosted, linux, x64]
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-security
+      cancel-in-progress: true
+    if: github.event_name != 'pull_request' || (github.event.pull_request != null && github.event.pull_request.draft == false)
+    needs: build-and-test
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  ui-tests:
+    name: UI Tests
+    runs-on: [self-hosted, linux, x64]
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-ui
+      cancel-in-progress: true
+    if: github.event_name != 'pull_request' || (github.event.pull_request != null && github.event.pull_request.draft == false)
+    needs: build-and-test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run UI tests
+        run: |
+          npm run test:ui || echo "UI tests not configured yet"
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs:
+      - build-and-test
+      - docker-build
+      - security-scan
+      - ui-tests
+    runs-on: [self-hosted, linux, x64]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add your staging deployment commands here
+          echo "Staging deployment completed"
+
+  deploy-production:
+    name: Deploy to Production
+    needs:
+      - build-and-test
+      - docker-build
+      - security-scan
+      - ui-tests
+    runs-on: [self-hosted, linux, x64]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production environment..."
+          # Add your production deployment commands here
+          echo "Production deployment completed"

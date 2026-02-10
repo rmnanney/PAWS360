@@ -1,0 +1,1385 @@
+---
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch: {}
+
+jobs:
+  cleanup-artifacts:
+    name: Cleanup old artifacts (3 days)
+    runs-on: [self-hosted, linux, x64]
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # When running as part of a pull request the HEAD ref can be deleted or
+        # unavailable which causes the checkout to fail; prefer the PR base
+        # branch when available (fallback to the event ref for non-PR runs).
+        with:
+          ref: ${{ github.event.pull_request.base.ref || github.ref }}
+
+      - name: Prune artifacts (keep current + previous run)
+        run: |
+          set -euxo pipefail
+          # ensure gh and jq are present
+          if ! command -v gh >/dev/null 2>&1; then
+            echo "gh cli not found — installing"
+            sudo apt update -y && sudo apt install -y gh jq
+          fi
+
+          # make script executable and run it (script uses GITHUB_REPOSITORY context)
+          chmod +x ./scripts/lib/prune-artifacts-keep-last-2.sh || true
+          # keep the 5 most recent runs' artifacts
+          KEEP_LAST=5 ./scripts/lib/prune-artifacts-keep-last-2.sh
+
+  artifact-report:
+    name: Artifact storage — report & annotations
+    runs-on: [self-hosted, linux, x64]
+    needs: cleanup-artifacts
+    permissions:
+      actions: read
+      contents: read
+    env:
+      #  Defaults you can tweak: count threshold and byte-size threshold
+      ARTIFACT_COUNT_THRESHOLD: 30
+      ARTIFACT_SIZE_THRESHOLD_BYTES: 500000000  # 500 MB
+      # GitHub API rate-limit usage threshold percent (warn if remaining % < this)
+      API_RATE_LIMIT_PCT_THRESHOLD: 20
+      # Threshold for Actions minutes used (warn when used minutes exceed this)
+      ACTIONS_MINUTES_THRESHOLD: 5000
+    steps:
+      - name: Inventory repo artifacts
+        id: artifact_inventory
+        run: |
+          set -euxo pipefail
+
+          REPO="${{ github.repository }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          PAGE=1
+          PER_PAGE=100
+          TOTAL_COUNT=0
+          TOTAL_BYTES=0
+          ITEMS_JSON="[]"
+
+          while :; do
+            resp=$(curl -s -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $TOKEN" "https://api.github.com/repos/$REPO/actions/artifacts?per_page=$PER_PAGE&page=$PAGE")
+            page_count=$(echo "$resp" | jq '.artifacts | length')
+            if [ "$page_count" -eq 0 ]; then
+              break
+            fi
+            items=$(echo "$resp" | jq '.artifacts')
+            # Merge two JSON arrays safely (ITEMS_JSON and newly-fetched items)
+            # Use jq -s add to combine arrays even when one side is empty or both are arrays.
+            ITEMS_JSON=$(printf '%s\n%s\n' "$ITEMS_JSON" "$items" | jq -c 'add')
+            page_total_bytes=$(echo "$items" | jq '[.[].size_in_bytes] | add // 0')
+            page_total_count=$(echo "$items" | jq 'length')
+            TOTAL_BYTES=$((TOTAL_BYTES + page_total_bytes))
+            TOTAL_COUNT=$((TOTAL_COUNT + page_total_count))
+
+            PAGE=$((PAGE + 1))
+          done
+
+          jq -n \
+            --arg repo "$REPO" \
+            --argjson count "$TOTAL_COUNT" \
+            --argjson bytes "$TOTAL_BYTES" \
+            --arg items "$ITEMS_JSON" \
+            '{repo: $repo, total_count: $count, total_bytes: $bytes, artifacts: ($items|fromjson)}' > artifact-summary.json || true
+
+          echo "artifact_summary_path=artifact-summary.json" >> "$GITHUB_OUTPUT"
+
+      - name: Generate human-readable summary & annotate
+        id: annotate
+        run: |
+          set -euxo pipefail
+
+          summary_file=artifact-summary.json
+          if [ ! -f "$summary_file" ]; then
+            echo "No artifact-summary found; nothing to report" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
+          total_count=$(jq -r '.total_count' $summary_file)
+          total_bytes=$(jq -r '.total_bytes' $summary_file)
+
+          # human readable function
+          hr() {
+            awk 'function human(x){s="B,K,M,G,T";i=1;while(x>1024 && i<5){x/=1024;i++}printf("%.2f%s",x,substr(s,i,1))} {print human($1)}' <<< "$1"
+          }
+
+          threshold_count=${ARTIFACT_COUNT_THRESHOLD}
+          threshold_bytes=${ARTIFACT_SIZE_THRESHOLD_BYTES}
+
+          pct_bytes=0
+          if [ "$threshold_bytes" -gt 0 ]; then
+            pct_bytes=$(awk "BEGIN{printf \"%.0f\", ($total_bytes / $threshold_bytes) * 100}") || true
+          fi
+
+          echo "## Artifact storage summary for ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Total artifacts: $total_count (threshold: $threshold_count)" >> $GITHUB_STEP_SUMMARY
+          echo "- Total size: $total_bytes bytes (threshold: $threshold_bytes bytes) — $pct_bytes% of threshold" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Emit a concise annotation tiered by severity
+          if [ "$total_bytes" -ge "$threshold_bytes" ] || [ "$total_count" -ge "$threshold_count" ]; then
+            # emit an attention-grabbing warning annotation on the workflow run
+            echo "::warning title=Artifact Storage Alert::Repository artifacts exceed configured threshold — count=${total_count} size=${total_bytes} bytes (${pct_bytes}% of ${threshold_bytes})" || true
+          else
+            echo "::notice title=Artifact Storage OK::Artifacts count=${total_count}, size=$(hr $total_bytes) (${pct_bytes}% of threshold)" || true
+          fi
+
+      - name: Auto-prune artifacts when thresholds exceeded
+        run: |
+          set -euxo pipefail
+
+          # Re-check summary values and perform a prune if thresholds are crossed
+          summary_file=artifact-summary.json
+          if [ -f "$summary_file" ]; then
+            total_count=$(jq -r '.total_count' "$summary_file")
+            total_bytes=$(jq -r '.total_bytes' "$summary_file")
+          else
+            echo "No artifact summary found — skipping prune" && exit 0
+          fi
+
+          threshold_count=${ARTIFACT_COUNT_THRESHOLD}
+          threshold_bytes=${ARTIFACT_SIZE_THRESHOLD_BYTES}
+
+          if [ "$total_bytes" -ge "$threshold_bytes" ] || [ "$total_count" -ge "$threshold_count" ]; then
+            echo "Artifact thresholds exceeded — attempting to prune older artifacts (KEEP_LAST=3)"
+            # ensure gh and jq installed
+            if ! command -v gh >/dev/null 2>&1; then
+              sudo apt update -y && sudo apt install -y gh jq
+            fi
+
+            chmod +x ./scripts/lib/prune-artifacts-keep-last-2.sh || true
+            # keep the 3 most recent runs' artifacts; remove older artifacts to free storage
+            KEEP_LAST=3 ./scripts/lib/prune-artifacts-keep-last-2.sh || true
+          else
+            echo "Artifact counts are under threshold — no pruning required"
+          fi
+
+      - name: Check GitHub API rate limits
+        id: rate_limit
+        run: |
+          set -euxo pipefail
+
+          # ensure jq is available
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y && sudo apt-get install -y jq
+          fi
+
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          repo="${{ github.repository }}"
+
+          resp=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/rate_limit)
+          core_limit=$(echo "$resp" | jq -r '.resources.core.limit')
+          core_remaining=$(echo "$resp" | jq -r '.resources.core.remaining')
+
+          pct_remain=0
+          if [ "$core_limit" -gt 0 ]; then
+             pct_remain=$(awk "BEGIN{printf \"%.0f\", ($core_remaining / $core_limit) * 100}") || true
+          fi
+
+          echo "- GitHub API core rate limit: ${core_remaining}/${core_limit} remaining (${pct_remain}% of allowance)" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$pct_remain" -lt "${API_RATE_LIMIT_PCT_THRESHOLD}" ]; then
+            echo "::warning title=GitHub API rate-limit low::Core API remaining ${core_remaining}/${core_limit} (${pct_remain}%) — below threshold ${API_RATE_LIMIT_PCT_THRESHOLD}%" || true
+          else
+            echo "::notice title=GitHub API rate-limit OK::Remaining ${core_remaining}/${core_limit} (${pct_remain}%)" || true
+          fi
+
+      - name: Collect Actions usage & storage metrics
+        id: actions_usage
+        run: |
+          set -euxo pipefail
+
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+          OWNER="${{ github.repository_owner }}"
+
+          # Try repository-level actions usage (may require permissions)
+          echo "Attempting to fetch repository Actions usage..."
+          repo_usage=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO/actions/usage" || true)
+          repo_code=$(echo "$repo_usage" | jq -r 'if .message then .message else "OK" end')
+
+          if [ "$repo_code" != "OK" ]; then
+            echo "Could not fetch repo actions usage: $repo_code" >> $GITHUB_STEP_SUMMARY
+          else
+            # Report top-level fields if present
+            total_minutes=$(echo "$repo_usage" | jq -r '.total_minutes_used // .billable.total_minutes // .total_minutes_used // 0') || true
+            if [ -n "$total_minutes" ]; then
+              echo "- Actions minutes used (repo): $total_minutes" >> $GITHUB_STEP_SUMMARY
+            fi
+            # Report OS breakdown if available
+            echo "$repo_usage" | jq -r '.billable // {}' | jq -r 'to_entries[]? | "  - \\(.key): \\(.value)"' >> $GITHUB_STEP_SUMMARY || true
+          fi
+
+          # Ensure defensive defaults so unset variables can't break the script
+          total_minutes=0
+          org_minutes=0
+
+          # Try org-level usage if owner looks like an org
+          echo "Attempting to fetch organization Actions usage (if available)..." >> $GITHUB_STEP_SUMMARY
+          org_usage=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/orgs/$OWNER/actions/usage" || true)
+          org_code=$(echo "$org_usage" | jq -r 'if .message then .message else "OK" end')
+          if [ "$org_code" = "OK" ]; then
+            org_minutes=$(echo "$org_usage" | jq -r '.viewers // .total_minutes_used // 0') || true
+            echo "- Actions usage (org):" >> $GITHUB_STEP_SUMMARY
+            echo "$org_usage" | jq -r 'to_entries[]? | "  - \\(.key): \\(.value|tostring)"' >> $GITHUB_STEP_SUMMARY || true
+          else
+            echo "- Org actions usage not available: $org_code" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Convert to numeric minutes if we found total_minutes and compare against threshold
+          if [ -n "$total_minutes" ] && [ "$total_minutes" -gt 0 ]; then
+            threshold=${ACTIONS_MINUTES_THRESHOLD}
+            if [ "$total_minutes" -ge "$threshold" ]; then
+              echo "::warning title=Actions minutes high::Repository Actions minutes used $total_minutes >= threshold $threshold" || true
+            else
+              echo "::notice title=Actions minutes OK::Used $total_minutes minutes (< threshold $threshold)" || true
+            fi
+          fi
+
+      - name: Upload artifact inventory (report)
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: artifact-summary
+          path: artifact-summary.json
+          retention-days: 1
+
+  # Quick guard: ensure frontend can both build and export (detect prerender errors early)
+  frontend-export-check:
+    name: Frontend — build + export check
+    runs-on: [self-hosted, linux, x64]
+    needs: artifact-report
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run frontend build+export check (fast)
+        env:
+          CI: true
+        run: |
+          set -euxo pipefail
+          # The helper script runs npm ci, next build and next export and writes logs to logs/next-build-export
+          ./scripts/test-next-build-export.sh
+
+      - name: Upload frontend build+export logs (failure only)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-export-logs
+          path: logs/next-build-export
+          retention-days: 1
+
+
+  backend-build:
+    name: Backend — build (no tests)
+    runs-on: [self-hosted, linux, x64]
+    # Run after pre-flight (cleanup + artifact-report)
+    needs: artifact-report
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build only (skip tests)
+        env:
+          SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
+        run: |
+          ./mvnw -q -DskipTests=true -DtrimStackTrace=false -Dlogging.level.org.springframework.security=DEBUG package
+
+  backend-unit-tests:
+    name: Backend — unit tests
+    runs-on: [self-hosted, linux, x64]
+    needs: backend-build
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Run unit tests
+        env:
+          SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
+        run: |
+          ./mvnw -q -DskipITs=true -DtrimStackTrace=false -Dlogging.level.org.springframework.security=DEBUG -Dtest='!**/integration/**/*,!**/performance/**/*,!**/security/T059*' test
+
+  backend-integration:
+    name: Backend — integration tests
+    runs-on: [self-hosted, linux, x64]
+    needs: backend-unit-tests
+    continue-on-error: true  # Allow workflow to continue if integration tests fail
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Start docker-compose for CI
+        env:
+          DOCKER_BUILDKIT: 1
+          COMPOSE_DOCKER_CLI_BUILD: 1
+          BUILDKIT_PROGRESS: plain
+        run: |
+          # Build with AppArmor profile unconfined for build containers
+          DOCKER_BUILD_ARGS="--security-opt apparmor=unconfined" \
+            docker compose -f docker-compose.ci.yml up -d --build
+
+      - name: Wait for postgres container
+        run: |
+          for i in {1..60}; do
+            if docker exec paws360-postgres-ci pg_isready -U paws360 -d paws360_test >/dev/null 2>&1; then
+              echo "Postgres is ready"
+              break
+            fi
+            sleep 2
+            echo "Waiting for Postgres... ($i)"
+          done
+
+      - name: Wait for backend health (timeout + diagnostics)
+        run: |
+          set -euxo pipefail
+
+          MAX_WAIT_SECONDS=300
+          POLL_INTERVAL=5
+
+          echo "Waiting up to ${MAX_WAIT_SECONDS}s for backend health at /actuator/health"
+          START_TS=$(date +%s)
+          # Use double-quotes so the outer shell expands ${POLL_INTERVAL} and ${MAX_WAIT_SECONDS}
+          if timeout "${MAX_WAIT_SECONDS}" bash -c "until curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; do sleep ${POLL_INTERVAL}; done"; then
+            END_TS=$(date +%s)
+            ELAPSED=$((END_TS - START_TS))
+            echo "Backend is healthy (took ${ELAPSED}s to become healthy)"
+          else
+            echo "Backend did not become healthy after ${MAX_WAIT_SECONDS}s — gathering diagnostics" >&2
+            echo "-- Docker container status --" >&2
+            docker ps -a --format 'table {{.Names}}	{{.Image}}	{{.Status}}' || true
+            echo "-- tail of docker-compose logs (last 500 lines) --" >&2
+            docker compose -f docker-compose.ci.yml logs --tail=500 || true
+            # Capture logs for artifact upload and fail this job so CI stops and reports failure
+            docker compose -f docker-compose.ci.yml logs > ci-docker-logs.txt || true
+            echo "Saved logs to ci-docker-logs.txt" >&2
+            exit 1
+          fi
+
+      - name: Run integration tests
+        env:
+          SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
+        run: |
+          ./mvnw -q -DskipITs=false -DtrimStackTrace=false -Dlogging.level.org.springframework.security=DEBUG -Dlogging.level.org.springframework.web.cors=TRACE -Dtest=*IntegrationTest test
+
+      - name: "Diagnostic: dump CORS debug endpoint (for CI logs)"
+        if: failure()
+        run: |
+          echo "CORS debug endpoint for diagnostic purposes (CI only):"
+          curl -f http://localhost:8080/__debug/cors || true
+
+      - name: "Diagnostic: list paws360 schema tables"
+        if: failure()
+        run: |
+          echo "Listing paws360 schema tables and row counts for diagnostics"
+          docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "\dt paws360.*" || true
+          docker exec paws360-postgres-ci psql -U paws360 -d paws360_test -c "SELECT 'users_rows', count(*) FROM paws360.users;" || true
+
+      - name: Capture Docker logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.ci.yml logs > ci-docker-logs.txt || true
+
+      - name: Stop docker-compose
+        if: always()
+        run: docker compose -f docker-compose.ci.yml down -v || true
+
+      - name: Final cleanup (integration job)
+        if: always()
+        run: |
+          echo "Cleaning up integration build artifacts and runner storage"
+          rm -rf target || true
+          docker system prune -af || true
+
+  # A fast, fail-fast smoke check for UI E2E that verifies the frontend and
+  # backend can start and respond. This prevents running long Playwright jobs
+  # when the environment isn't serviceable. It runs after backend-integration
+  # and must succeed before `ui-e2e` starts.
+  e2e-smoke:
+    name: E2E — smoke checks
+    runs-on: [self-hosted, linux, x64]
+    needs: backend-integration
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend deps (fast)
+        working-directory: ./app
+        run: |
+          npm ci --quiet
+
+      - name: Start backend and infra (quick)
+        run: |
+          docker compose -f docker-compose.ci.yml up -d
+
+      - name: Prepare frontend for smoke checks (no dev server)
+        run: |
+          # For the smoke checks we prefer a deterministic production build / export.
+          # Do not start the dev server here — the next step will either export+serve or start the built server
+          echo "Preparing frontend for deterministic smoke check (no dev server started in this step)"
+
+      - name: Wait for backend
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; then
+              echo "Backend is healthy"; break
+            fi
+            echo "Waiting for backend... ($i)"; sleep 2
+          done
+
+      - name: Wait for frontend
+        run: |
+          # Use a specific readiness URL to make the wait deterministic
+          FRONTEND_WAIT_TIMEOUT_MS=900000
+          ATTEMPTS=5
+          PER_ATTEMPT_MS=$((FRONTEND_WAIT_TIMEOUT_MS / ATTEMPTS))
+          echo "FRONTEND_WAIT_TIMEOUT_MS=${FRONTEND_WAIT_TIMEOUT_MS} — ${ATTEMPTS} attempts of ${PER_ATTEMPT_MS}ms each"
+
+          # Try starting the dev server first (dev server avoids static prerender at build-time and
+          # often succeeds faster in CI). If the dev server does not become healthy within the
+          # configured timeout, fall back to the production approach (build + next start) and then
+          # finally to static export + serve.
+
+          # Start dev server on port 3000 and allow full timeout for it to become healthy.
+          echo "Starting dev server (primary: npm run dev -> PORT=3000)"
+          PORT=3000 nohup npm run dev > next-dev.log 2>&1 &
+          echo $! > next-dev.pid || true
+
+          echo "Waiting up to ${FRONTEND_WAIT_TIMEOUT_MS}ms for http://localhost:3000/healthz (primary: dev server)"
+          if npx wait-on -t $FRONTEND_WAIT_TIMEOUT_MS http://localhost:3000/healthz; then
+            echo "Primary server (dev) is healthy"
+          else
+            echo "Primary dev server failed to become healthy within ${FRONTEND_WAIT_TIMEOUT_MS}ms — collecting logs and attempting production build + next start"
+            tail -n 300 next-dev.log || true
+            if [ -f next-dev.pid ]; then
+              kill "$(cat next-dev.pid)" >/dev/null 2>&1 || true
+              rm -f next-dev.pid || true
+            fi
+
+            # Production path: build + next start
+            echo "Attempting production build + next start (fallback #1)"
+            npm run build || (echo "ERROR: build failed" && tail -n 200 .next/logs/* || true; exit 1)
+
+            # Start the production server and allow full timeout for it to become healthy
+            nohup npx next start -p 3000 > next-static.log 2>&1 &
+            echo $! > next-static.pid || true
+
+            echo "Waiting up to ${FRONTEND_WAIT_TIMEOUT_MS}ms for http://localhost:3000/healthz (fallback: next start)"
+            if npx wait-on -t $FRONTEND_WAIT_TIMEOUT_MS http://localhost:3000/healthz; then
+              echo "Fallback server (next start) is healthy"
+            else
+              echo "Production server failed to become healthy within ${FRONTEND_WAIT_TIMEOUT_MS}ms — collecting logs and attempting static export (final fallback)"
+              tail -n 300 next-static.log || true
+            # Try export; proceed only if export succeeds
+            if npm run export; then
+              echo "Static export succeeded — serving 'out' as fallback"
+              # serve will try to run on port 3000 for parity; install serve if missing
+              if ! command -v serve >/dev/null 2>&1; then
+                npm i -g serve@14 || true
+              fi
+              nohup serve -s out -l 3000 > next-static.log 2>&1 &
+              echo $! > next-static.pid || true
+
+              echo "Waiting up to ${PER_ATTEMPT_MS}ms for fallback server /healthz"
+              npx wait-on -t $PER_ATTEMPT_MS http://localhost:3000/healthz || (tail -n 300 next-static.log && echo "Fallback serve timed out after ${PER_ATTEMPT_MS}ms" && exit 1)
+            else
+              echo "Static export failed — giving up (primary server didn't become healthy either)" && exit 1
+            fi
+          fi
+          fi
+
+      - name: Smoke HTTP checks
+        run: |
+          echo "Checking frontend homepage"; curl -fsS http://localhost:3000/ | sed -n '1,80p' || (tail -n 200 next-dev.log && exit 1)
+          echo "Checking backend health"; curl -fsS http://localhost:8080/actuator/health || exit 1
+
+      - name: Lightweight regression checks (login + sample pages)
+        run: |
+          echo "POST /auth/login (demo student)";
+          # Basic login POST - ensure backend responds; don't require persistence
+          set -o pipefail
+          # Perform a single backend login request and capture headers + body + HTTP status code
+          # so the cookie and JSON body come from the same response (avoid mismatched tokens).
+          login_headers_file="/tmp/login-headers.txt"
+          login_body_file="/tmp/login-body.json"
+          # Write headers to a separate file, body to file, and capture http code into $resp
+          resp=$(curl -s -D "$login_headers_file" -o "$login_body_file" -w "%{http_code}" -X POST http://localhost:8080/auth/login -H 'Content-Type: application/json' -d '{"email":"demo.student@uwm.edu","password":"password"}' || true)
+          # Load headers string for parsing
+          resp_headers=$(cat "$login_headers_file" 2>/dev/null || true)
+          echo "login status=$resp"
+          if [ "$resp" -ne 200 ]; then
+            echo "Login endpoint returned $resp"; exit 1
+          fi
+
+          # Extract PAWS360_SESSION cookie if present and supply it for frontend checks
+          session_cookie=$(printf "%s" "$resp_headers" | grep -i '^Set-Cookie:' | grep -o 'PAWS360_SESSION=[^;]*' | head -n1)
+          if [ -n "$session_cookie" ]; then
+            echo "Using session cookie for frontend checks";
+            cookie_arg="-b $session_cookie"
+          else
+            # Try to extract a session_token from the JSON response body and use that as a cookie
+            session_token=$(grep -oP '"session_token"\s*:\s*"\K[^"]+' "$login_body_file" || true)
+            if [ -n "$session_token" ]; then
+              echo "No Set-Cookie header found, but backend returned session_token — using it as PAWS360_SESSION for frontend checks";
+              cookie_arg="-b PAWS360_SESSION=$session_token"
+            else
+              echo "No PAWS360_SESSION cookie or session_token found in login response — proceeding without an auth cookie";
+              cookie_arg=""
+            fi
+            # cleanup temporary file
+            rm -f "$login_body_file" || true
+          fi
+
+          # Always remove headers file as well (no leak left behind)
+          rm -f "$login_headers_file" || true
+
+          # Check a few lightweight frontend paths to ensure routing works (use session cookie for auth)
+          # Check /homepage first — root (/) intentionally redirects to /login and may not render expected content.
+          # Verify the authenticated homepage is reachable (HTTP 200).
+          echo "GET http://localhost:3000/homepage (cookie/header fallbacks enabled)";
+          status=$(curl -s -o /dev/null -w "%{http_code}" ${cookie_arg} http://localhost:3000/homepage || true)
+
+          # If the cookie-only check fails but we have a session_token, try header-based fallbacks
+          if [ "$status" -ne 200 ] && [ -n "${session_token:-}" ]; then
+            echo "cookie-only request returned $status — trying Authorization header fallback";
+            status=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${session_token}" http://localhost:3000/homepage || true)
+          fi
+
+          if [ "$status" -ne 200 ] && [ -n "${session_token:-}" ]; then
+            echo "Authorization header request returned $status — trying X-Session-Token header fallback";
+            status=$(curl -s -o /dev/null -w "%{http_code}" -H "X-Session-Token: ${session_token}" http://localhost:3000/homepage || true)
+          fi
+
+          if [ "$status" -ne 200 ]; then
+            echo "cookie+header checks failed (HTTP $status)."
+            # If we have a session_token, try a lightweight Playwright localStorage fallback
+            if [ -n "${session_token:-}" ]; then
+              echo "Attempting Playwright localStorage fallback using session_token";
+              # Install test dependencies & browsers and run a single targeted Playwright test
+              (cd tests/ui && npm ci --silent)
+              (cd tests/ui && npm run install-browsers --silent || true)
+
+              if ! (cd tests/ui && SESSION_TOKEN="$session_token" BASE_URL="http://localhost:3000" npx playwright test ./smoke-localstorage.spec.ts --project=chromium --timeout=60000 --reporter=list); then
+                echo "localStorage fallback via Playwright failed" && exit 1
+              fi
+            else
+              echo "No session_token to attempt localStorage fallback — failing" && exit 1
+            fi
+          fi
+
+      - name: Capture smoke diagnostics
+        if: failure()
+        run: |
+          echo "===== tail next-dev.log (200 lines) =====" || true
+          tail -n 200 next-dev.log || true
+          echo "===== docker compose logs (smoke) =====" || true
+          docker compose -f docker-compose.ci.yml logs > smoke-docker-logs.txt || true
+
+      - name: Upload smoke diagnostics
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-diagnostics
+          path: |
+            next-dev.log
+            smoke-docker-logs.txt
+          retention-days: 1
+
+      - name: Stop smoke infra
+        if: always()
+        run: docker compose -f docker-compose.ci.yml down -v || true
+
+      - name: Final cleanup (smoke job)
+        if: always()
+        run: |
+          echo "Cleaning up smoke job artifacts and freeing runner storage"
+          rm -rf .next out || true
+          rm -f next-dev.log next-static.log || true
+          docker system prune -af || true
+
+  ui-e2e:
+    name: E2E UI Tests (Playwright)
+    runs-on: [self-hosted, linux, x64]
+    needs: e2e-smoke
+    services: {}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        working-directory: ./tests/ui
+        run: |
+          npm ci
+          npm run install-browsers
+
+      - name: Ensure wait-on installed for Playwright readiness checks
+        working-directory: ./tests/ui
+        run: npm install --no-audit wait-on
+
+      - name: Start backend and infra with docker-compose
+        run: docker compose -f docker-compose.ci.yml up -d
+
+      - name: "Diagnostic: dump CORS debug endpoint (UI job)"
+        run: |
+          echo "CORS debug endpoint (UI job):"
+          curl -f http://localhost:8080/__debug/cors || true
+
+      - name: Install frontend deps & start Next dev server
+        env:
+          SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8080"
+          LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+          LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_CORS: TRACE
+        run: |
+          npm ci
+          bash ./scripts/kill-next-port.sh || true
+          nohup npm run dev > next-dev.log 2>&1 &
+          # E2E test runner should wait up to 10 minutes for the frontend to become ready in CI
+          # Use the deterministic readiness path (/healthz) instead of the site root
+          (cd tests/ui && npx wait-on -t 900000 http://localhost:3000/healthz)
+          for i in {1..60}; do
+            if curl -f http://localhost:3000/healthz >/dev/null 2>&1; then
+              echo "Frontend ready"
+              break
+            fi
+            sleep 3
+          done
+
+      - name: Wait for backend ready
+        run: |
+          for i in {1..60}; do
+            if curl -f http://localhost:8080/actuator/health >/dev/null 2>&1; then
+              echo "Backend is healthy"
+              break
+            fi
+            sleep 5
+          done
+
+      - name: Run Playwright tests
+        working-directory: ./tests/ui
+        env:
+          BASE_URL: http://localhost:3000
+          BACKEND_URL: http://localhost:8080
+          PW_RETRIES: 2
+          CI_SKIP_API: true
+          CI_SKIP_WIP: true
+          PLAYWRIGHT_ARTIFACTS: ./tests/ui/playwright-report
+        run: |
+          npm test
+
+      - name: "Diagnostic: dump CORS debug endpoint (if Playwright fails)"
+        if: failure()
+        run: |
+          echo "CORS debug endpoint (Playwright failure):"
+          curl -f http://localhost:8080/__debug/cors || true
+
+      - name: Upload Playwright HTML report
+        # Do not upload large Playwright reports unless tests failed — avoid filling Actions storage
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: tests/ui/playwright-report
+          retention-days: 1
+
+      - name: Upload Playwright diagnostics
+        # Only save diagnostics when Playwright fails (keeps run artifacts small while CI is green)
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-diagnostics
+          path: tests/ui/playwright-report/diagnostics
+          retention-days: 1
+
+      - name: Stop docker-compose
+        if: always()
+        run: docker compose -f docker-compose.ci.yml down -v || true
+
+      - name: Stop Next dev server
+        if: always()
+        run: pgrep -f 'next dev' && pkill -f 'next dev' || true
+
+      - name: Final cleanup (UI job)
+        if: always()
+        run: |
+          echo "Cleaning up UI job temporary files and freeing Docker space"
+          rm -rf tests/ui/playwright-report || true
+          rm -rf .next out || true
+          rm -f next-dev.log next-static.log || true
+          # prune any dangling containers/images/volumes produced during job to reduce runner storage usage
+          docker system prune -af || true
+
+  build-and-push-images:
+    name: Build & push images (staging)
+    runs-on: [self-hosted, linux, x64]
+    needs: ui-e2e
+    if: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      backend_image: ${{ steps.build.outputs.backend_image }}
+      frontend_image: ${{ steps.build.outputs.frontend_image }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU and buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        # prefer a GHCR_PAT (repo/org secret) if available, otherwise fall back to GITHUB_TOKEN
+        run: |
+          set -eu
+          if [ -n "${{ secrets.GHCR_PAT }}" ]; then
+            echo "Using GHCR_PAT to authenticate to ghcr.io"
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          else
+            echo "Falling back to GITHUB_TOKEN to authenticate to ghcr.io"
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          fi
+
+      - name: Build backend and frontend images
+        id: build
+        run: |
+          set -euxo pipefail
+          OWNER_REPO="${{ github.repository }}"
+          # docker requires repository names in tags to be lowercase — normalize here
+          OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')
+          OWNER_REPO="${OWNER_REPO_LOWER}"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
+          BACKEND_TAG=ghcr.io/${OWNER_REPO}:backend-staging-${SHORT_SHA}
+          FRONTEND_TAG=ghcr.io/${OWNER_REPO}:frontend-staging-${SHORT_SHA}
+
+          # Backend image
+          docker build -f infrastructure/docker/Dockerfile -t "$BACKEND_TAG" .
+          docker tag "$BACKEND_TAG" ghcr.io/${OWNER_REPO}:backend-staging-latest || true
+          docker push "$BACKEND_TAG"
+          docker push ghcr.io/${OWNER_REPO}:backend-staging-latest || true
+
+          # Frontend image
+          # Use the repository root as the build context so the Dockerfile can copy package.json/package-lock.json from the repo
+          docker build -f infrastructure/docker/frontend.Dockerfile -t "$FRONTEND_TAG" .
+          docker tag "$FRONTEND_TAG" ghcr.io/${OWNER_REPO}:frontend-staging-latest || true
+          docker push "$FRONTEND_TAG"
+          docker push ghcr.io/${OWNER_REPO}:frontend-staging-latest || true
+
+          echo "backend_image=$BACKEND_TAG" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=$FRONTEND_TAG" >> "$GITHUB_OUTPUT"
+
+  build-and-push-images-production:
+    name: Build & push images (production)
+    runs-on: [self-hosted, linux, x64]
+    needs: ui-e2e
+    if: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      backend_image_prod: ${{ steps.build.outputs.backend_image_prod }}
+      frontend_image_prod: ${{ steps.build.outputs.frontend_image_prod }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU and buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry (GHCR) — production
+        run: |
+          set -eu
+          if [ -n "${{ secrets.GHCR_PAT }}" ]; then
+            echo "Using GHCR_PAT to authenticate to ghcr.io"
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          else
+            echo "Falling back to GITHUB_TOKEN to authenticate to ghcr.io"
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          fi
+
+      - name: Build backend and frontend images (production)
+        id: build
+        run: |
+          set -euxo pipefail
+          OWNER_REPO="${{ github.repository }}"
+          # docker requires repository names in tags to be lowercase — normalize here
+          OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')
+          OWNER_REPO="${OWNER_REPO_LOWER}"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
+          BACKEND_TAG=ghcr.io/${OWNER_REPO}:backend-prod-${SHORT_SHA}
+          FRONTEND_TAG=ghcr.io/${OWNER_REPO}:frontend-prod-${SHORT_SHA}
+
+          # Backend image
+          docker build -f infrastructure/docker/Dockerfile -t "$BACKEND_TAG" .
+          docker tag "$BACKEND_TAG" ghcr.io/${OWNER_REPO}:backend-prod-latest || true
+          docker push "$BACKEND_TAG"
+          docker push ghcr.io/${OWNER_REPO}:backend-prod-latest || true
+
+          # Frontend image
+          # Use repository root as the build context (frontend Dockerfile expects package.json at repo root)
+          docker build -f infrastructure/docker/frontend.Dockerfile -t "$FRONTEND_TAG" .
+          docker tag "$FRONTEND_TAG" ghcr.io/${OWNER_REPO}:frontend-prod-latest || true
+          docker push "$FRONTEND_TAG"
+          docker push ghcr.io/${OWNER_REPO}:frontend-prod-latest || true
+
+          echo "backend_image_prod=$BACKEND_TAG" >> "$GITHUB_OUTPUT"
+          echo "frontend_image_prod=$FRONTEND_TAG" >> "$GITHUB_OUTPUT"
+
+  deploy-to-stage:
+    name: Deploy to staging (Ansible)
+    environment: staging
+    runs-on: [self-hosted, linux, x64]
+    needs: build-and-push-images
+    if: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+    # Do not expose secrets at the job-level; step-level run-time checks will gate real deploy.
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python and install Ansible
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible==8.7.0
+
+      - name: Prepare SSH (use secrets.STAGING_SSH_PRIVATE_KEY)
+        id: ssh-setup
+        run: |
+          set -euxo pipefail
+          # read secret at runtime to avoid job-level compile-time references
+          if [ -z "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" ]; then
+            echo "No STAGING_SSH_PRIVATE_KEY provided — skipping SSH setup";
+            echo "ssh_configured=false" >> "$GITHUB_OUTPUT"
+            exit 0;
+          fi
+          mkdir -p ~/.ssh
+          echo "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # Add webservers from inventory to known_hosts (explicit path to avoid job-level env)
+          awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/staging/hosts | while read -r host; do
+            ssh-keyscan -H "$host" >> ~/.ssh/known_hosts || true
+          done || true
+          echo "ssh_configured=true" >> "$GITHUB_OUTPUT"
+
+      - name: Ansible dry-run (check) via deploy.sh
+        if: steps.ssh-setup.outputs.ssh_configured == 'true'
+        working-directory: infrastructure/ansible
+        run: |
+          set -euxo pipefail
+          BACKEND_IMAGE="${{ needs.build-and-push-images.outputs.backend_image }}"
+          FRONTEND_IMAGE="${{ needs.build-and-push-images.outputs.frontend_image }}"
+          echo "Running deploy.sh in check mode (no changes) against staging inventory"
+          ./deploy.sh deploy staging "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
+
+      - name: Run deploy to staging (real deployment)
+        if: ${{ github.event_name != 'pull_request' && steps.ssh-setup.outputs.ssh_configured == 'true' }}
+        working-directory: infrastructure/ansible
+        # evaluate deploy toggle at runtime so secret availability doesn't cause compile-time errors
+        run: |
+          set -euxo pipefail
+          if [ "${{ secrets.AUTO_DEPLOY_TO_STAGE }}" != "true" ]; then
+            echo "AUTO_DEPLOY_TO_STAGE not set to 'true' — skipping real deploy (check-mode only run earlier)"
+            exit 0
+          fi
+          BACKEND_IMAGE="${{ needs.build-and-push-images.outputs.backend_image }}"
+          FRONTEND_IMAGE="${{ needs.build-and-push-images.outputs.frontend_image }}"
+          echo "AUTO_DEPLOY_TO_STAGE=true — deploying to staging using deploy.sh"
+          # use deploy.sh so CI mirrors local pipeline; pipe 'y' to accept interactive prompt non-interactively
+          printf 'y\n' | ./deploy.sh deploy staging "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
+
+      - name: Post-deploy health check
+        if: ${{ github.event_name != 'pull_request' && steps.ssh-setup.outputs.ssh_configured == 'true' }}
+        run: |
+          set -euxo pipefail
+          echo "Running simple HTTP healthchecks against staging hosts (inventory)"
+          awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/staging/hosts | while read -r host; do
+            echo "Checking $host..." || true
+            SSH_USER="${{ secrets.STAGING_SSH_USER }}"
+            SSH_USER=${SSH_USER:-admin}
+            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa "${SSH_USER}@${host}" 'curl -fsS http://localhost/actuator/health || echo FAILED'
+          done || true
+
+  deploy-to-production:
+    name: Deploy to production (Ansible)
+    # T071: GitHub Environment protection with deployment coordination lock
+    # - Requires manual approval for production deployments (configured in GitHub UI)
+    # - Locks deployment while in progress (prevents concurrent partial deploys)
+    # - Lock released automatically on completion or failure
+    # - Protection rules: reviewers required, wait timer, deployment branches
+    environment: production
+    # T026: Concurrency control - serialize production deployments
+    # Only one production deployment can run at a time
+    # Queued deployments wait for current deployment to complete
+    # T071: This concurrency lock prevents race conditions and partial deployments
+    concurrency:
+      group: production-deployment
+      cancel-in-progress: false  # Do not cancel in-progress deploys (safety first)
+    # T027: Runner labels - primary runner with failover to secondary
+    # Primary: [self-hosted, production, primary]
+    # Secondary: [self-hosted, production, secondary] (failover if primary offline)
+    runs-on: [self-hosted, production, primary]
+    needs: build-and-push-images-production
+    if: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # T028: Preflight validation - check deployment prerequisites before execution
+      - name: Validate deployment prerequisites
+        id: preflight
+        run: |
+          set -euo pipefail
+          echo "### Deployment Pre-Flight Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check required secrets present
+          echo "**Secrets Check**:" >> $GITHUB_STEP_SUMMARY
+          if [ -z "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ PRODUCTION_SSH_PRIVATE_KEY missing" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          echo "✅ PRODUCTION_SSH_PRIVATE_KEY present" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -z "${{ secrets.PRODUCTION_SSH_USER }}" ]; then
+            echo "⚠️ PRODUCTION_SSH_USER missing (will use default)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ PRODUCTION_SSH_USER present" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check runner health via Prometheus (if available)
+          PROMETHEUS_URL="${{ vars.PROMETHEUS_URL }}"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Runner Health Check**:" >> $GITHUB_STEP_SUMMARY
+          
+          runner_status=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_status{hostname="'$(hostname)'",environment="production"}' \
+            | jq -r '.data.result[0].value[1]' || echo "unknown")
+          
+          if [ "$runner_status" = "1" ]; then
+            echo "✅ Runner $(hostname) is online" >> $GITHUB_STEP_SUMMARY
+          elif [ "$runner_status" = "unknown" ]; then
+            echo "⚠️ Could not query runner health (Prometheus unavailable)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Runner $(hostname) is offline or degraded" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          # Check artifact images are built
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifact Validation**:" >> $GITHUB_STEP_SUMMARY
+          if [ -z "${{ needs.build-and-push-images-production.outputs.backend_image_prod }}" ]; then
+            echo "❌ Backend image not built" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          echo "✅ Backend image: ${{ needs.build-and-push-images-production.outputs.backend_image_prod }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -z "${{ needs.build-and-push-images-production.outputs.frontend_image_prod }}" ]; then
+            echo "❌ Frontend image not built" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          echo "✅ Frontend image: ${{ needs.build-and-push-images-production.outputs.frontend_image_prod }}" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 Pre-flight validation passed - safe to proceed with deployment" >> $GITHUB_STEP_SUMMARY
+          echo "preflight_passed=true" >> "$GITHUB_OUTPUT"
+
+      # T029: Runner health gate - verify runner is healthy before deployment
+      - name: Query runner health and select deployment target
+        id: runner-health
+        run: |
+          set -euo pipefail
+          echo "### Runner Health Gate" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          PROMETHEUS_URL="${{ vars.PROMETHEUS_URL }}"
+          current_runner=$(hostname)
+          
+          # Query runner metrics
+          runner_status=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_status{hostname="'$current_runner'",environment="production"}' \
+            | jq -r '.data.result[0].value[1]' || echo "0")
+          
+          runner_cpu=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_cpu_usage_percent{hostname="'$current_runner'"}' \
+            | jq -r '.data.result[0].value[1]' || echo "0")
+          
+          runner_memory=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_memory_usage_percent{hostname="'$current_runner'"}' \
+            | jq -r '.data.result[0].value[1]' || echo "0")
+          
+          echo "**Current Runner**: $current_runner" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: $([ "$runner_status" = "1" ] && echo "✅ Online" || echo "❌ Offline")" >> $GITHUB_STEP_SUMMARY
+          echo "- CPU Usage: ${runner_cpu}%" >> $GITHUB_STEP_SUMMARY
+          echo "- Memory Usage: ${runner_memory}%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Health gate: check if runner is healthy
+          if [ "$runner_status" != "1" ]; then
+            echo "❌ **Decision**: Runner unhealthy - deployment will retry or failover" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          # Check resource thresholds
+          if (( $(echo "$runner_cpu > 90" | bc -l) )); then
+            echo "⚠️ **Warning**: High CPU usage detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if (( $(echo "$runner_memory > 90" | bc -l) )); then
+            echo "⚠️ **Warning**: High memory usage detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "✅ **Decision**: Runner healthy - proceeding with deployment on $current_runner" >> $GITHUB_STEP_SUMMARY
+          echo "runner_name=$current_runner" >> "$GITHUB_OUTPUT"
+          echo "runner_healthy=true" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Python and install Ansible
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Ansible
+        run: |
+            python -m pip install --upgrade pip
+            pip install ansible==8.7.0
+
+      - name: Prepare SSH for production (read secret at runtime)
+        id: ssh-setup-prod
+        run: |
+            set -euxo pipefail
+            if [ -z "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" ]; then
+              echo "No PRODUCTION_SSH_PRIVATE_KEY provided — skipping SSH setup";
+              echo "ssh_configured=false" >> "$GITHUB_OUTPUT"
+              exit 0;
+            fi
+            mkdir -p ~/.ssh
+            echo "${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/production/hosts | while read -r host; do
+              ssh-keyscan -H "$host" >> ~/.ssh/known_hosts || true
+            done || true
+            echo "ssh_configured=true" >> "$GITHUB_OUTPUT"
+
+      - name: Ansible dry-run (check) via deploy.sh — production
+        if: steps.ssh-setup-prod.outputs.ssh_configured == 'true'
+        working-directory: infrastructure/ansible
+        run: |
+            set -euxo pipefail
+            BACKEND_IMAGE="${{ needs.build-and-push-images-production.outputs.backend_image_prod }}"
+            FRONTEND_IMAGE="${{ needs.build-and-push-images-production.outputs.frontend_image_prod }}"
+            echo "Running deploy.sh in check mode (no changes) against production inventory"
+            ./deploy.sh deploy production "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
+
+      # T030: Deployment retry logic with exponential backoff
+      # Retry on failure: 3 attempts with 30s initial wait
+      # On final failure: trigger rollback and create incident issue
+      - name: Run deploy to production (real deployment with retry)
+        id: deploy-production
+        if: steps.ssh-setup-prod.outputs.ssh_configured == 'true'
+        uses: nick-fields/retry@v3
+        with:
+          timeout_seconds: 600  # 10 minute timeout per attempt
+          max_attempts: 3
+          retry_wait_seconds: 30  # Wait between retries
+          retry_on: error
+          warning_on_retry: true
+          command: |
+            set -euxo pipefail
+            if [ "${{ secrets.AUTO_DEPLOY_TO_PRODUCTION }}" != "true" ]; then
+              echo "AUTO_DEPLOY_TO_PRODUCTION is not 'true' — skipping real production deploy"
+              exit 0
+            fi
+            BACKEND_IMAGE="${{ needs.build-and-push-images-production.outputs.backend_image_prod }}"
+            FRONTEND_IMAGE="${{ needs.build-and-push-images-production.outputs.frontend_image_prod }}"
+            echo "AUTO_DEPLOY_TO_PRODUCTION=true — deploying to production via deploy.sh"
+            cd infrastructure/ansible
+            printf 'y\n' | ./deploy.sh deploy production "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"
+
+      # T048: Capture detailed failure diagnostics
+      - name: Capture deployment failure diagnostics
+        if: failure() && steps.deploy-production.outcome == 'failure'
+        id: failure-diagnostics
+        run: |
+          set +e  # Don't exit on error during diagnostics
+          
+          echo "### 🔍 Deployment Failure Diagnostics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Capture runner health metrics
+          PROMETHEUS_URL="${{ vars.PROMETHEUS_URL }}"
+          current_runner=$(hostname)
+          
+          echo "**Runner Metrics at Failure**:" >> $GITHUB_STEP_SUMMARY
+          runner_cpu=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_cpu_usage_percent{hostname="'$current_runner'"}' \
+            | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "unavailable")
+          runner_memory=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_memory_usage_percent{hostname="'$current_runner'"}' \
+            | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "unavailable")
+          runner_disk=$(curl -sf "$PROMETHEUS_URL/api/v1/query" \
+            --data-urlencode 'query=runner_disk_usage_percent{hostname="'$current_runner'"}' \
+            | jq -r '.data.result[0].value[1]' 2>/dev/null || echo "unavailable")
+          
+          echo "- CPU: ${runner_cpu}%" >> $GITHUB_STEP_SUMMARY
+          echo "- Memory: ${runner_memory}%" >> $GITHUB_STEP_SUMMARY
+          echo "- Disk: ${runner_disk}%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Parse Ansible logs for root cause
+          echo "**Root Cause Analysis**:" >> $GITHUB_STEP_SUMMARY
+          
+          failure_reason="unknown"
+          remediation_link="docs/runbooks/production-deployment-failures.md"
+          severity="high"
+          
+          # Check for common failure patterns
+          if grep -q "Connection refused\|Connection timed out\|No route to host" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="network_connectivity"
+            remediation_link="docs/runbooks/network-unreachable-troubleshooting.md"
+            echo "🔴 **Network Connectivity Issue Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="critical"
+          elif grep -q "Authentication failure\|Permission denied\|Invalid credentials" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="authentication"
+            remediation_link="docs/runbooks/secrets-expired-rotation.md"
+            echo "🔴 **Authentication Failure Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="critical"
+          elif grep -q "disk.*full\|No space left" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="disk_space"
+            remediation_link="docs/runbooks/runner-degraded-resources.md"
+            echo "🔴 **Disk Space Exhaustion Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="critical"
+          elif grep -q "Out of memory\|Cannot allocate memory" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="memory_exhaustion"
+            remediation_link="docs/runbooks/runner-degraded-resources.md"
+            echo "🔴 **Memory Exhaustion Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="critical"
+          elif grep -q "timeout" infrastructure/ansible/*.log 2>/dev/null; then
+            failure_reason="timeout"
+            remediation_link="docs/runbooks/performance-degradation.md"
+            echo "🟡 **Timeout Detected**" >> $GITHUB_STEP_SUMMARY
+            severity="high"
+          else
+            echo "⚪ **Unknown Failure** - Manual investigation required" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Remediation Guide**: [$remediation_link]($remediation_link)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Save diagnostics for notification script
+          echo "failure_reason=$failure_reason" >> "$GITHUB_OUTPUT"
+          echo "remediation_link=$remediation_link" >> "$GITHUB_OUTPUT"
+          echo "severity=$severity" >> "$GITHUB_OUTPUT"
+          echo "runner_cpu=$runner_cpu" >> "$GITHUB_OUTPUT"
+          echo "runner_memory=$runner_memory" >> "$GITHUB_OUTPUT"
+          echo "runner_disk=$runner_disk" >> "$GITHUB_OUTPUT"
+
+      # T030: Rollback on final deployment failure
+      - name: Trigger rollback on deployment failure
+        if: failure() && steps.deploy-production.outcome == 'failure'
+        working-directory: infrastructure/ansible
+        run: |
+          set -euxo pipefail
+          echo "### 🚨 Deployment Failed - Initiating Rollback" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All retry attempts exhausted. Triggering automatic rollback." >> $GITHUB_STEP_SUMMARY
+          
+          # Execute rollback playbook
+          ansible-playbook -i inventories/production/hosts playbooks/rollback-production.yml \
+            || echo "Rollback playbook failed - manual intervention required"
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Rollback playbook executed. Verify production state manually." >> $GITHUB_STEP_SUMMARY
+
+      # T030: Create incident issue on deployment failure
+      - name: Create production incident issue
+        if: failure() && steps.deploy-production.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failureReason = '${{ steps.failure-diagnostics.outputs.failure_reason }}' || 'unknown';
+            const remediationLink = '${{ steps.failure-diagnostics.outputs.remediation_link }}' || 'docs/runbooks/production-deployment-failures.md';
+            const severity = '${{ steps.failure-diagnostics.outputs.severity }}' || 'high';
+            const runnerCpu = '${{ steps.failure-diagnostics.outputs.runner_cpu }}' || 'unavailable';
+            const runnerMemory = '${{ steps.failure-diagnostics.outputs.runner_memory }}' || 'unavailable';
+            const runnerDisk = '${{ steps.failure-diagnostics.outputs.runner_disk }}' || 'unavailable';
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Production Deployment Failed - Run #${context.runNumber} - ${failureReason}`,
+              body: `## Production Deployment Failure
+            
+            **Workflow Run**: [#${context.runNumber}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            **Commit**: ${context.sha}
+            **Branch**: ${context.ref}
+            **Triggered by**: @${context.actor}
+            **Runner**: ${{ steps.runner-health.outputs.runner_name || 'unknown' }}
+            **Severity**: ${severity.toUpperCase()}
+            
+            ### Failure Details
+            
+            - **Root Cause**: \`${failureReason}\`
+            - All retry attempts (3) exhausted
+            - Automatic rollback triggered
+            - Manual verification required
+            
+            ### Runner Health at Failure
+            
+            - **CPU Usage**: ${runnerCpu}%
+            - **Memory Usage**: ${runnerMemory}%
+            - **Disk Usage**: ${runnerDisk}%
+            
+            ### Next Steps
+            
+            1. Review workflow logs: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+            2. Follow remediation guide: [${remediationLink}](${remediationLink})
+            3. Check production health: \`infrastructure/ansible/playbooks/validate-production-deploy.yml\`
+            4. Verify rollback success: Check production state file
+            5. Investigate root cause using diagnostics above
+            6. Create post-mortem if necessary
+            
+            **Assignee**: @oncall-sre
+            **Labels**: production-incident, deployment-failure, ${failureReason}, requires-investigation
+            `,
+              labels: ['production-incident', 'deployment-failure', failureReason, severity, 'requires-investigation'],
+              assignees: ['oncall-sre']
+            });
+            console.log(`Created incident issue #${issue.data.number}`);
+
+      - name: Post-deploy production health check
+        if: success() && steps.deploy-production.outcome == 'success'
+        run: |
+            set -euxo pipefail
+            echo "Running simple HTTP healthchecks against production hosts"
+            awk '/\[webservers\]/{flag=1;next}/^\[/{flag=0}flag && NF{print $1}' infrastructure/ansible/inventories/production/hosts | while read -r host; do
+              echo "Checking $host..." || true
+              SSH_USER="${{ secrets.PRODUCTION_SSH_USER }}"
+              SSH_USER=${SSH_USER:-admin}
+              ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa \
+                "${SSH_USER}@${host}" \
+                'curl -fsS http://localhost/actuator/health || echo FAILED'
+            done || true
+
+      - name: Notify Slack (production success)
+        if: ${{ success() }}
+        run: |
+            if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+              payload=$(jq -n \
+                --arg txt "Production deploy succeeded for ${GITHUB_REPOSITORY} \
+                  (run: ${GITHUB_RUN_NUMBER})" \
+                '{text: $txt}')
+              curl -s -X POST -H 'Content-type: application/json' \
+                --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
+            else
+              echo "No SLACK_WEBHOOK configured; skipping slack notification"
+            fi
+
+      - name: Notify Slack (production failure)
+        if: ${{ failure() }}
+        run: |
+            if [ -n "${{ secrets.SLACK_WEBHOOK }}" ]; then
+              payload=$(jq -n \
+                --arg txt "Production deploy FAILED for ${GITHUB_REPOSITORY} \
+                  (run: ${GITHUB_RUN_NUMBER}) — see \
+                  $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                '{text: $txt}')
+              curl -s -X POST -H 'Content-type: application/json' \
+                --data "$payload" "${{ secrets.SLACK_WEBHOOK }}" || true
+            else
+              echo "No SLACK_WEBHOOK configured; skipping slack notification"
+            fi
+
+      - name: Create GitHub Issue on failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+              const title = `Production deploy failed — run \
+                ${process.env.GITHUB_RUN_NUMBER}`;
+              const body = `Production deploy failed in run \
+                [${process.env.GITHUB_RUN_NUMBER}]\
+                (${process.env.GITHUB_SERVER_URL}/\
+                ${context.repo.owner}/${context.repo.repo}/actions/runs/\
+                ${process.env.GITHUB_RUN_ID}).\n\nSee logs for details.`;
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body
+              });

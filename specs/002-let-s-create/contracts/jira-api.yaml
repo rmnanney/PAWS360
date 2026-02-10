@@ -1,0 +1,834 @@
+openapi: 3.0.3
+info:
+  title: JIRA MCP Server API Contracts
+  description: API contracts for JIRA MCP Server integration with Atlassian JIRA REST API v3
+  version: 1.0.0
+  contact:
+    name: PGB Project Team
+
+servers:
+  - url: https://paw360.atlassian.net
+    description: PGB JIRA Instance
+
+security:
+  - apiKey: []
+
+paths:
+  /rest/api/3/project/PGB:
+    get:
+      summary: Get PGB Project Information
+      description: Retrieve detailed information about the PGB project including metadata and configuration
+      operationId: getProject
+      tags:
+        - Projects
+      responses:
+        '200':
+          description: Project information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /rest/api/3/search:
+    get:
+      summary: Search Work Items
+      description: Search for work items in the PGB project using JQL queries
+      operationId: searchIssues
+      tags:
+        - Issues
+      parameters:
+        - name: jql
+          in: query
+          description: JQL query string
+          required: true
+          schema:
+            type: string
+            example: "project = PGB AND issuetype = Story"
+        - name: fields
+          in: query
+          description: Comma-separated list of fields to return
+          schema:
+            type: string
+            example: "summary,description,status,assignee"
+        - name: startAt
+          in: query
+          description: Starting index for pagination
+          schema:
+            type: integer
+            default: 0
+        - name: maxResults
+          in: query
+          description: Maximum number of results to return
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /rest/api/3/issue:
+    post:
+      summary: Create Work Item
+      description: Create a new work item in the PGB project
+      operationId: createIssue
+      tags:
+        - Issues
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueCreate'
+      responses:
+        '201':
+          description: Work item created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /rest/api/3/issue/bulk:
+    post:
+      summary: Bulk Create Work Items
+      description: Create multiple work items in the PGB project in a single request
+      operationId: bulkCreateIssues
+      tags:
+        - Issues
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIssueCreate'
+      responses:
+        '201':
+          description: Work items created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkIssueResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /rest/api/3/issue/{issueIdOrKey}:
+    get:
+      summary: Get Work Item
+      description: Retrieve detailed information about a specific work item
+      operationId: getIssue
+      tags:
+        - Issues
+      parameters:
+        - name: issueIdOrKey
+          in: path
+          required: true
+          description: Issue ID or key (e.g., PGB-123)
+          schema:
+            type: string
+        - name: fields
+          in: query
+          description: Comma-separated list of fields to return
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Work item retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Issue'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update Work Item
+      description: Update an existing work item in the PGB project
+      operationId: updateIssue
+      tags:
+        - Issues
+      parameters:
+        - name: issueIdOrKey
+          in: path
+          required: true
+          description: Issue ID or key (e.g., PGB-123)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueUpdate'
+      responses:
+        '204':
+          description: Work item updated successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /rest/api/3/issue/{issueIdOrKey}/comment:
+    get:
+      summary: Get Work Item Comments
+      description: Retrieve comments for a specific work item
+      operationId: getIssueComments
+      tags:
+        - Comments
+      parameters:
+        - name: issueIdOrKey
+          in: path
+          required: true
+          description: Issue ID or key (e.g., PGB-123)
+          schema:
+            type: string
+        - name: startAt
+          in: query
+          description: Starting index for pagination
+          schema:
+            type: integer
+            default: 0
+        - name: maxResults
+          in: query
+          description: Maximum number of comments to return
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Comments retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comments'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Add Comment to Work Item
+      description: Add a new comment to a work item
+      operationId: addIssueComment
+      tags:
+        - Comments
+      parameters:
+        - name: issueIdOrKey
+          in: path
+          required: true
+          description: Issue ID or key (e.g., PGB-123)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreate'
+      responses:
+        '201':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /rest/api/3/user/search:
+    get:
+      summary: Search Users
+      description: Search for users in the JIRA instance
+      operationId: searchUsers
+      tags:
+        - Users
+      parameters:
+        - name: query
+          in: query
+          description: Search query for finding users
+          schema:
+            type: string
+        - name: maxResults
+          in: query
+          description: Maximum number of users to return
+          schema:
+            type: integer
+            default: 50
+            maximum: 1000
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: "JIRA API Token: Bearer {token}"
+
+  schemas:
+    Project:
+      type: object
+      required:
+        - id
+        - key
+        - name
+      properties:
+        id:
+          type: string
+          description: Unique project identifier
+        key:
+          type: string
+          description: Project key
+        name:
+          type: string
+          description: Human-readable project name
+        description:
+          type: string
+          description: Project description
+        projectTypeKey:
+          type: string
+          enum: [software, business, service_desk]
+        lead:
+          $ref: '#/components/schemas/User'
+        url:
+          type: string
+          format: uri
+
+    Issue:
+      type: object
+      required:
+        - id
+        - key
+        - fields
+      properties:
+        id:
+          type: string
+          description: Unique issue identifier
+        key:
+          type: string
+          description: Issue key (e.g., PGB-123)
+        fields:
+          $ref: '#/components/schemas/IssueFields'
+        self:
+          type: string
+          format: uri
+
+    IssueFields:
+      type: object
+      required:
+        - summary
+        - issuetype
+        - project
+        - status
+      properties:
+        summary:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        issuetype:
+          $ref: '#/components/schemas/IssueType'
+        project:
+          $ref: '#/components/schemas/ProjectReference'
+        priority:
+          $ref: '#/components/schemas/Priority'
+        status:
+          $ref: '#/components/schemas/Status'
+        assignee:
+          $ref: '#/components/schemas/User'
+        reporter:
+          $ref: '#/components/schemas/User'
+        creator:
+          $ref: '#/components/schemas/User'
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+        duedate:
+          type: string
+          format: date
+        labels:
+          type: array
+          items:
+            type: string
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/Component'
+        fixVersions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Version'
+        comment:
+          $ref: '#/components/schemas/Comments'
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+        subtasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/IssueReference'
+        parent:
+          $ref: '#/components/schemas/IssueReference'
+
+    IssueCreate:
+      type: object
+      required:
+        - fields
+      properties:
+        fields:
+          type: object
+          required:
+            - project
+            - summary
+            - issuetype
+          properties:
+            project:
+              type: object
+              required:
+                - key
+              properties:
+                key:
+                  type: string
+                  example: "PGB"
+            summary:
+              type: string
+              maxLength: 255
+            description:
+              type: string
+            issuetype:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  enum: [Epic, Story, Task, Bug, Subtask]
+            assignee:
+              type: object
+              properties:
+                name:
+                  type: string
+            priority:
+              type: object
+              properties:
+                name:
+                  type: string
+            labels:
+              type: array
+              items:
+                type: string
+            parent:
+              type: object
+              properties:
+                key:
+                  type: string
+
+    IssueUpdate:
+      type: object
+      required:
+        - fields
+      properties:
+        fields:
+          type: object
+          properties:
+            summary:
+              type: string
+              maxLength: 255
+            description:
+              type: string
+            assignee:
+              type: object
+              properties:
+                name:
+                  type: string
+            priority:
+              type: object
+              properties:
+                name:
+                  type: string
+            labels:
+              type: array
+              items:
+                type: string
+            status:
+              type: object
+              properties:
+                name:
+                  type: string
+
+    BulkIssueCreate:
+      type: object
+      required:
+        - issueUpdates
+      properties:
+        issueUpdates:
+          type: array
+          items:
+            $ref: '#/components/schemas/IssueCreate'
+          maxItems: 1000
+
+    BulkIssueResponse:
+      type: object
+      properties:
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkIssueError'
+
+    BulkIssueError:
+      type: object
+      properties:
+        issueIndex:
+          type: integer
+        errorMessages:
+          type: array
+          items:
+            type: string
+
+    SearchResults:
+      type: object
+      required:
+        - issues
+        - total
+      properties:
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+        total:
+          type: integer
+          description: Total number of issues matching the query
+        maxResults:
+          type: integer
+        startAt:
+          type: integer
+
+    User:
+      type: object
+      required:
+        - accountId
+        - displayName
+      properties:
+        accountId:
+          type: string
+        accountType:
+          type: string
+          enum: [atlassian, app, customer]
+        displayName:
+          type: string
+        emailAddress:
+          type: string
+          format: email
+        active:
+          type: boolean
+        timeZone:
+          type: string
+        locale:
+          type: string
+
+    Comment:
+      type: object
+      required:
+        - id
+        - body
+        - author
+        - created
+      properties:
+        id:
+          type: string
+        body:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+
+    CommentCreate:
+      type: object
+      required:
+        - body
+      properties:
+        body:
+          type: string
+
+    Comments:
+      type: object
+      required:
+        - comments
+        - total
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        total:
+          type: integer
+        maxResults:
+          type: integer
+        startAt:
+          type: integer
+
+    Attachment:
+      type: object
+      required:
+        - id
+        - filename
+        - content
+        - mimeType
+        - size
+        - author
+        - created
+      properties:
+        id:
+          type: string
+        filename:
+          type: string
+        content:
+          type: string
+          format: uri
+        mimeType:
+          type: string
+        size:
+          type: integer
+        author:
+          $ref: '#/components/schemas/User'
+        created:
+          type: string
+          format: date-time
+
+    IssueType:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        iconUrl:
+          type: string
+          format: uri
+        subtask:
+          type: boolean
+
+    Priority:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        iconUrl:
+          type: string
+          format: uri
+
+    Status:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        iconUrl:
+          type: string
+          format: uri
+        statusCategory:
+          $ref: '#/components/schemas/StatusCategory'
+
+    StatusCategory:
+      type: object
+      required:
+        - id
+        - key
+        - name
+      properties:
+        id:
+          type: integer
+        key:
+          type: string
+        name:
+          type: string
+        colorName:
+          type: string
+
+    Component:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+
+    Version:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        archived:
+          type: boolean
+        released:
+          type: boolean
+
+    ProjectReference:
+      type: object
+      required:
+        - key
+      properties:
+        key:
+          type: string
+          example: "PGB"
+
+    IssueReference:
+      type: object
+      required:
+        - key
+      properties:
+        key:
+          type: string
+          example: "PGB-123"
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorMessages:
+                type: array
+                items:
+                  type: string
+              errors:
+                type: object
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Unauthorized"
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Forbidden"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Not Found"
+
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Number of seconds to wait before retrying
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Rate limit exceeded"

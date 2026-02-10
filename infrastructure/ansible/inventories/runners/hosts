@@ -1,0 +1,24 @@
+# GitHub Runner Inventory
+# Hosts for GitHub Actions Runner deployment
+
+[github_runners:children]
+github_runners_staging
+github_runners_production
+
+[github_runners_staging]
+dell-r640-01-staging ansible_host=192.168.0.51 ansible_user=ryan runner_name=dell-r640-01-runner runner_labels='["self-hosted","Linux","X64","staging","primary"]' environment=staging authorized_for_prod=false
+
+[github_runners_production]
+# Using dell-r640-01 in dual-role capacity for both staging and production
+# Runner has labels for both environments to handle production deployments
+dell-r640-01-production ansible_host=192.168.0.51 ansible_user=ryan runner_name=dell-r640-01-runner runner_labels='["self-hosted","Linux","X64","staging","primary","production","secondary"]' environment=production authorized_for_prod=true
+
+[webservers:children]
+github_runners
+
+[github_runners:vars]
+ansible_python_interpreter=/usr/bin/python3
+runner_exporter_port=9101
+prometheus_host=192.168.0.200
+github_repository=rmnanney/PAWS360
+runner_work_dir=/opt/actions-runner

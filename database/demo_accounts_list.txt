@@ -1,0 +1,67 @@
+PAWS360 Demo Accounts for Presentation
+========================================
+
+All accounts use password: "password"
+
+Account List:
+-------------
+1.  alex.martinez@uwm.edu      (901234567) - Freshman, Computer Science, 3.25 GPA
+2.  emma.thompson@uwm.edu      (902345678) - Freshman, Psychology, 3.75 GPA
+3.  jordan.lee@uwm.edu         (903456789) - Freshman, Computer Science, 3.50 GPA
+4.  sophia.anderson@uwm.edu    (904567890) - Freshman, Psychology, 3.90 GPA
+5.  marcus.washington@uwm.edu  (905678901) - Freshman, Mathematical Sciences, 3.40 GPA
+6.  isabella.chen@uwm.edu      (906789012) - Sophomore, Biological Sciences, 3.90 GPA
+7.  ryan.oconnor@uwm.edu       (907890123) - Sophomore, English, 3.15 GPA
+8.  mia.patel@uwm.edu          (908901234) - Sophomore, Chemistry/Biochemistry, 3.25 GPA
+9.  carlos.rodriguez@uwm.edu   (909012345) - Sophomore, Mechanical Engineering, 3.15 GPA
+10. olivia.miller@uwm.edu      (910123456) - Sophomore, Nursing, 3.60 GPA
+11. ethan.jackson@uwm.edu      (911234567) - Junior, Mathematical Sciences, 3.50 GPA
+12. ava.kim@uwm.edu            (912345678) - Junior, Biological Sciences, 3.75 GPA
+13. daniel.garcia@uwm.edu      (913456789) - Junior, Computer Science, 3.40 GPA
+14. grace.taylor@uwm.edu       (914567890) - Junior, Chemistry/Biochemistry, 3.75 GPA
+15. nathan.brown@uwm.edu       (915678901) - Junior, Economics, 3.60 GPA
+16. lily.nguyen@uwm.edu        (916789012) - Senior, Art & Design, 3.90 GPA
+17. tyler.harris@uwm.edu       (917890123) - Senior, English, 3.40 GPA
+18. zoe.williams@uwm.edu       (918901234) - Senior, Art & Design, 3.15 GPA
+19. lucas.moore@uwm.edu        (919012345) - Senior, Mechanical Engineering, 3.50 GPA
+20. hannah.lopez@uwm.edu       (920123456) - Senior, Nursing, 3.25 GPA
+
+Quick Test Commands:
+-------------------
+# Login as a student
+curl -X POST http://localhost:8086/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alex.martinez@uwm.edu","password":"password"}'
+
+# Search for courses
+curl http://localhost:8086/courses
+
+# Check student details
+SELECT * FROM student WHERE campus_id = '901234567';
+
+Notes for Presentation:
+-----------------------
+• Diverse mix of departments (CS, Psychology, Engineering, Nursing, etc.)
+• Range of GPAs (3.15 - 3.90) for realistic demo
+• All class standings represented (Freshman through Senior)
+• Varied ethnicities and nationalities for inclusive demo
+• 4,708 courses available across 28 departments
+• 10,852 course sections available for enrollment
+
+Backend Status:
+---------------
+• Spring Boot running on: http://localhost:8086
+• Frontend running on: http://localhost:3000
+• Database: PostgreSQL in Docker (paws360-postgres)
+• All search filters working (open seats, time range, days of week)
+
+Test Scenarios for Presentation:
+--------------------------------
+1. Login Demo: Use alex.martinez@uwm.edu to show authentication
+2. Course Search: Search for COMPSCI courses (66 available)
+3. Advanced Filters: 
+   - Show only open classes
+   - Filter by time (e.g., 9:00 AM - 3:00 PM)
+   - Filter by days (e.g., Monday/Wednesday/Friday)
+4. Student Dashboard: Show different students with different majors
+5. Multi-user Demo: Login as different students in different tabs

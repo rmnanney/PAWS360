@@ -1,0 +1,226 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: {{ promtail_data_dir }}/positions.yaml
+
+clients:
+  - url: {{ loki_url }}/loki/api/v1/push
+    batchwait: 1s
+    batchsize: 1048576
+    timeout: 10s
+    backoff_config:
+      min_period: 500ms
+      max_period: 5m
+      max_retries: 10
+
+scrape_configs:
+  # GitHub Actions Runner logs from systemd journal
+  - job_name: systemd-journal
+    journal:
+      max_age: 12h
+      path: /var/log/journal
+      labels:
+        job: systemd-journal
+        hostname: {{ ansible_hostname }}
+        environment: production
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: 'unit'
+      - source_labels: ['__journal__hostname']
+        target_label: 'hostname'
+      - source_labels: ['__journal_priority_keyword']
+        target_label: 'level'
+    pipeline_stages:
+      # Extract log level
+      - match:
+          selector: '{unit=~"actions.runner.*"}'
+          stages:
+            - regex:
+                expression: '(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d+) \[(?P<level>\w+)\]'
+            - labels:
+                level:
+      
+      # Parse runner job information
+      - match:
+          selector: '{unit=~"actions.runner.*"}'
+          stages:
+            - regex:
+                expression: 'Running job: (?P<job_name>.*)'
+            - labels:
+                job_name:
+      
+      # Extract workflow information
+      - match:
+          selector: '{unit=~"actions.runner.*"}'
+          stages:
+            - regex:
+                expression: 'Repository: (?P<repo>.*)'
+            - labels:
+                repo:
+  
+  # System logs
+  - job_name: system-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: system-logs
+          hostname: {{ ansible_hostname }}
+          environment: production
+          __path__: /var/log/syslog
+    
+    pipeline_stages:
+      # Parse syslog format
+      - regex:
+          expression: '^(?P<timestamp>\w+\s+\d+\s+\d+:\d+:\d+) (?P<hostname>\S+) (?P<process>\S+?)(\[(?P<pid>\d+)\])?: (?P<message>.*)'
+      
+      - timestamp:
+          source: timestamp
+          format: 'Jan _2 15:04:05'
+      
+      - labels:
+          process:
+          pid:
+      
+      # Detect error severity
+      - match:
+          selector: '{job="system-logs"}'
+          stages:
+            - regex:
+                expression: '(?i)(error|fail|critical|fatal)'
+            - labels:
+                severity: error
+  
+  # Runner application logs
+  - job_name: runner-diag-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: runner-diagnostics
+          hostname: {{ ansible_hostname }}
+          environment: production
+          __path__: /home/*/actions-runner/_diag/*.log
+    
+    pipeline_stages:
+      # Extract timestamp and level
+      - regex:
+          expression: '^\[(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z)\s+(?P<level>\w+)\]'
+      
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05Z'
+      
+      - labels:
+          level:
+  
+  # Docker container logs (if applicable)
+  - job_name: docker-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: docker
+          hostname: {{ ansible_hostname }}
+          environment: production
+          __path__: /var/lib/docker/containers/*/*.log
+    
+    pipeline_stages:
+      # Parse Docker JSON logs
+      - json:
+          expressions:
+            log: log
+            stream: stream
+            time: time
+      
+      - timestamp:
+          source: time
+          format: RFC3339Nano
+      
+      - labels:
+          stream:
+      
+      - output:
+          source: log
+  
+  # Authentication logs
+  - job_name: auth-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: auth
+          hostname: {{ ansible_hostname }}
+          environment: production
+          __path__: /var/log/auth.log
+    
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\w+\s+\d+\s+\d+:\d+:\d+) (?P<hostname>\S+) (?P<process>\S+?)(\[(?P<pid>\d+)\])?: (?P<message>.*)'
+      
+      - timestamp:
+          source: timestamp
+          format: 'Jan _2 15:04:05'
+      
+      - labels:
+          process:
+      
+      # Detect failed authentication
+      - match:
+          selector: '{job="auth"}'
+          stages:
+            - regex:
+                expression: '(?i)(failed|failure|invalid|denied)'
+            - labels:
+                auth_status: failed
+  
+  # Kernel logs
+  - job_name: kernel-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: kernel
+          hostname: {{ ansible_hostname }}
+          environment: production
+          __path__: /var/log/kern.log
+    
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\w+\s+\d+\s+\d+:\d+:\d+) (?P<hostname>\S+) kernel: \[(?P<uptime>[\d.]+)\] (?P<message>.*)'
+      
+      - timestamp:
+          source: timestamp
+          format: 'Jan _2 15:04:05'
+      
+      # Detect OOM events
+      - match:
+          selector: '{job="kernel"}'
+          stages:
+            - regex:
+                expression: 'Out of memory'
+            - labels:
+                event_type: oom_kill
+      
+      # Detect network errors
+      - match:
+          selector: '{job="kernel"}'
+          stages:
+            - regex:
+                expression: '(?i)(link down|network unreachable)'
+            - labels:
+                event_type: network_error
+
+# Limits and resource management
+limits_config:
+  # Limit concurrent streams
+  max_streams_per_user: 10000
+  # Limit entries per query
+  max_entries_limit_per_query: 5000
+
+# Target management
+target_config:
+  sync_period: 10s

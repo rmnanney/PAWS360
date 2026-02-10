@@ -1,0 +1,59 @@
+---
+- src: community.general
+  version: "*"
+---
+# Ansible Galaxy Requirements
+# External roles and collections for AdminLTE deployment
+
+collections:
+  - name: ansible.posix
+    version: ">=1.4.0"
+  - name: community.general
+    version: ">=5.0.0"
+  - name: community.postgresql
+    version: ">=2.2.0"
+  - name: community.docker
+    version: ">=3.0.0"
+  - name: community.crypto
+    version: ">=2.5.0"
+
+roles:
+  # Infrastructure roles
+  - name: geerlingguy.docker
+    version: "6.1.0"
+  - name: geerlingguy.nginx
+    version: "2.8.0"
+  - name: geerlingguy.postgresql
+    version: "3.3.0"
+  - name: geerlingguy.redis
+    version: "1.7.0"
+  - name: geerlingguy.java
+    version: "2.2.0"
+  - name: geerlingguy.nodejs
+    version: "6.1.1"
+
+  # Security and SSL
+  - name: geerlingguy.certbot
+    version: "4.1.0"
+  - name: geerlingguy.firewall
+    version: "2.5.0"
+
+  # Monitoring and observability
+  - name: cloudalchemy.prometheus
+    version: "2.17.0"
+  - name: cloudalchemy.grafana
+    version: "0.18.0"
+  - name: cloudalchemy.node_exporter
+    version: "2.0.0"
+
+  # System management
+  - name: geerlingguy.pip
+    version: "2.2.0"
+  - name: geerlingguy.swap
+    version: "1.0.0"
+  - name: geerlingguy.ntp
+    version: "2.1.0"
+
+  # High availability
+  - name: evrardjp.keepalived
+    version: "8.2.0"

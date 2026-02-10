@@ -1,0 +1,12 @@
+/var/log/adminlte/auth-service/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 0644 {{ adminlte_user | default('adminlte') }} {{ adminlte_user | default('adminlte') }}
+    postrotate
+        systemctl reload adminlte-auth-service
+    endscript
+}

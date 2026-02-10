@@ -1,0 +1,508 @@
+{
+  "info": {
+    "_postman_id": "9e2e3b35-4c05-4c3f-9b92-5f3f9c3e3b42",
+    "name": "PAWS360_UWM_Seed",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Lightweight seed collection for PAWS360: creates core users, catalog, enrollment, academics, advising, and finances."
+  },
+  "item": [
+    {
+      "name": "1) Users",
+      "item": [
+        {
+          "name": "Create Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Sally\",\n  \"middlename\": \"T\",\n  \"lastname\": \"Panther\",\n  \"dob\": \"2003-09-01\",\n  \"ssn\": \"123456789\",\n  \"ethnicity\": \"ASIAN\",\n  \"gender\": \"FEMALE\",\n  \"nationality\": \"UNITED_STATES\",\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\",\n  \"addresses\": [\n    {\n      \"address_type\": \"HOME\",\n      \"street_address_1\": \"3200 N Cramer St\",\n      \"street_address_2\": \"\",\n      \"po_box\": null,\n      \"city\": \"Milwaukee\",\n      \"us_states\": \"WISCONSIN\",\n      \"zipcode\": \"53211\"\n    }\n  ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145551200\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users/create", "host": ["{{baseUrl}}"], "path": ["users", "create"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('studentUserId', res.user_id);",
+                  "  pm.environment.set('studentEmail', res.email);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Advisor",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Alex\",\n  \"middlename\": \"R\",\n  \"lastname\": \"Advisor\",\n  \"dob\": \"1980-05-10\",\n  \"ssn\": \"223456789\",\n  \"ethnicity\": \"WHITE\",\n  \"gender\": \"MALE\",\n  \"nationality\": \"UNITED_STATES\",\n  \"email\": \"{{advisorEmail}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"addresses\": [\n    {\n      \"address_type\": \"HOME\",\n      \"street_address_1\": \"200 Advising Hall\",\n      \"street_address_2\": \"\",\n      \"po_box\": null,\n      \"city\": \"Milwaukee\",\n      \"us_states\": \"WISCONSIN\",\n      \"zipcode\": \"53211\"\n    }\n  ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145552200\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"ADVISOR\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users/create", "host": ["{{baseUrl}}"], "path": ["users", "create"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('advisorUserId', res.user_id);",
+                  "  pm.environment.set('advisorEmail', res.email);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Instructor",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Ivy\",\n  \"middlename\": \"Q\",\n  \"lastname\": \"Instructor\",\n  \"dob\": \"1975-03-12\",\n  \"ssn\": \"323456789\",\n  \"ethnicity\": \"BLACK_OR_AFRICAN_AMERICAN\",\n  \"gender\": \"FEMALE\",\n  \"nationality\": \"UNITED_STATES\",\n  \"email\": \"{{instructorEmail}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"addresses\": [\n    {\n      \"address_type\": \"HOME\",\n      \"street_address_1\": \"400 EMS Building\",\n      \"street_address_2\": \"\",\n      \"po_box\": null,\n      \"city\": \"Milwaukee\",\n      \"us_states\": \"WISCONSIN\",\n      \"zipcode\": \"53211\"\n    }\n  ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145553200\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"INSTRUCTOR\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users/create", "host": ["{{baseUrl}}"], "path": ["users", "create"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('instructorUserId', res.user_id);",
+                  "  pm.environment.set('instructorEmail', res.email);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create TA",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Tara\",\n  \"middlename\": \"L\",\n  \"lastname\": \"Assistant\",\n  \"dob\": \"1996-07-15\",\n  \"ssn\": \"423456789\",\n  \"ethnicity\": \"HISPANIC_OR_LATINO\",\n  \"gender\": \"OTHER\",\n  \"nationality\": \"UNITED_STATES\",\n  \"email\": \"{{taEmail}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"addresses\": [\n    {\n      \"address_type\": \"HOME\",\n      \"street_address_1\": \"500 Bolton Hall\",\n      \"street_address_2\": \"\",\n      \"po_box\": null,\n      \"city\": \"Milwaukee\",\n      \"us_states\": \"WISCONSIN\",\n      \"zipcode\": \"53211\"\n    }\n  ],\n  \"countryCode\": \"US\",\n  \"phone\": \"4145554200\",\n  \"status\": \"ACTIVE\",\n  \"role\": \"TA\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users/create", "host": ["{{baseUrl}}"], "path": ["users", "create"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('taUserId', res.user_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resolve Student Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users/student-id?email={{studentEmail}}", "host": ["{{baseUrl}}"], "path": ["users", "student-id"], "query": [{ "key": "email", "value": "{{studentEmail}}" }] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('studentId', res.student_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2) Catalog & Sections",
+      "item": [
+        {
+          "name": "Create Building",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"EMS\",\n  \"name\": \"Engineering & Math Sciences\",\n  \"campus\": \"MAIN\",\n  \"accessible\": true,\n  \"notes\": \"Central STEM building\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses/buildings", "host": ["{{baseUrl}}"], "path": ["courses", "buildings"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('buildingId', res.buildingId || res.id || res.building_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Classroom",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"buildingId\": {{buildingId}},\n  \"roomNumber\": \"E120\",\n  \"capacity\": 40,\n  \"roomType\": \"LECTURE_HALL\",\n  \"features\": [\"Projector\", \"HDMI\", \"Whiteboard\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses/classrooms", "host": ["{{baseUrl}}"], "path": ["courses", "classrooms"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('classroomId', res.classroomId || res.id || res.classroom_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseCode\": \"COMP SCI 351\",\n  \"courseName\": \"Data Structures and Algorithms\",\n  \"courseDescription\": \"Core algorithms and data structures with practical labs.\",\n  \"department\": \"COMPUTER_SCIENCE\",\n  \"courseLevel\": \"UNDERGRAD\",\n  \"creditHours\": 3,\n  \"deliveryMethod\": \"IN_PERSON\",\n  \"courseCost\": 1200,\n  \"active\": true,\n  \"catalogMaxEnrollment\": 120,\n  \"academicYear\": 2025,\n  \"term\": \"Fall\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses", "host": ["{{baseUrl}}"], "path": ["courses"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('courseId', res.courseId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Lecture Section",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": null,\n  \"courseId\": {{courseId}},\n  \"sectionCode\": \"201\",\n  \"sectionType\": \"LECTURE\",\n  \"parentSectionId\": null,\n  \"buildingId\": {{buildingId}},\n  \"classroomId\": {{classroomId}},\n  \"meetingDays\": [\"MONDAY\", \"WEDNESDAY\"],\n  \"startTime\": \"10:00\",\n  \"endTime\": \"11:15\",\n  \"maxEnrollment\": 40,\n  \"waitlistCapacity\": 10,\n  \"autoEnrollWaitlist\": true,\n  \"consentRequired\": false,\n  \"term\": \"Fall\",\n  \"academicYear\": 2025\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses/sections", "host": ["{{baseUrl}}"], "path": ["courses", "sections"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('lectureSectionId', res.sectionId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign Instructor to Section",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": {{lectureSectionId}},\n  \"userId\": {{instructorUserId}},\n  \"role\": \"INSTRUCTOR\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/courses/sections/assign-staff", "host": ["{{baseUrl}}"], "path": ["courses", "sections", "assign-staff"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3) Academics",
+      "item": [
+        {
+          "name": "Create Degree Program",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"BSCS\",\n  \"name\": \"B.S. Computer Science\",\n  \"totalCreditsRequired\": 120\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/academics/admin/programs", "host": ["{{baseUrl}}"], "path": ["academics", "admin", "programs"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('degreeId', res.id || res.degreeId || res.degree_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Required Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{courseId}},\n  \"required\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/academics/admin/programs/{{degreeId}}/requirements", "host": ["{{baseUrl}}"], "path": ["academics", "admin", "programs", "{{degreeId}}", "requirements"] }
+          }
+        },
+        {
+          "name": "Assign Program to Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"degreeId\": {{degreeId}},\n  \"expectedGradTerm\": \"Spring\",\n  \"expectedGradYear\": 2027,\n  \"primary\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/academics/admin/students/{{studentId}}/program", "host": ["{{baseUrl}}"], "path": ["academics", "admin", "students", "{{studentId}}", "program"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4) Enrollment",
+      "item": [
+        {
+          "name": "Enroll Student in Lecture",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{studentId}},\n  \"lectureSectionId\": {{lectureSectionId}},\n  \"labSectionId\": null\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/enrollments/enroll", "host": ["{{baseUrl}}"], "path": ["enrollments", "enroll"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const res = pm.response.json();",
+                  "  pm.environment.set('enrollmentId', res.enrollmentId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finalize Grade",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": {{studentId}},\n  \"lectureSectionId\": {{lectureSectionId}},\n  \"finalLetter\": \"A\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/enrollments/finalize", "host": ["{{baseUrl}}"], "path": ["enrollments", "finalize"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5) Advising",
+      "item": [
+        {
+          "name": "Resolve Advisor Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/advising/advisors", "host": ["{{baseUrl}}"], "path": ["advising", "advisors"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const list = pm.response.json();",
+                  "const email = pm.environment.get('advisorEmail');",
+                  "const found = (list || []).find(a => a.email === email);",
+                  "if (found) { pm.environment.set('advisorId', found.advisorId); }",
+                  "else { pm.test('advisor present', () => pm.expect(found).to.exist); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign Primary Advisor",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisorId}},\n  \"primary\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/advising/admin/students/{{studentId}}/advisor", "host": ["{{baseUrl}}"], "path": ["advising", "admin", "students", "{{studentId}}", "advisor"] }
+          }
+        },
+        {
+          "name": "Create Advising Appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisorId}},\n  \"scheduledAt\": \"2025-12-01T15:00:00Z\",\n  \"type\": \"ACADEMIC_ADVISING\",\n  \"location\": \"EMS 200\",\n  \"status\": \"CONFIRMED\",\n  \"notes\": \"Initial degree planning\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/advising/admin/students/{{studentId}}/appointments", "host": ["{{baseUrl}}"], "path": ["advising", "admin", "students", "{{studentId}}", "appointments"] }
+          }
+        },
+        {
+          "name": "Send Advisor Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"advisorId\": {{advisorId}},\n  \"content\": \"Welcome to UWM! Let's plan your first semester.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/advising/student/{{studentId}}/messages", "host": ["{{baseUrl}}"], "path": ["advising", "student", "{{studentId}}", "messages"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6) Finances",
+      "item": [
+        {
+          "name": "Upsert Financial Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountBalance\": 0,\n  \"chargesDue\": 0,\n  \"pendingAid\": 0,\n  \"lastPaymentAmount\": 0,\n  \"lastPaymentAt\": null,\n  \"dueDate\": \"2025-12-31\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/finances/admin/students/{{studentId}}/account", "host": ["{{baseUrl}}"], "path": ["finances", "admin", "students", "{{studentId}}", "account"] }
+          }
+        },
+        {
+          "name": "Seed Charges",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tuitionAmount\": 4500,\n  \"feesAmount\": 350,\n  \"dueDate\": \"2025-10-01\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/finances/admin/students/{{studentId}}/charges/seed", "host": ["{{baseUrl}}"], "path": ["finances", "admin", "students", "{{studentId}}", "charges", "seed"] }
+          }
+        },
+        {
+          "name": "Create Aid Award",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"GRANT\",\n  \"description\": \"Panther Scholarship\",\n  \"amountOffered\": 2000,\n  \"amountAccepted\": 2000,\n  \"amountDisbursed\": 1000,\n  \"status\": \"ACTIVE\",\n  \"term\": \"Fall\",\n  \"academicYear\": 2025\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/finances/admin/students/{{studentId}}/aid", "host": ["{{baseUrl}}"], "path": ["finances", "admin", "students", "{{studentId}}", "aid"] }
+          }
+        },
+        {
+          "name": "Create Payment Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"4-Month Installment\",\n  \"totalAmount\": 2000,\n  \"monthlyPayment\": 500,\n  \"remainingPayments\": 4,\n  \"nextPaymentDate\": \"2025-10-15\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/finances/admin/students/{{studentId}}/payment-plans", "host": ["{{baseUrl}}"], "path": ["finances", "admin", "students", "{{studentId}}", "payment-plans"] }
+          }
+        }
+      ]
+    }
+  ]
+}

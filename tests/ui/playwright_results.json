@@ -1,0 +1,3257 @@
+[global-setup] Starting authentication setup...
+{
+  "config": {
+    "configFile": "/home/ryan/repos/PAWS360/tests/ui/playwright.config.ts",
+    "rootDir": "/home/ryan/repos/PAWS360/tests/ui/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": "/home/ryan/repos/PAWS360/tests/ui/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/home/ryan/repos/PAWS360/tests/ui/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/ryan/repos/PAWS360/tests/ui/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "api.spec.ts",
+      "file": "api.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PAWS360 API Integration",
+          "file": "api.spec.ts",
+          "line": 8,
+          "column": 1,
+          "specs": [
+            {
+              "title": "should verify API endpoints are accessible",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 149,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n    at /home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts:12:34",
+                        "location": {
+                          "file": "/home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts",
+                          "column": 34,
+                          "line": 12
+                        },
+                        "snippet": "  10 |     // Test classes API\n  11 |     const classesResponse = await page.request.get('/api/classes/');\n> 12 |     expect(classesResponse.ok()).toBeTruthy();\n     |                                  ^\n  13 |     const classesData = await classesResponse.json();\n  14 |     expect(classesData.status).toBe('classes-api-mock');\n  15 |     expect(Array.isArray(classesData.classes)).toBeTruthy();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts",
+                            "column": 34,
+                            "line": 12
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n  10 |     // Test classes API\n  11 |     const classesResponse = await page.request.get('/api/classes/');\n> 12 |     expect(classesResponse.ok()).toBeTruthy();\n     |                                  ^\n  13 |     const classesData = await classesResponse.json();\n  14 |     expect(classesData.status).toBe('classes-api-mock');\n  15 |     expect(Array.isArray(classesData.classes)).toBeTruthy();\n    at /home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts:12:34"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-21T21:21:33.757Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/api-PAWS360-API-Integratio-4e7b2-PI-endpoints-are-accessible-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/api-PAWS360-API-Integratio-4e7b2-PI-endpoints-are-accessible-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts",
+                        "column": 34,
+                        "line": 12
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1ea1b1599cbc08f16936-5693e955e6a21523ce72",
+              "file": "api.spec.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "should handle API errors gracefully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 152,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m500\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n    at /home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts:35:36",
+                        "location": {
+                          "file": "/home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts",
+                          "column": 36,
+                          "line": 35
+                        },
+                        "snippet": "  33 |     // Test non-existent endpoint - this mock app returns HTML for all endpoints\n  34 |     const errorResponse = await page.request.get('/api/nonexistent/');\n> 35 |     expect(errorResponse.status()).toBe(200); // Mock app returns 200 for all requests\n     |                                    ^\n  36 |\n  37 |     // The response is HTML, not JSON, so we check for HTML content\n  38 |     const responseText = await errorResponse.text();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts",
+                            "column": 36,
+                            "line": 35
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n\n  33 |     // Test non-existent endpoint - this mock app returns HTML for all endpoints\n  34 |     const errorResponse = await page.request.get('/api/nonexistent/');\n> 35 |     expect(errorResponse.status()).toBe(200); // Mock app returns 200 for all requests\n     |                                    ^\n  36 |\n  37 |     // The response is HTML, not JSON, so we check for HTML content\n  38 |     const responseText = await errorResponse.text();\n    at /home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts:35:36"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-21T21:21:34.358Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/api-PAWS360-API-Integratio-5f6e7-andle-API-errors-gracefully-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/api-PAWS360-API-Integratio-5f6e7-andle-API-errors-gracefully-chromium/video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/ryan/repos/PAWS360/tests/ui/tests/api.spec.ts",
+                        "column": 36,
+                        "line": 35
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "1ea1b1599cbc08f16936-e740dcfe5dfd54182055",
+              "file": "api.spec.ts",
+              "line": 32,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "cors.spec.ts",
+      "file": "cors.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "CORS preflight",
+          "file": "cors.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should respond to preflight for POST /auth/login with proper headers",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 22,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m403\u001b[39m\nReceived array: \u001b[31m[200, 204]\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m403\u001b[39m\nReceived array: \u001b[31m[200, 204]\u001b[39m\n    at /home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts:21:24",
+                        "location": {
+                          "file": "/home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts",
+                          "column": 24,
+                          "line": 21
+                        },
+                        "snippet": "  19 |     });\n  20 |\n> 21 |     expect([200, 204]).toContain(response.status());\n     |                        ^\n  22 |     const allowOrigin = response.headers()['access-control-allow-origin'];\n  23 |     const allowMethods = response.headers()['access-control-allow-methods'];\n  24 |     const allowCreds = response.headers()['access-control-allow-credentials'];"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts",
+                            "column": 24,
+                            "line": 21
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m403\u001b[39m\nReceived array: \u001b[31m[200, 204]\u001b[39m\n\n  19 |     });\n  20 |\n> 21 |     expect([200, 204]).toContain(response.status());\n     |                        ^\n  22 |     const allowOrigin = response.headers()['access-control-allow-origin'];\n  23 |     const allowMethods = response.headers()['access-control-allow-methods'];\n  24 |     const allowCreds = response.headers()['access-control-allow-credentials'];\n    at /home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts:21:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-21T21:21:34.966Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "/home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts",
+                        "column": 24,
+                        "line": 21
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "af360639a9df597c10b4-7fdb66d8a06cc1b5686c",
+              "file": "cors.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "should respond to preflight for POST /login with proper headers",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 22,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m403\u001b[39m\nReceived array: \u001b[31m[200, 204]\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m403\u001b[39m\nReceived array: \u001b[31m[200, 204]\u001b[39m\n    at /home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts:45:24",
+                        "location": {
+                          "file": "/home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts",
+                          "column": 24,
+                          "line": 45
+                        },
+                        "snippet": "  43 |     });\n  44 |\n> 45 |     expect([200, 204]).toContain(response.status());\n     |                        ^\n  46 |     const allowOrigin = response.headers()['access-control-allow-origin'];\n  47 |     const allowMethods = response.headers()['access-control-allow-methods'];\n  48 |     const allowCreds = response.headers()['access-control-allow-credentials'];"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts",
+                            "column": 24,
+                            "line": 45
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m403\u001b[39m\nReceived array: \u001b[31m[200, 204]\u001b[39m\n\n  43 |     });\n  44 |\n> 45 |     expect([200, 204]).toContain(response.status());\n     |                        ^\n  46 |     const allowOrigin = response.headers()['access-control-allow-origin'];\n  47 |     const allowMethods = response.headers()['access-control-allow-methods'];\n  48 |     const allowCreds = response.headers()['access-control-allow-credentials'];\n    at /home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts:45:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-21T21:21:35.370Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "/home/ryan/repos/PAWS360/tests/ui/tests/cors.spec.ts",
+                        "column": 24,
+                        "line": 45
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "af360639a9df597c10b4-1b0268132d7b08effd1d",
+              "file": "cors.spec.ts",
+              "line": 35,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "dashboard.spec.ts",
+      "file": "dashboard.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PAWS360 AdminLTE Dashboard",
+          "file": "dashboard.spec.ts",
+          "line": 12,
+          "column": 1,
+          "specs": [
+            {
+              "title": "should load dashboard successfully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 21624,
+                      "error": {
+                        "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                        "location": {
+                          "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                          "column": 37,
+                          "line": 31
+                        },
+                        "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          },
+                          "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-21T21:21:35.790Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-5b5ac-load-dashboard-successfully-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-5b5ac-load-dashboard-successfully-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-5b5ac-load-dashboard-successfully-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                        "column": 37,
+                        "line": 31
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "90cda532ab82d274b30b-5770de339fac2ef7270f",
+              "file": "dashboard.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "should display role navigation tabs",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 21619,
+                      "error": {
+                        "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                        "location": {
+                          "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                          "column": 37,
+                          "line": 31
+                        },
+                        "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          },
+                          "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-21T21:21:57.891Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-8bac3-isplay-role-navigation-tabs-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-8bac3-isplay-role-navigation-tabs-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-8bac3-isplay-role-navigation-tabs-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                        "column": 37,
+                        "line": 31
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "90cda532ab82d274b30b-449618cb0de510a9ff90",
+              "file": "dashboard.spec.ts",
+              "line": 44,
+              "column": 7
+            },
+            {
+              "title": "should be responsive on mobile",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 21624,
+                      "error": {
+                        "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                        "location": {
+                          "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                          "column": 37,
+                          "line": 31
+                        },
+                        "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          },
+                          "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-21T21:26:33.376Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-15fe3-uld-be-responsive-on-mobile-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-15fe3-uld-be-responsive-on-mobile-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-15fe3-uld-be-responsive-on-mobile-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                        "column": 37,
+                        "line": 31
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "90cda532ab82d274b30b-80714ab37fc5649ab256",
+              "file": "dashboard.spec.ts",
+              "line": 208,
+              "column": 7
+            },
+            {
+              "title": "should handle page refresh",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 18,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 21609,
+                      "error": {
+                        "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                        "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                        "location": {
+                          "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                          "column": 37,
+                          "line": 31
+                        },
+                        "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          },
+                          "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-11-21T21:26:55.488Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-1f50a--should-handle-page-refresh-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-1f50a--should-handle-page-refresh-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-1f50a--should-handle-page-refresh-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                        "column": 37,
+                        "line": 31
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "90cda532ab82d274b30b-30750bd72964e87b5063",
+              "file": "dashboard.spec.ts",
+              "line": 220,
+              "column": 7
+            }
+          ],
+          "suites": [
+            {
+              "title": "Admin Role",
+              "file": "dashboard.spec.ts",
+              "line": 56,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display admin interface",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21661,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:22:19.983Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-fb5a3-uld-display-admin-interface-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-fb5a3-uld-display-admin-interface-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-fb5a3-uld-display-admin-interface-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-a2af85786a5d35ccdce2",
+                  "file": "dashboard.spec.ts",
+                  "line": 57,
+                  "column": 9
+                },
+                {
+                  "title": "should open create class modal",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 7,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 22235,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:22:42.113Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-70bd2-uld-open-create-class-modal-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-70bd2-uld-open-create-class-modal-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-70bd2-uld-open-create-class-modal-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-5185e8aba8103ffb68a8",
+                  "file": "dashboard.spec.ts",
+                  "line": 69,
+                  "column": 9
+                },
+                {
+                  "title": "should display classes table",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 8,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21745,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:23:04.966Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-1094e-hould-display-classes-table-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-1094e-hould-display-classes-table-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-1094e-hould-display-classes-table-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-693867b854a3824e90ee",
+                  "file": "dashboard.spec.ts",
+                  "line": 86,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Student Role",
+              "file": "dashboard.spec.ts",
+              "line": 100,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display student interface",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 9,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21668,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:23:27.210Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-b2195-d-display-student-interface-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-b2195-d-display-student-interface-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-b2195-d-display-student-interface-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-8e38f86dba7bb0f0f5d3",
+                  "file": "dashboard.spec.ts",
+                  "line": 101,
+                  "column": 9
+                },
+                {
+                  "title": "should display degree progress",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 10,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21654,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:23:49.350Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-fe55b-uld-display-degree-progress-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-fe55b-uld-display-degree-progress-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-fe55b-uld-display-degree-progress-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-81d850924841f8323a95",
+                  "file": "dashboard.spec.ts",
+                  "line": 114,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Instructor Role",
+              "file": "dashboard.spec.ts",
+              "line": 128,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display instructor interface",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 11,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21686,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:24:11.478Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-43357-isplay-instructor-interface-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-43357-isplay-instructor-interface-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-43357-isplay-instructor-interface-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-eb895746a1269b0da107",
+                  "file": "dashboard.spec.ts",
+                  "line": 129,
+                  "column": 9
+                },
+                {
+                  "title": "should display course statistics",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 12,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21640,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:24:33.642Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-747a7-d-display-course-statistics-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-747a7-d-display-course-statistics-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-747a7-d-display-course-statistics-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-3f580dc3c0b0cd1cce88",
+                  "file": "dashboard.spec.ts",
+                  "line": 141,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Registrar Role",
+              "file": "dashboard.spec.ts",
+              "line": 155,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display registrar interface",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 13,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 28537,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:24:55.786Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-180c4-display-registrar-interface-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-180c4-display-registrar-interface-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-180c4-display-registrar-interface-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-ba0bcb80b0c9d245fe9e",
+                  "file": "dashboard.spec.ts",
+                  "line": 156,
+                  "column": 9
+                },
+                {
+                  "title": "should display enrollment data",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 14,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 22369,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:25:26.093Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-de018-uld-display-enrollment-data-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-de018-uld-display-enrollment-data-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-de018-uld-display-enrollment-data-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-eecb888ddcc1af131d62",
+                  "file": "dashboard.spec.ts",
+                  "line": 168,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "System Status",
+              "file": "dashboard.spec.ts",
+              "line": 181,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display system status",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 15,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21620,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:25:49.145Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-78e25-hould-display-system-status-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-78e25-hould-display-system-status-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-78e25-hould-display-system-status-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-dd41e38365c24457bc31",
+                  "file": "dashboard.spec.ts",
+                  "line": 182,
+                  "column": 9
+                },
+                {
+                  "title": "should show service health status",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 16,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21650,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:26:11.252Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-f931d--show-service-health-status-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-f931d--show-service-health-status-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-f931d--show-service-health-status-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-14500d82103eb9497a5e",
+                  "file": "dashboard.spec.ts",
+                  "line": 196,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Personal Info Module (SCRUM-59)",
+              "file": "dashboard.spec.ts",
+              "line": 233,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should display Personal Info navigation tab",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 19,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21591,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:27:17.558Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-d9de5-ersonal-Info-navigation-tab-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-d9de5-ersonal-Info-navigation-tab-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-d9de5-ersonal-Info-navigation-tab-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-9ac86287b545447df76c",
+                  "file": "dashboard.spec.ts",
+                  "line": 234,
+                  "column": 9
+                },
+                {
+                  "title": "should load Personal Info interface",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 20,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 22638,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:27:39.617Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-88b77-oad-Personal-Info-interface-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-88b77-oad-Personal-Info-interface-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-88b77-oad-Personal-Info-interface-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-a7601e73c6791072f366",
+                  "file": "dashboard.spec.ts",
+                  "line": 246,
+                  "column": 9
+                },
+                {
+                  "title": "should display profile overview with completion status",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 21,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 22232,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:28:03.332Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-89926-view-with-completion-status-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-89926-view-with-completion-status-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-89926-view-with-completion-status-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-60d81bfe0ecfa6c84c6e",
+                  "file": "dashboard.spec.ts",
+                  "line": 260,
+                  "column": 9
+                },
+                {
+                  "title": "should display tabbed interface with all sections",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 22,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21818,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:28:26.148Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-0102b-interface-with-all-sections-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-0102b-interface-with-all-sections-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-0102b-interface-with-all-sections-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-c2defc8075eca988205f",
+                  "file": "dashboard.spec.ts",
+                  "line": 278,
+                  "column": 9
+                },
+                {
+                  "title": "should display and validate Contact Info form",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 23,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21585,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:28:48.449Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-6104e--validate-Contact-Info-form-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-6104e--validate-Contact-Info-form-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-6104e--validate-Contact-Info-form-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-720558ec8f5c12732cf1",
+                  "file": "dashboard.spec.ts",
+                  "line": 293,
+                  "column": 9
+                },
+                {
+                  "title": "should navigate to Emergency Contacts tab",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 24,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21603,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:29:10.517Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-39853-e-to-Emergency-Contacts-tab-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-39853-e-to-Emergency-Contacts-tab-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-39853-e-to-Emergency-Contacts-tab-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-c350a2e701d25a3b3c28",
+                  "file": "dashboard.spec.ts",
+                  "line": 319,
+                  "column": 9
+                },
+                {
+                  "title": "should display emergency contact management buttons",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 25,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21624,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:29:32.622Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-0f0b9--contact-management-buttons-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-0f0b9--contact-management-buttons-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-0f0b9--contact-management-buttons-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-a6a437ae17f771c40166",
+                  "file": "dashboard.spec.ts",
+                  "line": 346,
+                  "column": 9
+                },
+                {
+                  "title": "should navigate to Demographics tab",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 26,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21762,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:29:54.716Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-892c6-avigate-to-Demographics-tab-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-892c6-avigate-to-Demographics-tab-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-892c6-avigate-to-Demographics-tab-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-501e225f59b5a5f1dee7",
+                  "file": "dashboard.spec.ts",
+                  "line": 367,
+                  "column": 9
+                },
+                {
+                  "title": "should display ethnicity multi-select properly",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 27,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 22627,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:30:17.434Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-0878b-icity-multi-select-properly-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-0878b-icity-multi-select-properly-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-0878b-icity-multi-select-properly-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-8b33a195852f5fb63d10",
+                  "file": "dashboard.spec.ts",
+                  "line": 392,
+                  "column": 9
+                },
+                {
+                  "title": "should navigate to Privacy tab",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 28,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21634,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:30:40.652Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-6ddcc-uld-navigate-to-Privacy-tab-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-6ddcc-uld-navigate-to-Privacy-tab-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-6ddcc-uld-navigate-to-Privacy-tab-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-5f5d73ea450802b93103",
+                  "file": "dashboard.spec.ts",
+                  "line": 410,
+                  "column": 9
+                },
+                {
+                  "title": "should display directory privacy options",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 29,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21612,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:31:02.765Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-4a3d5-y-directory-privacy-options-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-4a3d5-y-directory-privacy-options-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-4a3d5-y-directory-privacy-options-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-bfccb8408a4f0f6287de",
+                  "file": "dashboard.spec.ts",
+                  "line": 427,
+                  "column": 9
+                },
+                {
+                  "title": "should display communication preferences",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 30,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21645,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:31:24.850Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-fda30-y-communication-preferences-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-fda30-y-communication-preferences-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-fda30-y-communication-preferences-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-9632fc03e735b2e6e201",
+                  "file": "dashboard.spec.ts",
+                  "line": 448,
+                  "column": 9
+                },
+                {
+                  "title": "should display GDPR data management buttons",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 31,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 21517,
+                          "error": {
+                            "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n",
+                            "stack": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                              "column": 37,
+                              "line": 31
+                            },
+                            "snippet": "  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                                "column": 37,
+                                "line": 31
+                              },
+                              "message": "TimeoutError: locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.role-nav') to be visible\u001b[22m\n\n\n  29 |     await page.waitForLoadState('networkidle');\n  30 |     // Wait for the role navigation to be present and interactive\n> 31 |     await page.locator('.role-nav').waitFor({ state: 'visible', timeout: 20000 });\n     |                                     ^\n  32 |   });\n  33 |\n  34 |   test('should load dashboard successfully', async ({ page }) => {\n    at /home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts:31:37"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:31:46.966Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-06e63-DPR-data-management-buttons-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-06e63-DPR-data-management-buttons-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/dashboard-PAWS360-AdminLTE-06e63-DPR-data-management-buttons-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/dashboard.spec.ts",
+                            "column": 37,
+                            "line": 31
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "90cda532ab82d274b30b-b328548ac62c270be72b",
+                  "file": "dashboard.spec.ts",
+                  "line": 468,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "sso-authentication.spec.ts",
+      "file": "sso-authentication.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "SSO Authentication End-to-End Tests",
+          "file": "sso-authentication.spec.ts",
+          "line": 22,
+          "column": 1,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Student Authentication Flow (UI login)",
+              "file": "sso-authentication.spec.ts",
+              "line": 54,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should complete full student authentication journey",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 32,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 30147,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts",
+                                "column": 14,
+                                "line": 94
+                              },
+                              "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n  92 |       // Give extra allowance for CI and slower local dev machines\n  93 |       await Promise.all([\n> 94 |         page.waitForURL(/\\/homepage/, { timeout: 30000 }),\n     |              ^\n  95 |         page.click('button[type=\"submit\"]')\n  96 |       ]);\n  97 |\n    at /home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts:94:14"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:32:08.962Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-85820-dent-authentication-journey-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-85820-dent-authentication-journey-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-85820-dent-authentication-journey-chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-ccce82bd4eb794b530e7",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 56,
+                  "column": 9
+                }
+              ],
+              "suites": [
+                {
+                  "title": "Student (pre-authenticated)",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 184,
+                  "column": 10,
+                  "specs": [
+                    {
+                      "title": "should maintain session across page navigation",
+                      "ok": true,
+                      "tags": [],
+                      "tests": [
+                        {
+                          "timeout": 30000,
+                          "annotations": [],
+                          "expectedStatus": "passed",
+                          "projectId": "chromium",
+                          "projectName": "chromium",
+                          "results": [
+                            {
+                              "workerIndex": 33,
+                              "parallelIndex": 0,
+                              "status": "passed",
+                              "duration": 3103,
+                              "errors": [],
+                              "stdout": [],
+                              "stderr": [],
+                              "retry": 0,
+                              "startTime": "2025-11-21T21:32:39.590Z",
+                              "annotations": [],
+                              "attachments": []
+                            }
+                          ],
+                          "status": "expected"
+                        }
+                      ],
+                      "id": "619f20d35faea2bf0819-4b7e36bf98f5c7f287ad",
+                      "file": "sso-authentication.spec.ts",
+                      "line": 187,
+                      "column": 11
+                    },
+                    {
+                      "title": "should handle session expiration gracefully",
+                      "ok": true,
+                      "tags": [],
+                      "tests": [
+                        {
+                          "timeout": 30000,
+                          "annotations": [],
+                          "expectedStatus": "passed",
+                          "projectId": "chromium",
+                          "projectName": "chromium",
+                          "results": [
+                            {
+                              "workerIndex": 33,
+                              "parallelIndex": 0,
+                              "status": "passed",
+                              "duration": 317,
+                              "errors": [],
+                              "stdout": [],
+                              "stderr": [],
+                              "retry": 0,
+                              "startTime": "2025-11-21T21:32:42.745Z",
+                              "annotations": [],
+                              "attachments": []
+                            }
+                          ],
+                          "status": "expected"
+                        }
+                      ],
+                      "id": "619f20d35faea2bf0819-e50d49ed5f8922955fe1",
+                      "file": "sso-authentication.spec.ts",
+                      "line": 207,
+                      "column": 11
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "Admin Authentication Flow (pre-authenticated)",
+              "file": "sso-authentication.spec.ts",
+              "line": 222,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should complete admin authentication and access admin features",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 33,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 5883,
+                          "error": {
+                            "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1').filter({ hasText: /Welcome/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1').filter({ hasText: /Welcome/ })\u001b[22m\n",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1').filter({ hasText: /Welcome/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1').filter({ hasText: /Welcome/ })\u001b[22m\n\n    at /home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts:228:71",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts",
+                              "column": 71,
+                              "line": 228
+                            },
+                            "snippet": "  226 |       // Verify admin-specific content is accessible\n  227 |       await page.goto('/homepage');\n> 228 |       await expect(page.locator('h1').filter({ hasText: /Welcome/ })).toBeVisible();\n      |                                                                       ^\n  229 |\n  230 |       // Verify student portal interface is accessible (admin can see student view)\n  231 |       await expect(page.getByRole('heading', { name: 'Academic' })).toBeVisible();"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts",
+                                "column": 71,
+                                "line": 228
+                              },
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('h1').filter({ hasText: /Welcome/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('h1').filter({ hasText: /Welcome/ })\u001b[22m\n\n\n  226 |       // Verify admin-specific content is accessible\n  227 |       await page.goto('/homepage');\n> 228 |       await expect(page.locator('h1').filter({ hasText: /Welcome/ })).toBeVisible();\n      |                                                                       ^\n  229 |\n  230 |       // Verify student portal interface is accessible (admin can see student view)\n  231 |       await expect(page.getByRole('heading', { name: 'Academic' })).toBeVisible();\n    at /home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts:228:71"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:32:43.070Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-3abfe-n-and-access-admin-features-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-3abfe-n-and-access-admin-features-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-3abfe-n-and-access-admin-features-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts",
+                            "column": 71,
+                            "line": 228
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-e79abdaa57fa06db420a",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 225,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Authentication Failures",
+              "file": "sso-authentication.spec.ts",
+              "line": 235,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should handle invalid credentials gracefully",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 34,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 2128,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:32:56.096Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-b1e083e428e6769afe03",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 237,
+                  "column": 9
+                },
+                {
+                  "title": "should handle malformed email format",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 34,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1854,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:32:58.668Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-bfdff52a782b8af2ec45",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 270,
+                  "column": 9
+                },
+                {
+                  "title": "should handle empty fields",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 34,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1395,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:33:00.547Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-124cfe69cc363a1f63c1",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 288,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Logout Flow",
+              "file": "sso-authentication.spec.ts",
+              "line": 303,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should complete logout and clear session",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 34,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 1375,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:33:01.966Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-f8dbdf2c76937c3925de",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 306,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Cross-Service Integration",
+              "file": "sso-authentication.spec.ts",
+              "line": 319,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should validate session persistence after login",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 34,
+                          "parallelIndex": 0,
+                          "status": "failed",
+                          "duration": 20875,
+                          "error": {
+                            "message": "TimeoutError: page.waitForURL: Timeout 20000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/homepage\" until \"load\"\n============================================================",
+                            "stack": "TimeoutError: page.waitForURL: Timeout 20000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/homepage\" until \"load\"\n============================================================\n    at /home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts:329:16",
+                            "location": {
+                              "file": "/home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts",
+                              "column": 16,
+                              "line": 329
+                            },
+                            "snippet": "  327 |         await Promise.all([\n  328 |           // Allow more time for cross-service navigation in CI\n> 329 |           page.waitForURL('/homepage', { timeout: 20000 }),\n      |                ^\n  330 |           page.click('button[type=\"submit\"]')\n  331 |         ]);\n  332 |       "
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts",
+                                "column": 16,
+                                "line": 329
+                              },
+                              "message": "TimeoutError: page.waitForURL: Timeout 20000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"/homepage\" until \"load\"\n============================================================\n\n  327 |         await Promise.all([\n  328 |           // Allow more time for cross-service navigation in CI\n> 329 |           page.waitForURL('/homepage', { timeout: 20000 }),\n      |                ^\n  330 |           page.click('button[type=\"submit\"]')\n  331 |         ]);\n  332 |       \n    at /home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts:329:16"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:33:03.381Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-8e1a8-ion-persistence-after-login-chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-8e1a8-ion-persistence-after-login-chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-8e1a8-ion-persistence-after-login-chromium/error-context.md"
+                            }
+                          ],
+                          "errorLocation": {
+                            "file": "/home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts",
+                            "column": 16,
+                            "line": 329
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-437d2a36b58fc86c69ce",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 321,
+                  "column": 9
+                },
+                {
+                  "title": "should handle backend service unavailability",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 35,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 401,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:33:24.696Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-280ea130a4a480f02d59",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 353,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Security Validation",
+              "file": "sso-authentication.spec.ts",
+              "line": 379,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should reject requests without proper CSRF protection",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 35,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 140,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:33:25.153Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-b165a30198fb832e5c57",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 381,
+                  "column": 9
+                }
+              ],
+              "suites": [
+                {
+                  "title": "with authenticated session",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 391,
+                  "column": 10,
+                  "specs": [
+                    {
+                      "title": "should validate secure cookie settings",
+                      "ok": true,
+                      "tags": [],
+                      "tests": [
+                        {
+                          "timeout": 30000,
+                          "annotations": [],
+                          "expectedStatus": "passed",
+                          "projectId": "chromium",
+                          "projectName": "chromium",
+                          "results": [
+                            {
+                              "workerIndex": 35,
+                              "parallelIndex": 0,
+                              "status": "passed",
+                              "duration": 211,
+                              "errors": [],
+                              "stdout": [],
+                              "stderr": [],
+                              "retry": 0,
+                              "startTime": "2025-11-21T21:33:25.302Z",
+                              "annotations": [],
+                              "attachments": []
+                            }
+                          ],
+                          "status": "expected"
+                        }
+                      ],
+                      "id": "619f20d35faea2bf0819-06905d4b430b20a5c09b",
+                      "file": "sso-authentication.spec.ts",
+                      "line": 394,
+                      "column": 11
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "Performance Validation",
+              "file": "sso-authentication.spec.ts",
+              "line": 413,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should complete authentication within performance thresholds (UI flow)",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 35,
+                          "parallelIndex": 0,
+                          "status": "timedOut",
+                          "duration": 30148,
+                          "error": {
+                            "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                            "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                          },
+                          "errors": [
+                            {
+                              "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                            },
+                            {
+                              "location": {
+                                "file": "/home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts",
+                                "column": 16,
+                                "line": 424
+                              },
+                              "message": "Error: page.waitForURL: Test timeout of 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================\n\n  422 |       await page.click('button[type=\"submit\"]');\n  423 |     // Allow a little more time for a full authentication round-trip in noisy CI envs\n> 424 |     await page.waitForURL(/\\/homepage/, { timeout: 40000 });\n      |                ^\n  425 |     const endTime = Date.now();\n  426 |   // Allow slightly more time in CI; this is a soft performance gate\n  427 |   expect(endTime - startTime).toBeLessThan(20000);\n    at /home/ryan/repos/PAWS360/tests/ui/tests/sso-authentication.spec.ts:424:16"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:33:25.520Z",
+                          "annotations": [],
+                          "attachments": [
+                            {
+                              "name": "screenshot",
+                              "contentType": "image/png",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-2d8a3-ormance-thresholds-UI-flow--chromium/test-failed-1.png"
+                            },
+                            {
+                              "name": "video",
+                              "contentType": "video/webm",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-2d8a3-ormance-thresholds-UI-flow--chromium/video.webm"
+                            },
+                            {
+                              "name": "error-context",
+                              "contentType": "text/markdown",
+                              "path": "/home/ryan/repos/PAWS360/tests/ui/test-results/sso-authentication-SSO-Aut-2d8a3-ormance-thresholds-UI-flow--chromium/error-context.md"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": "unexpected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-debe4501e09364342840",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 414,
+                  "column": 9
+                }
+              ],
+              "suites": [
+                {
+                  "title": "with authenticated session",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 430,
+                  "column": 10,
+                  "specs": [
+                    {
+                      "title": "should load dashboard quickly after authentication",
+                      "ok": true,
+                      "tags": [],
+                      "tests": [
+                        {
+                          "timeout": 30000,
+                          "annotations": [],
+                          "expectedStatus": "passed",
+                          "projectId": "chromium",
+                          "projectName": "chromium",
+                          "results": [
+                            {
+                              "workerIndex": 36,
+                              "parallelIndex": 0,
+                              "status": "passed",
+                              "duration": 391,
+                              "errors": [],
+                              "stdout": [],
+                              "stderr": [],
+                              "retry": 0,
+                              "startTime": "2025-11-21T21:33:56.109Z",
+                              "annotations": [],
+                              "attachments": []
+                            }
+                          ],
+                          "status": "expected"
+                        }
+                      ],
+                      "id": "619f20d35faea2bf0819-d11597997fc66fa032a8",
+                      "file": "sso-authentication.spec.ts",
+                      "line": 432,
+                      "column": 11
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "Browser Compatibility",
+              "file": "sso-authentication.spec.ts",
+              "line": 443,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should work in different browser contexts",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 36,
+                          "parallelIndex": 0,
+                          "status": "passed",
+                          "duration": 392,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2025-11-21T21:33:56.553Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "619f20d35faea2bf0819-9a3a35eaa41946ae04f6",
+                  "file": "sso-authentication.spec.ts",
+                  "line": 444,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-11-21T21:21:30.989Z",
+    "duration": 746008.469,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 36,
+    "flaky": 0
+  }
+}

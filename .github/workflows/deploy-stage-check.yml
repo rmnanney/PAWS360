@@ -1,0 +1,63 @@
+---
+name: Deploy to stage — dry-run (manual)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-dry-deploy:
+    name: Build images + Ansible check (dry-run)
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU and buildx
+        uses: docker/setup-buildx-action@v2
+
+      - id: build-backend
+        name: Build backend image only (no push)
+        run: |
+          set -euxo pipefail
+          OWNER_REPO="${{ github.repository }}"
+          OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')
+          OWNER_REPO="${OWNER_REPO_LOWER}"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
+          BACKEND_TAG=ghcr.io/${OWNER_REPO}:backend-staging-${SHORT_SHA}
+          docker build -f infrastructure/docker/Dockerfile -t "${BACKEND_TAG}" .
+          echo "backend_image=${BACKEND_TAG}" >> "$GITHUB_OUTPUT"
+
+      - id: build-frontend
+        name: Build frontend image only (no push)
+        run: |
+          set -euxo pipefail
+          OWNER_REPO="${{ github.repository }}"
+          OWNER_REPO_LOWER=$(echo "${OWNER_REPO}" | tr '[:upper:]' '[:lower:]')
+          OWNER_REPO="${OWNER_REPO_LOWER}"
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
+          FRONTEND_TAG=ghcr.io/${OWNER_REPO}:frontend-staging-${SHORT_SHA}
+          docker build -f infrastructure/docker/frontend.Dockerfile -t "${FRONTEND_TAG}" .
+          echo "frontend_image=${FRONTEND_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Python and install Ansible
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible==8.7.0
+
+      - name: Ansible dry-run (check) — staging inventory
+        if: ${{ secrets.STAGE_SSH_PRIVATE_KEY != '' }}
+        working-directory: infrastructure/ansible
+        run: |
+          set -euxo pipefail
+          BACKEND_IMAGE="${{ steps.build-backend.outputs.backend_image }}"
+          FRONTEND_IMAGE="${{ steps.build-frontend.outputs.frontend_image }}"
+          echo "Running ansible-playbook in check mode (no changes) against staging inventory"
+          ansible-playbook -i inventories/staging site.yml --check --extra-vars "backend_image=${BACKEND_IMAGE} frontend_image=${FRONTEND_IMAGE}"

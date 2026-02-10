@@ -1,0 +1,233 @@
+---
+name: Local Dev CI
+
+on:
+  # This workflow runs heavy local-dev parity checks (HA stack, integration tests).
+  # These are resource-intensive and should not run on every PR or push against
+  # public hosted runners (they often have limited RAM). Switch to manual and
+  # scheduled runs instead — maintainers can manually trigger a full HA validation
+  # using the workflow_dispatch event or rely on nightly scheduled runs.
+  workflow_dispatch: {}
+  schedule:
+    # Daily run at 03:00 UTC (keep parity checks up-to-date without running on every PR)
+    - cron: '0 3 * * *'
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  cleanup-artifacts:
+    name: Prune artifacts (keep current + previous run)
+    runs-on: [self-hosted, linux, x64]
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        # For scheduled/manual runs a standard checkout is sufficient
+
+      - name: Ensure gh & jq
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y jq gh || true
+
+      - name: Prune artifacts (keep last 5 runs)
+        run: |
+          chmod +x ./scripts/lib/prune-artifacts-keep-last-2.sh || true
+          KEEP_LAST=5 ./scripts/lib/prune-artifacts-keep-last-2.sh
+
+  validate-environment:
+    name: Validate Environment
+    runs-on: [self-hosted, linux, x64]
+    needs: cleanup-artifacts
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate platform requirements
+        run: |
+          bash scripts/validate-platform.sh
+
+      - name: Validate Docker Compose syntax
+        run: |
+          docker compose config > /dev/null
+          echo "✓ Docker Compose configuration is valid"
+
+      - name: Validate port availability
+        run: |
+          bash scripts/validate-ports.sh
+
+      - name: Validate system resources
+        run: |
+          bash scripts/validate-resources.sh
+
+  test-infrastructure:
+    name: Test Infrastructure
+    runs-on: [self-hosted, linux, x64]
+    needs: validate-environment
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Verify service connectivity
+        run: |
+          pg_isready -h localhost -p 5432 -U postgres
+          redis-cli -h localhost -p 6379 ping
+
+      - name: Pull Docker images
+        run: |
+          docker compose pull --quiet
+
+      - name: Build custom images
+        run: |
+          docker compose build --parallel
+
+      - name: Start HA infrastructure stack
+        run: |
+          docker compose up -d
+          echo "Waiting for services to become healthy..."
+          sleep 30
+
+      - name: Wait for all services healthy
+        run: |
+          timeout 180 bash -c 'until bash scripts/health-check.sh --json | jq -e ".status == \"healthy\"" > /dev/null 2>&1; do echo "Waiting for services..."; sleep 5; done'
+          echo "✓ All services are healthy"
+
+      - name: Display health check status
+        run: |
+          bash scripts/health-check.sh --human
+
+      - name: Run etcd cluster tests
+        if: ${{ env.ACT != 'true' }}
+        run: |
+          bash tests/integration/test_etcd_cluster.sh
+
+      - name: Run Patroni HA tests
+        if: ${{ env.ACT != 'true' }}
+        run: |
+          bash tests/integration/test_patroni_ha.sh
+
+      - name: Run Redis Sentinel tests
+        if: ${{ env.ACT != 'true' }}
+        run: |
+          bash tests/integration/test_redis_sentinel.sh
+
+      - name: Run full stack integration test
+        if: ${{ env.ACT != 'true' }}
+        run: |
+          bash tests/integration/test_full_stack.sh
+
+      - name: Test Patroni failover
+        run: |
+          echo "Simulating Patroni leader failure..."
+          docker pause patroni1 || true
+          sleep 15
+
+          # Verify new leader elected
+          docker exec patroni2 patronictl list || true
+          docker exec patroni3 patronictl list || true
+
+          # Restore original leader
+          docker unpause patroni1 || true
+          sleep 10
+
+          echo "✓ Failover test completed"
+
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          docker compose logs --tail=100
+          bash scripts/health-check.sh --human || true
+
+      - name: Upload test results
+        # Only archive test results if the job failed; avoid storing large test logs when CI succeeding
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: |
+            tests/**/*.log
+            tests/**/*.xml
+          retention-days: 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose down -v
+
+  security-scan:
+    name: Security Image Scanning
+    runs-on: [self-hosted, linux, x64]
+    needs: validate-environment
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build custom images
+        run: |
+          docker compose build --parallel
+
+      - name: Install Trivy
+        run: |
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Run Trivy vulnerability scanner
+        run: |
+          # Scan all custom images
+          bash scripts/scan-images.sh --json
+
+      - name: Upload scan results
+        # Only preserve scan results when a failure occurs — otherwise skip saving larger scan files
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-scan-results
+          path: security/scan-results/*.json
+          retention-days: 1
+
+      - name: Fail on CRITICAL vulnerabilities
+        run: |
+          # Exit with code 1 if CRITICAL vulnerabilities found
+          bash scripts/scan-images.sh --severity CRITICAL

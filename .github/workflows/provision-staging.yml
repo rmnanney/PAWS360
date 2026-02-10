@@ -1,0 +1,68 @@
+---
+name: Provision / Apply Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      auto_apply:
+        description: 'If true the apply job will be triggered after plan — Apply still requires environment approval.'
+        required: false
+        default: 'false'
+
+jobs:
+  plan:
+    name: Terraform Plan
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init & Plan
+        working-directory: infrastructure/proxmox/terraform-module
+        env:
+          PM_API_URL: ${{ secrets.PM_API_URL }}
+          PM_USER: ${{ secrets.PM_USER }}
+          PM_PASSWORD: ${{ secrets.PM_PASSWORD }}
+        run: |
+          terraform init -input=false
+          terraform plan -input=false -out=tfplan-out
+
+      - name: Upload plan
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-out
+          path: infrastructure/proxmox/terraform-module/tfplan-out
+          retention-days: 1
+
+  apply:
+    name: Terraform Apply (gated)
+    needs: plan
+    runs-on: [self-hosted, linux, x64]
+    environment: staging
+    if: ${{ github.event.inputs.auto_apply == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-out
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Apply
+        working-directory: infrastructure/proxmox/terraform-module
+        env:
+          PM_API_URL: ${{ secrets.PM_API_URL }}
+          PM_USER: ${{ secrets.PM_USER }}
+          PM_PASSWORD: ${{ secrets.PM_PASSWORD }}
+        run: |
+          terraform init -input=false
+          terraform apply -input=false tfplan-out
+
+  # Note: the 'apply' job is tied to the repository environment named `staging`.
+  # Protect the environment by requiring reviewers or approving teams in the repo settings.

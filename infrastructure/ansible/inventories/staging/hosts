@@ -1,0 +1,58 @@
+# Development-based baseline inventory copied for staging
+[all:vars]
+# Environment settings
+env=staging
+deploy_env=staging
+adminlte_user=adminlte
+adminlte_version=1.0.0
+
+# Network configuration
+domain_name=adminlte-staging.university.edu
+use_ssl=false
+api_port=8080
+ui_port=80
+
+# Database settings
+postgres_host=localhost
+postgres_port=5432
+postgres_db=adminlte_staging
+postgres_user=adminlte
+postgres_password=dev_password
+postgres_max_connections=20
+
+# Redis settings
+redis_host=localhost
+redis_port=6379
+redis_password=dev_redis_pass
+redis_maxmemory=256mb
+
+# Service configuration
+java_opts="-Xmx512m -Xms256m"
+spring_profiles=staging
+log_level=DEBUG
+
+# Security (development only - use proper secrets in production)
+jwt_secret=dev_jwt_secret_key_not_for_production
+saml_keystore_password=dev_keystore_pass
+admin_default_password=admin123
+
+[webservers]
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
+
+[databases]
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
+
+[etcd]
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
+
+[monitoring]
+prometheus-01 ansible_host=192.168.0.200 ansible_user=ryan
+
+[redis]
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
+
+[loadbalancers]
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan
+
+[monitoring]
+dell-r640-01 ansible_host=192.168.0.51 ansible_user=ryan

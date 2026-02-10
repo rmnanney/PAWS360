@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # Main PAWS360 Application for CI/CD testing
+  paws360-app:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+      # Pass build args to configure build environment
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    container_name: paws360-app-ci
+    # Disable AppArmor to allow network operations during Maven builds
+    # AppArmor on the runner blocks socket creation, causing Permission denied errors
+    # Other security layers (seccomp, cgroupns) remain active
+    security_opt:
+      - apparmor=unconfined
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - SERVER_PORT=8080
+      # Ensure tests and CI front-end requests are allowed by CORS in CI runs
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080
+      # Enable more detailed cors/security logging in CI for diagnostics
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_CORS=TRACE
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/paws360_test
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_WEB_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=paws360
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+      - SPRING_TASK_SCHEDULING_ENABLED=false
+      - SPRING_DATASOURCE_USERNAME=paws360
+      - SPRING_DATASOURCE_PASSWORD=test_password
+      - REDIS_URL=redis://redis:6379
+      - REDIS_PASSWORD=test_redis_password
+      - JWT_SECRET=test_jwt_secret_key_for_ci_cd
+      - LOGGING_LEVEL_ROOT=INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ci-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # PostgreSQL Database for CI testing
+  postgres:
+    image: postgres:15-alpine
+    container_name: paws360-postgres-ci
+    environment:
+      - POSTGRES_DB=paws360_test
+      - POSTGRES_USER=paws360
+      - POSTGRES_PASSWORD=test_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_ci_data:/var/lib/postgresql/data
+      - ./database/test_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/test_seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    networks:
+      - ci-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paws360 -d paws360_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache for CI testing
+  redis:
+    image: redis:7-alpine
+    container_name: paws360-redis-ci
+    command: redis-server --requirepass test_redis_password
+    ports:
+      - "6380:6379"
+    networks:
+      - ci-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  ci-network:
+    driver: bridge
+
+volumes:
+  postgres_ci_data:

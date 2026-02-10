@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+coverage/
+test-results/
+target/
+*.log
+.env
+.env.*
+.DS_Store
+.vscode/
+.idea/
+*.tgz
