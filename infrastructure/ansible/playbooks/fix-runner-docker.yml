@@ -1,0 +1,167 @@
+---
+# Playbook: Fix GitHub Actions Runner Docker Configuration
+# Purpose: Add runner user to docker group and configure Docker for CI
+# Usage: ansible-playbook -i inventories/staging/hosts playbooks/fix-runner-docker.yml
+# JIRA: INFRA-472
+
+- name: Fix GitHub Actions Runner Docker Access
+  hosts: webservers
+  become: true
+  vars:
+    runner_user: "actions-runner"
+    docker_max_concurrent_downloads: 3
+    docker_max_concurrent_uploads: 5
+    
+  tasks:
+    - name: 🔍 Check if Docker is installed
+      command: docker --version
+      register: docker_check
+      failed_when: false
+      changed_when: false
+
+    - name: ❌ Fail if Docker not installed
+      fail:
+        msg: "Docker is not installed on {{ inventory_hostname }}"
+      when: docker_check.rc != 0
+
+    - name: 👥 Add runner user to docker group
+      user:
+        name: "{{ runner_user }}"
+        groups: docker
+        append: yes
+      notify: Restart runner service
+
+    - name: 🔧 Configure Docker daemon for CI workloads
+      copy:
+        content: |
+          {
+            "log-driver": "json-file",
+            "log-opts": {
+              "max-size": "10m",
+              "max-file": "3"
+            },
+            "max-concurrent-downloads": {{ docker_max_concurrent_downloads }},
+            "max-concurrent-uploads": {{ docker_max_concurrent_uploads }},
+            "default-ulimits": {
+              "nofile": {
+                "Name": "nofile",
+                "Hard": 64000,
+                "Soft": 64000
+              }
+            }
+          }
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart docker
+
+    - name: ✅ Ensure Docker service is enabled and started
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: 🔄 Force handlers to run now
+      meta: flush_handlers
+
+    - name: ⏳ Wait for Docker to be ready
+      wait_for:
+        timeout: 10
+      
+    - name: ✅ Verify runner user can access Docker
+      command: docker ps
+      become: true
+      become_user: "{{ runner_user }}"
+      register: docker_access_check
+      changed_when: false
+
+    - name: 📊 Display verification result
+      debug:
+        msg:
+          - "✅ Docker access verified for {{ runner_user }}"
+          - "Docker containers running: {{ docker_access_check.stdout_lines | length }}"
+
+    - name: 🐳 Prune old Docker resources
+      command: docker system prune -af --volumes
+      register: prune_result
+      changed_when: "'Total reclaimed space' in prune_result.stdout"
+
+    - name: 📝 Create Maven settings for CI
+      file:
+        path: "/home/{{ runner_user }}/.m2"
+        state: directory
+        owner: "{{ runner_user }}"
+        group: "{{ runner_user }}"
+        mode: '0755'
+
+    - name: ⚙️  Configure Maven for CI performance
+      copy:
+        content: |
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                        https://maven.apache.org/xsd/settings-1.0.0.xsd">
+            <localRepository>/home/{{ runner_user }}/.m2/repository</localRepository>
+            
+            <!-- Parallel downloads and improved performance -->
+            <profiles>
+              <profile>
+                <id>ci-performance</id>
+                <properties>
+                  <maven.artifact.threads>5</maven.artifact.threads>
+                  <downloadSources>false</downloadSources>
+                  <downloadJavadocs>false</downloadJavadocs>
+                </properties>
+              </profile>
+            </profiles>
+            
+            <activeProfiles>
+              <activeProfile>ci-performance</activeProfile>
+            </activeProfiles>
+          </settings>
+        dest: "/home/{{ runner_user }}/.m2/settings.xml"
+        owner: "{{ runner_user }}"
+        group: "{{ runner_user }}"
+        mode: '0644'
+
+    - name: 📦 Pre-pull common Docker images for CI
+      docker_image:
+        name: "{{ item }}"
+        source: pull
+      loop:
+        - postgres:15-alpine
+        - redis:7-alpine
+        - maven:3.9-eclipse-temurin-21
+      ignore_errors: yes
+
+    - name: ✅ Configuration complete
+      debug:
+        msg:
+          - "================================================"
+          - "✅ Docker configuration complete!"
+          - "================================================"
+          - ""
+          - "Changes made:"
+          - "  ✅ {{ runner_user }} added to docker group"
+          - "  ✅ Docker daemon configured for CI"
+          - "  ✅ Maven settings optimized"
+          - "  ✅ Common images pre-pulled"
+          - ""
+          - "The runner service has been restarted."
+          - "CI tests should now work without sudo."
+          - ""
+          - "Test with: sudo -u {{ runner_user }} docker ps"
+          - "================================================"
+
+  handlers:
+    - name: Restart docker
+      systemd:
+        name: docker
+        state: restarted
+      
+    - name: Restart runner service
+      systemd:
+        name: "actions.runner.rmnanney-PAWS360.{{ inventory_hostname }}-runner.service"
+        state: restarted
+      failed_when: false

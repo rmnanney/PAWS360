@@ -1,0 +1,23 @@
+[Unit]
+Description=etcd key-value store
+Documentation=https://etcd.io
+After=network.target
+
+[Service]
+Type=notify
+User=etcd
+EnvironmentFile=/etc/etcd/etcd.env
+ExecStart={{ etcd_install_dir }}/etcd \
+  --name ${ETCD_NAME} \
+  --data-dir ${ETCD_DATA_DIR} \
+  --listen-peer-urls ${ETCD_LISTEN_PEER_URLS} \
+  --listen-client-urls ${ETCD_LISTEN_CLIENT_URLS} \
+  --initial-advertise-peer-urls ${ETCD_INITIAL_ADVERTISE_PEER_URLS} \
+  --advertise-client-urls ${ETCD_ADVERTISE_CLIENT_URLS} \
+  --initial-cluster ${ETCD_INITIAL_CLUSTER} \
+  --initial-cluster-state ${ETCD_INITIAL_CLUSTER_STATE}
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

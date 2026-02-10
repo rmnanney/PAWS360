@@ -1,0 +1,12 @@
+---
+# Analytics Service Handlers
+# Systemd service management handlers
+
+- name: reload systemd
+  systemd:
+    daemon_reload: true
+
+- name: restart analytics-service
+  systemd:
+    name: adminlte-analytics-service
+    state: restarted

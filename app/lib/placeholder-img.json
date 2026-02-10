@@ -1,0 +1,10 @@
+{
+  "placeholderImages": [
+    {
+      "id": "uwm-building",
+      "description": "A grand university building with classical architecture, serving as the background for the login page.",
+      "imageUrl": "https://uwm.edu/publichealth/wp-content/uploads/sites/571/2025/06/UWM-Campus-Drone-Shot.jpg",
+      "imageHint": "university building"
+    }
+  ]
+}

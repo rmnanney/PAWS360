@@ -1,0 +1,27 @@
+# Logrotate configuration for GitHub Actions Runner logs
+# Deployed by Ansible - setup-logging.yml
+
+/home/*/actions-runner/_diag/*.log {
+    daily
+    rotate {{ log_retention_days }}
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root adm
+    sharedscripts
+    postrotate
+        systemctl reload promtail >/dev/null 2>&1 || true
+    endscript
+}
+
+/home/*/actions-runner/Worker_*.log {
+    daily
+    rotate {{ log_retention_days }}
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root adm
+    maxsize 100M
+}

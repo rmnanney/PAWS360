@@ -1,0 +1,55 @@
+Starting local CI run at 2025-11-28T21:12:26-06:00
+Traceback (most recent call last):
+  File "/home/ryan/.local/lib/python3.10/site-packages/requests/adapters.py", line 633, in send
+    conn = self.get_connection_with_tls_context(
+  File "/home/ryan/.local/lib/python3.10/site-packages/requests/adapters.py", line 489, in get_connection_with_tls_context
+    conn = self.poolmanager.connection_from_host(
+  File "/home/ryan/.local/lib/python3.10/site-packages/urllib3/poolmanager.py", line 246, in connection_from_host
+    return self.connection_from_context(request_context)
+  File "/home/ryan/.local/lib/python3.10/site-packages/urllib3/poolmanager.py", line 258, in connection_from_context
+    raise URLSchemeUnknown(scheme)
+urllib3.exceptions.URLSchemeUnknown: Not supported URL scheme http+docker
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/docker/api/client.py", line 214, in _retrieve_server_version
+    return self.version(api_version=False)["ApiVersion"]
+  File "/usr/lib/python3/dist-packages/docker/api/daemon.py", line 181, in version
+    return self._result(self._get(url), json=True)
+  File "/usr/lib/python3/dist-packages/docker/utils/decorators.py", line 46, in inner
+    return f(self, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/docker/api/client.py", line 237, in _get
+    return self.get(url, **self._set_request_timeout(kwargs))
+  File "/home/ryan/.local/lib/python3.10/site-packages/requests/sessions.py", line 602, in get
+    return self.request("GET", url, **kwargs)
+  File "/home/ryan/.local/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/home/ryan/.local/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/home/ryan/.local/lib/python3.10/site-packages/requests/adapters.py", line 637, in send
+    raise InvalidURL(e, request=request)
+requests.exceptions.InvalidURL: Not supported URL scheme http+docker
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/bin/docker-compose", line 33, in <module>
+    sys.exit(load_entry_point('docker-compose==1.29.2', 'console_scripts', 'docker-compose')())
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 81, in main
+    command_func()
+  File "/usr/lib/python3/dist-packages/compose/cli/main.py", line 200, in perform_command
+    project = project_from_options('.', options)
+  File "/usr/lib/python3/dist-packages/compose/cli/command.py", line 60, in project_from_options
+    return get_project(
+  File "/usr/lib/python3/dist-packages/compose/cli/command.py", line 152, in get_project
+    client = get_client(
+  File "/usr/lib/python3/dist-packages/compose/cli/docker_client.py", line 41, in get_client
+    client = docker_client(
+  File "/usr/lib/python3/dist-packages/compose/cli/docker_client.py", line 170, in docker_client
+    client = APIClient(use_ssh_client=not use_paramiko_ssh, **kwargs)
+  File "/usr/lib/python3/dist-packages/docker/api/client.py", line 197, in __init__
+    self._version = self._retrieve_server_version()
+  File "/usr/lib/python3/dist-packages/docker/api/client.py", line 221, in _retrieve_server_version
+    raise DockerException(
+docker.errors.DockerException: Error while fetching server API version: Not supported URL scheme http+docker

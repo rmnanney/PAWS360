@@ -1,0 +1,39 @@
+/* LoginForm Component Styles */
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem; /* space-y-6 */
+}
+
+.formFields {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem; /* space-y-4 */
+}
+
+.passwordFieldHeader {
+	display: flex;
+	align-items: center;
+}
+
+.forgotPasswordLink {
+	margin-left: auto; /* ml-auto */
+	display: inline-block;
+	font-size: 0.875rem; /* text-sm */
+	text-decoration: underline;
+	color: hsl(var(--muted-foreground));
+}
+
+.forgotPasswordLink:hover {
+	color: hsl(var(--primary)); /* hover:text-primary */
+}
+
+.submitButton {
+	width: 100%; /* w-full */
+}
+
+.loadingIcon {
+	margin-right: 0.5rem; /* mr-2 */
+	height: 1rem; /* h-4 */
+	width: 1rem; /* w-4 */
+}

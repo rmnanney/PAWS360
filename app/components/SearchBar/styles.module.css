@@ -1,0 +1,80 @@
+/* SearchBar styles */
+.searchBar {
+	position: relative;
+	width: 100%;
+	max-width: 28rem; /* max-w-md */
+}
+
+.searchInputRow {
+	display: flex;
+	gap: 0.5rem; /* gap-2 */
+}
+
+.searchInputContainer {
+	position: relative;
+	width: 100%;
+}
+
+.searchInput {
+	width: 100%;
+	padding-right: 2.5rem; /* pr-10 to make room for icon */
+}
+
+.searchIcon {
+	position: absolute;
+	right: 0.75rem; /* right-3 */
+	top: 50%;
+	transform: translateY(-50%);
+	height: 1rem; /* h-4 */
+	width: 1rem; /* w-4 */
+	color: hsl(var(--muted-foreground)); /* text-muted-foreground */
+	pointer-events: none; /* prevent icon from interfering with input clicks */
+}
+
+.searchResults {
+	position: absolute;
+	left: 0;
+	right: 0;
+	margin-top: 0.5rem; /* mt-2 */
+	background: white; /* bg-white */
+	border: 1px solid hsl(var(--border)); /* border */
+	border-radius: 0.375rem; /* rounded */
+	box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow */
+}
+
+.searchResultItem {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding: 0.75rem 1rem;
+	text-align: left;
+	background: none;
+	border: none;
+	cursor: pointer;
+}
+
+.searchResultItem:hover {
+	background-color: hsl(var(--muted) / 0.5); /* hover:bg-gray-100 */
+}
+
+.searchResultIcon {
+	margin-right: 0.5rem; /* mr-2 */
+	height: 1rem; /* h-4 */
+	width: 1rem; /* w-4 */
+	color: hsl(var(--primary)); /* text-primary - this is the panther yellow */
+}
+
+.searchResultTitle {
+	font-weight: 500; /* font-medium */
+}
+
+.searchResultDescription {
+	margin-left: 0.5rem; /* ml-2 */
+	font-size: 0.75rem; /* text-xs */
+	color: hsl(var(--muted-foreground)); /* text-muted-foreground */
+}
+
+.noResults {
+	padding: 0.5rem 1rem; /* px-4 py-2 */
+	color: hsl(var(--muted-foreground)); /* text-muted-foreground */
+}

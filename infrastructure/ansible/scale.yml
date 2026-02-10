@@ -1,0 +1,140 @@
+---
+# AdminLTE Scale Playbook
+# Horizontal scaling for increased load
+
+- name: Scale AdminLTE Services
+  hosts: webservers
+  become: true
+  
+  vars:
+    target_replicas: "{{ replicas | default(3) }}"
+    scale_timeout: 300
+    
+  tasks:
+    - name: Validate scaling parameters
+      assert:
+        that:
+          - target_replicas | int >= 1
+          - target_replicas | int <= 20
+        fail_msg: "Replica count must be between 1 and 20"
+        
+    - name: Check current system load
+      shell: uptime | awk -F'load average:' '{ print $2 }' | cut -d, -f1 | xargs
+      register: system_load
+      
+    - name: Check available memory
+      shell: free -m | awk 'NR==2{printf "%.1f", $7*100/$2 }'
+      register: available_memory
+      
+    - name: Ensure sufficient resources for scaling
+      assert:
+        that:
+          - system_load.stdout | float < 5.0
+          - available_memory.stdout | float > 20.0
+        fail_msg: "Insufficient resources for scaling (Load: {{ system_load.stdout }}, Free Memory: {{ available_memory.stdout }}%)"
+        
+    - name: Scale auth service instances
+      docker_container:
+        name: "auth-service-{{ item }}"
+        image: adminlte-auth:latest
+        state: started
+        ports:
+          - "{{ 8081 + item }}:8081"
+        env:
+          SPRING_PROFILES_ACTIVE: "{{ spring_profiles }}"
+          DATABASE_URL: "{{ postgres_host }}:{{ postgres_port }}/{{ postgres_db }}"
+          REDIS_URL: "{{ redis_host }}:{{ redis_port }}"
+          INSTANCE_ID: "auth-{{ item }}"
+        restart_policy: always
+        memory: "512m"
+        cpus: "0.5"
+      loop: "{{ range(1, target_replicas | int + 1) | list }}"
+      when: scale_auth_service | default(true)
+      
+    - name: Scale data service instances
+      docker_container:
+        name: "data-service-{{ item }}"
+        image: adminlte-data:latest
+        state: started
+        ports:
+          - "{{ 8082 + item }}:8082"
+        env:
+          SPRING_PROFILES_ACTIVE: "{{ spring_profiles }}"
+          DATABASE_URL: "{{ postgres_host }}:{{ postgres_port }}/{{ postgres_db }}"
+          AUTH_SERVICE_URL: "http://localhost:8081"
+          INSTANCE_ID: "data-{{ item }}"
+        restart_policy: always
+        memory: "1g"
+        cpus: "1.0"
+      loop: "{{ range(1, target_replicas | int + 1) | list }}"
+      when: scale_data_service | default(true)
+      
+    - name: Scale analytics service instances  
+      docker_container:
+        name: "analytics-service-{{ item }}"
+        image: adminlte-analytics:latest
+        state: started
+        ports:
+          - "{{ 8083 + item }}:8083"
+        env:
+          SPRING_PROFILES_ACTIVE: "{{ spring_profiles }}"
+          DATABASE_URL: "{{ postgres_read_host | default(postgres_host) }}:{{ postgres_port }}/{{ postgres_db }}"
+          REDIS_URL: "{{ redis_host }}:{{ redis_port }}"
+          INSTANCE_ID: "analytics-{{ item }}"
+        restart_policy: always
+        memory: "768m"
+        cpus: "0.75"
+      loop: "{{ range(1, target_replicas | int + 1) | list }}"
+      when: scale_analytics_service | default(true)
+      
+    - name: Wait for new instances to be healthy
+      uri:
+        url: "http://localhost:{{ item.port + item.instance }}/actuator/health"
+        method: GET
+        status_code: 200
+      loop:
+        - { service: 'auth', port: 8081, instance: 1 }
+        - { service: 'data', port: 8082, instance: 1 }
+        - { service: 'analytics', port: 8083, instance: 1 }
+      retries: 10
+      delay: 15
+      
+    - name: Update load balancer configuration
+      template:
+        src: nginx-upstream-scaled.conf.j2
+        dest: /etc/nginx/conf.d/adminlte-upstream.conf
+        backup: true
+      notify: restart nginx
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['loadbalancers'] }}"
+      
+    - name: Verify scaled deployment
+      uri:
+        url: "http://{{ hostvars[groups['loadbalancers'][0]]['ansible_default_ipv4']['address'] }}/admin/status"
+        method: GET
+        status_code: 200
+      register: scale_verification
+      retries: 5
+      delay: 10
+      
+    - name: Performance test after scaling
+      uri:
+        url: "http://{{ hostvars[groups['loadbalancers'][0]]['ansible_default_ipv4']['address'] }}/api/analytics/dashboard"
+        method: GET
+        status_code: 200
+        timeout: 3  # Should be faster with more instances
+      register: performance_after_scale
+      
+    - name: Update monitoring configuration
+      template:
+        src: prometheus-scaled.yml.j2
+        dest: /opt/prometheus/prometheus.yml
+        backup: true
+      delegate_to: "{{ groups['monitoring'][0] }}"
+      notify: restart prometheus
+      
+    - name: Log scaling operation
+      lineinfile:
+        path: /opt/adminlte/scaling.log
+        line: "{{ ansible_date_time.iso8601 }} - Scaled to {{ target_replicas }} replicas on {{ inventory_hostname }}"
+        create: true

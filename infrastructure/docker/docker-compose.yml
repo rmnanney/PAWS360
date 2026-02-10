@@ -1,0 +1,287 @@
+services:
+  # AdminLTE Frontend (Nginx serving static files)
+  adminlte-ui:
+    image: nginx:alpine
+    container_name: adminlte-ui
+    ports:
+      - "${APP_PORT:-80}:80"
+      - "${SSL_PORT:-443}:443"
+    volumes:
+      - ./admin-ui:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - auth-service
+      - data-service
+      - analytics-service
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+
+  # Authentication Service (Spring Boot + SAML2)
+  auth-service:
+    build:
+      context: ./java-base
+    image: paws360/java-base:21
+    container_name: adminlte-auth-service
+    ports:
+      - "${AUTH_SERVICE_PORT:-8081}:${AUTH_SERVICE_PORT:-8081}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${APP_ENV:-docker}
+      - SERVER_PORT=${AUTH_SERVICE_PORT:-8081}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST:-postgres}:${DB_PORT:-5432}/${DB_NAME:-adminlte}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-adminlte}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - REDIS_URL=redis://redis:${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - SAML_ENTITY_ID=${SAML_ENTITY_ID}
+      - SAML_IDP_METADATA_URL=${SAML_IDP_METADATA_URL}
+      - JAVA_OPTS=-Xmx${JAVA_MAX_HEAP:-512m} -Xms${JAVA_MIN_HEAP:-256m} --enable-preview
+    volumes:
+      - ./services/auth-service.jar:/app/auth-service.jar:ro
+      - ./config/auth:/config:ro
+    command: ["java", "--enable-preview", "-jar", "/app/auth-service.jar"]
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${AUTH_SERVICE_PORT:-8081}/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Data Service (Student/Course Management)
+  data-service:
+    build:
+      context: ./java-base
+    image: paws360/java-base:21
+    container_name: adminlte-data-service
+    ports:
+      - "${DATA_SERVICE_PORT:-8082}:${DATA_SERVICE_PORT:-8082}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${APP_ENV:-docker}
+      - SERVER_PORT=${DATA_SERVICE_PORT:-8082}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST:-postgres}:${DB_PORT:-5432}/${DB_NAME:-adminlte}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-adminlte}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - AUTH_SERVICE_URL=http://auth-service:${AUTH_SERVICE_PORT:-8081}
+      - REDIS_URL=redis://redis:${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JAVA_OPTS=-Xmx${JAVA_MAX_HEAP:-1g} -Xms${JAVA_MIN_HEAP:-512m} --enable-preview
+    volumes:
+      - ./services/data-service.jar:/app/data-service.jar:ro
+      - ./config/data:/config:ro
+    command: ["java", "--enable-preview", "-jar", "/app/data-service.jar"]
+    depends_on:
+      - postgres
+      - auth-service
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${DATA_SERVICE_PORT:-8082}/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Analytics Service (Chart.js + Real-time Data)
+  analytics-service:
+    build:
+      context: ./java-base
+    image: paws360/java-base:21
+    container_name: adminlte-analytics-service
+    ports:
+      - "${ANALYTICS_SERVICE_PORT:-8083}:${ANALYTICS_SERVICE_PORT:-8083}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${APP_ENV:-docker}
+      - SERVER_PORT=${ANALYTICS_SERVICE_PORT:-8083}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST:-postgres}:${DB_PORT:-5432}/${DB_NAME:-adminlte}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-adminlte}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - REDIS_URL=redis://redis:${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JAVA_OPTS=-Xmx${JAVA_MAX_HEAP:-768m} -Xms${JAVA_MIN_HEAP:-384m} --enable-preview
+    volumes:
+      - ./services/analytics-service.jar:/app/analytics-service.jar:ro
+      - ./config/analytics:/config:ro
+    command: ["java", "--enable-preview", "-jar", "/app/analytics-service.jar"]
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${ANALYTICS_SERVICE_PORT:-8083}/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # UWM Authentication Mock Service (Node.js)
+  uwm-auth-service:
+    image: node:18-alpine
+    container_name: adminlte-uwm-auth-service
+    ports:
+      - "${UWM_AUTH_PORT:-8084}:${UWM_AUTH_PORT:-8084}"
+    environment:
+      - UWM_AUTH_PORT=${UWM_AUTH_PORT:-8084}
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=development
+    command: ["node", "-e", "const http=require('http');const port=process.env.UWM_AUTH_PORT?parseInt(process.env.UWM_AUTH_PORT,10):8084;http.createServer((req,res)=>{if(req.url==='/'||req.url==='/auth'){res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify({message:'UWM Auth Mock'}));}if(req.url==='/health'){res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify({status:'UP'}));}res.writeHead(404,{'Content-Type':'application/json'});res.end(JSON.stringify({error:'Not found'}));}).listen(port,()=>console.log('UWM Auth Mock listening on '+port));"]
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${UWM_AUTH_PORT:-8084}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: adminlte-postgres
+    ports:
+      - "${DB_PORT:-5432}:${DB_PORT:-5432}"
+    environment:
+      - POSTGRES_DB=${DB_NAME:-adminlte}
+      - POSTGRES_USER=${DB_USERNAME:-adminlte}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-adminlte} -d ${DB_NAME:-adminlte}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Read Replica (for analytics)
+  postgres-read:
+    image: postgres:15-alpine
+    container_name: adminlte-postgres-read
+    ports:
+      - "${DB_READ_PORT:-5433}:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME:-adminlte}
+      - POSTGRES_USER=${DB_READ_USERNAME:-readonly}
+      - POSTGRES_PASSWORD=${DB_READ_PASSWORD:-readonly_password}
+    volumes:
+      - postgres_read_data:/var/lib/postgresql/data
+      - ./db/init-readonly.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_READ_USERNAME:-readonly} -d ${DB_NAME:-adminlte}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache & Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: adminlte-redis
+    ports:
+      - "${REDIS_PORT:-6379}:${REDIS_PORT:-6379}"
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory ${REDIS_MAX_MEMORY:-256mb} --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: adminlte-prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:${PROMETHEUS_PORT:-9090}"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+
+  # Grafana Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: adminlte-grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:${GRAFANA_PORT:-3000}"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-adminlte_grafana_password}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+    depends_on:
+      - prometheus
+
+  # Student Frontend (Next.js)
+  student-frontend:
+    image: node:18-alpine
+    container_name: adminlte-student-frontend
+    ports:
+      - "9002:9002"
+    environment:
+      - NODE_ENV=development
+      - PORT=9002
+    volumes:
+      - ../../:/app:cached
+      - /app/node_modules
+    working_dir: /app
+    command: ["sh", "-c", "npm install --silent || true && npm run dev -- -p 9002"]
+    restart: unless-stopped
+    networks:
+      - adminlte-network
+    depends_on:
+      - auth-service
+      - data-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:9002/ > /dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  adminlte-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${DOCKER_NETWORK_SUBNET:-172.20.0.0/16}
+
+volumes:
+  postgres_data:
+    driver: local
+  postgres_read_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

@@ -1,0 +1,27 @@
+#cloud-config
+hostname: {{ cloud_init_hostname | default('paws360') }}
+{#
+  Build a sensible fqdn: if cloud_init_hostname already looks like an FQDN
+  (contains a dot) use it; otherwise append cloud_init_domain (default set in role defaults).
+#}
+{% set domain = cloud_init_domain | default('paws360.ryannanney.com') %}
+{% if '.' in (cloud_init_hostname | default('paws360')) %}
+fqdn: {{ cloud_init_hostname | default('paws360') }}
+{% else %}
+fqdn: {{ (cloud_init_hostname | default('paws360')) ~ '.' ~ domain }}
+{% endif %}
+manage_etc_hosts: true
+
+users:
+  - name: {{ cloud_init_user }}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+{% for key in cloud_init_ssh_public_keys %}
+      - {{ key }}
+{% endfor %}
+
+package_update: true
+package_upgrade: true
+
+runcmd:
+  - [ sh, -c, 'echo "Cloud-init complete for {{ cloud_init_hostname }}"' ]

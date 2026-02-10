@@ -1,0 +1,122 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+*.yml
+!contexts/sessions/*.yml
+!.github/workflows/*.yml
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# React Router/NextJS
+.DS_Store
+/**/node_modules/
+/.react-router/
+/build/
+.next/
+tsconfig.tsbuildinfo
+
+# Ansible
+infrastructure/ansible/.ansible/
+infrastructure/ansible/ansible.log
+
+# Build artifacts - JAR files (built during CI/CD)
+infrastructure/docker/services/*.jar
+services/*.jar
+*.jar
+!**/mvn*
+
+# Ignore docker-generated frontend artifacts if present
+frontend/node_modules/
+frontend/package-lock.json
+
+# Static export directory created by next export
+out/
+
+# Local development environment (001-local-dev-parity)
+.env.local
+docker-compose.override.yml
+.dev-running
+backups/
+snapshots/
+
+# ===== CREDENTIAL FILES - NEVER COMMIT =====
+# Core environment files
+.env
+.env.production
+.env.*.local
+.env.*.production
+cookies.txt
+.session
+.sessions
+
+# ===== SERVICE & CONFIGURATION CREDENTIALS =====
+config/.env*
+config/*/.env*
+infrastructure/docker/.env*
+infrastructure/kubernetes/secrets.yaml
+infrastructure/kubernetes/*secret*.yaml
+infrastructure/ansible/.env*
+
+# ===== SSH KEYS & CRYPTOGRAPHIC MATERIAL =====
+*.pem
+*.key
+*.priv
+*.pub
+id_rsa*
+id_ecdsa*
+id_ed25519*
+.gnupg/
+.ssh/
+
+# ===== CLOUD CREDENTIALS =====
+.docker/
+.kube/
+kubeconfig*
+~/.aws/
+~/.azure/
+
+# ===== API KEYS & TOKENS =====
+.apikey
+.token
+.tokens
+api-key.txt
+token.txt
+credentials*.json
+creds*.json
+auth.json
+auth.*.json
+
+# ===== SECRETS & SENSITIVE DATA =====
+secrets/
+.secrets
+.secret
+*secret*
+*.secret

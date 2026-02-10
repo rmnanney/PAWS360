@@ -1,0 +1,165 @@
+package com.uwm.paws360.JPARepository.User;
+
+import com.uwm.paws360.Entity.Base.Address;
+import com.uwm.paws360.Entity.Base.Users;
+import com.uwm.paws360.Entity.UserTypes.Instructor;
+import com.uwm.paws360.Entity.EntityDomains.User.Address_Type;
+import com.uwm.paws360.Entity.EntityDomains.Ferpa_Compliance;
+import com.uwm.paws360.Entity.EntityDomains.User.Role;
+import com.uwm.paws360.Entity.EntityDomains.User.Status;
+import com.uwm.paws360.Entity.EntityDomains.User.US_States;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest(excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+    org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
+})
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+public class InstructorRepositoryTest {
+
+    @Autowired
+    private InstructorRepository instructorRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private Address createTestAddress() {
+        Address address = new Address();
+        address.setAddress_type(Address_Type.HOME);
+        address.setStreet_address_1("123 Test St");
+        address.setCity("Test City");
+        address.setUs_state(US_States.WISCONSIN);
+        address.setZipcode("53703");
+        address.setFirstname("Test");
+        address.setLastname("User");
+        return address;
+    }
+
+    @Test
+    public void testSaveAndFindById() {
+        // Given
+        Instructor instructor = new Instructor();
+        Users user = new Users();
+        user.setFirstname("Instructor");
+        user.setLastname("Test");
+        user.setEmail("instructor.test@example.com");
+        user.setPassword("password");
+        user.setDob(LocalDate.of(1985, 1, 1));
+        user.setSocialsecurity("000000071");
+        user.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
+        user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
+        user.setRole(Role.INSTRUCTOR);
+        user.setStatus(Status.ACTIVE);
+        Address address = createTestAddress();
+        address.setUser(user);
+        user.getAddresses().add(address);
+        Users savedUser = userRepository.save(user);
+        instructor.setUser(savedUser);
+
+        // When
+        Instructor savedInstructor = instructorRepository.save(instructor);
+
+        // Then
+        assertThat(savedInstructor.getId()).isNotNull();
+        Optional<Instructor> foundInstructor = instructorRepository.findById(savedInstructor.getId());
+        assertThat(foundInstructor).isPresent();
+        assertThat(foundInstructor.get().getUser().getFirstname()).isEqualTo("Instructor");
+    }
+
+    @Test
+    public void testFindAll() {
+        // Given
+        Instructor instructor1 = new Instructor();
+        Users user1 = new Users();
+        user1.setFirstname("Instructor1");
+        user1.setLastname("Test");
+        user1.setEmail("instructor1@example.com");
+        user1.setPassword("password");
+        user1.setDob(LocalDate.of(1985, 1, 1));
+        user1.setSocialsecurity("000000072");
+        user1.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user1.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user1.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
+        user1.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
+        user1.setRole(Role.INSTRUCTOR);
+        user1.setStatus(Status.ACTIVE);
+        Address address1 = createTestAddress();
+        address1.setUser(user1);
+        user1.getAddresses().add(address1);
+        Users savedUser1 = userRepository.save(user1);
+        instructor1.setUser(savedUser1);
+        instructorRepository.save(instructor1);
+
+        Instructor instructor2 = new Instructor();
+        Users user2 = new Users();
+        user2.setFirstname("Instructor2");
+        user2.setLastname("Test");
+        user2.setEmail("instructor2@example.com");
+        user2.setPassword("password");
+        user2.setDob(LocalDate.of(1985, 1, 1));
+        user2.setSocialsecurity("000000073");
+        user2.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user2.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user2.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
+        user2.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
+        user2.setRole(Role.INSTRUCTOR);
+        user2.setStatus(Status.ACTIVE);
+        Address address2 = createTestAddress();
+        address2.setUser(user2);
+        user2.getAddresses().add(address2);
+        Users savedUser2 = userRepository.save(user2);
+        instructor2.setUser(savedUser2);
+        instructorRepository.save(instructor2);
+
+        // When
+        List<Instructor> instructors = instructorRepository.findAll();
+
+        // Then
+        assertThat(instructors).hasSizeGreaterThanOrEqualTo(2);
+    }
+
+    @Test
+    public void testDeleteById() {
+        // Given
+        Instructor instructor = new Instructor();
+        Users user = new Users();
+        user.setFirstname("Delete");
+        user.setLastname("Instructor");
+        user.setEmail("delete.instructor@example.com");
+        user.setPassword("password");
+        user.setDob(LocalDate.of(1985, 1, 1));
+        user.setSocialsecurity("000000074");
+        user.setEthnicity(com.uwm.paws360.Entity.EntityDomains.User.Ethnicity.OTHER);
+        user.setGender(com.uwm.paws360.Entity.EntityDomains.User.Gender.OTHER);
+        user.setNationality(com.uwm.paws360.Entity.EntityDomains.User.Nationality.UNITED_STATES);
+        user.setFerpa_compliance(Ferpa_Compliance.PUBLIC);
+        user.setRole(Role.INSTRUCTOR);
+        user.setStatus(Status.ACTIVE);
+        Address addressDel = createTestAddress();
+        addressDel.setUser(user);
+        user.getAddresses().add(addressDel);
+        Users savedUser = userRepository.save(user);
+        instructor.setUser(savedUser);
+        Instructor savedInstructor = instructorRepository.save(instructor);
+
+        // When
+        instructorRepository.deleteById(savedInstructor.getId());
+
+        // Then
+        Optional<Instructor> deletedInstructor = instructorRepository.findById(savedInstructor.getId());
+        assertThat(deletedInstructor).isNotPresent();
+    }
+}

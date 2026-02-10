@@ -1,0 +1,93 @@
+---
+# Rollback Tasks for AdminLTE Services
+# Restores previous service state on deployment failure
+
+- name: Log rollback initiation
+  lineinfile:
+    path: /opt/adminlte/deployment.log
+    line: "{{ ansible_date_time.iso8601 }} - ROLLBACK INITIATED: {{ rollback_reason | default('Unknown failure') }}"
+    create: true
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+
+- name: Stop failed services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+  loop:
+    - adminlte-analytics-service
+    - adminlte-data-service
+    - adminlte-auth-service
+  ignore_errors: true
+
+- name: Find latest backup
+  find:
+    paths: "/opt/adminlte/backups"
+    patterns: "*.tar.gz"
+    age: "-1d"  # Within last day
+  register: recent_backups
+
+- name: Restore from backup
+  ansible.builtin.unarchive:
+    src: "{{ (recent_backups.files | sort(attribute='mtime', reverse=true) | first).path }}"
+    dest: "/opt/adminlte"
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+    remote_src: true
+  when: recent_backups.files | length > 0
+
+- name: Restart services from backup
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: true
+  loop:
+    - adminlte-auth-service
+    - adminlte-data-service
+    - adminlte-analytics-service
+  when: recent_backups.files | length > 0
+
+- name: Verify rollback health
+  uri:
+    url: "http://{{ ansible_default_ipv4.address }}:{{ item }}/actuator/health"
+    method: GET
+    status_code: 200
+    timeout: 30
+  loop:
+    - 8081  # auth-service
+    - 8082  # data-service
+    - 8083  # analytics-service
+  retries: 3
+  delay: 5
+  when: recent_backups.files | length > 0
+
+- name: Add back to load balancer pool after rollback
+  uri:
+    url: "http://{{ hostvars[item]['ansible_default_ipv4']['address'] }}/admin/pool/add/{{ ansible_default_ipv4.address }}"
+    method: POST
+    status_code: 200
+  loop: "{{ groups['loadbalancers'] }}"
+  delegate_to: "{{ item }}"
+  when: groups['loadbalancers'] is defined and recent_backups.files | length > 0
+
+- name: Log rollback completion
+  lineinfile:
+    path: /opt/adminlte/deployment.log
+    line: "{{ ansible_date_time.iso8601 }} - ROLLBACK COMPLETED: Services restored from backup"
+    create: true
+    owner: "{{ adminlte_user }}"
+    group: "{{ adminlte_user }}"
+
+- name: Send rollback notification
+  mail:
+    to: "{{ notification_email | default('admin@university.edu') }}"
+    subject: "AdminLTE Rollback Completed"
+    body: |
+      AdminLTE rollback completed at {{ ansible_date_time.iso8601 }}.
+
+      Reason: {{ rollback_reason | default('Unknown failure') }}
+      Host: {{ inventory_hostname }}
+      Backup restored: {{ (recent_backups.files | sort(attribute='mtime', reverse=true) | first).path | default('No backup found') }}
+
+      Services have been restored to previous working state.
+  when: send_notifications | default(false) and recent_backups.files | length > 0

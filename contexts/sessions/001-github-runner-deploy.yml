@@ -1,0 +1,82 @@
+---
+feature_id: "001-github-runner-deploy"
+session_start: "2025-01-XX"
+status: "in_progress"
+current_phase: "Phase 1: Setup"
+jira_epic: "INFRA-472"
+jira_stories:
+  - "INFRA-473"
+  - "INFRA-474"
+  - "INFRA-475"
+constitutional_compliance:
+  article_i_jira_first: true
+  article_ii_context_management: true
+  article_viia_monitoring_discovery: true
+  article_x_truth_partnership: true
+  article_xiii_proactive_compliance: true
+objective: "Stabilize production deployments through GitHub Actions self-hosted runners with failover capability, diagnostics, and safety guardrails."
+problem_statement: "Production deployments are not reaching the production stack as expected. Runners appear to be failing during CI/CD deployment phases."
+success_criteria:
+  - "≥95% production deployment success rate"
+  - "≤10 minute p95 deployment duration"
+  - "Zero secret leakage incidents"
+  - "Diagnostic capabilities operational within 5 minutes"
+  - "Full constitutional compliance"
+implementation_approach:
+  - "Spec creation: ✓"
+  - "Planning: ✓"
+  - "Research: ✓"
+  - "Tasks generation: ✓"
+  - "Implementation: IN PROGRESS"
+phase_1_tasks_completed:
+  - "T001: Create JIRA epic (INFRA-472)"
+  - "T002: Create JIRA story INFRA-473 (US1)"
+  - "T003: Create JIRA story INFRA-474 (US2)"
+  - "T004: Create JIRA story INFRA-475 (US3)"
+  - "T005: Create runner context file"
+  - "T006: Create deployment pipeline context file"
+  - "T007: Update monitoring stack context"
+  - "T008: Create session file"
+phase_1_tasks_pending:
+  - "T009: Create constitutional self-check script"
+  - "T010: Add pre-commit hook for constitutional compliance"
+  - "T011: Document infrastructure impact analysis"
+  - "T012: Create Ansible inventory guide"
+mvp_scope: "Phase 1, Phase 2, Phase 3 (US1) = 42 tasks total"
+key_decisions:
+  architecture: "Option C (Fail-fast + secondary failover)"
+  runner_config: "Ephemeral/JIT preferred"
+  concurrency: "Serialized production deployments (1 at a time)"
+  monitoring: "Prometheus/Grafana at 192.168.0.200"
+  iac_mandate: "Use Ansible inventory variables, no hardcoded IPs"
+  security: "All secrets in GitHub Secrets, 90-day rotation"
+  deployment_policy: "Fix-forward only (no rollback)"
+constraints:
+  - "No rollback policy: Fix-forward approach mandated"
+  - "IaC mandate: All infrastructure addresses via Ansible inventory"
+  - "Production inventory currently localhost, needs authoritative source"
+  - "No time constraints: Comprehensive testing required, no shortcuts"
+risks:
+  high:
+    - "Incomplete production inventory - needs authoritative source"
+  medium:
+    - "Secret rotation during implementation - coordinate with security team"
+  low:
+    - "Monitoring integration complexity - leverage existing stack"
+documentation_created:
+  - "JIRA: INFRA-472 (epic), INFRA-473/474/475 (stories)"
+  - "Context: github-runners.md, deployment-pipeline.md"
+  - "Context: Updated monitoring-stack.md with runner metrics"
+  - "Session: This file"
+next_steps:
+  - "Complete Phase 1 remaining tasks (T009-T012)"
+  - "Begin Phase 2: Foundation tasks (inventory, scripts, workflows)"
+  - "Execute Phase 3: US1 implementation (42 tasks MVP)"
+  - "Validate MVP before proceeding to US2/US3"
+notes:
+  - "Constitutional compliance embedded in all phases"
+  - "JIRA updates required at each phase transition"
+  - "Comprehensive test criteria enforced"
+  - "Deployment verification at pre/during/post stages"
+  - "Infrastructure impact documented before resource changes"
+

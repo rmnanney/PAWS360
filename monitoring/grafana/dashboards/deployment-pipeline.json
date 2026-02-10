@@ -1,0 +1,905 @@
+{
+  "dashboard": {
+    "title": "Deployment Pipeline Monitoring",
+    "tags": ["deployment", "pipeline", "production", "ci-cd", "runners"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(deployment_status, environment)",
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "runner",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(deployment_status, runner_name)",
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Deployment Success/Fail Rate by Environment",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum by (environment) (rate(deployment_status{status=\"success\",environment=~\"$environment\"}[5m]))",
+            "legendFormat": "{{environment}} - Success",
+            "refId": "A"
+          },
+          {
+            "expr": "sum by (environment) (rate(deployment_status{status=\"failed\",environment=~\"$environment\"}[5m]))",
+            "legendFormat": "{{environment}} - Failed",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "axisLabel": "Deployments/sec",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {"group": "A", "mode": "none"},
+              "thresholdsStyle": {"mode": "off"}
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null}
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byRegexp", "options": ".*Failed.*"},
+              "properties": [
+                {"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byRegexp", "options": ".*Success.*"},
+              "properties": [
+                {"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true,
+            "calcs": ["mean", "last"]
+          },
+          "tooltip": {"mode": "multi", "sort": "none"}
+        }
+      },
+      {
+        "id": 2,
+        "title": "Deployment Duration (p50/p95/p99)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum by (le, environment) (rate(deployment_duration_seconds_bucket{environment=~\"$environment\"}[5m])))",
+            "legendFormat": "{{environment}} - p50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum by (le, environment) (rate(deployment_duration_seconds_bucket{environment=~\"$environment\"}[5m])))",
+            "legendFormat": "{{environment}} - p95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum by (le, environment) (rate(deployment_duration_seconds_bucket{environment=~\"$environment\"}[5m])))",
+            "legendFormat": "{{environment}} - p99",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "axisLabel": "Duration (seconds)",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {"group": "A", "mode": "none"},
+              "thresholdsStyle": {"mode": "off"}
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 300},
+                {"color": "red", "value": 600}
+              ]
+            },
+            "unit": "s"
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "calcs": ["mean", "max"]
+          },
+          "tooltip": {"mode": "multi", "sort": "none"}
+        }
+      },
+      {
+        "id": 3,
+        "title": "Active Deployment Jobs",
+        "type": "gauge",
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "sum(deployment_in_progress{environment=~\"$environment\"})",
+            "legendFormat": "Active Jobs",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 2},
+                {"color": "red", "value": 5}
+              ]
+            },
+            "unit": "short",
+            "min": 0,
+            "max": 10
+          }
+        },
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 4,
+        "title": "Deployment Queue Depth",
+        "type": "gauge",
+        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 8},
+        "targets": [
+          {
+            "expr": "sum(deployment_queue_depth{environment=~\"$environment\"})",
+            "legendFormat": "Queued Deployments",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 3},
+                {"color": "red", "value": 7}
+              ]
+            },
+            "unit": "short",
+            "min": 0,
+            "max": 15
+          }
+        },
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 5,
+        "title": "Deployment Failure Reasons (24h)",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "sum by (failure_reason) (increase(deployment_status{status=\"failed\",environment=~\"$environment\"}[24h]))",
+            "legendFormat": "{{failure_reason}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              }
+            },
+            "mappings": [],
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "network_connectivity"},
+              "properties": [
+                {"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "authentication"},
+              "properties": [
+                {"id": "color", "value": {"fixedColor": "orange", "mode": "fixed"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "timeout"},
+              "properties": [
+                {"id": "color", "value": {"fixedColor": "yellow", "mode": "fixed"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "disk_space"},
+              "properties": [
+                {"id": "color", "value": {"fixedColor": "purple", "mode": "fixed"}}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "values": ["value", "percent"]
+          },
+          "pieType": "pie",
+          "tooltip": {"mode": "single", "sort": "none"}
+        }
+      },
+      {
+        "id": 6,
+        "title": "Runner Utilization During Deployments",
+        "type": "heatmap",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "sum by (runner_name) (rate(deployment_runner_cpu_usage_percent{runner_name=~\"$runner\"}[5m]))",
+            "legendFormat": "{{runner_name}}",
+            "refId": "A",
+            "format": "time_series"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "scaleDistribution": {"type": "linear"}
+            },
+            "color": {
+              "mode": "continuous-GrYlRd"
+            },
+            "unit": "percent"
+          }
+        },
+        "options": {
+          "calculate": false,
+          "cellGap": 2,
+          "cellValues": {},
+          "color": {
+            "exponent": 0.5,
+            "fill": "dark-orange",
+            "mode": "scheme",
+            "reverse": false,
+            "scale": "exponential",
+            "scheme": "Spectral",
+            "steps": 128
+          },
+          "exemplars": {
+            "color": "rgba(255,0,255,0.7)"
+          },
+          "filterValues": {
+            "le": 1e-9
+          },
+          "legend": {
+            "show": true
+          },
+          "rowsFrame": {
+            "layout": "auto"
+          },
+          "tooltip": {
+            "show": true,
+            "yHistogram": false
+          },
+          "yAxis": {
+            "axisPlacement": "left",
+            "reverse": false,
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Secrets Validation Status",
+        "type": "status-history",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "sum by (secret_name) (rate(secret_validation_success{environment=~\"$environment\"}[5m]))",
+            "legendFormat": "{{secret_name}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "custom": {
+              "lineWidth": 0,
+              "fillOpacity": 70
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {"color": "red", "index": 0, "text": "Failed"},
+                  "1": {"color": "green", "index": 1, "text": "Success"}
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "green", "value": 1}
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "colWidth": 0.9,
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "rowHeight": 0.9,
+          "showValue": "never",
+          "tooltip": {"mode": "single", "sort": "none"}
+        }
+      },
+      {
+        "id": 8,
+        "title": "Deployment Success Rate Trend (7d)",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "(sum(increase(deployment_status{status=\"success\",environment=~\"$environment\"}[1h])) / sum(increase(deployment_status{environment=~\"$environment\"}[1h]))) * 100",
+            "legendFormat": "Success Rate %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "custom": {
+              "axisLabel": "Success Rate (%)",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 20,
+              "gradientMode": "opacity",
+              "lineInterpolation": "smooth",
+              "lineWidth": 3,
+              "pointSize": 5,
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {"group": "A", "mode": "none"},
+              "thresholdsStyle": {"mode": "line"}
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 80},
+                {"color": "green", "value": 95}
+              ]
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {"mode": "single", "sort": "none"}
+        }
+      },
+      {
+        "id": 9,
+        "title": "Deployment by Runner",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 30},
+        "targets": [
+          {
+            "expr": "sum by (runner_name) (increase(deployment_status{runner_name=~\"$runner\"}[24h]))",
+            "legendFormat": "{{runner_name}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null}
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 10,
+        "title": "Recent Deployment Failures (Last 10)",
+        "type": "table",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 30},
+        "targets": [
+          {
+            "expr": "topk(10, deployment_status{status=\"failed\"} > 0)",
+            "legendFormat": "",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null}
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Time"},
+              "properties": [
+                {"id": "custom.width", "value": 180}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "failure_reason"},
+              "properties": [
+                {"id": "custom.width", "value": 150}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "desc": true,
+              "displayName": "Time"
+            }
+          ]
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "__name__": true,
+                "job": true,
+                "instance": true,
+                "status": true
+              },
+              "indexByName": {},
+              "renameByName": {
+                "Time": "Timestamp",
+                "runner_name": "Runner",
+                "failure_reason": "Reason",
+                "environment": "Environment"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Rollback Count by Reason",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "sum by (reason) (increase(deployment_rollback_total[1h]))",
+            "legendFormat": "{{reason}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "axisLabel": "Rollbacks per hour",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "always",
+              "stacking": {"mode": "none"}
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 2}
+              ]
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["sum", "lastNotNull"]
+          },
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": 8,
+        "title": "Health Check Failure Rate",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "targets": [
+          {
+            "expr": "sum by (check_name) (rate(deployment_health_check_failures_total[5m]))",
+            "legendFormat": "{{check_name}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "custom": {
+              "axisLabel": "Failures per second",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "opacity",
+              "lineWidth": 2
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "red", "value": 0.01}
+              ]
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["mean", "max"]
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Deployment Success vs Rollback Ratio",
+        "type": "gauge",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 32},
+        "targets": [
+          {
+            "expr": "(sum(increase(deployment_completed_total{status=\"success\"}[24h])) / (sum(increase(deployment_completed_total[24h])) + sum(increase(deployment_rollback_total[24h])))) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 90},
+                {"color": "green", "value": 95}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true,
+          "text": {
+            "titleSize": 16,
+            "valueSize": 40
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Time to Detect and Rollback Failures",
+        "type": "heatmap",
+        "gridPos": {"h": 6, "w": 16, "x": 8, "y": 32},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(deployment_rollback_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(deployment_rollback_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p50",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {
+              "hideFrom": {"tooltip": false, "viz": false, "legend": false}
+            }
+          }
+        },
+        "options": {
+          "calculate": true,
+          "calculation": {},
+          "cellGap": 2,
+          "cellRadius": 0,
+          "cellValues": {},
+          "color": {
+            "exponent": 0.5,
+            "fill": "dark-orange",
+            "mode": "scheme",
+            "reverse": false,
+            "scale": "exponential",
+            "scheme": "Oranges",
+            "steps": 128
+          },
+          "exemplars": {"color": "rgba(255,0,255,0.7)"},
+          "filterValues": {"le": 1e-9},
+          "legend": {"show": true},
+          "rowsFrame": {"layout": "auto"},
+          "tooltip": {"show": true, "yHistogram": true},
+          "yAxis": {
+            "axisPlacement": "left",
+            "decimals": 0,
+            "reverse": false,
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Deployment Safeguard Status",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 38},
+        "targets": [
+          {
+            "expr": "deployment_transaction_safety_used",
+            "instant": true,
+            "refId": "A"
+          },
+          {
+            "expr": "sum(increase(deployment_rollback_total[24h]))",
+            "instant": true,
+            "refId": "B"
+          },
+          {
+            "expr": "sum(increase(deployment_health_check_failures_total[24h]))",
+            "instant": true,
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {
+                "type": "value",
+                "options": {
+                  "1": {"text": "Enabled", "color": "green"},
+                  "0": {"text": "Disabled", "color": "red"}
+                }
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "red", "value": 1}
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byFrameRefID", "options": "A"},
+              "properties": [
+                {"id": "displayName", "value": "Transaction Safety"}
+              ]
+            },
+            {
+              "matcher": {"id": "byFrameRefID", "options": "B"},
+              "properties": [
+                {"id": "displayName", "value": "Rollbacks (24h)"},
+                {"id": "unit", "value": "short"}
+              ]
+            },
+            {
+              "matcher": {"id": "byFrameRefID", "options": "C"},
+              "properties": [
+                {"id": "displayName", "value": "Health Check Failures (24h)"},
+                {"id": "unit", "value": "short"}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "graphMode": "none",
+          "colorMode": "background",
+          "justifyMode": "center",
+          "textMode": "value_and_name",
+          "orientation": "vertical"
+        }
+      },
+      {
+        "id": 12,
+        "title": "Rollback Incidents (24h)",
+        "type": "table",
+        "gridPos": {"h": 6, "w": 16, "x": 8, "y": 38},
+        "targets": [
+          {
+            "expr": "deployment_rollback_total",
+            "instant": false,
+            "refId": "A",
+            "format": "table"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Time"},
+              "properties": [
+                {"id": "custom.width", "value": 180}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "failed_version"},
+              "properties": [
+                {"id": "custom.width", "value": 120},
+                {"id": "displayName", "value": "Failed Version"}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "rollback_version"},
+              "properties": [
+                {"id": "custom.width", "value": 120},
+                {"id": "displayName", "value": "Rollback Version"}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "reason"},
+              "properties": [
+                {"id": "custom.width", "value": 250},
+                {"id": "displayName", "value": "Reason"}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "desc": true,
+              "displayName": "Time"
+            }
+          ]
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "__name__": true,
+                "job": true,
+                "instance": true,
+                "Value": true
+              },
+              "indexByName": {},
+              "renameByName": {}
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

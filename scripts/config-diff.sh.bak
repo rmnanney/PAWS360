@@ -1,0 +1,109 @@
+#!/bin/bash
+# Configuration Diff Script
+# Compares local environment config with staging/production
+
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Default environment to compare
+COMPARE_ENV="${1:-staging}"
+
+echo -e "${BLUE}=== Configuration Parity Check ===${NC}"
+echo "Comparing: local vs $COMPARE_ENV"
+echo
+
+# Configuration items to compare
+declare -A LOCAL_CONFIG
+declare -A REMOTE_CONFIG
+
+# Load local configuration (from docker-compose.yml and .env.local)
+LOCAL_CONFIG[postgres_version]="15"
+LOCAL_CONFIG[redis_version]="7.2"
+LOCAL_CONFIG[etcd_version]="3.5.11"
+LOCAL_CONFIG[postgres_port]="5432"
+LOCAL_CONFIG[redis_port]="6379"
+LOCAL_CONFIG[etcd_client_port]="2379"
+LOCAL_CONFIG[patroni_cluster_size]="3"
+LOCAL_CONFIG[redis_cluster_size]="3_master_2_replica"
+LOCAL_CONFIG[etcd_cluster_size]="3"
+
+# Load remote configuration (placeholder - would fetch from actual environment)
+# In real implementation, this would query staging/production
+case "$COMPARE_ENV" in
+    staging)
+        REMOTE_CONFIG[postgres_version]="15"
+        REMOTE_CONFIG[redis_version]="7.2"
+        REMOTE_CONFIG[etcd_version]="3.5.11"
+        REMOTE_CONFIG[postgres_port]="5432"
+        REMOTE_CONFIG[redis_port]="6379"
+        REMOTE_CONFIG[etcd_client_port]="2379"
+        REMOTE_CONFIG[patroni_cluster_size]="3"
+        REMOTE_CONFIG[redis_cluster_size]="3_master_2_replica"
+        REMOTE_CONFIG[etcd_cluster_size]="3"
+        ;;
+    production)
+        REMOTE_CONFIG[postgres_version]="15"
+        REMOTE_CONFIG[redis_version]="7.2"
+        REMOTE_CONFIG[etcd_version]="3.5.11"
+        REMOTE_CONFIG[postgres_port]="5432"
+        REMOTE_CONFIG[redis_port]="6379"
+        REMOTE_CONFIG[etcd_client_port]="2379"
+        REMOTE_CONFIG[patroni_cluster_size]="3"
+        REMOTE_CONFIG[redis_cluster_size]="5_master_4_replica"
+        REMOTE_CONFIG[etcd_cluster_size]="5"
+        ;;
+esac
+
+# Compare configurations
+DIFFERENCES=0
+MATCHES=0
+
+echo "Configuration Item                  | Local          | $COMPARE_ENV      | Status"
+echo "----------------------------------------|----------------|----------------|--------"
+
+for key in "${!LOCAL_CONFIG[@]}"; do
+    local_val="${LOCAL_CONFIG[$key]}"
+    remote_val="${REMOTE_CONFIG[$key]}"
+    
+    printf "%-36s | %-14s | %-14s | " "$key" "$local_val" "$remote_val"
+    
+    if [ "$local_val" = "$remote_val" ]; then
+        echo -e "${GREEN}MATCH${NC}"
+        MATCHES=$((MATCHES + 1))
+    else
+        echo -e "${YELLOW}DIFF${NC}"
+        DIFFERENCES=$((DIFFERENCES + 1))
+    fi
+done
+
+echo
+
+# Calculate parity score
+TOTAL=$((MATCHES + DIFFERENCES))
+if [ $TOTAL -gt 0 ]; then
+    PARITY_SCORE=$((MATCHES * 100 / TOTAL))
+else
+    PARITY_SCORE=0
+fi
+
+echo "Parity Score: $PARITY_SCORE% ($MATCHES matches, $DIFFERENCES differences)"
+echo
+
+if [ $PARITY_SCORE -ge 85 ]; then
+    echo -e "${GREEN}✓ Configuration parity is acceptable (≥85%)${NC}"
+    exit 0
+elif [ $PARITY_SCORE -ge 70 ]; then
+    echo -e "${YELLOW}⚠ Configuration parity is borderline (70-84%)${NC}"
+    echo "  Review differences before deploying"
+    exit 0
+else
+    echo -e "${RED}✗ Configuration parity is too low (<70%)${NC}"
+    echo "  Significant differences detected - reconcile before testing"
+    exit 1
+fi

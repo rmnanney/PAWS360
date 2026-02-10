@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "jira-pgb": {
+      "command": "jira-mcp-server",
+      "args": ["serve"],
+      "env": {
+        "JIRA_URL": "https://paw360.atlassian.net",
+        "JIRA_API_KEY": "ATATT3xFfGF0qMcnOY3Z5usMtKIxQ16g6f36hUFG8TEEYlFea5H1wJ37VigKh1-yaUs4EyxFtVj3BltKapYbUkQ4WIQOWe2SkNf1Emf_EwGG2_NATtuPs007rFQgfzyC0QveMz_yNeCH_YpJGXM66rW85TPEyqxFOnkkJL8Cye6yPDf5jfP2cUg=EB4C127B",
+        "JIRA_PROJECT_KEY": "PGB"
+      }
+    }
+  }
+}

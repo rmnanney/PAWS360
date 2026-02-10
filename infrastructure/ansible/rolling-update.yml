@@ -1,0 +1,202 @@
+---
+# Rolling Update Playbook for AdminLTE Services
+# Zero-downtime deployment with health checks and rollbacks
+
+- name: AdminLTE Rolling Update Deployment
+  hosts: webservers
+  become: true
+  serial: 1
+  max_fail_percentage: 25
+  
+  vars:
+    health_check_retries: 5
+    health_check_delay: 10
+    deployment_timeout: 300
+    
+  pre_tasks:
+    - name: Verify current service health before update
+      uri:
+        url: "http://{{ ansible_default_ipv4.address }}:{{ item }}/actuator/health"
+        method: GET
+        status_code: 200
+        timeout: 10
+      loop:
+        - 8081  # auth-service
+        - 8082  # data-service  
+        - 8083  # analytics-service
+      register: pre_update_health
+      failed_when: false
+      
+    - name: Backup current configuration
+      archive:
+        path: "/opt/adminlte/{{ item }}/config"
+        dest: "/opt/adminlte/backups/{{ item }}-config-{{ ansible_date_time.epoch }}.tar.gz"
+        owner: "{{ adminlte_user }}"
+        group: "{{ adminlte_user }}"
+      loop:
+        - auth-service
+        - data-service
+        - analytics-service
+        - ui
+
+    - name: Create rollback script
+      template:
+        src: rollback.sh.j2
+        dest: /opt/adminlte/rollback-{{ ansible_date_time.epoch }}.sh
+        mode: '0755'
+        owner: "{{ adminlte_user }}"
+        group: "{{ adminlte_user }}"
+
+  tasks:
+    - name: Rolling Update Block
+      block:
+        - name: Remove from load balancer pool
+          uri:
+            url: "http://{{ hostvars[item]['ansible_default_ipv4']['address'] }}/admin/pool/remove/{{ ansible_default_ipv4.address }}"
+            method: POST
+            status_code: [200, 404]  # 404 if already removed
+          loop: "{{ groups['loadbalancers'] }}"
+          delegate_to: "{{ item }}"
+          when: groups['loadbalancers'] is defined
+
+        - name: Wait for active connections to drain
+          wait_for:
+            timeout: 30
+          when: groups['loadbalancers'] is defined
+
+        - name: Stop services gracefully
+          systemd:
+            name: "{{ item }}"
+            state: stopped
+          loop:
+            - adminlte-analytics-service
+            - adminlte-data-service
+            - adminlte-auth-service
+          register: service_stop
+
+        - name: Deploy new service artifacts
+          include_role:
+            name: "{{ item }}"
+          loop:
+            - auth-service
+            - data-service
+            - analytics-service
+            - adminlte-ui
+
+        - name: Start services with health checks
+          systemd:
+            name: "{{ item }}"
+            state: started
+            enabled: true
+          loop:
+            - adminlte-auth-service
+            - adminlte-data-service
+            - adminlte-analytics-service
+          register: service_start
+
+        - name: Verify service health after update
+          uri:
+            url: "http://{{ ansible_default_ipv4.address }}:{{ item.port }}/actuator/health"
+            method: GET
+            status_code: 200
+            timeout: 10
+          loop:
+            - { service: 'auth-service', port: 8081 }
+            - { service: 'data-service', port: 8082 }
+            - { service: 'analytics-service', port: 8083 }
+          retries: "{{ health_check_retries }}"
+          delay: "{{ health_check_delay }}"
+          register: post_update_health
+
+        - name: Run smoke tests
+          uri:
+            url: "http://{{ ansible_default_ipv4.address }}:{{ item.port }}{{ item.endpoint }}"
+            method: GET
+            status_code: 200
+          loop:
+            - { service: 'auth-service', port: 8081, endpoint: '/api/auth/info' }
+            - { service: 'data-service', port: 8082, endpoint: '/api/students/count' }
+            - { service: 'analytics-service', port: 8083, endpoint: '/api/analytics/health' }
+          register: smoke_tests
+
+        - name: Add back to load balancer pool
+          uri:
+            url: "http://{{ hostvars[item]['ansible_default_ipv4']['address'] }}/admin/pool/add/{{ ansible_default_ipv4.address }}"
+            method: POST
+            status_code: 200
+          loop: "{{ groups['loadbalancers'] }}"
+          delegate_to: "{{ item }}"
+          when: groups['loadbalancers'] is defined
+
+        - name: Verify load balancer health
+          uri:
+            url: "http://{{ hostvars[groups['loadbalancers'][0]]['ansible_default_ipv4']['address'] }}/admin/health"
+            method: GET
+            status_code: 200
+          delegate_to: localhost
+          run_once: true
+          when: groups['loadbalancers'] is defined
+
+      rescue:
+        - name: Rollback on failure
+          import_tasks: rollback.yml
+          vars:
+            rollback_reason: "Health check failed during rolling update"
+
+  post_tasks:
+    - name: Clean up old backups
+      find:
+        paths: "/opt/adminlte/backups"
+        age: "7d"
+        patterns: "*.tar.gz"
+      register: old_backups
+
+    - name: Remove old backup files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ old_backups.files }}"
+      when: old_backups.files is defined
+
+    - name: Update deployment tracking
+      lineinfile:
+        path: /opt/adminlte/deployment.log
+        line: "{{ ansible_date_time.iso8601 }} - Rolling update completed successfully on {{ inventory_hostname }}"
+        create: true
+        owner: "{{ adminlte_user }}"
+        group: "{{ adminlte_user }}"
+
+- name: Verify Full System Health
+  hosts: localhost
+  connection: local
+  
+  tasks:
+    - name: End-to-end system health check
+      uri:
+        url: "http://{{ hostvars[groups['webservers'][0]]['ansible_default_ipv4']['address'] }}/admin"
+        method: GET
+        status_code: 200
+        follow_redirects: all
+      register: e2e_health
+
+    - name: Performance baseline check
+      uri:
+        url: "http://{{ hostvars[groups['webservers'][0]]['ansible_default_ipv4']['address'] }}/api/analytics/dashboard"
+        method: GET
+        status_code: 200
+        timeout: 5  # Should respond within 5 seconds
+      register: performance_check
+
+    - name: Notify deployment success
+      mail:
+        to: "{{ notification_email | default('admin@university.edu') }}"
+        subject: "AdminLTE Deployment Successful"
+        body: |
+          AdminLTE rolling update completed successfully at {{ ansible_date_time.iso8601 }}.
+          
+          Updated hosts: {{ groups['webservers'] | join(', ') }}
+          Health checks: PASSED
+          Performance check: {{ performance_check.elapsed }}s response time
+          
+          System is ready for production traffic.
+      when: send_notifications | default(false)

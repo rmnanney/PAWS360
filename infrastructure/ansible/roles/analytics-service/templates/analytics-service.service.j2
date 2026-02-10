@@ -1,0 +1,21 @@
+[Unit]
+Description=AdminLTE Analytics Service
+After=network.target postgresql.service redis.service adminlte-data-service.service
+Requires=postgresql.service redis.service
+
+[Service]
+Type=simple
+User={{ adminlte_user | default('adminlte') }}
+Group={{ adminlte_user | default('adminlte') }}
+EnvironmentFile=/opt/adminlte/analytics-service/.env
+WorkingDirectory=/opt/adminlte/analytics-service
+ExecStart=/usr/bin/java -jar analytics-service.jar
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=adminlte-analytics-service
+
+[Install]
+WantedBy=multi-user.target

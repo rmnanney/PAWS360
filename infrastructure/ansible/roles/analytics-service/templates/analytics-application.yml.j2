@@ -1,0 +1,61 @@
+# Analytics Service Application Configuration
+# Spring Boot configuration for real-time analytics and reporting
+
+server:
+  port: {{ analytics_service_port | default('8083') }}
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: adminlte-analytics-service
+  profiles:
+    active: {{ spring_profiles | default('production') }}
+
+  datasource:
+    url: jdbc:postgresql://{{ postgres_read_host | default(postgres_host) | default('localhost') }}:{{ postgres_port | default('5432') }}/{{ postgres_db | default('adminlte') }}
+    username: {{ postgres_user | default('adminlte') }}
+    password: {{ postgres_password }}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: {{ analytics_pool_size | default('10') }}
+      minimum-idle: 2
+      idle-timeout: 300000
+      max-lifetime: 600000
+      connection-timeout: 30000
+      read-only: true
+
+  redis:
+    host: {{ redis_host | default('localhost') }}
+    port: {{ redis_port | default('6379') }}
+    password: {{ redis_password | default('') }}
+
+logging:
+  level:
+    com.adminlte.analytics: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+  file:
+    name: /var/log/adminlte/analytics-service/analytics-service.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+adminlte:
+  analytics:
+    cache-ttl: {{ analytics_cache_ttl | default('1800') }}
+    batch-size: {{ analytics_batch_size | default('1000') }}
+    refresh-interval: {{ analytics_refresh_interval | default('300') }}
+  audit:
+    enabled: true
+    log-file: /var/log/adminlte/analytics-service/audit.log

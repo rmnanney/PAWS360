@@ -1,0 +1,27 @@
+package com.uwm.paws360.DTO.User;
+
+import com.uwm.paws360.Entity.EntityDomains.User.*;
+
+import java.time.LocalDate;
+import java.util.List;
+
+public record UserResponseDTO(
+        int user_id,
+        String email,
+        String alternate_email,
+        String firstname,
+        String preferred_name,
+        String lastname,
+        Role role,
+        Ethnicity ethnicity,
+        Gender gender,
+        Nationality nationality,
+        Status status,
+        LocalDate dob,
+        Country_Code country_code,
+        String phone,
+        String alternate_phone,
+        String profile_picture_url,
+        List<AddressDTO> addresses
+) {
+}

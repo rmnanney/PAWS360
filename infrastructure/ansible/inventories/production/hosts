@@ -1,0 +1,54 @@
+# Development-based baseline inventory copied for production
+[all:vars]
+# Environment settings
+env=production
+deploy_env=production
+adminlte_user=adminlte
+adminlte_version=1.0.0
+
+# Network configuration
+domain_name=adminlte.university.edu
+use_ssl=false
+api_port=8080
+ui_port=80
+
+# Database settings
+postgres_host=localhost
+postgres_port=5432
+postgres_db=adminlte_production
+postgres_user=adminlte
+postgres_password=dev_password
+postgres_max_connections=20
+
+# Redis settings
+redis_host=localhost
+redis_port=6379
+redis_password=dev_redis_pass
+redis_maxmemory=256mb
+
+# Service configuration
+java_opts="-Xmx512m -Xms256m"
+spring_profiles=production
+log_level=DEBUG
+
+# Security (development only - use proper secrets in production)
+jwt_secret=dev_jwt_secret_key_not_for_production
+saml_keystore_password=dev_keystore_pass
+admin_default_password=admin123
+
+[webservers]
+localhost ansible_connection=local
+
+[databases]
+localhost ansible_connection=local
+
+[etcd]
+localhost ansible_connection=local
+
+[redis]
+localhost ansible_connection=local
+
+[loadbalancers]
+localhost ansible_connection=local
+
+[monitoring]

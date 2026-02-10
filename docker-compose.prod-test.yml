@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  paws360-app:
+    image: paws360-app:${GIT_SHA:-latest}
+    container_name: paws360-prod-test
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/paws360
+      - SPRING_DATASOURCE_USERNAME=paws360
+      - SPRING_DATASOURCE_PASSWORD=paws360_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - paws360-net
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: paws360-postgres-test
+    environment:
+      - POSTGRES_DB=paws360
+      - POSTGRES_USER=paws360
+      - POSTGRES_PASSWORD=paws360_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/paws360_database_ddl.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/demo_seed_data_complete.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paws360"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - paws360-net
+
+  frontend:
+    image: node:20-alpine
+    container_name: paws360-frontend-test
+    working_dir: /app
+    command: sh -c "npm install && npm run build && npx serve -s .next/standalone -l 3000"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://paws360-app:8080
+    depends_on:
+      paws360-app:
+        condition: service_healthy
+    networks:
+      - paws360-net
+
+networks:
+  paws360-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
